@@ -39,7 +39,7 @@
     // Public web application
     // ------------------------------------------------------------------
 
-    WEBAPP_URL: "https://clipnoter.netlify.app",
+    WEBAPP_URL: "https://web-ebon-chi-67.vercel.app/",
 
     // ------------------------------------------------------------------
     // AI
