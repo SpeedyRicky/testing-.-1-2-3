@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#faf6ed" />
+    <title>ClipRoots</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,500&family=Fraunces:ital,wght@0,500;0,600;1,500&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-row">
+        <div class="brand">
+          <div class="brand-icon" aria-hidden="true">✦</div>
+          <div>
+            <div class="brand-name">ClipRoots</div>
+            <div class="brand-tagline">Capture the web. Keep the insight.</div>
+          </div>
+        </div>
+        <a
+          id="open-main-app"
+          class="btn btn-secondary btn-small hidden"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open app ↗
+        </a>
+      </div>
+      <nav class="tabs" aria-label="ClipRoots navigation">
+        <button class="tab-btn active" data-tab="compose" type="button">
+          <span>✚</span> New clip
+        </button>
+        <button class="tab-btn" data-tab="feed" type="button">
+          <span>◉</span> Discover
+        </button>
+        <button class="tab-btn" data-tab="me" type="button">
+          <span>●</span> Me
+        </button>
+      </nav>
+    </header>
+    <main id="app">
+      <!-- AUTH -->
+      <section id="view-auth" class="view hidden">
+        <div class="hero-card auth-card">
+          <div class="eyebrow">WELCOME TO CLIPROOTS</div>
+          <h1>Turn highlights into useful notes.</h1>
+          <p class="muted">
+            Save the parts of the web worth remembering, add your perspective,
+            and build your own knowledge feed.
+          </p>
+          <form id="auth-form">
+            <div class="field">
+              <label for="auth-email">Email</label>
+              <input
+                id="auth-email"
+                type="email"
+                autocomplete="email"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="auth-password">Password</label>
+              <input
+                id="auth-password"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Your password"
+                minlength="6"
+                required
+              />
+            </div>
+            <div id="signup-username-field" class="field hidden">
+              <label for="auth-username">Username</label>
+              <input
+                id="auth-username"
+                type="text"
+                autocomplete="username"
+                placeholder="yourname"
+                maxlength="30"
+              />
+            </div>
+            <button
+              id="btn-login"
+              class="btn btn-primary btn-full"
+              type="submit"
+            >
+              Log in
+            </button>
+            <button
+              id="btn-signup"
+              class="btn btn-secondary btn-full"
+              type="button"
+            >
+              Create an account
+            </button>
+            <p id="auth-error" class="message error hidden" role="alert"></p>
+            <p
+              id="auth-status"
+              class="message success hidden"
+              role="status"
+            ></p>
+          </form>
+        </div>
+      </section>
+      <!-- COMPOSE -->
+      <section id="view-compose" class="view hidden">
+        <div id="compose-empty" class="empty-state">
+          <div class="empty-icon">✦</div>
+          <div class="eyebrow">READY WHEN YOU ARE</div>
+          <h1>Clip something interesting.</h1>
+          <p>
+            Highlight text on any webpage and click <strong>Clip this</strong>.
+            Your selection will appear here.
+          </p>
+          <button id="compose-help" class="btn btn-secondary" type="button">
+            How it works
+          </button>
+        </div>
+        <div id="compose-form" class="hidden">
+          <div class="section-heading">
+            <div>
+              <div class="eyebrow">NEW CLIP</div>
+              <h1>Add your take</h1>
+            </div>
+            <span class="status-pill"> <span></span> Ready </span>
+          </div>
+          <article class="quote-card">
+            <div class="quote-decoration" aria-hidden="true">“</div>
+            <img id="compose-video-thumbnail" class="video-thumbnail hidden" alt="Captured video frame" />
+            <div id="compose-video-badge" class="video-range-badge hidden"></div>
+            <blockquote id="compose-quote"></blockquote>
+            <div class="source-line">
+              <span id="compose-source-domain" class="chip"></span>
+              <a
+                id="compose-source-link"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open source ↗
+              </a>
+            </div>
+          </article>
+          <div class="field">
+            <label for="compose-commentary">
+              Your take <span>optional</span>
+            </label>
+            <div class="textarea-wrap">
+              <textarea
+                id="compose-commentary"
+                rows="7"
+                maxlength="5000"
+                placeholder="Why does this matter? Add context, a reaction, or a takeaway..."
+              ></textarea>
+              <button
+                type="button"
+                class="mic-btn"
+                id="compose-mic-btn"
+                title="Dictate with your voice"
+                aria-label="Dictate with your voice"
+              >🎤</button>
+            </div>
+            <div class="field-footer">
+              <span>Make the note useful to your future self.</span>
+              <span id="comment-count">0 / 5000</span>
+            </div>
+          </div>
+          <button
+            id="btn-publish"
+            class="btn btn-primary btn-full"
+            type="button"
+          >
+            Publish clip
+          </button>
+          <button
+            id="btn-discard"
+            class="btn btn-secondary btn-full"
+            type="button"
+          >
+            Discard
+          </button>
+          <p id="compose-error" class="message error hidden" role="alert"></p>
+          <p
+            id="compose-success"
+            class="message success hidden"
+            role="status"
+          ></p>
+        </div>
+      </section>
+      <!-- FEED -->
+      <section id="view-feed" class="view hidden">
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">YOUR KNOWLEDGE FEED</div>
+            <h1>Discover ideas</h1>
+            <p class="muted heading-subtitle">
+              Interesting things people saved from around the web.
+            </p>
+          </div>
+          <button
+            id="feed-refresh"
+            class="icon-btn"
+            type="button"
+            title="Refresh feed"
+            aria-label="Refresh feed"
+          >
+            ↻
+          </button>
+        </div>
+        <div class="toolbar">
+          <div class="search-row">
+            <input
+              type="search"
+              id="feed-search"
+              placeholder="Search clips..."
+              aria-label="Search clips"
+            />
+            <button id="feed-search-btn" class="btn btn-primary" type="button">
+              Search
+            </button>
+          </div>
+          <div class="toolbar-row">
+            <div class="segmented" aria-label="Feed scope">
+              <button class="chip-btn active" data-scope="all" type="button">
+                Discover
+              </button>
+              <button class="chip-btn" data-scope="following" type="button">
+                Following
+              </button>
+            </div>
+            <div class="segmented" aria-label="Feed sorting">
+              <button class="sort-btn active" data-sort="newest" type="button">
+                Newest
+              </button>
+              <button class="sort-btn" data-sort="oldest" type="button">
+                Oldest
+              </button>
+              <button class="sort-btn" data-sort="favorites" type="button">
+                Favorites
+              </button>
+            </div>
+          </div>
+          <div class="toolbar-row review-row">
+            <button
+              id="btn-topic-review"
+              class="btn btn-secondary btn-small"
+              type="button"
+            >
+              Review topic
+            </button>
+            <button
+              id="btn-recent-review"
+              class="btn btn-secondary btn-small"
+              type="button"
+            >
+              Review recent
+            </button>
+          </div>
+        </div>
+        <div
+          id="review-result"
+          class="review-result hidden"
+          role="status"
+        ></div>
+        <div id="feed-list" class="feed-list" aria-live="polite"></div>
+      </section>
+      <!-- ME -->
+      <section id="view-me" class="view hidden">
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">YOUR SPACE</div>
+            <h1>My notes</h1>
+          </div>
+        </div>
+        <div id="me-profile"></div>
+        <div class="search-row">
+          <input
+            type="search"
+            id="me-search"
+            placeholder="Search my notes..."
+            aria-label="Search my notes"
+          />
+          <button id="me-search-btn" class="btn btn-primary" type="button">
+            Search
+          </button>
+        </div>
+        <h2 class="section-title">Published clips</h2>
+        <div id="me-clips" class="feed-list"></div>
+        <button
+          id="btn-logout"
+          class="btn btn-secondary btn-full logout-btn"
+          type="button"
+        >
+          Log out
+        </button>
+      </section>
+    </main>
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+<script src="/vendor/supabase.js"></script>
+<script src="/config.js"></script>
+<script src="sidepanel.js"></script>
+  </body>
+</html>
