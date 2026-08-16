@@ -41,6 +41,6 @@
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:3000 https://lgdbyynrarikfnyjunaw.supabase.co https://*.supabase.co https://*.supabase.in https://clipmarginaltestbetter.onrender.com"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://lgdbyynrarikfnyjunaw.supabase.co https://*.supabase.co https://*.supabase.in https://clipmarginaltestbetter.onrender.com"
   }
 }

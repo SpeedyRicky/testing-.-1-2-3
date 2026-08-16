@@ -387,7 +387,7 @@ function attachVoiceInput(buttonId, textareaId) {
 
     const VOICE_ERROR_MESSAGES = {
       "audio-capture": "Couldn't access your microphone. Make sure one is connected and not in use by another app.",
-      "not-allowed": "Microphone access is blocked. Go to chrome://settings/content/all , sort it by name , scroll down until you find it, allow microphone for this extension, then try again.",
+      "not-allowed": "Microphone access is blocked. Go to chrome://settings/content/siteDetails?site=chrome-extension%3A%2F%2Fcoflhhkdefdhkealolkmfpgpkkljlkoi, allow microphone for this extension, then try again.",
       "network": "Voice input needs an internet connection.",
       "service-not-allowed": "Voice input isn't available right now."
     };
