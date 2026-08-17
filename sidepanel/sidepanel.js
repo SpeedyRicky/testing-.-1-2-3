@@ -281,6 +281,20 @@ async function loadPendingClip() {
   });
 }
 
+function setPrivateToggle(isPrivate) {
+  const toggle = $("compose-private-toggle");
+  if (!toggle) return;
+  toggle.setAttribute("aria-pressed", isPrivate ? "true" : "false");
+}
+
+function isPrivateToggleOn() {
+  return $("compose-private-toggle")?.getAttribute("aria-pressed") === "true";
+}
+
+$("compose-private-toggle")?.addEventListener("click", () => {
+  setPrivateToggle(!isPrivateToggleOn());
+});
+
 async function renderCompose() {
   if (!currentUser) {
     showView("auth");
@@ -290,6 +304,7 @@ async function renderCompose() {
   showView("compose");
   $("compose-error").classList.add("hidden");
   $("compose-success").classList.add("hidden");
+  setPrivateToggle(false);
 
   if (!pendingClip) {
     $("compose-empty").classList.remove("hidden");
@@ -477,7 +492,8 @@ $("btn-publish").addEventListener("click", async () => {
       video_start_seconds: isVideo ? pendingClip.videoStartSeconds : null,
       video_end_seconds: isVideo ? pendingClip.videoEndSeconds : null,
       thumbnail_url: isVideo ? pendingClip.thumbnailUrl || null : null,
-      commentary
+      commentary,
+      is_private: isPrivateToggleOn()
     });
     if (error) throw error;
 
@@ -560,6 +576,8 @@ function clipCardHtml(c, showDelete = false, isFavorite = false) {
   const link = `${webappUrl}/clip.html?slug=${encodeURIComponent(c.slug)}`;
   const claimBadge = c.claim_status === "filed"
     ? '<span class="claim-badge">Claim filed</span>' : "";
+  const privateBadge = c.is_private
+    ? '<span class="private-badge">🔒 Private</span>' : "";
   const isVideo = c.clip_type === "video";
   const thumbnailBlock = isVideo && c.thumbnail_url
     ? `<img class="video-thumbnail" src="${escapeHtml(c.thumbnail_url)}" alt="Captured video frame" />`
@@ -586,7 +604,7 @@ function clipCardHtml(c, showDelete = false, isFavorite = false) {
         <p class="summary-text"></p>
       </div>
       <div class="meta-row">
-        <span>${escapeHtml(c.source_domain || "")} ${claimBadge}</span>
+        <span>${escapeHtml(c.source_domain || "")} ${claimBadge}${privateBadge}</span>
       </div>
     </div>`;
 }
@@ -615,8 +633,6 @@ async function loadFavoriteFeed(searchTerm = "") {
   $("feed-list").innerHTML = filtered
     .map((clip) => clipCardHtml(clip, currentUser && clip.author_id === currentUser.id, true))
     .join("");
-  attachSummaryButtons();
-  attachFavoriteButtons();
   clearReviewResult();
 }
 
@@ -628,7 +644,12 @@ async function loadFeed(searchTerm = "") {
     return;
   }
   try {
-    let query = supabaseClient.from("clips_feed").select("*").limit(30);
+    // clips_feed already hides other users' private clips at the
+    // database level, but a signed-in owner still passes that check
+    // for their own rows - Discover is public browsing, so private
+    // clips (including the viewer's own) are excluded here too; they
+    // only ever surface in Me.
+    let query = supabaseClient.from("clips_feed").select("*").eq("is_private", false).limit(30);
 
     if (searchTerm) {
       query = buildSearchFilter(searchTerm, query);
@@ -664,8 +685,6 @@ async function loadFeed(searchTerm = "") {
     $("feed-list").innerHTML = data
       .map((clip) => clipCardHtml(clip, currentUser && clip.author_id === currentUser.id, isClipFavorited(clip.id)))
       .join("");
-    attachSummaryButtons();
-    attachFavoriteButtons();
   } catch (e) {
     $("feed-list").innerHTML = `<p class="error">${escapeHtml(e.message || "Failed to load feed.")}</p>`;
   }
@@ -695,7 +714,6 @@ async function loadMe(searchTerm = "") {
   $("me-clips").innerHTML = data.length
     ? data.map((clip) => clipCardHtml(clip, true)).join("")
     : '<p class="muted">You haven\'t published a clip yet.</p>';
-  attachSummaryButtons();
 }
 
 // ---------- React to new clips captured while panel is open ----------
@@ -709,98 +727,111 @@ if (panelRuntime && panelRuntime.onMessage && typeof panelRuntime.onMessage.addL
   });
 }
 
-function attachSummaryButtons() {
-  document.querySelectorAll(".summary-btn").forEach((button) => {
-    button.addEventListener("click", async (event) => {
-      const clipCard = event.target.closest(".clip-card");
-      if (!clipCard) return;
-      const summaryBlock = clipCard.querySelector(".summary-block");
-      const summaryText = clipCard.querySelector(".summary-text");
-      const quote = clipCard.querySelector("blockquote")?.textContent
-        || clipCard.querySelector(".video-range-badge")?.textContent
-        || "";
-      const commentary = clipCard.querySelector(".commentary")?.textContent || "";
-      const noteText = `${quote}\n\n${commentary}`.trim();
+// Card actions (summarize/favorite/delete) are wired once via
+// delegation on a stable ancestor instead of re-attaching a fresh
+// listener to every button on every render. The old approach called
+// attachSummaryButtons() (which itself called attachFavoriteButtons())
+// AND attachFavoriteButtons() again from loadFeed()/loadFavoriteFeed(),
+// so every favorite button ended up with two click listeners - one
+// click fired the toggle twice (add then immediately remove, or vice
+// versa), which net out to nothing. That's why "Favorite" looked like
+// it didn't work.
+async function handleSummaryAction(clipCard) {
+  const summaryBlock = clipCard.querySelector(".summary-block");
+  const summaryText = clipCard.querySelector(".summary-text");
+  const quote = clipCard.querySelector("blockquote")?.textContent
+    || clipCard.querySelector(".video-range-badge")?.textContent
+    || "";
+  const commentary = clipCard.querySelector(".commentary")?.textContent || "";
+  const noteText = `${quote}\n\n${commentary}`.trim();
 
-      summaryBlock.classList.remove("hidden");
-      if (!noteText) {
-        summaryText.textContent = "No text available to summarize.";
-        return;
-      }
-      summaryText.textContent = "Summarizing...";
+  summaryBlock.classList.remove("hidden");
+  if (!noteText) {
+    summaryText.textContent = "No text available to summarize.";
+    return;
+  }
+  summaryText.textContent = "Summarizing...";
 
-      const prompt = `Summarize this note in one short paragraph and explain its meaning clearly:\n\n${noteText}`;
-      try {
-        const result = await fetchSummarization(prompt, noteText);
-        if (result.html) {
-          summaryText.innerHTML = result.text;
-        } else {
-          summaryText.textContent = result.text;
-        }
-      } catch (err) {
-        console.error("ClipRoots: summarization failed", err);
-        summaryText.innerHTML = buildSearchFallbackHtml(noteText);
-      }
-    });
-  });
-
-  attachFavoriteButtons();
-
-  document.querySelectorAll(".delete-btn").forEach((button) => {
-    button.addEventListener("click", async (event) => {
-      const clipCard = event.target.closest(".clip-card");
-      if (!clipCard) return;
-      const clipId = clipCard.dataset.clipId;
-      if (!clipId) return;
-
-      if (!confirm("Delete this note for everyone? This cannot be undone.")) {
-        return;
-      }
-
-      try {
-        const { error } = await supabaseClient
-          .from("clips")
-          .delete()
-          .eq("id", clipId)
-          .eq("user_id", currentUser.id);
-
-        if (error) throw error;
-        clipCard.remove();
-      } catch (err) {
-        alert(err?.message || "Failed to delete note.");
-      }
-    });
-  });
+  const prompt = `Summarize this note in one short paragraph and explain its meaning clearly:\n\n${noteText}`;
+  try {
+    const result = await fetchSummarization(prompt, noteText);
+    if (result.html) {
+      summaryText.innerHTML = result.text;
+    } else {
+      summaryText.textContent = result.text;
+    }
+  } catch (err) {
+    console.error("ClipRoots: summarization failed", err);
+    summaryText.innerHTML = buildSearchFallbackHtml(noteText);
+  }
 }
 
-function attachFavoriteButtons() {
-  document.querySelectorAll(".favorite-btn").forEach((button) => {
-    button.addEventListener("click", async (event) => {
-      const clipCard = event.target.closest(".clip-card");
-      if (!clipCard) return;
-      const clipId = clipCard.dataset.clipId;
-      if (!clipId) return;
-      const quote = clipCard.querySelector("blockquote")?.textContent || "";
-      const videoRange = clipCard.querySelector(".video-range-badge")?.textContent || "";
-      const commentary = clipCard.querySelector(".commentary")?.textContent || "";
-      const clip = {
-        id: clipId,
-        quoted_text: quote.replace(/^"|"$/g, ""),
-        clip_type: videoRange ? "video" : "text",
-        commentary,
-        source_domain: clipCard.querySelector(".meta-row span")?.textContent || "",
-        author_display_name: clipCard.querySelector(".author-row")?.textContent || "",
-        author_username: "",
-        slug: "",
-      };
-      const isNowFavorite = toggleClipFavorite(clip);
-      button.textContent = isNowFavorite ? "Unfavorite" : "Favorite";
-      if (feedSort === "favorites" && !isNowFavorite) {
-        loadFavoriteFeed($("feed-search").value.trim());
-      }
-    });
-  });
+function handleFavoriteAction(clipCard, button) {
+  const clipId = clipCard.dataset.clipId;
+  if (!clipId) return;
+  const quote = clipCard.querySelector("blockquote")?.textContent || "";
+  const videoRange = clipCard.querySelector(".video-range-badge")?.textContent || "";
+  const commentary = clipCard.querySelector(".commentary")?.textContent || "";
+  const clip = {
+    id: clipId,
+    quoted_text: quote.replace(/^"|"$/g, ""),
+    clip_type: videoRange ? "video" : "text",
+    commentary,
+    source_domain: clipCard.querySelector(".meta-row span")?.textContent || "",
+    author_display_name: clipCard.querySelector(".author-row")?.textContent || "",
+    author_username: "",
+    slug: "",
+  };
+  const isNowFavorite = toggleClipFavorite(clip);
+  button.textContent = isNowFavorite ? "Unfavorite" : "Favorite";
+  if (feedSort === "favorites" && !isNowFavorite) {
+    loadFavoriteFeed($("feed-search").value.trim());
+  }
 }
+
+async function handleDeleteAction(clipCard) {
+  const clipId = clipCard.dataset.clipId;
+  if (!clipId) return;
+
+  if (!confirm("Delete this note for everyone? This cannot be undone.")) {
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from("clips")
+      .delete()
+      .eq("id", clipId)
+      .eq("user_id", currentUser.id);
+
+    if (error) throw error;
+    clipCard.remove();
+  } catch (err) {
+    alert(err?.message || "Failed to delete note.");
+  }
+}
+
+document.addEventListener("click", (event) => {
+  const summaryBtn = event.target.closest(".summary-btn");
+  if (summaryBtn) {
+    const clipCard = summaryBtn.closest(".clip-card");
+    if (clipCard) void handleSummaryAction(clipCard);
+    return;
+  }
+
+  const favoriteBtn = event.target.closest(".favorite-btn");
+  if (favoriteBtn) {
+    const clipCard = favoriteBtn.closest(".clip-card");
+    if (clipCard) handleFavoriteAction(clipCard, favoriteBtn);
+    return;
+  }
+
+  const deleteBtn = event.target.closest(".delete-btn");
+  if (deleteBtn) {
+    const clipCard = deleteBtn.closest(".clip-card");
+    if (clipCard) void handleDeleteAction(clipCard);
+  }
+});
 
 function normalizeText(text) {
   return (text || "").replace(/\s+/g, " ").trim();

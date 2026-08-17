@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ClipRoots — Clip & Comment on Anything",
-  "version": "1.4.0",
+  "version": "1.4.3",
   "description": "Highlight any passage on the web, add your take, and publish it to a public feed that always links back to the source.",
   "icons": {
     "128": "icons/icon128.png"
@@ -41,6 +41,6 @@
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://lgdbyynrarikfnyjunaw.supabase.co https://*.supabase.co https://*.supabase.in https://clipmarginaltestbetter.onrender.com"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:3000 https://lgdbyynrarikfnyjunaw.supabase.co https://*.supabase.co https://*.supabase.in https://clipmarginaltestbetter.onrender.com"
   }
 }
