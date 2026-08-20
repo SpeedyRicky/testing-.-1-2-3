@@ -21,12 +21,15 @@ if (openMainAppLink) {
   }
 }
 
+const { MESSAGE, STORAGE_KEY, LIMITS } = window.ClipMarginalConstants;
+
 let currentUser = null;
 let currentProfile = null;
-let pendingClip = null;
+let pendingList = [];
 let isSignupMode = false;
 let feedScope = "all";
 let feedSort = "newest";
+let claimTargetClipId = null;
 
 const FAVORITE_STORAGE_PREFIX = "cliproots_favorites_";
 
@@ -112,7 +115,7 @@ function formatClipTime(totalSeconds) {
   return `${m}:${String(r).padStart(2, "0")}`;
 }
 
-const MAX_VIDEO_CLIP_SECONDS = 90;
+const MAX_VIDEO_CLIP_SECONDS = LIMITS.MAX_VIDEO_CLIP_SECONDS;
 
 // ---------- View / tab switching ----------
 function showView(name) {
@@ -255,28 +258,27 @@ function sendPanelMessage(message, callback) {
   }
 }
 
-function readPendingClipFromStorage() {
+function readPendingListFromStorage() {
   return new Promise((resolve) => {
     if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local && typeof chrome.storage.local.get === "function") {
-      chrome.storage.local.get(["cliproots_pending_clip"], (result) => {
-        resolve(result?.cliproots_pending_clip || null);
+      chrome.storage.local.get([STORAGE_KEY.PENDING_LIST], (result) => {
+        resolve(result?.[STORAGE_KEY.PENDING_LIST] || []);
       });
     } else {
-      resolve(null);
+      resolve([]);
     }
   });
 }
 
 // ---------- Compose ----------
-async function loadPendingClip() {
+async function loadPendingList() {
   return new Promise((resolve) => {
-    sendPanelMessage({ type: "CLIPROOTS_GET_PENDING_CLIP" }, async (res) => {
-      if (res?.payload) {
+    sendPanelMessage({ type: MESSAGE.GET_PENDING_LIST }, async (res) => {
+      if (Array.isArray(res?.payload)) {
         resolve(res.payload);
         return;
       }
-      const savedClip = await readPendingClipFromStorage();
-      resolve(savedClip || null);
+      resolve(await readPendingListFromStorage());
     });
   });
 }
@@ -295,18 +297,52 @@ $("compose-private-toggle")?.addEventListener("click", () => {
   setPrivateToggle(!isPrivateToggleOn());
 });
 
+function composeListItemHtml(clip) {
+  const isVideo = clip.type === "video";
+  const thumbnailBlock = isVideo && clip.thumbnailUrl
+    ? `<img class="video-thumbnail" src="${escapeHtml(clip.thumbnailUrl)}" alt="Captured video frame" />`
+    : "";
+  const quoteBlock = isVideo
+    ? `<div class="video-range-badge">▶ ${formatClipTime(clip.videoStartSeconds)} – ${formatClipTime(clip.videoEndSeconds)}</div>`
+    : `<blockquote>${escapeHtml(clip.quotedText)}</blockquote>`;
+  return `
+    <div class="compose-list-item" data-clip-id="${escapeHtml(clip.id)}">
+      <button class="compose-list-remove" type="button" aria-label="Remove this clip from the list">×</button>
+      ${thumbnailBlock}
+      ${quoteBlock}
+      <div class="source-line">
+        <span class="chip">${escapeHtml(clip.sourceDomain)}</span>
+        <a href="${escapeHtml(clip.sourceUrl)}" target="_blank" rel="noopener noreferrer">Open source ↗</a>
+      </div>
+      <div class="compose-item-comment">
+        <button class="btn ghost btn-small compose-item-comment-toggle" type="button" data-clip-id="${escapeHtml(clip.id)}">
+          💬 Add a comment for this clip
+        </button>
+        <div class="compose-item-comment-box hidden">
+          <textarea
+            class="compose-item-comment-input"
+            data-clip-id="${escapeHtml(clip.id)}"
+            rows="2"
+            maxlength="5000"
+            placeholder="A note just for this clip — leave blank to use your take for the whole list instead"
+          ></textarea>
+        </div>
+      </div>
+    </div>`;
+}
+
 async function renderCompose() {
   if (!currentUser) {
     showView("auth");
     return;
   }
-  pendingClip = await loadPendingClip();
+  pendingList = await loadPendingList();
   showView("compose");
   $("compose-error").classList.add("hidden");
   $("compose-success").classList.add("hidden");
   setPrivateToggle(false);
 
-  if (!pendingClip) {
+  if (!pendingList.length) {
     $("compose-empty").classList.remove("hidden");
     $("compose-form").classList.add("hidden");
     return;
@@ -314,28 +350,32 @@ async function renderCompose() {
   $("compose-empty").classList.add("hidden");
   $("compose-form").classList.remove("hidden");
 
-  const isVideo = pendingClip.clipType === "video";
-  $("compose-video-badge").classList.toggle("hidden", !isVideo);
-  $("compose-quote").classList.toggle("hidden", isVideo);
-  const thumbnail = $("compose-video-thumbnail");
-  if (isVideo && pendingClip.thumbnailUrl) {
-    thumbnail.src = pendingClip.thumbnailUrl;
-    thumbnail.classList.remove("hidden");
-  } else {
-    thumbnail.classList.add("hidden");
-    thumbnail.src = "";
-  }
-  if (isVideo) {
-    $("compose-video-badge").textContent =
-      `▶ ${formatClipTime(pendingClip.videoStartSeconds)} – ${formatClipTime(pendingClip.videoEndSeconds)}`;
-  } else {
-    $("compose-quote").textContent = pendingClip.quotedText;
-  }
-
-  $("compose-source-domain").textContent = pendingClip.sourceDomain;
-  $("compose-source-link").href = pendingClip.sourceUrl;
+  $("compose-count-pill").innerHTML =
+    `<span></span> ${pendingList.length} clip${pendingList.length === 1 ? "" : "s"}`;
+  $("compose-list").innerHTML = pendingList.map(composeListItemHtml).join("");
+  $("compose-list-title").value = "";
   $("compose-commentary").value = "";
 }
+
+$("compose-list").addEventListener("click", async (event) => {
+  const commentToggle = event.target.closest(".compose-item-comment-toggle");
+  if (commentToggle) {
+    commentToggle.closest(".compose-item-comment")?.querySelector(".compose-item-comment-box")
+      ?.classList.toggle("hidden");
+    return;
+  }
+
+  const removeBtn = event.target.closest(".compose-list-remove");
+  if (!removeBtn) return;
+
+  const clipId = removeBtn.closest(".compose-list-item")?.dataset.clipId;
+  if (!clipId) return;
+
+  await new Promise((resolve) => {
+    sendPanelMessage({ type: MESSAGE.REMOVE_PENDING_CLIP, payload: { id: clipId } }, resolve);
+  });
+  renderCompose();
+});
 
 // Voice-to-text for "Your take", via the browser's native
 // SpeechRecognition API - no server, no new dependency. Feature-detected:
@@ -455,58 +495,78 @@ function attachVoiceInput(buttonId, textareaId) {
 attachVoiceInput("compose-mic-btn", "compose-commentary");
 
 $("btn-discard").addEventListener("click", () => {
-  sendPanelMessage({ type: "CLIPROOTS_CLEAR_PENDING_CLIP" });
-  pendingClip = null;
+  sendPanelMessage({ type: MESSAGE.CLEAR_PENDING_LIST });
+  pendingList = [];
   renderCompose();
 });
 
 $("btn-publish").addEventListener("click", async () => {
-  if (!pendingClip || !currentUser) return;
+  if (!pendingList.length || !currentUser) return;
   const commentary = $("compose-commentary").value.trim();
+  const listTitle = $("compose-list-title").value.trim();
   $("compose-error").classList.add("hidden");
 
-  const isVideo = pendingClip.clipType === "video";
-
-  if (isVideo) {
-    const start = pendingClip.videoStartSeconds;
-    const end = pendingClip.videoEndSeconds;
+  for (const clip of pendingList) {
+    if (clip.type !== "video") continue;
+    const start = clip.videoStartSeconds;
+    const end = clip.videoEndSeconds;
     if (
       typeof start !== "number" || typeof end !== "number" ||
       !(end > start) || end - start > MAX_VIDEO_CLIP_SECONDS + 0.5
     ) {
-      $("compose-error").textContent = "This clip is longer than the 90-second limit.";
+      $("compose-error").textContent = "One of these clips is longer than the 90-second limit.";
       $("compose-error").classList.remove("hidden");
       return;
     }
   }
 
-  try {
-    const { error } = await supabaseClient.from("clips").insert({
+  // A single clip publishes exactly as before (list_id stays null); two or
+  // more get a shared list_id so the feed can group them into one card.
+  const listId = pendingList.length > 1 ? crypto.randomUUID() : null;
+  const isPrivate = isPrivateToggleOn();
+
+  // Each clip uses its own comment if someone opted it in via "Add a
+  // comment for this clip"; otherwise it falls back to the shared "Your
+  // take" text above, exactly like before this per-clip option existed.
+  const rows = pendingList.map((clip) => {
+    const isVideo = clip.type === "video";
+    const ownComment = document
+      .querySelector(`.compose-item-comment-input[data-clip-id="${CSS.escape(clip.id)}"]`)
+      ?.value.trim();
+    return {
       slug: slugify(),
       user_id: currentUser.id,
-      source_url: pendingClip.sourceUrl,
-      source_title: pendingClip.sourceTitle,
-      source_domain: pendingClip.sourceDomain,
+      source_url: clip.sourceUrl,
+      source_title: clip.sourceTitle,
+      source_domain: clip.sourceDomain,
       clip_type: isVideo ? "video" : "text",
-      quoted_text: isVideo ? "" : pendingClip.quotedText,
-      video_start_seconds: isVideo ? pendingClip.videoStartSeconds : null,
-      video_end_seconds: isVideo ? pendingClip.videoEndSeconds : null,
-      thumbnail_url: isVideo ? pendingClip.thumbnailUrl || null : null,
-      commentary,
-      is_private: isPrivateToggleOn()
-    });
+      quoted_text: isVideo ? "" : clip.quotedText,
+      video_start_seconds: isVideo ? clip.videoStartSeconds : null,
+      video_end_seconds: isVideo ? clip.videoEndSeconds : null,
+      thumbnail_url: isVideo ? clip.thumbnailUrl || null : null,
+      commentary: ownComment || commentary,
+      is_private: isPrivate,
+      list_id: listId,
+      list_title: listId ? (listTitle || null) : null
+    };
+  });
+
+  try {
+    const { error } = await supabaseClient.from("clips").insert(rows);
     if (error) throw error;
 
-    sendPanelMessage({ type: "CLIPROOTS_CLEAR_PENDING_CLIP" });
-    pendingClip = null;
-    $("compose-success").textContent = "Published! Check the Feed tab.";
+    sendPanelMessage({ type: MESSAGE.CLEAR_PENDING_LIST });
+    pendingList = [];
+    $("compose-success").textContent = rows.length > 1
+      ? `Published a list of ${rows.length} clips! Check the Feed tab.`
+      : "Published! Check the Feed tab.";
     $("compose-success").classList.remove("hidden");
     $("compose-form").classList.add("hidden");
     setTimeout(() => renderCompose(), 1200);
   } catch (e) {
     const raw = e.message || "";
     $("compose-error").textContent = /row-level security policy/i.test(raw)
-      ? "You don't have permission to publish this clip."
+      ? "You don't have permission to publish this list."
       : raw || "Failed to publish.";
     $("compose-error").classList.remove("hidden");
   }
@@ -572,12 +632,7 @@ function videoSourceLink(c) {
   }
 }
 
-function clipCardHtml(c, showDelete = false, isFavorite = false) {
-  const link = `${webappUrl}/clip.html?slug=${encodeURIComponent(c.slug)}`;
-  const claimBadge = c.claim_status === "filed"
-    ? '<span class="claim-badge">Claim filed</span>' : "";
-  const privateBadge = c.is_private
-    ? '<span class="private-badge">🔒 Private</span>' : "";
+function clipQuoteBlock(c) {
   const isVideo = c.clip_type === "video";
   const thumbnailBlock = isVideo && c.thumbnail_url
     ? `<img class="video-thumbnail" src="${escapeHtml(c.thumbnail_url)}" alt="Captured video frame" />`
@@ -585,18 +640,27 @@ function clipCardHtml(c, showDelete = false, isFavorite = false) {
   const quoteBlock = isVideo
     ? `<a class="video-range-badge" href="${escapeHtml(videoSourceLink(c))}" target="_blank" rel="noopener noreferrer">▶ ${formatClipTime(c.video_start_seconds)} – ${formatClipTime(c.video_end_seconds)}</a>`
     : `<blockquote>"${escapeHtml(c.quoted_text)}"</blockquote>`;
+  return `${thumbnailBlock}${quoteBlock}`;
+}
+
+function clipCardHtml(c, showDelete = false, isFavorite = false) {
+  const claimBadge = c.claim_status === "filed"
+    ? '<span class="claim-badge">Claim filed</span>' : "";
+  const privateBadge = c.is_private
+    ? '<span class="private-badge">🔒 Private</span>' : "";
   return `
     <div class="clip-card" data-clip-id="${escapeHtml(c.id)}">
       <div class="author-row">
         <span class="avatar">${initials(c.author_display_name || c.author_username)}</span>
         ${escapeHtml(c.author_display_name || c.author_username)}
       </div>
-      ${thumbnailBlock}
-      ${quoteBlock}
+      ${clipQuoteBlock(c)}
       ${c.commentary ? `<div class="commentary">${escapeHtml(c.commentary)}</div>` : ""}
       <div class="card-actions">
         <button class="btn ghost summary-btn" type="button">Summarize note</button>
         <button class="btn ghost favorite-btn" type="button">${isFavorite ? 'Unfavorite' : 'Favorite'}</button>
+        <button class="btn ghost report-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Report</button>
+        ${showDelete && c.is_private ? `<button class="btn ghost share-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Share</button>` : ''}
         ${showDelete ? '<button class="btn ghost delete-btn" type="button">Delete note</button>' : ''}
       </div>
       <div class="summary-block hidden">
@@ -607,6 +671,90 @@ function clipCardHtml(c, showDelete = false, isFavorite = false) {
         <span>${escapeHtml(c.source_domain || "")} ${claimBadge}${privateBadge}</span>
       </div>
     </div>`;
+}
+
+// Clips published together (see btn-publish's shared list_id) render as
+// one card with each clip nested inside, rather than as separate feed
+// entries - "make it a list" instead of N disconnected cards.
+function listSubclipHtml(c) {
+  return `
+    <div class="list-subclip" data-clip-id="${escapeHtml(c.id)}">
+      ${clipQuoteBlock(c)}
+      <div class="list-subclip-footer">
+        <span class="chip">${escapeHtml(c.source_domain || "")}</span>
+        <button class="btn ghost btn-small report-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Report</button>
+      </div>
+    </div>`;
+}
+
+function listCardHtml(group, showDelete = false, isFavorite = false) {
+  const first = group.items[0];
+  const privateBadge = first.is_private
+    ? '<span class="private-badge">🔒 Private</span>' : "";
+  const claimBadge = group.items.some((c) => c.claim_status === "filed")
+    ? '<span class="claim-badge">Claim filed</span>' : "";
+  const domains = [...new Set(group.items.map((c) => c.source_domain).filter(Boolean))];
+  return `
+    <div class="clip-card list-card" data-list-id="${escapeHtml(group.listId)}">
+      <div class="author-row">
+        <span class="avatar">${initials(first.author_display_name || first.author_username)}</span>
+        ${escapeHtml(first.author_display_name || first.author_username)}
+      </div>
+      <div class="list-card-header">
+        <span class="list-badge">📋 List · ${group.items.length} clips</span>
+        ${group.listTitle ? `<h3 class="list-title">${escapeHtml(group.listTitle)}</h3>` : ""}
+      </div>
+      <div class="list-subclips">
+        ${group.items.map(listSubclipHtml).join("")}
+      </div>
+      ${first.commentary ? `<div class="commentary">${escapeHtml(first.commentary)}</div>` : ""}
+      <div class="card-actions">
+        <button class="btn ghost summary-btn" type="button">Summarize note</button>
+        <button class="btn ghost favorite-btn" type="button">${isFavorite ? 'Unfavorite' : 'Favorite'}</button>
+        ${showDelete && first.is_private ? `<button class="btn ghost share-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Share</button>` : ''}
+        ${showDelete ? '<button class="btn ghost delete-btn" type="button">Delete note</button>' : ''}
+      </div>
+      <div class="summary-block hidden">
+        <strong>Summary</strong>
+        <p class="summary-text"></p>
+      </div>
+      <div class="meta-row">
+        <span>${escapeHtml(domains.join(", "))} ${claimBadge}${privateBadge}</span>
+      </div>
+    </div>`;
+}
+
+// Groups rows sharing a list_id into one entry, in first-seen order;
+// rows without a list_id stay standalone. clip_lists has no table of
+// its own - list_id/list_title live denormalized on each clips row.
+function groupFeedRows(rows) {
+  const groups = [];
+  const groupByListId = new Map();
+
+  for (const row of rows) {
+    if (!row.list_id) {
+      groups.push({ isList: false, row });
+      continue;
+    }
+
+    let group = groupByListId.get(row.list_id);
+    if (!group) {
+      group = { isList: true, listId: row.list_id, listTitle: row.list_title || "", items: [] };
+      groupByListId.set(row.list_id, group);
+      groups.push(group);
+    }
+    group.items.push(row);
+  }
+
+  return groups;
+}
+
+function renderFeedRows(rows, showDeleteFn, isFavoriteFn) {
+  return groupFeedRows(rows)
+    .map((group) => group.isList
+      ? listCardHtml(group, showDeleteFn(group.items[0]), isFavoriteFn(group.listId))
+      : clipCardHtml(group.row, showDeleteFn(group.row), isFavoriteFn(group.row.id)))
+    .join("");
 }
 
 function buildSearchFilter(searchTerm, query) {
@@ -630,9 +778,11 @@ async function loadFavoriteFeed(searchTerm = "") {
     clearReviewResult();
     return;
   }
-  $("feed-list").innerHTML = filtered
-    .map((clip) => clipCardHtml(clip, currentUser && clip.author_id === currentUser.id, true))
-    .join("");
+  $("feed-list").innerHTML = renderFeedRows(
+    filtered,
+    (clip) => Boolean(currentUser) && clip.author_id === currentUser.id,
+    () => true
+  );
   clearReviewResult();
 }
 
@@ -682,9 +832,11 @@ async function loadFeed(searchTerm = "") {
       $("feed-list").innerHTML = '<p class="muted">No clips match your search.</p>';
       return;
     }
-    $("feed-list").innerHTML = data
-      .map((clip) => clipCardHtml(clip, currentUser && clip.author_id === currentUser.id, isClipFavorited(clip.id)))
-      .join("");
+    $("feed-list").innerHTML = renderFeedRows(
+      data,
+      (clip) => Boolean(currentUser) && clip.author_id === currentUser.id,
+      (id) => isClipFavorited(id)
+    );
   } catch (e) {
     $("feed-list").innerHTML = `<p class="error">${escapeHtml(e.message || "Failed to load feed.")}</p>`;
   }
@@ -712,17 +864,95 @@ async function loadMe(searchTerm = "") {
     return;
   }
   $("me-clips").innerHTML = data.length
-    ? data.map((clip) => clipCardHtml(clip, true)).join("")
+    ? renderFeedRows(data, () => true, (id) => isClipFavorited(id))
     : '<p class="muted">You haven\'t published a clip yet.</p>';
+
+  void loadSharedWithMe();
+  void loadFollowing();
 }
+
+// Following someone happens on the website's profile page (profiles.html)
+// so it can be gated behind the same sign-in flow as commenting there -
+// this just lists who you already follow, with an unfollow control.
+function followingRowHtml(profile) {
+  const profileHref = webappUrl ? `${webappUrl}/profiles.html?username=${encodeURIComponent(profile.username)}` : "#";
+  return `
+    <div class="following-row" data-profile-id="${escapeHtml(profile.id)}">
+      <span class="avatar">${initials(profile.display_name || profile.username)}</span>
+      <span class="following-row-name">
+        <a href="${escapeHtml(profileHref)}" target="_blank" rel="noopener noreferrer">${escapeHtml(profile.display_name || profile.username)}</a>
+        <span class="following-row-username">@${escapeHtml(profile.username)}</span>
+      </span>
+      <button class="btn ghost unfollow-btn" type="button" data-profile-id="${escapeHtml(profile.id)}">Unfollow</button>
+    </div>`;
+}
+
+async function loadFollowing() {
+  const el = $("following-list");
+  if (!el) return;
+  el.innerHTML = '<p class="empty-inline">Loading…</p>';
+
+  const { data: rows, error } = await supabaseClient
+    .from("follows").select("following_id").eq("follower_id", currentUser.id);
+  if (error) {
+    el.innerHTML = `<p class="empty-inline">${escapeHtml(error.message)}</p>`;
+    return;
+  }
+
+  const ids = (rows || []).map((r) => r.following_id);
+  if (!ids.length) {
+    el.innerHTML = '<p class="empty-inline">You\'re not following anyone yet — follow people from their profile page on the website.</p>';
+    return;
+  }
+
+  const { data: profiles, error: profilesError } = await supabaseClient
+    .from("profiles").select("id, username, display_name").in("id", ids);
+  if (profilesError) {
+    el.innerHTML = `<p class="empty-inline">${escapeHtml(profilesError.message)}</p>`;
+    return;
+  }
+
+  el.innerHTML = (profiles || []).map(followingRowHtml).join("");
+}
+
+$("following-list")?.addEventListener("click", async (event) => {
+  const btn = event.target.closest(".unfollow-btn");
+  if (!btn) return;
+
+  const profileId = btn.dataset.profileId;
+  if (!profileId) return;
+
+  btn.disabled = true;
+  try {
+    const { error } = await supabaseClient
+      .from("follows").delete()
+      .eq("follower_id", currentUser.id).eq("following_id", profileId);
+    if (error) throw error;
+    btn.closest(".following-row")?.remove();
+    if (!$("following-list").children.length) {
+      $("following-list").innerHTML = '<p class="empty-inline">You\'re not following anyone yet — follow people from their profile page on the website.</p>';
+    }
+  } catch (e) {
+    btn.disabled = false;
+    alert(e.message || "Couldn't unfollow. Try again.");
+  }
+});
 
 // ---------- React to new clips captured while panel is open ----------
 const panelRuntime = getExtensionRuntime();
 if (panelRuntime && panelRuntime.onMessage && typeof panelRuntime.onMessage.addListener === "function") {
   panelRuntime.onMessage.addListener((message) => {
-    if (message.type === "CLIPROOTS_PENDING_CLIP_UPDATED") {
-      pendingClip = message.payload;
-      goTo("compose");
+    if (message.type === MESSAGE.PENDING_LIST_UPDATED) {
+      pendingList = Array.isArray(message.payload) ? message.payload : [];
+      // Only jump to the compose tab for an actual new capture. Publish and
+      // discard both clear the list and manage their own compose UI state
+      // (including a success message) after sending CLEAR_PENDING_LIST -
+      // that message echoes back here as this same update, and unconditionally
+      // re-rendering on every echo wiped that success message before it was
+      // ever visible.
+      if (pendingList.length) {
+        goTo("compose");
+      }
     }
   });
 }
@@ -736,12 +966,24 @@ if (panelRuntime && panelRuntime.onMessage && typeof panelRuntime.onMessage.addL
 // click fired the toggle twice (add then immediately remove, or vice
 // versa), which net out to nothing. That's why "Favorite" looked like
 // it didn't work.
+function parseVideoRangeText(text) {
+  const match = /(\d+):(\d{2})\s*–\s*(\d+):(\d{2})/.exec(text || "");
+  if (!match) return { start: null, end: null };
+  const [, sm, ss, em, es] = match;
+  return {
+    start: Number(sm) * 60 + Number(ss),
+    end: Number(em) * 60 + Number(es)
+  };
+}
+
 async function handleSummaryAction(clipCard) {
   const summaryBlock = clipCard.querySelector(".summary-block");
   const summaryText = clipCard.querySelector(".summary-text");
-  const quote = clipCard.querySelector("blockquote")?.textContent
-    || clipCard.querySelector(".video-range-badge")?.textContent
-    || "";
+  // A list card nests multiple quotes/video badges - fold them all in so
+  // "Summarize note" covers the whole list, not just the first item.
+  const quote = [...clipCard.querySelectorAll("blockquote, .video-range-badge")]
+    .map((node) => node.textContent.trim())
+    .join("\n");
   const commentary = clipCard.querySelector(".commentary")?.textContent || "";
   const noteText = `${quote}\n\n${commentary}`.trim();
 
@@ -766,23 +1008,54 @@ async function handleSummaryAction(clipCard) {
   }
 }
 
-function handleFavoriteAction(clipCard, button) {
-  const clipId = clipCard.dataset.clipId;
-  if (!clipId) return;
-  const quote = clipCard.querySelector("blockquote")?.textContent || "";
-  const videoRange = clipCard.querySelector(".video-range-badge")?.textContent || "";
-  const commentary = clipCard.querySelector(".commentary")?.textContent || "";
-  const clip = {
+// Builds one favorites-storage row from either a standalone .clip-card
+// or a single .list-subclip nested inside a .list-card - shared fields
+// (author, commentary, privacy, list grouping) are read from whichever
+// ancestor actually carries them.
+function scrapeClipFromCard(clipCard, subclipEl) {
+  const scope = subclipEl || clipCard;
+  const clipId = scope.dataset.clipId;
+  const quote = scope.querySelector("blockquote")?.textContent || "";
+  const videoRangeText = scope.querySelector(".video-range-badge")?.textContent || "";
+  const { start, end } = parseVideoRangeText(videoRangeText);
+  return {
     id: clipId,
     quoted_text: quote.replace(/^"|"$/g, ""),
-    clip_type: videoRange ? "video" : "text",
-    commentary,
-    source_domain: clipCard.querySelector(".meta-row span")?.textContent || "",
+    clip_type: videoRangeText ? "video" : "text",
+    video_start_seconds: start,
+    video_end_seconds: end,
+    commentary: clipCard.querySelector(".commentary")?.textContent || "",
+    source_domain: scope.querySelector(".chip")?.textContent
+      || clipCard.querySelector(".meta-row span")?.textContent
+      || "",
     author_display_name: clipCard.querySelector(".author-row")?.textContent || "",
     author_username: "",
-    slug: "",
+    author_id: "",
+    is_private: Boolean(clipCard.querySelector(".private-badge")),
+    list_id: clipCard.dataset.listId || null,
+    list_title: clipCard.querySelector(".list-title")?.textContent || null,
+    slug: ""
   };
-  const isNowFavorite = toggleClipFavorite(clip);
+}
+
+function handleFavoriteAction(clipCard, button) {
+  const subclips = [...clipCard.querySelectorAll(".list-subclip")];
+  const clips = subclips.length
+    ? subclips.map((el) => scrapeClipFromCard(clipCard, el))
+    : [scrapeClipFromCard(clipCard, null)];
+
+  if (!clips.every((clip) => clip.id)) return;
+
+  const wasFavorite = isClipFavorited(clips[0].id);
+  const isNowFavorite = !wasFavorite;
+
+  for (const clip of clips) {
+    const currentlyFavorite = isClipFavorited(clip.id);
+    if (currentlyFavorite !== isNowFavorite) {
+      toggleClipFavorite(clip);
+    }
+  }
+
   button.textContent = isNowFavorite ? "Unfavorite" : "Favorite";
   if (feedSort === "favorites" && !isNowFavorite) {
     loadFavoriteFeed($("feed-search").value.trim());
@@ -790,19 +1063,21 @@ function handleFavoriteAction(clipCard, button) {
 }
 
 async function handleDeleteAction(clipCard) {
+  const listId = clipCard.dataset.listId;
   const clipId = clipCard.dataset.clipId;
-  if (!clipId) return;
+  if (!listId && !clipId) return;
 
-  if (!confirm("Delete this note for everyone? This cannot be undone.")) {
+  const confirmMessage = listId
+    ? "Delete this whole list for everyone? This cannot be undone."
+    : "Delete this note for everyone? This cannot be undone.";
+  if (!confirm(confirmMessage)) {
     return;
   }
 
   try {
-    const { error } = await supabaseClient
-      .from("clips")
-      .delete()
-      .eq("id", clipId)
-      .eq("user_id", currentUser.id);
+    let query = supabaseClient.from("clips").delete().eq("user_id", currentUser.id);
+    query = listId ? query.eq("list_id", listId) : query.eq("id", clipId);
+    const { error } = await query;
 
     if (error) throw error;
     clipCard.remove();
@@ -830,8 +1105,234 @@ document.addEventListener("click", (event) => {
   if (deleteBtn) {
     const clipCard = deleteBtn.closest(".clip-card");
     if (clipCard) void handleDeleteAction(clipCard);
+    return;
+  }
+
+  const reportBtn = event.target.closest(".report-btn");
+  if (reportBtn) {
+    openClaimModal(reportBtn.dataset.clipId);
+    return;
+  }
+
+  const shareBtn = event.target.closest(".share-btn");
+  if (shareBtn) {
+    const clipIds = (shareBtn.dataset.clipId || shareBtn.dataset.clipIds || "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    if (clipIds.length) void openShareModal(clipIds);
   }
 });
+
+// ---------- File a claim ----------
+function openClaimModal(clipId) {
+  if (!clipId) return;
+  claimTargetClipId = clipId;
+  $("claim-form").reset();
+  $("claim-fields").classList.remove("hidden");
+  $("claim-actions").classList.remove("hidden");
+  $("claim-error").classList.add("hidden");
+  $("claim-success").classList.add("hidden");
+  $("claim-modal-overlay").classList.remove("hidden");
+}
+
+function closeClaimModal() {
+  $("claim-modal-overlay").classList.add("hidden");
+  claimTargetClipId = null;
+}
+
+$("btn-claim-cancel").addEventListener("click", closeClaimModal);
+
+$("claim-modal-overlay").addEventListener("click", (event) => {
+  if (event.target === $("claim-modal-overlay")) closeClaimModal();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !$("claim-modal-overlay").classList.contains("hidden")) {
+    closeClaimModal();
+  }
+});
+
+$("claim-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!claimTargetClipId) return;
+
+  const claimType = $("claim-type").value;
+  const name = $("claim-name").value.trim();
+  const email = $("claim-email").value.trim();
+  const reason = $("claim-reason").value.trim();
+
+  $("claim-error").classList.add("hidden");
+
+  if (!name || !email || !reason) {
+    $("claim-error").textContent = "Please fill in every field.";
+    $("claim-error").classList.remove("hidden");
+    return;
+  }
+
+  const submitBtn = $("btn-claim-submit");
+  submitBtn.disabled = true;
+
+  try {
+    const { error } = await supabaseClient.from("claims").insert({
+      clip_id: claimTargetClipId,
+      claimant_name: name,
+      claimant_email: email,
+      reason,
+      claim_type: claimType
+    });
+    if (error) throw error;
+
+    $("claim-fields").classList.add("hidden");
+    $("claim-actions").classList.add("hidden");
+    $("claim-success").textContent = "Claim submitted. The publisher will be notified for review.";
+    $("claim-success").classList.remove("hidden");
+    setTimeout(closeClaimModal, 1800);
+  } catch (e) {
+    $("claim-error").textContent = e.message || "Failed to submit claim.";
+    $("claim-error").classList.remove("hidden");
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+// ---------- Share a private clip with mutual followers ----------
+let shareTargetClipIds = [];
+
+async function getMutualFollowerProfiles() {
+  const [{ data: following }, { data: followers }] = await Promise.all([
+    supabaseClient.from("follows").select("following_id").eq("follower_id", currentUser.id),
+    supabaseClient.from("follows").select("follower_id").eq("following_id", currentUser.id)
+  ]);
+  const followingIds = new Set((following || []).map((f) => f.following_id));
+  const mutualIds = (followers || [])
+    .map((f) => f.follower_id)
+    .filter((id) => followingIds.has(id));
+
+  if (!mutualIds.length) return [];
+
+  const { data: profiles } = await supabaseClient
+    .from("profiles").select("id, username, display_name").in("id", mutualIds);
+  return profiles || [];
+}
+
+function shareRowHtml(profile, isShared) {
+  return `
+    <div class="share-row" data-profile-id="${escapeHtml(profile.id)}">
+      <span class="avatar">${initials(profile.display_name || profile.username)}</span>
+      <span class="share-row-name">${escapeHtml(profile.display_name || profile.username)}</span>
+      <button
+        class="share-row-toggle"
+        type="button"
+        role="switch"
+        aria-pressed="${isShared ? "true" : "false"}"
+        aria-label="Share with ${escapeHtml(profile.display_name || profile.username)}"
+      ></button>
+    </div>`;
+}
+
+async function openShareModal(clipIds) {
+  shareTargetClipIds = clipIds;
+  $("share-error").classList.add("hidden");
+  $("share-list").innerHTML = '<p class="share-empty">Loading mutual followers…</p>';
+  $("share-modal-overlay").classList.remove("hidden");
+
+  try {
+    const [profiles, { data: existingShares, error }] = await Promise.all([
+      getMutualFollowerProfiles(),
+      supabaseClient.from("clip_shares").select("shared_with_id, clip_id").in("clip_id", clipIds)
+    ]);
+    if (error) throw error;
+
+    if (!profiles.length) {
+      $("share-list").innerHTML =
+        '<p class="share-empty">Follow each other with someone first — only mutual followers can be given access.</p>';
+      return;
+    }
+
+    // A list's clips are always shared/unshared together, so a person only
+    // counts as "shared" here once every clip in this share target has been
+    // shared with them.
+    const sharedCounts = new Map();
+    for (const row of existingShares || []) {
+      sharedCounts.set(row.shared_with_id, (sharedCounts.get(row.shared_with_id) || 0) + 1);
+    }
+
+    $("share-list").innerHTML = profiles
+      .map((p) => shareRowHtml(p, (sharedCounts.get(p.id) || 0) >= clipIds.length))
+      .join("");
+  } catch (e) {
+    $("share-list").innerHTML = "";
+    $("share-error").textContent = e.message || "Couldn't load your mutual followers.";
+    $("share-error").classList.remove("hidden");
+  }
+}
+
+function closeShareModal() {
+  $("share-modal-overlay").classList.add("hidden");
+  shareTargetClipIds = [];
+}
+
+$("btn-share-close").addEventListener("click", closeShareModal);
+
+$("share-modal-overlay").addEventListener("click", (event) => {
+  if (event.target === $("share-modal-overlay")) closeShareModal();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !$("share-modal-overlay").classList.contains("hidden")) {
+    closeShareModal();
+  }
+});
+
+$("share-list").addEventListener("click", async (event) => {
+  const toggle = event.target.closest(".share-row-toggle");
+  if (!toggle || !shareTargetClipIds.length) return;
+
+  const profileId = toggle.closest(".share-row")?.dataset.profileId;
+  if (!profileId) return;
+
+  const nowShared = toggle.getAttribute("aria-pressed") !== "true";
+  toggle.setAttribute("aria-pressed", nowShared ? "true" : "false");
+  $("share-error").classList.add("hidden");
+
+  try {
+    if (nowShared) {
+      const rows = shareTargetClipIds.map((clipId) => ({
+        clip_id: clipId, owner_id: currentUser.id, shared_with_id: profileId
+      }));
+      const { error } = await supabaseClient.from("clip_shares").insert(rows);
+      if (error) throw error;
+    } else {
+      const { error } = await supabaseClient
+        .from("clip_shares")
+        .delete()
+        .in("clip_id", shareTargetClipIds)
+        .eq("shared_with_id", profileId);
+      if (error) throw error;
+    }
+  } catch (e) {
+    // Roll the toggle back so the UI never claims a state that didn't stick.
+    toggle.setAttribute("aria-pressed", nowShared ? "false" : "true");
+    $("share-error").textContent = e.message || "Couldn't update sharing. Try again.";
+    $("share-error").classList.remove("hidden");
+  }
+});
+
+async function loadSharedWithMe() {
+  const el = $("shared-with-me-clips");
+  if (!el) return;
+  el.innerHTML = '<p class="muted">Loading…</p>';
+  const { data, error } = await supabaseClient
+    .from("clips_feed").select("*").eq("is_private", true).neq("author_id", currentUser.id).limit(50);
+  if (error) {
+    el.innerHTML = `<p class="error">${escapeHtml(error.message)}</p>`;
+    return;
+  }
+  el.innerHTML = data.length
+    ? renderFeedRows(data, () => false, (id) => isClipFavorited(id))
+    : '<p class="muted">No one has shared a private clip with you yet.</p>';
+}
 
 function normalizeText(text) {
   return (text || "").replace(/\s+/g, " ").trim();
@@ -1081,8 +1582,8 @@ async function fetchSummarization(prompt, noteText) {
 // ---------- Boot ----------
 (async function init() {
   await refreshSession();
-  const initialPending = await loadPendingClip();
-  if (initialPending) {
+  const initialPending = await loadPendingList();
+  if (initialPending.length) {
     goTo("compose");
   } else if (currentUser) {
     goTo("feed");

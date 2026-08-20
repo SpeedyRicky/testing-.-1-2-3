@@ -10,9 +10,9 @@
   const BUTTON_ID = "clipper-clip-btn";
   const TOAST_ID = "clipper-toast";
 
-  const { MESSAGE, STORAGE_KEY } = root.ClipMarginalConstants;
+  const { MESSAGE } = root.ClipMarginalConstants;
   const { sendRuntimeMessage, isExtensionContextValid } = root.ClipMarginalRuntime;
-  const { set: storageSet } = root.ClipMarginalStorage;
+  const { appendPendingClip } = root.ClipMarginalStorage;
   const { createTextClip, validateClip } = root.ClipMarginalClipModel;
 
   let clipButton = null;
@@ -86,12 +86,6 @@
     return validateClip(clip) ? clip : null;
   }
 
-  function saveFallback(clip) {
-    void storageSet({
-      [STORAGE_KEY.PENDING_CLIP]: clip
-    });
-  }
-
   async function clipSelection() {
     if (!isExtensionContextValid()) {
       showToast("ClipMarginal was updated. Please reload this page.");
@@ -106,7 +100,10 @@
       return;
     }
 
-    saveFallback(clip);
+    // Append first so the clip is never lost even if the background
+    // worker is momentarily unreachable - the message below is what
+    // wakes the panel up, but the list itself lives in storage.
+    await appendPendingClip(clip);
 
     const response = await sendRuntimeMessage({
       type: MESSAGE.NEW_CLIP,
@@ -115,8 +112,8 @@
 
     showToast(
       response?.ok
-        ? "Clip saved — opening ClipMarginal…"
-        : "Clip saved. Open ClipMarginal from the toolbar."
+        ? "Added to your list — opening ClipMarginal…"
+        : "Added to your list. Open ClipMarginal from the toolbar."
     );
 
     void sendRuntimeMessage({

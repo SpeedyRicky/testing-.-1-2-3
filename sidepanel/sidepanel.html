@@ -34,7 +34,7 @@
       </div>
       <nav class="tabs" aria-label="ClipRoots navigation">
         <button class="tab-btn active" data-tab="compose" type="button">
-          <span>✚</span> New clip
+          <span>✚</span> New list
         </button>
         <button class="tab-btn" data-tab="feed" type="button">
           <span>◉</span> Discover
@@ -116,8 +116,9 @@
           <div class="eyebrow">READY WHEN YOU ARE</div>
           <h1>Clip something interesting.</h1>
           <p>
-            Highlight text on any webpage and click <strong>Clip this</strong>.
-            Your selection will appear here.
+            Highlight text on any webpage and click <strong>Clip this</strong>,
+            or click <strong>🎬 Clip video</strong> on a video. Keep clipping
+            — everything you capture joins one list until you publish it.
           </p>
           <button id="compose-help" class="btn btn-secondary" type="button">
             How it works
@@ -126,28 +127,27 @@
         <div id="compose-form" class="hidden">
           <div class="section-heading">
             <div>
-              <div class="eyebrow">NEW CLIP</div>
+              <div class="eyebrow">NEW LIST</div>
               <h1>Add your take</h1>
             </div>
-            <span class="status-pill"> <span></span> Ready </span>
+            <span id="compose-count-pill" class="status-pill"> <span></span> 1 clip </span>
           </div>
-          <article class="quote-card">
-            <div class="quote-decoration" aria-hidden="true">“</div>
-            <img id="compose-video-thumbnail" class="video-thumbnail hidden" alt="Captured video frame" />
-            <div id="compose-video-badge" class="video-range-badge hidden"></div>
-            <blockquote id="compose-quote"></blockquote>
-            <div class="source-line">
-              <span id="compose-source-domain" class="chip"></span>
-              <a
-                id="compose-source-link"
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Open source ↗
-              </a>
-            </div>
-          </article>
+          <div id="compose-list" class="compose-list"></div>
+          <p class="muted compose-list-hint">
+            Keep highlighting text or clipping video on any page to add more
+            to this list.
+          </p>
+          <div class="field">
+            <label for="compose-list-title">
+              List title <span>optional</span>
+            </label>
+            <input
+              id="compose-list-title"
+              type="text"
+              maxlength="500"
+              placeholder="Give this list a name..."
+            />
+          </div>
           <div class="field">
             <label for="compose-commentary">
               Your take <span>optional</span>
@@ -190,22 +190,25 @@
             class="btn btn-primary btn-full"
             type="button"
           >
-            Publish clip
+            Publish list
           </button>
           <button
             id="btn-discard"
             class="btn btn-secondary btn-full"
             type="button"
           >
-            Discard
+            Discard list
           </button>
-          <p id="compose-error" class="message error hidden" role="alert"></p>
-          <p
-            id="compose-success"
-            class="message success hidden"
-            role="status"
-          ></p>
         </div>
+        <!-- Siblings of #compose-form, not children of it - btn-publish hides
+             #compose-form right after a successful publish, and a status
+             message nested inside would be hidden along with it. -->
+        <p id="compose-error" class="message error hidden" role="alert"></p>
+        <p
+          id="compose-success"
+          class="message success hidden"
+          role="status"
+        ></p>
       </section>
       <!-- FEED -->
       <section id="view-feed" class="view hidden">
@@ -293,6 +296,10 @@
           </div>
         </div>
         <div id="me-profile"></div>
+
+        <h2 class="section-title">Following</h2>
+        <div id="following-list" class="following-list"></div>
+
         <div class="search-row">
           <input
             type="search"
@@ -306,6 +313,13 @@
         </div>
         <h2 class="section-title">Published clips</h2>
         <div id="me-clips" class="feed-list"></div>
+
+        <h2 class="section-title">Shared with you</h2>
+        <p class="muted shared-with-you-hint">
+          Private clips people you mutually follow have chosen to share with you.
+        </p>
+        <div id="shared-with-me-clips" class="feed-list"></div>
+
         <button
           id="btn-logout"
           class="btn btn-secondary btn-full logout-btn"
@@ -316,8 +330,96 @@
       </section>
     </main>
     <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+    <!-- FILE A CLAIM -->
+    <div id="claim-modal-overlay" class="modal-overlay hidden">
+      <div
+        id="claim-modal"
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="claim-modal-title"
+      >
+        <h2 id="claim-modal-title">File a claim</h2>
+        <p class="modal-subtitle">
+          Complaints (copyright, ownership, or content concerns) about this
+          video or a specific clip are sent to the publisher’s claims inbox
+          for review.
+        </p>
+        <form id="claim-form">
+          <div id="claim-fields">
+            <div class="field">
+              <label for="claim-type">Claim type</label>
+              <select id="claim-type">
+                <option value="copyright_ownership">Copyright / ownership claim</option>
+                <option value="content_concern">Content concern / other issue</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="claim-name">Your name</label>
+              <input id="claim-name" type="text" maxlength="200" required />
+            </div>
+            <div class="field">
+              <label for="claim-email">Your email (so the publisher can respond)</label>
+              <input id="claim-email" type="email" maxlength="320" required />
+            </div>
+            <div class="field">
+              <label for="claim-reason">Describe the issue</label>
+              <textarea
+                id="claim-reason"
+                rows="5"
+                maxlength="2000"
+                placeholder="What are you claiming, and why?"
+                required
+              ></textarea>
+            </div>
+          </div>
+          <p id="claim-error" class="message error hidden" role="alert"></p>
+          <p id="claim-success" class="message success hidden" role="status"></p>
+          <div id="claim-actions" class="modal-actions">
+            <button id="btn-claim-cancel" class="btn btn-secondary" type="button">
+              Cancel
+            </button>
+            <button id="btn-claim-submit" class="btn btn-primary" type="submit">
+              Submit claim
+            </button>
+          </div>
+        </form>
+        <p class="modal-footer">
+          Prefer email? Write directly to
+          <a href="mailto:cliproots@gmail.com">cliproots@gmail.com</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- SHARE A PRIVATE CLIP -->
+    <div id="share-modal-overlay" class="modal-overlay hidden">
+      <div
+        id="share-modal"
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="share-modal-title"
+      >
+        <h2 id="share-modal-title">Share this private clip</h2>
+        <p class="modal-subtitle">
+          Only people you mutually follow (you follow them, and they follow
+          you back) can be given access. Toggle anyone on or off whenever
+          you like — it takes effect immediately.
+        </p>
+        <div id="share-list" class="share-list"></div>
+        <p id="share-error" class="message error hidden" role="alert"></p>
+        <div class="modal-actions">
+          <button id="btn-share-close" class="btn btn-primary" type="button">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+
 <script src="/vendor/supabase.js"></script>
 <script src="/config.js"></script>
+<script src="/lib/constants.js"></script>
 <script src="sidepanel.js"></script>
   </body>
 </html>
