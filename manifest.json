@@ -1,12 +1,12 @@
 {
   "manifest_version": 3,
   "name": "ClipRoots — Clip & Comment on Anything",
-  "version": "1.4.5",
+  "version": "1.4.4",
   "description": "Highlight any passage on the web, add your take, and publish it to a public feed that always links back to the source.",
   "icons": {
     "128": "icons/icon128.png"
   },
-  "permissions": ["storage", "activeTab", "scripting", "sidePanel"],
+  "permissions": ["storage", "activeTab", "sidePanel"],
   "host_permissions": ["<all_urls>"],
 "background": {
   "service_worker": "kbackground/service-worker.js",
