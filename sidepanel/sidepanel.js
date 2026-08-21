@@ -146,6 +146,13 @@ function goTo(name) {
       showView("me");
       loadMe();
     }
+  } else if (name === "review") {
+    if (!currentUser || !currentProfile?.is_admin) {
+      showView("auth");
+    } else {
+      showView("review");
+      loadReviewQueue();
+    }
   }
 }
 
@@ -192,6 +199,8 @@ $("btn-logout").addEventListener("click", async () => {
   await supabaseClient.auth.signOut();
   currentUser = null;
   currentProfile = null;
+  const reviewTab = $("tab-review");
+  if (reviewTab) reviewTab.classList.add("hidden");
   goTo("feed");
 });
 
@@ -203,6 +212,8 @@ async function refreshSession() {
       .from("profiles").select("*").eq("id", currentUser.id).single();
     currentProfile = profile;
   }
+  const reviewTab = $("tab-review");
+  if (reviewTab) reviewTab.classList.toggle("hidden", !currentProfile?.is_admin);
 }
 
 function getExtensionRuntime() {
@@ -871,6 +882,100 @@ async function loadMe(searchTerm = "") {
   void loadFollowing();
 }
 
+// ---------- Review (admin only) ----------
+// Tab button (#tab-review) stays hidden unless currentProfile.is_admin,
+// and the underlying RLS policies ("admins can view all clips",
+// "admins can update clips under review", "admins can delete clips
+// under review") enforce the same thing server-side - a non-admin
+// reaching this view some other way would just get empty results, not
+// real data, and their delete/update calls would be rejected.
+async function loadReviewQueue() {
+  const el = $("review-list");
+  if (!el) return;
+  el.innerHTML = '<p class="muted">Loading…</p>';
+
+  const { data: clips, error } = await supabaseClient
+    .from("clips")
+    .select("*, profiles(username, display_name)")
+    .eq("claim_status", "resolved_removed")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    el.innerHTML = `<p class="error">${escapeHtml(error.message)}</p>`;
+    return;
+  }
+  if (!clips || clips.length === 0) {
+    el.innerHTML = '<p class="muted">Nothing under review right now.</p>';
+    return;
+  }
+
+  const clipIds = clips.map((c) => c.id);
+  const { data: claims } = await supabaseClient
+    .from("claims")
+    .select("*, profiles(username)")
+    .in("clip_id", clipIds)
+    .order("created_at", { ascending: false });
+
+  const claimsByClip = new Map();
+  (claims || []).forEach((c) => {
+    if (!claimsByClip.has(c.clip_id)) claimsByClip.set(c.clip_id, []);
+    claimsByClip.get(c.clip_id).push(c);
+  });
+
+  el.innerHTML = clips.map((c) => reviewCardHtml(c, claimsByClip.get(c.id) || [])).join("");
+
+  el.querySelectorAll(".review-keep-btn").forEach((btn) => {
+    btn.addEventListener("click", () => handleReviewKeep(btn.dataset.clipId));
+  });
+  el.querySelectorAll(".review-delete-btn").forEach((btn) => {
+    btn.addEventListener("click", () => handleReviewDelete(btn.dataset.clipId));
+  });
+}
+
+function reviewCardHtml(c, claims) {
+  const author = c.profiles?.display_name || c.profiles?.username || "someone";
+  const claimsHtml = claims
+    .map((claim) => `<p class="muted">Reported by @${escapeHtml(claim.profiles?.username || "unknown")}: "${escapeHtml(claim.reason)}"</p>`)
+    .join("");
+  return `
+    <div class="clip-card" data-clip-id="${escapeHtml(c.id)}">
+      <div class="author-row">
+        <span class="avatar">${initials(author)}</span>
+        ${escapeHtml(author)}
+      </div>
+      ${clipQuoteBlock(c)}
+      ${c.commentary ? `<div class="commentary">${escapeHtml(c.commentary)}</div>` : ""}
+      ${claimsHtml || '<p class="muted">No report on file for this clip.</p>'}
+      <div class="card-actions">
+        <button class="btn ghost review-keep-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Keep — dismiss report</button>
+        <button class="btn ghost review-delete-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Delete permanently</button>
+      </div>
+      <div class="meta-row">
+        <span>${escapeHtml(c.source_domain || "")}</span>
+      </div>
+    </div>`;
+}
+
+async function handleReviewKeep(clipId) {
+  if (!confirm("Restore this clip? It will become publicly visible again.")) return;
+  const { error } = await supabaseClient.from("clips").update({ claim_status: "resolved_kept" }).eq("id", clipId);
+  if (error) {
+    alert(error.message || "Couldn't restore this clip. Try again.");
+    return;
+  }
+  loadReviewQueue();
+}
+
+async function handleReviewDelete(clipId) {
+  if (!confirm("Permanently delete this clip? This cannot be undone.")) return;
+  const { error } = await supabaseClient.from("clips").delete().eq("id", clipId);
+  if (error) {
+    alert(error.message || "Couldn't delete this clip. Try again.");
+    return;
+  }
+  loadReviewQueue();
+}
+
 // Following someone happens on the website's profile page (profiles.html)
 // so it can be gated behind the same sign-in flow as commenting there -
 // this just lists who you already follow, with an unfollow control.
@@ -1124,16 +1229,27 @@ document.addEventListener("click", (event) => {
   }
 });
 
-// ---------- File a claim ----------
+// ---------- Report a complaint / issue ----------
 function openClaimModal(clipId) {
   if (!clipId) return;
   claimTargetClipId = clipId;
   $("claim-form").reset();
+  $("claim-success").classList.add("hidden");
+  $("claim-modal-overlay").classList.remove("hidden");
+
+  if (!currentUser) {
+    // Filing requires a signed-in account (see the submit handler for
+    // why) - tell them that up front instead of after filling the form.
+    $("claim-fields").classList.add("hidden");
+    $("claim-actions").classList.add("hidden");
+    $("claim-error").textContent = "Sign in first (Me tab) to file a claim.";
+    $("claim-error").classList.remove("hidden");
+    return;
+  }
+
   $("claim-fields").classList.remove("hidden");
   $("claim-actions").classList.remove("hidden");
   $("claim-error").classList.add("hidden");
-  $("claim-success").classList.add("hidden");
-  $("claim-modal-overlay").classList.remove("hidden");
 }
 
 function closeClaimModal() {
@@ -1164,6 +1280,16 @@ $("claim-form").addEventListener("submit", async (event) => {
 
   $("claim-error").classList.add("hidden");
 
+  // Claims now have to come from a recognized account (RLS: "signed-in
+  // accounts can file a claim" requires reporter_id = auth.uid()) - same
+  // reasoning as comments and follows, a typed name/email alone doesn't
+  // prove anything since one email can back several accounts.
+  if (!currentUser) {
+    $("claim-error").textContent = "Sign in first (Me tab) to file a claim.";
+    $("claim-error").classList.remove("hidden");
+    return;
+  }
+
   if (!name || !email || !reason) {
     $("claim-error").textContent = "Please fill in every field.";
     $("claim-error").classList.remove("hidden");
@@ -1176,6 +1302,7 @@ $("claim-form").addEventListener("submit", async (event) => {
   try {
     const { error } = await supabaseClient.from("claims").insert({
       clip_id: claimTargetClipId,
+      reporter_id: currentUser.id,
       claimant_name: name,
       claimant_email: email,
       reason,
@@ -1185,11 +1312,11 @@ $("claim-form").addEventListener("submit", async (event) => {
 
     $("claim-fields").classList.add("hidden");
     $("claim-actions").classList.add("hidden");
-    $("claim-success").textContent = "Claim submitted. The publisher will be notified for review.";
+    $("claim-success").textContent = "Report submitted. This clip is now hidden while our team reviews it.";
     $("claim-success").classList.remove("hidden");
     setTimeout(closeClaimModal, 1800);
   } catch (e) {
-    $("claim-error").textContent = e.message || "Failed to submit claim.";
+    $("claim-error").textContent = e.message || "Failed to submit report.";
     $("claim-error").classList.remove("hidden");
   } finally {
     submitBtn.disabled = false;

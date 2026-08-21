@@ -42,6 +42,9 @@
         <button class="tab-btn" data-tab="me" type="button">
           <span>●</span> Me
         </button>
+        <button class="tab-btn hidden" id="tab-review" data-tab="review" type="button">
+          <span>⚑</span> Review
+        </button>
       </nav>
     </header>
     <main id="app">
@@ -328,6 +331,19 @@
           Log out
         </button>
       </section>
+
+      <!-- REVIEW (admin only - tab-review stays hidden unless
+           currentProfile.is_admin, so this view is unreachable for
+           anyone else) -->
+      <section id="view-review" class="view hidden">
+        <div class="page-heading">
+          <div>
+            <div class="eyebrow">STAFF ONLY</div>
+            <h1>Clips under review</h1>
+          </div>
+        </div>
+        <div id="review-list" class="feed-list"></div>
+      </section>
     </main>
     <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
@@ -340,11 +356,11 @@
         aria-modal="true"
         aria-labelledby="claim-modal-title"
       >
-        <h2 id="claim-modal-title">File a claim</h2>
+        <h2 id="claim-modal-title">Report a complaint / issue</h2>
         <p class="modal-subtitle">
-          Complaints (copyright, ownership, or content concerns) about this
-          video or a specific clip are sent to the publisher’s claims inbox
-          for review.
+          Copyright, ownership, or other concerns about this video or a
+          specific clip. The clip is hidden right away while our team
+          reviews it — this report is never shown publicly.
         </p>
         <form id="claim-form">
           <div id="claim-fields">
@@ -381,7 +397,7 @@
               Cancel
             </button>
             <button id="btn-claim-submit" class="btn btn-primary" type="submit">
-              Submit claim
+              Submit report
             </button>
           </div>
         </form>
