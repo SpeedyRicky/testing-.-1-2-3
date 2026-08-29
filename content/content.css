@@ -161,6 +161,9 @@
   width: 7px !important;
   height: 7px !important;
   border-radius: 50% !important;
+  background: rgba(250, 246, 237, 0.6) !important;
+}
+#clipmarginal-unhide-btn.clipmarginal-unhide-recording::before {
   background: #e2555f !important;
   animation: clipmarginal-recording-pulse-dot 1.4s ease-in-out infinite !important;
 }

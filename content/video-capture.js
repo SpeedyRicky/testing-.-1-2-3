@@ -41,7 +41,7 @@
   let button = null;
   let hideBtn = null;
   let unhideBtn = null;
-  let hiddenWhileRecording = false;
+  let buttonHidden = false;
   let activeVideo = null;
   let capturing = false;
   let startSeconds = 0;
@@ -181,17 +181,19 @@
       button.textContent = label === "audio" ? "🎧 Clip audio" : "🎬 Clip video";
       button.classList.remove("recording");
     }
+    updateUnhideButtonLabel();
   }
 
-  // ---------- Hide the recording indicator while capturing ----------
-  // Some people don't want the record/stop button visible in a screen
-  // recording or a screenshot of the page while a clip is being timed.
-  // Hiding it doesn't pause or affect the capture itself - startSeconds
-  // and the auto-stop timer keep running exactly as if nothing changed.
-  // A translucent "Unhide" pill stays fixed to the bottom of the
-  // viewport (not tied to the video's position) the whole time, so it's
-  // always reachable no matter where the video is or how the page is
-  // scrolled.
+  // ---------- Hide/unhide the Clip video / Stop button ----------
+  // A "Hide" button sits next to the Clip video button at all times -
+  // idle or mid-recording - for anyone who doesn't want it visible on
+  // screen (a screen recording, a screenshot, or just personal
+  // preference). Hiding it never pauses or affects an in-progress
+  // capture: startSeconds and the auto-stop timer keep running exactly
+  // as if nothing changed. A translucent "Unhide" pill stays fixed to
+  // the bottom of the viewport (not tied to the video's position) the
+  // whole time it's hidden, so it's always reachable no matter where
+  // the video is or how the page is scrolled.
 
   function createHideButton() {
     if (hideBtn) {
@@ -202,7 +204,7 @@
     hideBtn.id = HIDE_BUTTON_ID;
     hideBtn.type = "button";
     hideBtn.textContent = "Hide";
-    hideBtn.setAttribute("aria-label", "Hide the recording indicator while this clip records");
+    hideBtn.setAttribute("aria-label", "Hide the Clip video button");
 
     hideBtn.addEventListener(
       "mousedown",
@@ -216,7 +218,7 @@
     hideBtn.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      setRecordingHidden(true);
+      setButtonHidden(true);
     });
 
     document.documentElement.appendChild(hideBtn);
@@ -235,31 +237,30 @@
 
   function createUnhideButton() {
     if (unhideBtn) {
-      return;
-    }
+      document.documentElement.appendChild(unhideBtn);
+    } else {
+      unhideBtn = document.createElement("button");
+      unhideBtn.id = UNHIDE_BUTTON_ID;
+      unhideBtn.type = "button";
 
-    unhideBtn = document.createElement("button");
-    unhideBtn.id = UNHIDE_BUTTON_ID;
-    unhideBtn.type = "button";
-    unhideBtn.textContent = "Unhide recording";
-    unhideBtn.setAttribute("aria-label", "Show the hidden recording indicator");
+      unhideBtn.addEventListener(
+        "mousedown",
+        (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        },
+        true
+      );
 
-    unhideBtn.addEventListener(
-      "mousedown",
-      (event) => {
+      unhideBtn.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();
-      },
-      true
-    );
+        setButtonHidden(false);
+      });
 
-    unhideBtn.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      setRecordingHidden(false);
-    });
-
-    document.documentElement.appendChild(unhideBtn);
+      document.documentElement.appendChild(unhideBtn);
+    }
+    updateUnhideButtonLabel();
   }
 
   function removeUnhideButton() {
@@ -272,17 +273,26 @@
     unhideBtn = null;
   }
 
-  function setRecordingHidden(next) {
-    hiddenWhileRecording = next;
+  // The pill's own label/style reflects whether a capture is actually
+  // running while hidden, since "Unhide recording" would be misleading
+  // if the button was hidden while merely idle.
+  function updateUnhideButtonLabel() {
+    if (!unhideBtn) {
+      return;
+    }
+    unhideBtn.textContent = capturing ? "Unhide recording" : "Unhide";
+    unhideBtn.setAttribute(
+      "aria-label",
+      capturing ? "Show the hidden recording indicator" : "Show the hidden Clip video button"
+    );
+    unhideBtn.classList.toggle("clipmarginal-unhide-recording", capturing);
+  }
+
+  function setButtonHidden(next) {
+    buttonHidden = next;
 
     if (button) {
       button.classList.toggle("clipmarginal-recording-hidden", next);
-    }
-
-    if (!capturing) {
-      removeHideButton();
-      removeUnhideButton();
-      return;
     }
 
     if (next) {
@@ -298,12 +308,7 @@
     capturing = false;
     clearTimeout(autoStopTimer);
     autoStopTimer = null;
-    if (button) {
-      button.classList.remove("clipmarginal-recording-hidden");
-    }
-    hiddenWhileRecording = false;
-    removeHideButton();
-    removeUnhideButton();
+    updateUnhideButtonLabel();
     renderButtonLabel();
   }
 
@@ -373,7 +378,6 @@
     capturing = true;
     startSeconds = activeVideo.currentTime || 0;
     renderButtonLabel();
-    createHideButton();
 
     // Auto-stop at the max clip length so a forgotten "recording" state
     // can't silently grow into an invalid (too-long) clip.
@@ -416,12 +420,19 @@
     });
 
     document.documentElement.appendChild(button);
+    button.classList.toggle("clipmarginal-recording-hidden", buttonHidden);
+
+    if (buttonHidden) {
+      createUnhideButton();
+    } else {
+      createHideButton();
+    }
   }
 
   function removeButton() {
     removeHideButton();
     removeUnhideButton();
-    hiddenWhileRecording = false;
+    buttonHidden = false;
 
     if (!button) {
       return;
