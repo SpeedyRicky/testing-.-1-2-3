@@ -103,9 +103,52 @@
             >
               Create an account
             </button>
+            <button
+              id="btn-forgot-password"
+              class="btn-link"
+              type="button"
+            >
+              Forgot password?
+            </button>
             <p id="auth-error" class="message error hidden" role="alert"></p>
             <p
               id="auth-status"
+              class="message success hidden"
+              role="status"
+            ></p>
+          </form>
+          <form id="forgot-password-form" class="hidden">
+            <div class="field">
+              <label for="forgot-email">Email</label>
+              <input
+                id="forgot-email"
+                type="email"
+                autocomplete="email"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <p class="muted">
+              We'll email you a link to reset your password. Open it, set a
+              new password there, then come back here and log in with it.
+            </p>
+            <button
+              id="btn-send-reset"
+              class="btn btn-primary btn-full"
+              type="submit"
+            >
+              Send reset link
+            </button>
+            <button
+              id="btn-back-to-login"
+              class="btn btn-secondary btn-full"
+              type="button"
+            >
+              Back to log in
+            </button>
+            <p id="forgot-error" class="message error hidden" role="alert"></p>
+            <p
+              id="forgot-status"
               class="message success hidden"
               role="status"
             ></p>

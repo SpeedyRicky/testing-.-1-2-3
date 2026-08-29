@@ -166,6 +166,51 @@ $("btn-signup").addEventListener("click", () => {
   $("signup-username-field").classList.toggle("hidden", !isSignupMode);
   $("btn-login").textContent = isSignupMode ? "Create account" : "Log in";
   $("btn-signup").textContent = isSignupMode ? "Back to log in" : "Sign up instead";
+  $("btn-forgot-password").classList.toggle("hidden", isSignupMode);
+});
+
+// ---------- Forgot password ----------
+// The reset link opens a ClipRoots web page (not the extension - a
+// browser extension has no way to receive a page it didn't open), where
+// the account's new password is actually set via Supabase's own
+// recovery-session flow. Coming back here to log in with that new
+// password is the same sign-in this form always handled.
+$("btn-forgot-password").addEventListener("click", () => {
+  $("auth-form").classList.add("hidden");
+  $("forgot-password-form").classList.remove("hidden");
+  $("forgot-error").classList.add("hidden");
+  $("forgot-status").classList.add("hidden");
+});
+
+$("btn-back-to-login").addEventListener("click", () => {
+  $("forgot-password-form").classList.add("hidden");
+  $("auth-form").classList.remove("hidden");
+});
+
+$("forgot-password-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const email = $("forgot-email").value.trim();
+  const errEl = $("forgot-error");
+  const statusEl = $("forgot-status");
+  const submitBtn = $("btn-send-reset");
+  errEl.classList.add("hidden");
+  statusEl.classList.add("hidden");
+  if (!email) return;
+
+  submitBtn.disabled = true;
+  try {
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: webappUrl ? `${webappUrl}/reset-password.html` : undefined
+    });
+    if (error) throw error;
+    statusEl.textContent = "Check your email for a reset link. Open it, set your new password there, then come back here and log in with it.";
+    statusEl.classList.remove("hidden");
+  } catch (e) {
+    errEl.textContent = e.message || "Couldn't send the reset email. Try again.";
+    errEl.classList.remove("hidden");
+  } finally {
+    submitBtn.disabled = false;
+  }
 });
 
 $("auth-form").addEventListener("submit", async (event) => {
