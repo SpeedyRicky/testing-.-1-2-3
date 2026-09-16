@@ -1,0 +1,23 @@
+# Vite's dependency pre-bundling cache. Machine-specific (its hashes cover the
+# local config and lockfile) and regenerated on demand, so committing it adds
+# churn and risks serving a stale cache on another checkout.
+.vite/
+
+# Dependencies and build output — restored by the package manager / build.
+node_modules/
+dist/
+build/
+
+# Local secrets. The extension's real keys belong in the environment, never in
+# the repo: git history is permanent, so a key committed once stays exposed
+# even after it is deleted.
+.env
+.env.*
+!.env.example
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
