@@ -724,6 +724,10 @@ function clipCardHtml(c, showDelete = false, isFavorite = false) {
       <div class="summary-block hidden">
         <strong>Summary</strong>
         <p class="summary-text"></p>
+        <div class="summary-actions hidden">
+          <button class="btn ghost summary-download-btn" type="button">Download summary</button>
+          <button class="btn ghost summary-drive-btn" type="button">Save summary to Drive</button>
+        </div>
       </div>
       <div class="meta-row">
         <span>${escapeHtml(c.source_domain || "")} ${claimBadge}${privateBadge}</span>
@@ -777,6 +781,10 @@ function listCardHtml(group, showDelete = false, isFavorite = false) {
       <div class="summary-block hidden">
         <strong>Summary</strong>
         <p class="summary-text"></p>
+        <div class="summary-actions hidden">
+          <button class="btn ghost summary-download-btn" type="button">Download summary</button>
+          <button class="btn ghost summary-drive-btn" type="button">Save summary to Drive</button>
+        </div>
       </div>
       <div class="meta-row">
         <span>${escapeHtml(domains.join(", "))} ${claimBadge}${privateBadge}</span>
@@ -1140,6 +1148,7 @@ function parseVideoRangeText(text) {
 async function handleSummaryAction(clipCard) {
   const summaryBlock = clipCard.querySelector(".summary-block");
   const summaryText = clipCard.querySelector(".summary-text");
+  const summaryActions = clipCard.querySelector(".summary-actions");
   // A list card nests multiple quotes/video badges - fold them all in so
   // "Summarize note" covers the whole list, not just the first item.
   const quote = [...clipCard.querySelectorAll("blockquote, .video-range-badge")]
@@ -1149,6 +1158,7 @@ async function handleSummaryAction(clipCard) {
   const noteText = `${quote}\n\n${commentary}`.trim();
 
   summaryBlock.classList.remove("hidden");
+  summaryActions.classList.add("hidden");
   if (!noteText) {
     summaryText.textContent = "No text available to summarize.";
     return;
@@ -1163,6 +1173,9 @@ async function handleSummaryAction(clipCard) {
     } else {
       summaryText.textContent = result.text;
     }
+    // Only a real summary is worth exporting - the search-link fallback
+    // below (on failure) isn't one, so those actions stay hidden for it.
+    summaryActions.classList.remove("hidden");
   } catch (err) {
     console.error("ClipRoots: summarization failed", err);
     summaryText.innerHTML = buildSearchFallbackHtml(noteText);
@@ -1252,6 +1265,20 @@ document.addEventListener("click", (event) => {
   if (summaryBtn) {
     const clipCard = summaryBtn.closest(".clip-card");
     if (clipCard) void handleSummaryAction(clipCard);
+    return;
+  }
+
+  const summaryDownloadBtn = event.target.closest(".summary-download-btn");
+  if (summaryDownloadBtn) {
+    const clipCard = summaryDownloadBtn.closest(".clip-card");
+    if (clipCard) downloadSummary(clipCard);
+    return;
+  }
+
+  const summaryDriveBtn = event.target.closest(".summary-drive-btn");
+  if (summaryDriveBtn) {
+    const clipCard = summaryDriveBtn.closest(".clip-card");
+    if (clipCard) void saveSummaryToDrive(clipCard, summaryDriveBtn);
     return;
   }
 
@@ -1442,6 +1469,18 @@ function exportFileName(clipIds) {
   return clipIds.length > 1 ? `cliproots-list-${first}.txt` : `cliproots-${first}.txt`;
 }
 
+function downloadTextFile(filename, text) {
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
 function downloadClips(clipIds) {
   const clips = resolveExportClips(clipIds);
   if (!clips.length) {
@@ -1449,15 +1488,7 @@ function downloadClips(clipIds) {
     return;
   }
 
-  const blob = new Blob([buildClipsExportText(clips)], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = exportFileName(clipIds);
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  downloadTextFile(exportFileName(clipIds), buildClipsExportText(clips));
 }
 
 // chrome.identity.getAuthToken only works once the extension has its
@@ -1532,6 +1563,46 @@ async function saveClipsToDrive(clipIds, triggerBtn) {
     }, 2000);
   } catch (e) {
     alert(e.message || "Couldn't save that clip to Google Drive.");
+    if (triggerBtn) triggerBtn.textContent = originalLabel;
+  } finally {
+    if (triggerBtn) triggerBtn.disabled = false;
+  }
+}
+
+// A generated summary lives only in the card's own DOM (see
+// handleSummaryAction) - there's no clipDataById-style cache for it,
+// so these read the rendered .summary-text directly instead of looking
+// anything up by id.
+function summaryFileName(clipCard) {
+  const id = clipCard.dataset.clipId || clipCard.dataset.listId || "note";
+  return `cliproots-summary-${id}.txt`;
+}
+
+function downloadSummary(clipCard) {
+  const text = clipCard.querySelector(".summary-text")?.textContent?.trim();
+  if (!text) return;
+  downloadTextFile(summaryFileName(clipCard), text);
+}
+
+async function saveSummaryToDrive(clipCard, triggerBtn) {
+  const text = clipCard.querySelector(".summary-text")?.textContent?.trim();
+  if (!text) return;
+
+  const originalLabel = triggerBtn?.textContent;
+  if (triggerBtn) {
+    triggerBtn.disabled = true;
+    triggerBtn.textContent = "Saving…";
+  }
+
+  try {
+    const token = await getGoogleAuthToken();
+    await uploadTextFileToDrive(summaryFileName(clipCard), text, token);
+    if (triggerBtn) triggerBtn.textContent = "Saved ✓";
+    setTimeout(() => {
+      if (triggerBtn) triggerBtn.textContent = originalLabel;
+    }, 2000);
+  } catch (e) {
+    alert(e.message || "Couldn't save that summary to Google Drive.");
     if (triggerBtn) triggerBtn.textContent = originalLabel;
   } finally {
     if (triggerBtn) triggerBtn.disabled = false;
