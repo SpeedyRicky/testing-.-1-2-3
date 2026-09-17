@@ -717,6 +717,8 @@ function clipCardHtml(c, showDelete = false, isFavorite = false) {
         <button class="btn ghost favorite-btn" type="button">${isFavorite ? 'Unfavorite' : 'Favorite'}</button>
         <button class="btn ghost report-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Report</button>
         ${showDelete && c.is_private ? `<button class="btn ghost share-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Share</button>` : ''}
+        ${showDelete ? `<button class="btn ghost download-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Download</button>` : ''}
+        ${showDelete ? `<button class="btn ghost drive-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Save to Drive</button>` : ''}
         ${showDelete ? '<button class="btn ghost delete-btn" type="button">Delete note</button>' : ''}
       </div>
       <div class="summary-block hidden">
@@ -768,6 +770,8 @@ function listCardHtml(group, showDelete = false, isFavorite = false) {
         <button class="btn ghost summary-btn" type="button">Summarize note</button>
         <button class="btn ghost favorite-btn" type="button">${isFavorite ? 'Unfavorite' : 'Favorite'}</button>
         ${showDelete && first.is_private ? `<button class="btn ghost share-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Share</button>` : ''}
+        ${showDelete ? `<button class="btn ghost download-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Download</button>` : ''}
+        ${showDelete ? `<button class="btn ghost drive-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Save to Drive</button>` : ''}
         ${showDelete ? '<button class="btn ghost delete-btn" type="button">Delete note</button>' : ''}
       </div>
       <div class="summary-block hidden">
@@ -805,7 +809,14 @@ function groupFeedRows(rows) {
   return groups;
 }
 
+// Every clip row that's ever rendered gets cached here by id, so the
+// Download/Save-to-Drive actions (which only have a clip id to work
+// from once the user clicks, not the full row) can look up the text to
+// export without a second network round-trip.
+const clipDataById = new Map();
+
 function renderFeedRows(rows, showDeleteFn, isFavoriteFn) {
+  rows.forEach((row) => clipDataById.set(row.id, row));
   return groupFeedRows(rows)
     .map((group) => group.isList
       ? listCardHtml(group, showDeleteFn(group.items[0]), isFavoriteFn(group.listId))
@@ -1271,6 +1282,26 @@ document.addEventListener("click", (event) => {
       .map((id) => id.trim())
       .filter(Boolean);
     if (clipIds.length) void openShareModal(clipIds);
+    return;
+  }
+
+  const downloadBtn = event.target.closest(".download-btn");
+  if (downloadBtn) {
+    const clipIds = (downloadBtn.dataset.clipId || downloadBtn.dataset.clipIds || "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    if (clipIds.length) downloadClips(clipIds);
+    return;
+  }
+
+  const driveBtn = event.target.closest(".drive-btn");
+  if (driveBtn) {
+    const clipIds = (driveBtn.dataset.clipId || driveBtn.dataset.clipIds || "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    if (clipIds.length) void saveClipsToDrive(clipIds, driveBtn);
   }
 });
 
@@ -1367,6 +1398,145 @@ $("claim-form").addEventListener("submit", async (event) => {
     submitBtn.disabled = false;
   }
 });
+
+// ---------- Download a clip / save it to Google Drive ----------
+// Same rule the video/audio capture already follows: never touch the
+// underlying media (see content/video-capture.js's header comment) -
+// only the clip's own text (quote or timestamp range, your commentary,
+// the source link) ever gets exported, downloaded, or uploaded. A text
+// file is also the one format that's genuinely portable to Drive
+// without re-hosting anyone's copyrighted video/audio.
+function formatClipForExport(c) {
+  const author = c.author_username ? `@${c.author_username}` : (c.author_display_name || "Unknown");
+  const date = c.created_at ? new Date(c.created_at).toLocaleString() : "";
+  const lines = [`${author} · ${date}`];
+
+  if (c.clip_type === "video") {
+    lines.push(`Video clip: ${formatClipTime(c.video_start_seconds)}–${formatClipTime(c.video_end_seconds)}`);
+    lines.push(`Watch: ${videoSourceLink(c)}`);
+  } else {
+    lines.push(`"${c.quoted_text || ""}"`);
+  }
+
+  if (c.commentary) {
+    lines.push("");
+    lines.push(c.commentary);
+  }
+
+  lines.push("");
+  lines.push(`Source: ${c.source_url || ""}`);
+  return lines.join("\n");
+}
+
+function buildClipsExportText(clips) {
+  const header = `ClipRoots — ${clips.length} clip${clips.length === 1 ? "" : "s"}\n${"=".repeat(32)}\n\n`;
+  return header + clips.map(formatClipForExport).join(`\n\n${"-".repeat(32)}\n\n`);
+}
+
+function resolveExportClips(clipIds) {
+  return clipIds.map((id) => clipDataById.get(id)).filter(Boolean);
+}
+
+function exportFileName(clipIds) {
+  const first = clipIds[0] || "clip";
+  return clipIds.length > 1 ? `cliproots-list-${first}.txt` : `cliproots-${first}.txt`;
+}
+
+function downloadClips(clipIds) {
+  const clips = resolveExportClips(clipIds);
+  if (!clips.length) {
+    alert("Couldn't find that clip to download. Try reloading the list.");
+    return;
+  }
+
+  const blob = new Blob([buildClipsExportText(clips)], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = exportFileName(clipIds);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+// chrome.identity.getAuthToken only works once the extension has its
+// own OAuth client_id in manifest.json's oauth2 block (see there) -
+// until that's filled in with a real Google Cloud client ID, this
+// rejects with a clear message instead of a confusing browser error.
+function getGoogleAuthToken() {
+  return new Promise((resolve, reject) => {
+    if (!chrome?.identity?.getAuthToken) {
+      reject(new Error("Google Drive isn't available in this browser."));
+      return;
+    }
+    chrome.identity.getAuthToken({ interactive: true }, (token) => {
+      if (chrome.runtime.lastError || !token) {
+        reject(new Error(chrome.runtime.lastError?.message || "Couldn't connect to Google Drive."));
+        return;
+      }
+      resolve(token);
+    });
+  });
+}
+
+// Minimal, non-resumable multipart upload to the Drive v3 API - plenty
+// for a small text export. Uses the drive.file scope (see manifest.json),
+// which only ever grants access to files this app itself created, never
+// the rest of the user's Drive.
+async function uploadTextFileToDrive(filename, text, token) {
+  const boundary = `cliproots-${Math.random().toString(36).slice(2)}`;
+  const body =
+    `--${boundary}\r\n` +
+    `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+    `${JSON.stringify({ name: filename, mimeType: "text/plain" })}\r\n` +
+    `--${boundary}\r\n` +
+    `Content-Type: text/plain; charset=UTF-8\r\n\r\n` +
+    `${text}\r\n` +
+    `--${boundary}--`;
+
+  const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": `multipart/related; boundary=${boundary}`
+    },
+    body
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`Google Drive upload failed (${response.status}). ${detail.slice(0, 200)}`);
+  }
+}
+
+async function saveClipsToDrive(clipIds, triggerBtn) {
+  const clips = resolveExportClips(clipIds);
+  if (!clips.length) {
+    alert("Couldn't find that clip to save. Try reloading the list.");
+    return;
+  }
+
+  const originalLabel = triggerBtn?.textContent;
+  if (triggerBtn) {
+    triggerBtn.disabled = true;
+    triggerBtn.textContent = "Saving…";
+  }
+
+  try {
+    const token = await getGoogleAuthToken();
+    await uploadTextFileToDrive(exportFileName(clipIds), buildClipsExportText(clips), token);
+    if (triggerBtn) triggerBtn.textContent = "Saved ✓";
+    setTimeout(() => {
+      if (triggerBtn) triggerBtn.textContent = originalLabel;
+    }, 2000);
+  } catch (e) {
+    alert(e.message || "Couldn't save that clip to Google Drive.");
+    if (triggerBtn) triggerBtn.textContent = originalLabel;
+  } finally {
+    if (triggerBtn) triggerBtn.disabled = false;
+  }
+}
 
 // ---------- Share a private clip with mutual followers ----------
 let shareTargetClipIds = [];
