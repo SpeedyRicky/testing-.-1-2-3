@@ -160,6 +160,10 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", () => goTo(btn.dataset.tab));
 });
 
+$("compose-help")?.addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("welcome/welcome.html") });
+});
+
 // ---------- Auth ----------
 $("btn-signup").addEventListener("click", () => {
   isSignupMode = !isSignupMode;
@@ -699,6 +703,40 @@ function clipQuoteBlock(c) {
   return `${thumbnailBlock}${quoteBlock}`;
 }
 
+function tagChipsHtml(c, showDelete) {
+  if (!showDelete) {
+    // Organizing-by-tag is an owner-only feature, same scope as
+    // Delete/Download/Share - someone else's clip isn't yours to tag.
+    return "";
+  }
+  const tags = Array.isArray(c.tags) ? c.tags : [];
+  const chips = tags.map((tag) => `
+    <span class="tag-chip" data-tag="${escapeHtml(tag)}">
+      ${escapeHtml(tag)}
+      <button class="tag-remove" type="button" data-clip-id="${escapeHtml(c.id)}" data-tag="${escapeHtml(tag)}" aria-label="Remove tag ${escapeHtml(tag)}">×</button>
+    </span>`).join("");
+  return `
+    <div class="tag-row" data-clip-id="${escapeHtml(c.id)}">
+      ${chips}
+      <button class="btn ghost btn-small add-tag-btn" type="button" data-clip-id="${escapeHtml(c.id)}">+ Tag</button>
+    </div>`;
+}
+
+// Folders are a single value per clip (unlike tags, which can be many) -
+// one "which folder is this in" chip, not a list of them.
+function folderRowHtml(c, showDelete) {
+  if (!showDelete) return "";
+  const folder = c.folder || "";
+  return `
+    <div class="folder-row" data-clip-id="${escapeHtml(c.id)}">
+      ${folder
+        ? `<span class="folder-chip" data-folder="${escapeHtml(folder)}">📁 ${escapeHtml(folder)}
+            <button class="folder-clear" type="button" data-clip-id="${escapeHtml(c.id)}" aria-label="Remove from folder">×</button>
+          </span>`
+        : `<button class="btn ghost btn-small set-folder-btn" type="button" data-clip-id="${escapeHtml(c.id)}">📁 Set folder</button>`}
+    </div>`;
+}
+
 function clipCardHtml(c, showDelete = false, isFavorite = false) {
   const claimBadge = c.claim_status === "filed"
     ? '<span class="claim-badge">Claim filed</span>' : "";
@@ -712,18 +750,29 @@ function clipCardHtml(c, showDelete = false, isFavorite = false) {
       </div>
       ${clipQuoteBlock(c)}
       ${c.commentary ? `<div class="commentary">${escapeHtml(c.commentary)}</div>` : ""}
+      ${tagChipsHtml(c, showDelete)}
+      ${folderRowHtml(c, showDelete)}
       <div class="card-actions">
         <button class="btn ghost summary-btn" type="button">Summarize note</button>
         <button class="btn ghost favorite-btn" type="button">${isFavorite ? 'Unfavorite' : 'Favorite'}</button>
+        <button class="btn ghost cite-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Cite</button>
         <button class="btn ghost report-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Report</button>
         ${showDelete && c.is_private ? `<button class="btn ghost share-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Share</button>` : ''}
         ${showDelete ? `<button class="btn ghost download-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Download</button>` : ''}
         ${showDelete ? `<button class="btn ghost drive-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Save to Drive</button>` : ''}
+        ${showDelete ? `<button class="btn ghost pdf-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Export PDF</button>` : ''}
+        ${showDelete ? `<button class="btn ghost docs-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Save to Docs</button>` : ''}
+        ${showDelete ? `<button class="btn ghost notion-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Save to Notion</button>` : ''}
         ${showDelete ? '<button class="btn ghost delete-btn" type="button">Delete note</button>' : ''}
       </div>
+      <div class="cite-block hidden"></div>
       <div class="summary-block hidden">
         <strong>Summary</strong>
         <p class="summary-text"></p>
+        <div class="summary-actions hidden">
+          <button class="btn ghost summary-download-btn" type="button">Download summary</button>
+          <button class="btn ghost summary-drive-btn" type="button">Save summary to Drive</button>
+        </div>
       </div>
       <div class="meta-row">
         <span>${escapeHtml(c.source_domain || "")} ${claimBadge}${privateBadge}</span>
@@ -772,11 +821,17 @@ function listCardHtml(group, showDelete = false, isFavorite = false) {
         ${showDelete && first.is_private ? `<button class="btn ghost share-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Share</button>` : ''}
         ${showDelete ? `<button class="btn ghost download-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Download</button>` : ''}
         ${showDelete ? `<button class="btn ghost drive-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Save to Drive</button>` : ''}
+        ${showDelete ? `<button class="btn ghost pdf-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Export PDF</button>` : ''}
+        ${showDelete ? `<button class="btn ghost docs-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Save to Docs</button>` : ''}
         ${showDelete ? '<button class="btn ghost delete-btn" type="button">Delete note</button>' : ''}
       </div>
       <div class="summary-block hidden">
         <strong>Summary</strong>
         <p class="summary-text"></p>
+        <div class="summary-actions hidden">
+          <button class="btn ghost summary-download-btn" type="button">Download summary</button>
+          <button class="btn ghost summary-drive-btn" type="button">Save summary to Drive</button>
+        </div>
       </div>
       <div class="meta-row">
         <span>${escapeHtml(domains.join(", "))} ${claimBadge}${privateBadge}</span>
@@ -910,6 +965,75 @@ async function loadFeed(searchTerm = "") {
 }
 
 // ---------- Me ----------
+let lastMeClipsData = [];
+
+// Filtering by tag is done client-side against whatever loadMe() just
+// fetched (already capped at 50 rows) rather than a second query -
+// there's no need to round-trip to Supabase just to narrow an array
+// that's already sitting in memory.
+function refreshMeTagFilterOptions() {
+  const select = $("me-tag-filter");
+  const tagRow = $("me-tag-filter-row");
+  if (!select || !tagRow) return;
+
+  const allTags = new Set();
+  lastMeClipsData.forEach((c) => (Array.isArray(c.tags) ? c.tags : []).forEach((t) => allTags.add(t)));
+  const sorted = [...allTags].sort((a, b) => a.localeCompare(b));
+
+  const current = select.value;
+  select.innerHTML = `<option value="">All tags</option>` +
+    sorted.map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+  select.value = sorted.includes(current) ? current : "";
+  updateMeFilterRowVisibility();
+}
+
+function refreshMeFolderFilterOptions() {
+  const select = $("me-folder-filter");
+  if (!select) return;
+
+  const allFolders = new Set();
+  lastMeClipsData.forEach((c) => { if (c.folder) allFolders.add(c.folder); });
+  const sorted = [...allFolders].sort((a, b) => a.localeCompare(b));
+
+  const current = select.value;
+  select.innerHTML = `<option value="">All folders</option>` +
+    sorted.map((f) => `<option value="${escapeHtml(f)}">${escapeHtml(f)}</option>`).join("");
+  select.value = sorted.includes(current) ? current : "";
+  updateMeFilterRowVisibility();
+}
+
+// The shared filter row only needs to show once there's at least one
+// tag or folder to filter by - otherwise it's two empty dropdowns.
+function updateMeFilterRowVisibility() {
+  const row = $("me-tag-filter-row");
+  if (!row) return;
+  const hasTags = ($("me-tag-filter")?.options.length || 1) > 1;
+  const hasFolders = ($("me-folder-filter")?.options.length || 1) > 1;
+  row.classList.toggle("hidden", !hasTags && !hasFolders);
+}
+
+function renderMeClips() {
+  if (!lastMeClipsData.length) {
+    $("me-clips").innerHTML = '<p class="muted">You haven\'t published a clip yet.</p>';
+    return;
+  }
+
+  const activeTag = $("me-tag-filter")?.value || "";
+  const activeFolder = $("me-folder-filter")?.value || "";
+  const filtered = lastMeClipsData.filter((c) => {
+    if (activeTag && !(Array.isArray(c.tags) && c.tags.includes(activeTag))) return false;
+    if (activeFolder && c.folder !== activeFolder) return false;
+    return true;
+  });
+
+  $("me-clips").innerHTML = filtered.length
+    ? renderFeedRows(filtered, () => true, (id) => isClipFavorited(id))
+    : '<p class="muted">No clips match this filter.</p>';
+}
+
+$("me-tag-filter")?.addEventListener("change", renderMeClips);
+$("me-folder-filter")?.addEventListener("change", renderMeClips);
+
 async function loadMe(searchTerm = "") {
   if (!currentProfile) await refreshSession();
   $("me-profile").innerHTML = `
@@ -930,9 +1054,10 @@ async function loadMe(searchTerm = "") {
     $("me-clips").innerHTML = `<p class="error">${escapeHtml(error.message)}</p>`;
     return;
   }
-  $("me-clips").innerHTML = data.length
-    ? renderFeedRows(data, () => true, (id) => isClipFavorited(id))
-    : '<p class="muted">You haven\'t published a clip yet.</p>';
+  lastMeClipsData = data || [];
+  refreshMeTagFilterOptions();
+  refreshMeFolderFilterOptions();
+  renderMeClips();
 
   void loadSharedWithMe();
   void loadFollowing();
@@ -1140,6 +1265,7 @@ function parseVideoRangeText(text) {
 async function handleSummaryAction(clipCard) {
   const summaryBlock = clipCard.querySelector(".summary-block");
   const summaryText = clipCard.querySelector(".summary-text");
+  const summaryActions = clipCard.querySelector(".summary-actions");
   // A list card nests multiple quotes/video badges - fold them all in so
   // "Summarize note" covers the whole list, not just the first item.
   const quote = [...clipCard.querySelectorAll("blockquote, .video-range-badge")]
@@ -1149,6 +1275,7 @@ async function handleSummaryAction(clipCard) {
   const noteText = `${quote}\n\n${commentary}`.trim();
 
   summaryBlock.classList.remove("hidden");
+  summaryActions.classList.add("hidden");
   if (!noteText) {
     summaryText.textContent = "No text available to summarize.";
     return;
@@ -1163,6 +1290,9 @@ async function handleSummaryAction(clipCard) {
     } else {
       summaryText.textContent = result.text;
     }
+    // Only a real summary is worth exporting - the search-link fallback
+    // below (on failure) isn't one, so those actions stay hidden for it.
+    summaryActions.classList.remove("hidden");
   } catch (err) {
     console.error("ClipRoots: summarization failed", err);
     summaryText.innerHTML = buildSearchFallbackHtml(noteText);
@@ -1247,11 +1377,204 @@ async function handleDeleteAction(clipCard) {
   }
 }
 
+// ---------- Tags (organize clips) ----------
+// Tags live on the owning clip row itself (clips.tags text[]) - the
+// existing "owners can update their clips" RLS policy already covers
+// writing to it, same as every other field update on this table.
+function normalizeTag(raw) {
+  return (raw || "").trim().slice(0, 40);
+}
+
+async function persistClipTags(clipId, tags) {
+  const { error } = await supabaseClient.from("clips").update({ tags }).eq("id", clipId).eq("user_id", currentUser.id);
+  if (error) throw error;
+  const cached = clipDataById.get(clipId);
+  if (cached) cached.tags = tags;
+}
+
+function renderTagRow(clipCard, clipId, tags) {
+  const row = clipCard.querySelector(`.tag-row[data-clip-id="${CSS.escape(clipId)}"]`);
+  if (!row) return;
+  const chips = tags.map((tag) => `
+    <span class="tag-chip" data-tag="${escapeHtml(tag)}">
+      ${escapeHtml(tag)}
+      <button class="tag-remove" type="button" data-clip-id="${escapeHtml(clipId)}" data-tag="${escapeHtml(tag)}" aria-label="Remove tag ${escapeHtml(tag)}">×</button>
+    </span>`).join("");
+  row.innerHTML = `${chips}<button class="btn ghost btn-small add-tag-btn" type="button" data-clip-id="${escapeHtml(clipId)}">+ Tag</button>`;
+}
+
+async function handleAddTag(clipCard, clipId) {
+  const raw = prompt("Add a tag:");
+  const tag = normalizeTag(raw);
+  if (!tag) return;
+
+  const existing = Array.isArray(clipDataById.get(clipId)?.tags) ? clipDataById.get(clipId).tags : [];
+  if (existing.some((t) => t.toLowerCase() === tag.toLowerCase())) {
+    return;
+  }
+  const nextTags = [...existing, tag];
+  try {
+    await persistClipTags(clipId, nextTags);
+    renderTagRow(clipCard, clipId, nextTags);
+    refreshMeTagFilterOptions();
+  } catch (err) {
+    alert(err?.message || "Couldn't add that tag.");
+  }
+}
+
+async function handleRemoveTag(clipCard, clipId, tag) {
+  const existing = Array.isArray(clipDataById.get(clipId)?.tags) ? clipDataById.get(clipId).tags : [];
+  const nextTags = existing.filter((t) => t !== tag);
+  try {
+    await persistClipTags(clipId, nextTags);
+    renderTagRow(clipCard, clipId, nextTags);
+    refreshMeTagFilterOptions();
+  } catch (err) {
+    alert(err?.message || "Couldn't remove that tag.");
+  }
+}
+
+// ---------- Folders (one per clip, unlike tags) ----------
+async function persistClipFolder(clipId, folder) {
+  const { error } = await supabaseClient.from("clips").update({ folder }).eq("id", clipId).eq("user_id", currentUser.id);
+  if (error) throw error;
+  const cached = clipDataById.get(clipId);
+  if (cached) cached.folder = folder;
+}
+
+function renderFolderRow(clipCard, clipId, folder) {
+  const row = clipCard.querySelector(`.folder-row[data-clip-id="${CSS.escape(clipId)}"]`);
+  if (!row) return;
+  row.innerHTML = folder
+    ? `<span class="folder-chip" data-folder="${escapeHtml(folder)}">📁 ${escapeHtml(folder)}
+        <button class="folder-clear" type="button" data-clip-id="${escapeHtml(clipId)}" aria-label="Remove from folder">×</button>
+      </span>`
+    : `<button class="btn ghost btn-small set-folder-btn" type="button" data-clip-id="${escapeHtml(clipId)}">📁 Set folder</button>`;
+}
+
+async function handleSetFolder(clipCard, clipId) {
+  const raw = prompt("Move this clip to which folder?");
+  const folder = normalizeTag(raw);
+  if (!folder) return;
+  try {
+    await persistClipFolder(clipId, folder);
+    renderFolderRow(clipCard, clipId, folder);
+    refreshMeFolderFilterOptions();
+  } catch (err) {
+    alert(err?.message || "Couldn't set that folder.");
+  }
+}
+
+async function handleClearFolder(clipCard, clipId) {
+  try {
+    await persistClipFolder(clipId, null);
+    renderFolderRow(clipCard, clipId, null);
+    refreshMeFolderFilterOptions();
+  } catch (err) {
+    alert(err?.message || "Couldn't clear that folder.");
+  }
+}
+
+// ---------- Citations (APA / MLA / Chicago) ----------
+// ClipRoots only ever has a page title, site/domain, URL, and the date
+// the clip was made - never the original author or publish date (most
+// pages don't expose that reliably, and guessing one would be a real
+// citation error, not a convenience). Each format below is the
+// standard, correct "no known author" form for a web page - a complete
+// citation, just not one with an author byline, same as any citation
+// tool produces when a source genuinely doesn't list one.
+function formatCitationDate(dateObj, style) {
+  if (style === "apa") {
+    return dateObj.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  }
+  if (style === "mla") {
+    return dateObj.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
+  }
+  return dateObj.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+
+function buildCitations(c) {
+  const title = (c.source_title || "Untitled page").replace(/\.$/, "");
+  const site = c.source_domain || "";
+  const url = c.source_url || "";
+  const accessed = formatCitationDate(c.created_at ? new Date(c.created_at) : new Date(), "apa");
+  const accessedMla = formatCitationDate(c.created_at ? new Date(c.created_at) : new Date(), "mla");
+  const accessedChicago = formatCitationDate(c.created_at ? new Date(c.created_at) : new Date(), "chicago");
+
+  return {
+    apa: `${title}. (n.d.). ${site}. Retrieved ${accessed}, from ${url}`,
+    mla: `"${title}." ${site}, ${url}. Accessed ${accessedMla}.`,
+    chicago: `"${title}." ${site}. Accessed ${accessedChicago}. ${url}.`
+  };
+}
+
+function citeBlockHtml(citations) {
+  const row = (label, cls, text) => `
+    <div class="citation-row">
+      <div class="citation-label">${label}</div>
+      <p class="citation-text">${escapeHtml(text)}</p>
+      <button class="btn ghost btn-small citation-copy-btn ${cls}" type="button" data-text="${escapeHtml(text)}">Copy</button>
+    </div>`;
+  return `
+    <strong>Cite this clip</strong>
+    <p class="citation-note">No author/publish date is available for this page, so these use the standard "no known author" form for each style - still a complete, correctly formatted citation.</p>
+    ${row("APA", "citation-apa", citations.apa)}
+    ${row("MLA", "citation-mla", citations.mla)}
+    ${row("Chicago", "citation-chicago", citations.chicago)}
+  `;
+}
+
+function handleCite(clipCard, clipId) {
+  const citeBlock = clipCard.querySelector(".cite-block");
+  if (!citeBlock) return;
+
+  if (!citeBlock.classList.contains("hidden")) {
+    citeBlock.classList.add("hidden");
+    return;
+  }
+
+  const clip = clipDataById.get(clipId);
+  if (!clip) {
+    alert("Couldn't find that clip to cite. Try reloading the list.");
+    return;
+  }
+
+  citeBlock.innerHTML = citeBlockHtml(buildCitations(clip));
+  citeBlock.classList.remove("hidden");
+}
+
+async function handleCopyCitation(button) {
+  const text = button.dataset.text || "";
+  if (!text) return;
+  const original = button.textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    button.textContent = "Copied ✓";
+  } catch {
+    button.textContent = "Couldn't copy";
+  }
+  setTimeout(() => { button.textContent = original; }, 1600);
+}
+
 document.addEventListener("click", (event) => {
   const summaryBtn = event.target.closest(".summary-btn");
   if (summaryBtn) {
     const clipCard = summaryBtn.closest(".clip-card");
     if (clipCard) void handleSummaryAction(clipCard);
+    return;
+  }
+
+  const summaryDownloadBtn = event.target.closest(".summary-download-btn");
+  if (summaryDownloadBtn) {
+    const clipCard = summaryDownloadBtn.closest(".clip-card");
+    if (clipCard) downloadSummary(clipCard);
+    return;
+  }
+
+  const summaryDriveBtn = event.target.closest(".summary-drive-btn");
+  if (summaryDriveBtn) {
+    const clipCard = summaryDriveBtn.closest(".clip-card");
+    if (clipCard) void saveSummaryToDrive(clipCard, summaryDriveBtn);
     return;
   }
 
@@ -1266,6 +1589,49 @@ document.addEventListener("click", (event) => {
   if (deleteBtn) {
     const clipCard = deleteBtn.closest(".clip-card");
     if (clipCard) void handleDeleteAction(clipCard);
+    return;
+  }
+
+  const addTagBtn = event.target.closest(".add-tag-btn");
+  if (addTagBtn) {
+    const clipCard = addTagBtn.closest(".clip-card");
+    if (clipCard && addTagBtn.dataset.clipId) void handleAddTag(clipCard, addTagBtn.dataset.clipId);
+    return;
+  }
+
+  const tagRemoveBtn = event.target.closest(".tag-remove");
+  if (tagRemoveBtn) {
+    const clipCard = tagRemoveBtn.closest(".clip-card");
+    if (clipCard && tagRemoveBtn.dataset.clipId) {
+      void handleRemoveTag(clipCard, tagRemoveBtn.dataset.clipId, tagRemoveBtn.dataset.tag || "");
+    }
+    return;
+  }
+
+  const setFolderBtn = event.target.closest(".set-folder-btn");
+  if (setFolderBtn) {
+    const clipCard = setFolderBtn.closest(".clip-card");
+    if (clipCard && setFolderBtn.dataset.clipId) void handleSetFolder(clipCard, setFolderBtn.dataset.clipId);
+    return;
+  }
+
+  const folderClearBtn = event.target.closest(".folder-clear");
+  if (folderClearBtn) {
+    const clipCard = folderClearBtn.closest(".clip-card");
+    if (clipCard && folderClearBtn.dataset.clipId) void handleClearFolder(clipCard, folderClearBtn.dataset.clipId);
+    return;
+  }
+
+  const citeBtn = event.target.closest(".cite-btn");
+  if (citeBtn) {
+    const clipCard = citeBtn.closest(".clip-card");
+    if (clipCard && citeBtn.dataset.clipId) handleCite(clipCard, citeBtn.dataset.clipId);
+    return;
+  }
+
+  const citationCopyBtn = event.target.closest(".citation-copy-btn");
+  if (citationCopyBtn) {
+    void handleCopyCitation(citationCopyBtn);
     return;
   }
 
@@ -1302,6 +1668,36 @@ document.addEventListener("click", (event) => {
       .map((id) => id.trim())
       .filter(Boolean);
     if (clipIds.length) void saveClipsToDrive(clipIds, driveBtn);
+    return;
+  }
+
+  const pdfBtn = event.target.closest(".pdf-btn");
+  if (pdfBtn) {
+    const clipIds = (pdfBtn.dataset.clipId || pdfBtn.dataset.clipIds || "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    if (clipIds.length) exportClipsAsPdf(clipIds);
+    return;
+  }
+
+  const docsBtn = event.target.closest(".docs-btn");
+  if (docsBtn) {
+    const clipIds = (docsBtn.dataset.clipId || docsBtn.dataset.clipIds || "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    if (clipIds.length) void exportClipsToGoogleDocs(clipIds, docsBtn);
+    return;
+  }
+
+  const notionBtn = event.target.closest(".notion-btn");
+  if (notionBtn) {
+    const clipIds = (notionBtn.dataset.clipId || notionBtn.dataset.clipIds || "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    if (clipIds.length) void saveClipsToNotion(clipIds, notionBtn);
   }
 });
 
@@ -1442,6 +1838,238 @@ function exportFileName(clipIds) {
   return clipIds.length > 1 ? `cliproots-list-${first}.txt` : `cliproots-${first}.txt`;
 }
 
+// Same content as buildClipsExportText(), just marked up for PDF
+// (browser print-to-PDF, no extra library needed) and Google Docs
+// (Drive's own HTML-to-Doc conversion) - still only ever the clip's
+// text, never the underlying video/audio.
+function formatClipForExportHtml(c) {
+  const author = c.author_username ? `@${escapeHtml(c.author_username)}` : escapeHtml(c.author_display_name || "Unknown");
+  const date = c.created_at ? new Date(c.created_at).toLocaleString() : "";
+  const body = c.clip_type === "video"
+    ? `<p><strong>Video clip:</strong> ${escapeHtml(formatClipTime(c.video_start_seconds))}–${escapeHtml(formatClipTime(c.video_end_seconds))}<br><a href="${escapeHtml(videoSourceLink(c))}">${escapeHtml(videoSourceLink(c))}</a></p>`
+    : `<blockquote>${escapeHtml(c.quoted_text || "")}</blockquote>`;
+  const commentary = c.commentary ? `<p>${escapeHtml(c.commentary)}</p>` : "";
+  return `
+    <div class="clip">
+      <p class="meta">${author} · ${escapeHtml(date)}</p>
+      ${body}
+      ${commentary}
+      <p class="source">Source: <a href="${escapeHtml(c.source_url || "#")}">${escapeHtml(c.source_url || "")}</a></p>
+    </div>`;
+}
+
+function buildClipsExportHtml(clips) {
+  const title = `ClipRoots — ${clips.length} clip${clips.length === 1 ? "" : "s"}`;
+  const body = clips.map(formatClipForExportHtml).join("<hr>");
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>${escapeHtml(title)}</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 680px; margin: 40px auto; color: #211e17; }
+  h1 { font-size: 20px; }
+  blockquote { border-left: 3px solid #9c7233; margin: 12px 0; padding: 2px 16px; font-style: italic; }
+  .meta, .source { color: #6b6656; font-size: 12.5px; }
+  hr { border: none; border-top: 1px solid #e5e0d5; margin: 24px 0; }
+</style>
+</head>
+<body>
+<h1>${escapeHtml(title)}</h1>
+${body}
+</body>
+</html>`;
+}
+
+function exportClipsAsPdf(clipIds) {
+  const clips = resolveExportClips(clipIds);
+  if (!clips.length) {
+    alert("Couldn't find that clip to export. Try reloading the list.");
+    return;
+  }
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    alert("Your browser blocked the export window - allow pop-ups for ClipRoots and try again.");
+    return;
+  }
+  printWindow.document.write(buildClipsExportHtml(clips));
+  printWindow.document.close();
+  printWindow.onload = () => printWindow.print();
+}
+
+// Drive's files.create endpoint converts an uploaded text/html body into
+// a native Google Doc when the target metadata.mimeType is the
+// Workspace document type - still the drive.file scope, still just
+// creating a file this app itself made.
+async function uploadHtmlAsGoogleDoc(filename, html, token) {
+  const boundary = `cliproots-${Math.random().toString(36).slice(2)}`;
+  const body =
+    `--${boundary}\r\n` +
+    `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+    `${JSON.stringify({ name: filename, mimeType: "application/vnd.google-apps.document" })}\r\n` +
+    `--${boundary}\r\n` +
+    `Content-Type: text/html; charset=UTF-8\r\n\r\n` +
+    `${html}\r\n` +
+    `--${boundary}--`;
+
+  const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": `multipart/related; boundary=${boundary}`
+    },
+    body
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`Google Docs export failed (${response.status}). ${detail.slice(0, 200)}`);
+  }
+}
+
+async function exportClipsToGoogleDocs(clipIds, triggerBtn) {
+  const clips = resolveExportClips(clipIds);
+  if (!clips.length) {
+    alert("Couldn't find that clip to export. Try reloading the list.");
+    return;
+  }
+
+  const originalLabel = triggerBtn?.textContent;
+  if (triggerBtn) {
+    triggerBtn.disabled = true;
+    triggerBtn.textContent = "Exporting…";
+  }
+
+  try {
+    const token = await getGoogleAuthToken();
+    const docName = exportFileName(clipIds).replace(/\.txt$/, "");
+    await uploadHtmlAsGoogleDoc(docName, buildClipsExportHtml(clips), token);
+    if (triggerBtn) triggerBtn.textContent = "Exported ✓";
+    setTimeout(() => {
+      if (triggerBtn) triggerBtn.textContent = originalLabel;
+    }, 2000);
+  } catch (e) {
+    alert(e.message || "Couldn't export to Google Docs.");
+    if (triggerBtn) triggerBtn.textContent = originalLabel;
+  } finally {
+    if (triggerBtn) triggerBtn.disabled = false;
+  }
+}
+
+// ---------- Save to Notion ----------
+// Notion has no equivalent of Google's narrow drive.file OAuth scope
+// for a browser extension - the practical option for a personal tool
+// is Notion's own "internal integration" token, created once at
+// notion.so/my-integrations and shared with a specific page, which is
+// the credential prompted for and cached below. It's a real secret
+// (unlike the Supabase anon key), so it's kept only in this browser's
+// own chrome.storage.local - never logged, never sent anywhere but
+// api.notion.com, and never synced off this device.
+const NOTION_TOKEN_KEY = "cliproots_notion_token";
+const NOTION_PARENT_KEY = "cliproots_notion_parent_id";
+
+function storageGet(keys) {
+  return new Promise((resolve) => chrome.storage.local.get(keys, resolve));
+}
+function storageSet(values) {
+  return new Promise((resolve) => chrome.storage.local.set(values, resolve));
+}
+
+async function getNotionCredentials() {
+  const stored = await storageGet([NOTION_TOKEN_KEY, NOTION_PARENT_KEY]);
+  if (stored[NOTION_TOKEN_KEY] && stored[NOTION_PARENT_KEY]) {
+    return { token: stored[NOTION_TOKEN_KEY], parentId: stored[NOTION_PARENT_KEY] };
+  }
+
+  const token = prompt(
+    "Paste your Notion integration token (create one at notion.so/my-integrations, then share your target page with it):"
+  );
+  if (!token) return null;
+  const parentId = prompt("Paste the ID of the Notion page to save clips under:");
+  if (!parentId) return null;
+
+  await storageSet({ [NOTION_TOKEN_KEY]: token, [NOTION_PARENT_KEY]: parentId });
+  return { token, parentId };
+}
+
+async function uploadTextToNotion(title, text, credentials) {
+  const response = await fetch("https://api.notion.com/v1/pages", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${credentials.token}`,
+      "Content-Type": "application/json",
+      "Notion-Version": "2022-06-28"
+    },
+    body: JSON.stringify({
+      parent: { page_id: credentials.parentId },
+      properties: {
+        title: { title: [{ text: { content: title.slice(0, 200) } }] }
+      },
+      children: text.split("\n\n").filter(Boolean).slice(0, 100).map((paragraph) => ({
+        object: "block",
+        type: "paragraph",
+        paragraph: { rich_text: [{ type: "text", text: { content: paragraph.slice(0, 2000) } }] }
+      }))
+    })
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    const hint = response.status === 401
+      ? " Check that the token is correct."
+      : response.status === 404
+        ? " Check that the page ID is correct and the page is shared with your integration."
+        : "";
+    throw new Error(`Notion export failed (${response.status}).${hint} ${detail.slice(0, 200)}`);
+  }
+}
+
+async function saveClipsToNotion(clipIds, triggerBtn) {
+  const clips = resolveExportClips(clipIds);
+  if (!clips.length) {
+    alert("Couldn't find that clip to export. Try reloading the list.");
+    return;
+  }
+
+  const credentials = await getNotionCredentials();
+  if (!credentials) return;
+
+  const originalLabel = triggerBtn?.textContent;
+  if (triggerBtn) {
+    triggerBtn.disabled = true;
+    triggerBtn.textContent = "Saving…";
+  }
+
+  try {
+    const title = clips.length > 1
+      ? `ClipRoots list (${clips.length} clips)`
+      : (clips[0].source_title || "ClipRoots clip");
+    await uploadTextToNotion(title, buildClipsExportText(clips), credentials);
+    if (triggerBtn) triggerBtn.textContent = "Saved ✓";
+    setTimeout(() => {
+      if (triggerBtn) triggerBtn.textContent = originalLabel;
+    }, 2000);
+  } catch (e) {
+    alert(e.message || "Couldn't save to Notion.");
+    if (triggerBtn) triggerBtn.textContent = originalLabel;
+  } finally {
+    if (triggerBtn) triggerBtn.disabled = false;
+  }
+}
+
+function downloadTextFile(filename, text) {
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
 function downloadClips(clipIds) {
   const clips = resolveExportClips(clipIds);
   if (!clips.length) {
@@ -1449,25 +2077,29 @@ function downloadClips(clipIds) {
     return;
   }
 
-  const blob = new Blob([buildClipsExportText(clips)], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = exportFileName(clipIds);
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  downloadTextFile(exportFileName(clipIds), buildClipsExportText(clips));
 }
 
 // chrome.identity.getAuthToken only works once the extension has its
 // own OAuth client_id in manifest.json's oauth2 block (see there) -
-// until that's filled in with a real Google Cloud client ID, this
-// rejects with a clear message instead of a confusing browser error.
+// checked up front and rejected with a specific, actionable message,
+// since the placeholder otherwise surfaces as an opaque Chrome OAuth
+// error ("bad client id", "invalid_client", etc.) that doesn't say
+// what's actually wrong or how to fix it.
+const GOOGLE_CLIENT_ID_PLACEHOLDER = "YOUR_GOOGLE_OAUTH_CLIENT_ID";
+
 function getGoogleAuthToken() {
   return new Promise((resolve, reject) => {
     if (!chrome?.identity?.getAuthToken) {
       reject(new Error("Google Drive isn't available in this browser."));
+      return;
+    }
+    const configuredClientId = chrome.runtime.getManifest()?.oauth2?.client_id || "";
+    if (!configuredClientId || configuredClientId.includes(GOOGLE_CLIENT_ID_PLACEHOLDER)) {
+      reject(new Error(
+        "Google Drive isn't set up yet for this extension - manifest.json's oauth2.client_id is still the placeholder. " +
+        "Create a Google Cloud OAuth Client ID (Chrome Extension type) and put it there first."
+      ));
       return;
     }
     chrome.identity.getAuthToken({ interactive: true }, (token) => {
@@ -1532,6 +2164,46 @@ async function saveClipsToDrive(clipIds, triggerBtn) {
     }, 2000);
   } catch (e) {
     alert(e.message || "Couldn't save that clip to Google Drive.");
+    if (triggerBtn) triggerBtn.textContent = originalLabel;
+  } finally {
+    if (triggerBtn) triggerBtn.disabled = false;
+  }
+}
+
+// A generated summary lives only in the card's own DOM (see
+// handleSummaryAction) - there's no clipDataById-style cache for it,
+// so these read the rendered .summary-text directly instead of looking
+// anything up by id.
+function summaryFileName(clipCard) {
+  const id = clipCard.dataset.clipId || clipCard.dataset.listId || "note";
+  return `cliproots-summary-${id}.txt`;
+}
+
+function downloadSummary(clipCard) {
+  const text = clipCard.querySelector(".summary-text")?.textContent?.trim();
+  if (!text) return;
+  downloadTextFile(summaryFileName(clipCard), text);
+}
+
+async function saveSummaryToDrive(clipCard, triggerBtn) {
+  const text = clipCard.querySelector(".summary-text")?.textContent?.trim();
+  if (!text) return;
+
+  const originalLabel = triggerBtn?.textContent;
+  if (triggerBtn) {
+    triggerBtn.disabled = true;
+    triggerBtn.textContent = "Saving…";
+  }
+
+  try {
+    const token = await getGoogleAuthToken();
+    await uploadTextFileToDrive(summaryFileName(clipCard), text, token);
+    if (triggerBtn) triggerBtn.textContent = "Saved ✓";
+    setTimeout(() => {
+      if (triggerBtn) triggerBtn.textContent = originalLabel;
+    }, 2000);
+  } catch (e) {
+    alert(e.message || "Couldn't save that summary to Google Drive.");
     if (triggerBtn) triggerBtn.textContent = originalLabel;
   } finally {
     if (triggerBtn) triggerBtn.disabled = false;

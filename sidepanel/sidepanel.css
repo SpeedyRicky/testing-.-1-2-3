@@ -972,6 +972,178 @@ a.video-range-badge:hover {
   font-weight: 600;
 }
 
+/* ---------- TAGS ---------- */
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  padding: 2px 4px 2px 9px;
+
+  border-radius: 999px;
+  border: 1px solid var(--primary-soft);
+
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.tag-remove {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+
+  border: none;
+  border-radius: 50%;
+  background: none;
+
+  color: var(--primary-dark);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tag-remove:hover {
+  background: var(--primary-soft);
+}
+
+.tag-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.tag-filter-row select {
+  padding: 5px 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--surface-raised);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 12px;
+}
+
+/* ---------- FOLDERS ---------- */
+
+.folder-row {
+  margin-top: 6px;
+}
+
+.folder-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  padding: 2px 4px 2px 9px;
+
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+
+  background: var(--surface);
+  color: var(--text-soft);
+
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.folder-clear {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+
+  border: none;
+  border-radius: 50%;
+  background: none;
+
+  color: var(--text-soft);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.folder-clear:hover {
+  background: var(--surface-raised);
+}
+
+/* ---------- CITATIONS ---------- */
+
+.cite-block {
+  margin-top: 10px;
+  padding: 12px 14px;
+
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.citation-note {
+  margin: 4px 0 10px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.citation-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.citation-row:last-child {
+  margin-bottom: 0;
+}
+
+.citation-label {
+  flex: none;
+  width: 56px;
+  padding-top: 7px;
+
+  color: var(--primary);
+
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.citation-text {
+  flex: 1;
+  margin: 0;
+  padding: 6px 9px;
+
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+
+  color: var(--text-soft);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.citation-copy-btn {
+  flex: none;
+  align-self: flex-start;
+}
+
 /* ---------- FEED ---------- */
 
 .toolbar {
