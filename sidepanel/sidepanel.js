@@ -722,6 +722,21 @@ function tagChipsHtml(c, showDelete) {
     </div>`;
 }
 
+// Folders are a single value per clip (unlike tags, which can be many) -
+// one "which folder is this in" chip, not a list of them.
+function folderRowHtml(c, showDelete) {
+  if (!showDelete) return "";
+  const folder = c.folder || "";
+  return `
+    <div class="folder-row" data-clip-id="${escapeHtml(c.id)}">
+      ${folder
+        ? `<span class="folder-chip" data-folder="${escapeHtml(folder)}">📁 ${escapeHtml(folder)}
+            <button class="folder-clear" type="button" data-clip-id="${escapeHtml(c.id)}" aria-label="Remove from folder">×</button>
+          </span>`
+        : `<button class="btn ghost btn-small set-folder-btn" type="button" data-clip-id="${escapeHtml(c.id)}">📁 Set folder</button>`}
+    </div>`;
+}
+
 function clipCardHtml(c, showDelete = false, isFavorite = false) {
   const claimBadge = c.claim_status === "filed"
     ? '<span class="claim-badge">Claim filed</span>' : "";
@@ -736,17 +751,21 @@ function clipCardHtml(c, showDelete = false, isFavorite = false) {
       ${clipQuoteBlock(c)}
       ${c.commentary ? `<div class="commentary">${escapeHtml(c.commentary)}</div>` : ""}
       ${tagChipsHtml(c, showDelete)}
+      ${folderRowHtml(c, showDelete)}
       <div class="card-actions">
         <button class="btn ghost summary-btn" type="button">Summarize note</button>
         <button class="btn ghost favorite-btn" type="button">${isFavorite ? 'Unfavorite' : 'Favorite'}</button>
+        <button class="btn ghost cite-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Cite</button>
         <button class="btn ghost report-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Report</button>
         ${showDelete && c.is_private ? `<button class="btn ghost share-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Share</button>` : ''}
         ${showDelete ? `<button class="btn ghost download-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Download</button>` : ''}
         ${showDelete ? `<button class="btn ghost drive-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Save to Drive</button>` : ''}
         ${showDelete ? `<button class="btn ghost pdf-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Export PDF</button>` : ''}
         ${showDelete ? `<button class="btn ghost docs-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Save to Docs</button>` : ''}
+        ${showDelete ? `<button class="btn ghost notion-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Save to Notion</button>` : ''}
         ${showDelete ? '<button class="btn ghost delete-btn" type="button">Delete note</button>' : ''}
       </div>
+      <div class="cite-block hidden"></div>
       <div class="summary-block hidden">
         <strong>Summary</strong>
         <p class="summary-text"></p>
@@ -954,18 +973,43 @@ let lastMeClipsData = [];
 // that's already sitting in memory.
 function refreshMeTagFilterOptions() {
   const select = $("me-tag-filter");
-  const row = $("me-tag-filter-row");
-  if (!select || !row) return;
+  const tagRow = $("me-tag-filter-row");
+  if (!select || !tagRow) return;
 
   const allTags = new Set();
   lastMeClipsData.forEach((c) => (Array.isArray(c.tags) ? c.tags : []).forEach((t) => allTags.add(t)));
   const sorted = [...allTags].sort((a, b) => a.localeCompare(b));
 
-  row.classList.toggle("hidden", sorted.length === 0);
   const current = select.value;
   select.innerHTML = `<option value="">All tags</option>` +
     sorted.map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
   select.value = sorted.includes(current) ? current : "";
+  updateMeFilterRowVisibility();
+}
+
+function refreshMeFolderFilterOptions() {
+  const select = $("me-folder-filter");
+  if (!select) return;
+
+  const allFolders = new Set();
+  lastMeClipsData.forEach((c) => { if (c.folder) allFolders.add(c.folder); });
+  const sorted = [...allFolders].sort((a, b) => a.localeCompare(b));
+
+  const current = select.value;
+  select.innerHTML = `<option value="">All folders</option>` +
+    sorted.map((f) => `<option value="${escapeHtml(f)}">${escapeHtml(f)}</option>`).join("");
+  select.value = sorted.includes(current) ? current : "";
+  updateMeFilterRowVisibility();
+}
+
+// The shared filter row only needs to show once there's at least one
+// tag or folder to filter by - otherwise it's two empty dropdowns.
+function updateMeFilterRowVisibility() {
+  const row = $("me-tag-filter-row");
+  if (!row) return;
+  const hasTags = ($("me-tag-filter")?.options.length || 1) > 1;
+  const hasFolders = ($("me-folder-filter")?.options.length || 1) > 1;
+  row.classList.toggle("hidden", !hasTags && !hasFolders);
 }
 
 function renderMeClips() {
@@ -975,16 +1019,20 @@ function renderMeClips() {
   }
 
   const activeTag = $("me-tag-filter")?.value || "";
-  const filtered = activeTag
-    ? lastMeClipsData.filter((c) => Array.isArray(c.tags) && c.tags.includes(activeTag))
-    : lastMeClipsData;
+  const activeFolder = $("me-folder-filter")?.value || "";
+  const filtered = lastMeClipsData.filter((c) => {
+    if (activeTag && !(Array.isArray(c.tags) && c.tags.includes(activeTag))) return false;
+    if (activeFolder && c.folder !== activeFolder) return false;
+    return true;
+  });
 
   $("me-clips").innerHTML = filtered.length
     ? renderFeedRows(filtered, () => true, (id) => isClipFavorited(id))
-    : `<p class="muted">No clips tagged "${escapeHtml(activeTag)}".</p>`;
+    : '<p class="muted">No clips match this filter.</p>';
 }
 
 $("me-tag-filter")?.addEventListener("change", renderMeClips);
+$("me-folder-filter")?.addEventListener("change", renderMeClips);
 
 async function loadMe(searchTerm = "") {
   if (!currentProfile) await refreshSession();
@@ -1008,6 +1056,7 @@ async function loadMe(searchTerm = "") {
   }
   lastMeClipsData = data || [];
   refreshMeTagFilterOptions();
+  refreshMeFolderFilterOptions();
   renderMeClips();
 
   void loadSharedWithMe();
@@ -1385,6 +1434,128 @@ async function handleRemoveTag(clipCard, clipId, tag) {
   }
 }
 
+// ---------- Folders (one per clip, unlike tags) ----------
+async function persistClipFolder(clipId, folder) {
+  const { error } = await supabaseClient.from("clips").update({ folder }).eq("id", clipId).eq("user_id", currentUser.id);
+  if (error) throw error;
+  const cached = clipDataById.get(clipId);
+  if (cached) cached.folder = folder;
+}
+
+function renderFolderRow(clipCard, clipId, folder) {
+  const row = clipCard.querySelector(`.folder-row[data-clip-id="${CSS.escape(clipId)}"]`);
+  if (!row) return;
+  row.innerHTML = folder
+    ? `<span class="folder-chip" data-folder="${escapeHtml(folder)}">📁 ${escapeHtml(folder)}
+        <button class="folder-clear" type="button" data-clip-id="${escapeHtml(clipId)}" aria-label="Remove from folder">×</button>
+      </span>`
+    : `<button class="btn ghost btn-small set-folder-btn" type="button" data-clip-id="${escapeHtml(clipId)}">📁 Set folder</button>`;
+}
+
+async function handleSetFolder(clipCard, clipId) {
+  const raw = prompt("Move this clip to which folder?");
+  const folder = normalizeTag(raw);
+  if (!folder) return;
+  try {
+    await persistClipFolder(clipId, folder);
+    renderFolderRow(clipCard, clipId, folder);
+    refreshMeFolderFilterOptions();
+  } catch (err) {
+    alert(err?.message || "Couldn't set that folder.");
+  }
+}
+
+async function handleClearFolder(clipCard, clipId) {
+  try {
+    await persistClipFolder(clipId, null);
+    renderFolderRow(clipCard, clipId, null);
+    refreshMeFolderFilterOptions();
+  } catch (err) {
+    alert(err?.message || "Couldn't clear that folder.");
+  }
+}
+
+// ---------- Citations (APA / MLA / Chicago) ----------
+// ClipRoots only ever has a page title, site/domain, URL, and the date
+// the clip was made - never the original author or publish date (most
+// pages don't expose that reliably, and guessing one would be a real
+// citation error, not a convenience). Each format below is the
+// standard, correct "no known author" form for a web page - a complete
+// citation, just not one with an author byline, same as any citation
+// tool produces when a source genuinely doesn't list one.
+function formatCitationDate(dateObj, style) {
+  if (style === "apa") {
+    return dateObj.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  }
+  if (style === "mla") {
+    return dateObj.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
+  }
+  return dateObj.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+
+function buildCitations(c) {
+  const title = (c.source_title || "Untitled page").replace(/\.$/, "");
+  const site = c.source_domain || "";
+  const url = c.source_url || "";
+  const accessed = formatCitationDate(c.created_at ? new Date(c.created_at) : new Date(), "apa");
+  const accessedMla = formatCitationDate(c.created_at ? new Date(c.created_at) : new Date(), "mla");
+  const accessedChicago = formatCitationDate(c.created_at ? new Date(c.created_at) : new Date(), "chicago");
+
+  return {
+    apa: `${title}. (n.d.). ${site}. Retrieved ${accessed}, from ${url}`,
+    mla: `"${title}." ${site}, ${url}. Accessed ${accessedMla}.`,
+    chicago: `"${title}." ${site}. Accessed ${accessedChicago}. ${url}.`
+  };
+}
+
+function citeBlockHtml(citations) {
+  const row = (label, cls, text) => `
+    <div class="citation-row">
+      <div class="citation-label">${label}</div>
+      <p class="citation-text">${escapeHtml(text)}</p>
+      <button class="btn ghost btn-small citation-copy-btn ${cls}" type="button" data-text="${escapeHtml(text)}">Copy</button>
+    </div>`;
+  return `
+    <strong>Cite this clip</strong>
+    <p class="citation-note">No author/publish date is available for this page, so these use the standard "no known author" form for each style - still a complete, correctly formatted citation.</p>
+    ${row("APA", "citation-apa", citations.apa)}
+    ${row("MLA", "citation-mla", citations.mla)}
+    ${row("Chicago", "citation-chicago", citations.chicago)}
+  `;
+}
+
+function handleCite(clipCard, clipId) {
+  const citeBlock = clipCard.querySelector(".cite-block");
+  if (!citeBlock) return;
+
+  if (!citeBlock.classList.contains("hidden")) {
+    citeBlock.classList.add("hidden");
+    return;
+  }
+
+  const clip = clipDataById.get(clipId);
+  if (!clip) {
+    alert("Couldn't find that clip to cite. Try reloading the list.");
+    return;
+  }
+
+  citeBlock.innerHTML = citeBlockHtml(buildCitations(clip));
+  citeBlock.classList.remove("hidden");
+}
+
+async function handleCopyCitation(button) {
+  const text = button.dataset.text || "";
+  if (!text) return;
+  const original = button.textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    button.textContent = "Copied ✓";
+  } catch {
+    button.textContent = "Couldn't copy";
+  }
+  setTimeout(() => { button.textContent = original; }, 1600);
+}
+
 document.addEventListener("click", (event) => {
   const summaryBtn = event.target.closest(".summary-btn");
   if (summaryBtn) {
@@ -1434,6 +1605,33 @@ document.addEventListener("click", (event) => {
     if (clipCard && tagRemoveBtn.dataset.clipId) {
       void handleRemoveTag(clipCard, tagRemoveBtn.dataset.clipId, tagRemoveBtn.dataset.tag || "");
     }
+    return;
+  }
+
+  const setFolderBtn = event.target.closest(".set-folder-btn");
+  if (setFolderBtn) {
+    const clipCard = setFolderBtn.closest(".clip-card");
+    if (clipCard && setFolderBtn.dataset.clipId) void handleSetFolder(clipCard, setFolderBtn.dataset.clipId);
+    return;
+  }
+
+  const folderClearBtn = event.target.closest(".folder-clear");
+  if (folderClearBtn) {
+    const clipCard = folderClearBtn.closest(".clip-card");
+    if (clipCard && folderClearBtn.dataset.clipId) void handleClearFolder(clipCard, folderClearBtn.dataset.clipId);
+    return;
+  }
+
+  const citeBtn = event.target.closest(".cite-btn");
+  if (citeBtn) {
+    const clipCard = citeBtn.closest(".clip-card");
+    if (clipCard && citeBtn.dataset.clipId) handleCite(clipCard, citeBtn.dataset.clipId);
+    return;
+  }
+
+  const citationCopyBtn = event.target.closest(".citation-copy-btn");
+  if (citationCopyBtn) {
+    void handleCopyCitation(citationCopyBtn);
     return;
   }
 
@@ -1490,6 +1688,16 @@ document.addEventListener("click", (event) => {
       .map((id) => id.trim())
       .filter(Boolean);
     if (clipIds.length) void exportClipsToGoogleDocs(clipIds, docsBtn);
+    return;
+  }
+
+  const notionBtn = event.target.closest(".notion-btn");
+  if (notionBtn) {
+    const clipIds = (notionBtn.dataset.clipId || notionBtn.dataset.clipIds || "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    if (clipIds.length) void saveClipsToNotion(clipIds, notionBtn);
   }
 });
 
@@ -1743,6 +1951,107 @@ async function exportClipsToGoogleDocs(clipIds, triggerBtn) {
     }, 2000);
   } catch (e) {
     alert(e.message || "Couldn't export to Google Docs.");
+    if (triggerBtn) triggerBtn.textContent = originalLabel;
+  } finally {
+    if (triggerBtn) triggerBtn.disabled = false;
+  }
+}
+
+// ---------- Save to Notion ----------
+// Notion has no equivalent of Google's narrow drive.file OAuth scope
+// for a browser extension - the practical option for a personal tool
+// is Notion's own "internal integration" token, created once at
+// notion.so/my-integrations and shared with a specific page, which is
+// the credential prompted for and cached below. It's a real secret
+// (unlike the Supabase anon key), so it's kept only in this browser's
+// own chrome.storage.local - never logged, never sent anywhere but
+// api.notion.com, and never synced off this device.
+const NOTION_TOKEN_KEY = "cliproots_notion_token";
+const NOTION_PARENT_KEY = "cliproots_notion_parent_id";
+
+function storageGet(keys) {
+  return new Promise((resolve) => chrome.storage.local.get(keys, resolve));
+}
+function storageSet(values) {
+  return new Promise((resolve) => chrome.storage.local.set(values, resolve));
+}
+
+async function getNotionCredentials() {
+  const stored = await storageGet([NOTION_TOKEN_KEY, NOTION_PARENT_KEY]);
+  if (stored[NOTION_TOKEN_KEY] && stored[NOTION_PARENT_KEY]) {
+    return { token: stored[NOTION_TOKEN_KEY], parentId: stored[NOTION_PARENT_KEY] };
+  }
+
+  const token = prompt(
+    "Paste your Notion integration token (create one at notion.so/my-integrations, then share your target page with it):"
+  );
+  if (!token) return null;
+  const parentId = prompt("Paste the ID of the Notion page to save clips under:");
+  if (!parentId) return null;
+
+  await storageSet({ [NOTION_TOKEN_KEY]: token, [NOTION_PARENT_KEY]: parentId });
+  return { token, parentId };
+}
+
+async function uploadTextToNotion(title, text, credentials) {
+  const response = await fetch("https://api.notion.com/v1/pages", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${credentials.token}`,
+      "Content-Type": "application/json",
+      "Notion-Version": "2022-06-28"
+    },
+    body: JSON.stringify({
+      parent: { page_id: credentials.parentId },
+      properties: {
+        title: { title: [{ text: { content: title.slice(0, 200) } }] }
+      },
+      children: text.split("\n\n").filter(Boolean).slice(0, 100).map((paragraph) => ({
+        object: "block",
+        type: "paragraph",
+        paragraph: { rich_text: [{ type: "text", text: { content: paragraph.slice(0, 2000) } }] }
+      }))
+    })
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    const hint = response.status === 401
+      ? " Check that the token is correct."
+      : response.status === 404
+        ? " Check that the page ID is correct and the page is shared with your integration."
+        : "";
+    throw new Error(`Notion export failed (${response.status}).${hint} ${detail.slice(0, 200)}`);
+  }
+}
+
+async function saveClipsToNotion(clipIds, triggerBtn) {
+  const clips = resolveExportClips(clipIds);
+  if (!clips.length) {
+    alert("Couldn't find that clip to export. Try reloading the list.");
+    return;
+  }
+
+  const credentials = await getNotionCredentials();
+  if (!credentials) return;
+
+  const originalLabel = triggerBtn?.textContent;
+  if (triggerBtn) {
+    triggerBtn.disabled = true;
+    triggerBtn.textContent = "Saving…";
+  }
+
+  try {
+    const title = clips.length > 1
+      ? `ClipRoots list (${clips.length} clips)`
+      : (clips[0].source_title || "ClipRoots clip");
+    await uploadTextToNotion(title, buildClipsExportText(clips), credentials);
+    if (triggerBtn) triggerBtn.textContent = "Saved ✓";
+    setTimeout(() => {
+      if (triggerBtn) triggerBtn.textContent = originalLabel;
+    }, 2000);
+  } catch (e) {
+    alert(e.message || "Couldn't save to Notion.");
     if (triggerBtn) triggerBtn.textContent = originalLabel;
   } finally {
     if (triggerBtn) triggerBtn.disabled = false;
