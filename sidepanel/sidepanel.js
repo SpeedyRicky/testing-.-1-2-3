@@ -759,9 +759,7 @@ function clipCardHtml(c, showDelete = false, isFavorite = false) {
         <button class="btn ghost report-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Report</button>
         ${showDelete && c.is_private ? `<button class="btn ghost share-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Share</button>` : ''}
         ${showDelete ? `<button class="btn ghost download-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Download</button>` : ''}
-        ${showDelete ? `<button class="btn ghost drive-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Save to Drive</button>` : ''}
         ${showDelete ? `<button class="btn ghost pdf-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Export PDF</button>` : ''}
-        ${showDelete ? `<button class="btn ghost docs-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Save to Docs</button>` : ''}
         ${showDelete ? `<button class="btn ghost notion-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Save to Notion</button>` : ''}
         ${showDelete ? '<button class="btn ghost delete-btn" type="button">Delete note</button>' : ''}
       </div>
@@ -771,7 +769,6 @@ function clipCardHtml(c, showDelete = false, isFavorite = false) {
         <p class="summary-text"></p>
         <div class="summary-actions hidden">
           <button class="btn ghost summary-download-btn" type="button">Download summary</button>
-          <button class="btn ghost summary-drive-btn" type="button">Save summary to Drive</button>
         </div>
       </div>
       <div class="meta-row">
@@ -820,9 +817,7 @@ function listCardHtml(group, showDelete = false, isFavorite = false) {
         <button class="btn ghost favorite-btn" type="button">${isFavorite ? 'Unfavorite' : 'Favorite'}</button>
         ${showDelete && first.is_private ? `<button class="btn ghost share-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Share</button>` : ''}
         ${showDelete ? `<button class="btn ghost download-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Download</button>` : ''}
-        ${showDelete ? `<button class="btn ghost drive-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Save to Drive</button>` : ''}
         ${showDelete ? `<button class="btn ghost pdf-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Export PDF</button>` : ''}
-        ${showDelete ? `<button class="btn ghost docs-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Save to Docs</button>` : ''}
         ${showDelete ? '<button class="btn ghost delete-btn" type="button">Delete note</button>' : ''}
       </div>
       <div class="summary-block hidden">
@@ -830,7 +825,6 @@ function listCardHtml(group, showDelete = false, isFavorite = false) {
         <p class="summary-text"></p>
         <div class="summary-actions hidden">
           <button class="btn ghost summary-download-btn" type="button">Download summary</button>
-          <button class="btn ghost summary-drive-btn" type="button">Save summary to Drive</button>
         </div>
       </div>
       <div class="meta-row">
@@ -1571,13 +1565,6 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  const summaryDriveBtn = event.target.closest(".summary-drive-btn");
-  if (summaryDriveBtn) {
-    const clipCard = summaryDriveBtn.closest(".clip-card");
-    if (clipCard) void saveSummaryToDrive(clipCard, summaryDriveBtn);
-    return;
-  }
-
   const favoriteBtn = event.target.closest(".favorite-btn");
   if (favoriteBtn) {
     const clipCard = favoriteBtn.closest(".clip-card");
@@ -1661,16 +1648,6 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  const driveBtn = event.target.closest(".drive-btn");
-  if (driveBtn) {
-    const clipIds = (driveBtn.dataset.clipId || driveBtn.dataset.clipIds || "")
-      .split(",")
-      .map((id) => id.trim())
-      .filter(Boolean);
-    if (clipIds.length) void saveClipsToDrive(clipIds, driveBtn);
-    return;
-  }
-
   const pdfBtn = event.target.closest(".pdf-btn");
   if (pdfBtn) {
     const clipIds = (pdfBtn.dataset.clipId || pdfBtn.dataset.clipIds || "")
@@ -1678,16 +1655,6 @@ document.addEventListener("click", (event) => {
       .map((id) => id.trim())
       .filter(Boolean);
     if (clipIds.length) exportClipsAsPdf(clipIds);
-    return;
-  }
-
-  const docsBtn = event.target.closest(".docs-btn");
-  if (docsBtn) {
-    const clipIds = (docsBtn.dataset.clipId || docsBtn.dataset.clipIds || "")
-      .split(",")
-      .map((id) => id.trim())
-      .filter(Boolean);
-    if (clipIds.length) void exportClipsToGoogleDocs(clipIds, docsBtn);
     return;
   }
 
@@ -1838,123 +1805,62 @@ function exportFileName(clipIds) {
   return clipIds.length > 1 ? `cliproots-list-${first}.txt` : `cliproots-${first}.txt`;
 }
 
-// Same content as buildClipsExportText(), just marked up for PDF
-// (browser print-to-PDF, no extra library needed) and Google Docs
-// (Drive's own HTML-to-Doc conversion) - still only ever the clip's
-// text, never the underlying video/audio.
-function formatClipForExportHtml(c) {
-  const author = c.author_username ? `@${escapeHtml(c.author_username)}` : escapeHtml(c.author_display_name || "Unknown");
-  const date = c.created_at ? new Date(c.created_at).toLocaleString() : "";
-  const body = c.clip_type === "video"
-    ? `<p><strong>Video clip:</strong> ${escapeHtml(formatClipTime(c.video_start_seconds))}–${escapeHtml(formatClipTime(c.video_end_seconds))}<br><a href="${escapeHtml(videoSourceLink(c))}">${escapeHtml(videoSourceLink(c))}</a></p>`
-    : `<blockquote>${escapeHtml(c.quoted_text || "")}</blockquote>`;
-  const commentary = c.commentary ? `<p>${escapeHtml(c.commentary)}</p>` : "";
-  return `
-    <div class="clip">
-      <p class="meta">${author} · ${escapeHtml(date)}</p>
-      ${body}
-      ${commentary}
-      <p class="source">Source: <a href="${escapeHtml(c.source_url || "#")}">${escapeHtml(c.source_url || "")}</a></p>
-    </div>`;
-}
-
-function buildClipsExportHtml(clips) {
-  const title = `ClipRoots — ${clips.length} clip${clips.length === 1 ? "" : "s"}`;
-  const body = clips.map(formatClipForExportHtml).join("<hr>");
-  return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>${escapeHtml(title)}</title>
-<style>
-  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 680px; margin: 40px auto; color: #211e17; }
-  h1 { font-size: 20px; }
-  blockquote { border-left: 3px solid #9c7233; margin: 12px 0; padding: 2px 16px; font-style: italic; }
-  .meta, .source { color: #6b6656; font-size: 12.5px; }
-  hr { border: none; border-top: 1px solid #e5e0d5; margin: 24px 0; }
-</style>
-</head>
-<body>
-<h1>${escapeHtml(title)}</h1>
-${body}
-</body>
-</html>`;
-}
-
+// Builds a real PDF client-side with jsPDF (vendored, no network call -
+// see vendor/jspdf.umd.min.js) and downloads it directly, the same way
+// downloadTextFile() downloads a .txt - no print dialog, no "Save as
+// PDF" step, no separate tab. Still only ever the clip's own text,
+// never the underlying video/audio.
 function exportClipsAsPdf(clipIds) {
   const clips = resolveExportClips(clipIds);
   if (!clips.length) {
     alert("Couldn't find that clip to export. Try reloading the list.");
     return;
   }
-
-  const printWindow = window.open("", "_blank");
-  if (!printWindow) {
-    alert("Your browser blocked the export window - allow pop-ups for ClipRoots and try again.");
+  if (!window.jspdf?.jsPDF) {
+    alert("PDF export isn't available right now - try reloading the extension.");
     return;
   }
-  printWindow.document.write(buildClipsExportHtml(clips));
-  printWindow.document.close();
-  printWindow.onload = () => printWindow.print();
-}
 
-// Drive's files.create endpoint converts an uploaded text/html body into
-// a native Google Doc when the target metadata.mimeType is the
-// Workspace document type - still the drive.file scope, still just
-// creating a file this app itself made.
-async function uploadHtmlAsGoogleDoc(filename, html, token) {
-  const boundary = `cliproots-${Math.random().toString(36).slice(2)}`;
-  const body =
-    `--${boundary}\r\n` +
-    `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
-    `${JSON.stringify({ name: filename, mimeType: "application/vnd.google-apps.document" })}\r\n` +
-    `--${boundary}\r\n` +
-    `Content-Type: text/html; charset=UTF-8\r\n\r\n` +
-    `${html}\r\n` +
-    `--${boundary}--`;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "pt", format: "letter" });
+  const marginX = 48;
+  const maxWidth = doc.internal.pageSize.getWidth() - marginX * 2;
+  const pageBottom = doc.internal.pageSize.getHeight() - 56;
+  let y = 64;
 
-  const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": `multipart/related; boundary=${boundary}`
-    },
-    body
+  function addLines(text, { size = 11, style = "normal", gap = 14 } = {}) {
+    doc.setFont("helvetica", style);
+    doc.setFontSize(size);
+    for (const line of doc.splitTextToSize(text, maxWidth)) {
+      if (y > pageBottom) {
+        doc.addPage();
+        y = 56;
+      }
+      doc.text(line, marginX, y);
+      y += gap;
+    }
+    y += 6;
+  }
+
+  addLines(`ClipRoots — ${clips.length} clip${clips.length === 1 ? "" : "s"}`, { size: 17, style: "bold", gap: 20 });
+
+  clips.forEach((c, i) => {
+    if (i > 0) y += 8;
+    const author = c.author_username ? `@${c.author_username}` : (c.author_display_name || "Unknown");
+    const date = c.created_at ? new Date(c.created_at).toLocaleString() : "";
+    addLines(`${author} · ${date}`, { size: 9, style: "italic", gap: 12 });
+
+    if (c.clip_type === "video") {
+      addLines(`Video clip: ${formatClipTime(c.video_start_seconds)}–${formatClipTime(c.video_end_seconds)}`);
+      addLines(videoSourceLink(c), { size: 10 });
+    } else {
+      addLines(`"${c.quoted_text || ""}"`);
+    }
+    if (c.commentary) addLines(c.commentary);
+    addLines(`Source: ${c.source_url || ""}`, { size: 9, style: "italic" });
   });
 
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    throw new Error(`Google Docs export failed (${response.status}). ${detail.slice(0, 200)}`);
-  }
-}
-
-async function exportClipsToGoogleDocs(clipIds, triggerBtn) {
-  const clips = resolveExportClips(clipIds);
-  if (!clips.length) {
-    alert("Couldn't find that clip to export. Try reloading the list.");
-    return;
-  }
-
-  const originalLabel = triggerBtn?.textContent;
-  if (triggerBtn) {
-    triggerBtn.disabled = true;
-    triggerBtn.textContent = "Exporting…";
-  }
-
-  try {
-    const token = await getGoogleAuthToken();
-    const docName = exportFileName(clipIds).replace(/\.txt$/, "");
-    await uploadHtmlAsGoogleDoc(docName, buildClipsExportHtml(clips), token);
-    if (triggerBtn) triggerBtn.textContent = "Exported ✓";
-    setTimeout(() => {
-      if (triggerBtn) triggerBtn.textContent = originalLabel;
-    }, 2000);
-  } catch (e) {
-    alert(e.message || "Couldn't export to Google Docs.");
-    if (triggerBtn) triggerBtn.textContent = originalLabel;
-  } finally {
-    if (triggerBtn) triggerBtn.disabled = false;
-  }
+  doc.save(exportFileName(clipIds).replace(/\.txt$/, ".pdf"));
 }
 
 // ---------- Save to Notion ----------
@@ -2080,99 +1986,9 @@ function downloadClips(clipIds) {
   downloadTextFile(exportFileName(clipIds), buildClipsExportText(clips));
 }
 
-// chrome.identity.getAuthToken only works once the extension has its
-// own OAuth client_id in manifest.json's oauth2 block (see there) -
-// checked up front and rejected with a specific, actionable message,
-// since the placeholder otherwise surfaces as an opaque Chrome OAuth
-// error ("bad client id", "invalid_client", etc.) that doesn't say
-// what's actually wrong or how to fix it.
-const GOOGLE_CLIENT_ID_PLACEHOLDER = "YOUR_GOOGLE_OAUTH_CLIENT_ID";
-
-function getGoogleAuthToken() {
-  return new Promise((resolve, reject) => {
-    if (!chrome?.identity?.getAuthToken) {
-      reject(new Error("Google Drive isn't available in this browser."));
-      return;
-    }
-    const configuredClientId = chrome.runtime.getManifest()?.oauth2?.client_id || "";
-    if (!configuredClientId || configuredClientId.includes(GOOGLE_CLIENT_ID_PLACEHOLDER)) {
-      reject(new Error(
-        "Google Drive isn't set up yet for this extension - manifest.json's oauth2.client_id is still the placeholder. " +
-        "Create a Google Cloud OAuth Client ID (Chrome Extension type) and put it there first."
-      ));
-      return;
-    }
-    chrome.identity.getAuthToken({ interactive: true }, (token) => {
-      if (chrome.runtime.lastError || !token) {
-        reject(new Error(chrome.runtime.lastError?.message || "Couldn't connect to Google Drive."));
-        return;
-      }
-      resolve(token);
-    });
-  });
-}
-
-// Minimal, non-resumable multipart upload to the Drive v3 API - plenty
-// for a small text export. Uses the drive.file scope (see manifest.json),
-// which only ever grants access to files this app itself created, never
-// the rest of the user's Drive.
-async function uploadTextFileToDrive(filename, text, token) {
-  const boundary = `cliproots-${Math.random().toString(36).slice(2)}`;
-  const body =
-    `--${boundary}\r\n` +
-    `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
-    `${JSON.stringify({ name: filename, mimeType: "text/plain" })}\r\n` +
-    `--${boundary}\r\n` +
-    `Content-Type: text/plain; charset=UTF-8\r\n\r\n` +
-    `${text}\r\n` +
-    `--${boundary}--`;
-
-  const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": `multipart/related; boundary=${boundary}`
-    },
-    body
-  });
-
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    throw new Error(`Google Drive upload failed (${response.status}). ${detail.slice(0, 200)}`);
-  }
-}
-
-async function saveClipsToDrive(clipIds, triggerBtn) {
-  const clips = resolveExportClips(clipIds);
-  if (!clips.length) {
-    alert("Couldn't find that clip to save. Try reloading the list.");
-    return;
-  }
-
-  const originalLabel = triggerBtn?.textContent;
-  if (triggerBtn) {
-    triggerBtn.disabled = true;
-    triggerBtn.textContent = "Saving…";
-  }
-
-  try {
-    const token = await getGoogleAuthToken();
-    await uploadTextFileToDrive(exportFileName(clipIds), buildClipsExportText(clips), token);
-    if (triggerBtn) triggerBtn.textContent = "Saved ✓";
-    setTimeout(() => {
-      if (triggerBtn) triggerBtn.textContent = originalLabel;
-    }, 2000);
-  } catch (e) {
-    alert(e.message || "Couldn't save that clip to Google Drive.");
-    if (triggerBtn) triggerBtn.textContent = originalLabel;
-  } finally {
-    if (triggerBtn) triggerBtn.disabled = false;
-  }
-}
-
 // A generated summary lives only in the card's own DOM (see
 // handleSummaryAction) - there's no clipDataById-style cache for it,
-// so these read the rendered .summary-text directly instead of looking
+// so this reads the rendered .summary-text directly instead of looking
 // anything up by id.
 function summaryFileName(clipCard) {
   const id = clipCard.dataset.clipId || clipCard.dataset.listId || "note";
@@ -2183,31 +1999,6 @@ function downloadSummary(clipCard) {
   const text = clipCard.querySelector(".summary-text")?.textContent?.trim();
   if (!text) return;
   downloadTextFile(summaryFileName(clipCard), text);
-}
-
-async function saveSummaryToDrive(clipCard, triggerBtn) {
-  const text = clipCard.querySelector(".summary-text")?.textContent?.trim();
-  if (!text) return;
-
-  const originalLabel = triggerBtn?.textContent;
-  if (triggerBtn) {
-    triggerBtn.disabled = true;
-    triggerBtn.textContent = "Saving…";
-  }
-
-  try {
-    const token = await getGoogleAuthToken();
-    await uploadTextFileToDrive(summaryFileName(clipCard), text, token);
-    if (triggerBtn) triggerBtn.textContent = "Saved ✓";
-    setTimeout(() => {
-      if (triggerBtn) triggerBtn.textContent = originalLabel;
-    }, 2000);
-  } catch (e) {
-    alert(e.message || "Couldn't save that summary to Google Drive.");
-    if (triggerBtn) triggerBtn.textContent = originalLabel;
-  } finally {
-    if (triggerBtn) triggerBtn.disabled = false;
-  }
 }
 
 // ---------- Share a private clip with mutual followers ----------
