@@ -160,6 +160,10 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", () => goTo(btn.dataset.tab));
 });
 
+$("compose-help")?.addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("welcome/welcome.html") });
+});
+
 // ---------- Auth ----------
 $("btn-signup").addEventListener("click", () => {
   isSignupMode = !isSignupMode;
@@ -699,6 +703,25 @@ function clipQuoteBlock(c) {
   return `${thumbnailBlock}${quoteBlock}`;
 }
 
+function tagChipsHtml(c, showDelete) {
+  if (!showDelete) {
+    // Organizing-by-tag is an owner-only feature, same scope as
+    // Delete/Download/Share - someone else's clip isn't yours to tag.
+    return "";
+  }
+  const tags = Array.isArray(c.tags) ? c.tags : [];
+  const chips = tags.map((tag) => `
+    <span class="tag-chip" data-tag="${escapeHtml(tag)}">
+      ${escapeHtml(tag)}
+      <button class="tag-remove" type="button" data-clip-id="${escapeHtml(c.id)}" data-tag="${escapeHtml(tag)}" aria-label="Remove tag ${escapeHtml(tag)}">×</button>
+    </span>`).join("");
+  return `
+    <div class="tag-row" data-clip-id="${escapeHtml(c.id)}">
+      ${chips}
+      <button class="btn ghost btn-small add-tag-btn" type="button" data-clip-id="${escapeHtml(c.id)}">+ Tag</button>
+    </div>`;
+}
+
 function clipCardHtml(c, showDelete = false, isFavorite = false) {
   const claimBadge = c.claim_status === "filed"
     ? '<span class="claim-badge">Claim filed</span>' : "";
@@ -712,6 +735,7 @@ function clipCardHtml(c, showDelete = false, isFavorite = false) {
       </div>
       ${clipQuoteBlock(c)}
       ${c.commentary ? `<div class="commentary">${escapeHtml(c.commentary)}</div>` : ""}
+      ${tagChipsHtml(c, showDelete)}
       <div class="card-actions">
         <button class="btn ghost summary-btn" type="button">Summarize note</button>
         <button class="btn ghost favorite-btn" type="button">${isFavorite ? 'Unfavorite' : 'Favorite'}</button>
@@ -719,6 +743,8 @@ function clipCardHtml(c, showDelete = false, isFavorite = false) {
         ${showDelete && c.is_private ? `<button class="btn ghost share-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Share</button>` : ''}
         ${showDelete ? `<button class="btn ghost download-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Download</button>` : ''}
         ${showDelete ? `<button class="btn ghost drive-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Save to Drive</button>` : ''}
+        ${showDelete ? `<button class="btn ghost pdf-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Export PDF</button>` : ''}
+        ${showDelete ? `<button class="btn ghost docs-btn" type="button" data-clip-id="${escapeHtml(c.id)}">Save to Docs</button>` : ''}
         ${showDelete ? '<button class="btn ghost delete-btn" type="button">Delete note</button>' : ''}
       </div>
       <div class="summary-block hidden">
@@ -776,6 +802,8 @@ function listCardHtml(group, showDelete = false, isFavorite = false) {
         ${showDelete && first.is_private ? `<button class="btn ghost share-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Share</button>` : ''}
         ${showDelete ? `<button class="btn ghost download-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Download</button>` : ''}
         ${showDelete ? `<button class="btn ghost drive-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Save to Drive</button>` : ''}
+        ${showDelete ? `<button class="btn ghost pdf-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Export PDF</button>` : ''}
+        ${showDelete ? `<button class="btn ghost docs-btn" type="button" data-clip-ids="${escapeHtml(group.items.map((c) => c.id).join(","))}">Save to Docs</button>` : ''}
         ${showDelete ? '<button class="btn ghost delete-btn" type="button">Delete note</button>' : ''}
       </div>
       <div class="summary-block hidden">
@@ -918,6 +946,46 @@ async function loadFeed(searchTerm = "") {
 }
 
 // ---------- Me ----------
+let lastMeClipsData = [];
+
+// Filtering by tag is done client-side against whatever loadMe() just
+// fetched (already capped at 50 rows) rather than a second query -
+// there's no need to round-trip to Supabase just to narrow an array
+// that's already sitting in memory.
+function refreshMeTagFilterOptions() {
+  const select = $("me-tag-filter");
+  const row = $("me-tag-filter-row");
+  if (!select || !row) return;
+
+  const allTags = new Set();
+  lastMeClipsData.forEach((c) => (Array.isArray(c.tags) ? c.tags : []).forEach((t) => allTags.add(t)));
+  const sorted = [...allTags].sort((a, b) => a.localeCompare(b));
+
+  row.classList.toggle("hidden", sorted.length === 0);
+  const current = select.value;
+  select.innerHTML = `<option value="">All tags</option>` +
+    sorted.map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+  select.value = sorted.includes(current) ? current : "";
+}
+
+function renderMeClips() {
+  if (!lastMeClipsData.length) {
+    $("me-clips").innerHTML = '<p class="muted">You haven\'t published a clip yet.</p>';
+    return;
+  }
+
+  const activeTag = $("me-tag-filter")?.value || "";
+  const filtered = activeTag
+    ? lastMeClipsData.filter((c) => Array.isArray(c.tags) && c.tags.includes(activeTag))
+    : lastMeClipsData;
+
+  $("me-clips").innerHTML = filtered.length
+    ? renderFeedRows(filtered, () => true, (id) => isClipFavorited(id))
+    : `<p class="muted">No clips tagged "${escapeHtml(activeTag)}".</p>`;
+}
+
+$("me-tag-filter")?.addEventListener("change", renderMeClips);
+
 async function loadMe(searchTerm = "") {
   if (!currentProfile) await refreshSession();
   $("me-profile").innerHTML = `
@@ -938,9 +1006,9 @@ async function loadMe(searchTerm = "") {
     $("me-clips").innerHTML = `<p class="error">${escapeHtml(error.message)}</p>`;
     return;
   }
-  $("me-clips").innerHTML = data.length
-    ? renderFeedRows(data, () => true, (id) => isClipFavorited(id))
-    : '<p class="muted">You haven\'t published a clip yet.</p>';
+  lastMeClipsData = data || [];
+  refreshMeTagFilterOptions();
+  renderMeClips();
 
   void loadSharedWithMe();
   void loadFollowing();
@@ -1260,6 +1328,63 @@ async function handleDeleteAction(clipCard) {
   }
 }
 
+// ---------- Tags (organize clips) ----------
+// Tags live on the owning clip row itself (clips.tags text[]) - the
+// existing "owners can update their clips" RLS policy already covers
+// writing to it, same as every other field update on this table.
+function normalizeTag(raw) {
+  return (raw || "").trim().slice(0, 40);
+}
+
+async function persistClipTags(clipId, tags) {
+  const { error } = await supabaseClient.from("clips").update({ tags }).eq("id", clipId).eq("user_id", currentUser.id);
+  if (error) throw error;
+  const cached = clipDataById.get(clipId);
+  if (cached) cached.tags = tags;
+}
+
+function renderTagRow(clipCard, clipId, tags) {
+  const row = clipCard.querySelector(`.tag-row[data-clip-id="${CSS.escape(clipId)}"]`);
+  if (!row) return;
+  const chips = tags.map((tag) => `
+    <span class="tag-chip" data-tag="${escapeHtml(tag)}">
+      ${escapeHtml(tag)}
+      <button class="tag-remove" type="button" data-clip-id="${escapeHtml(clipId)}" data-tag="${escapeHtml(tag)}" aria-label="Remove tag ${escapeHtml(tag)}">×</button>
+    </span>`).join("");
+  row.innerHTML = `${chips}<button class="btn ghost btn-small add-tag-btn" type="button" data-clip-id="${escapeHtml(clipId)}">+ Tag</button>`;
+}
+
+async function handleAddTag(clipCard, clipId) {
+  const raw = prompt("Add a tag:");
+  const tag = normalizeTag(raw);
+  if (!tag) return;
+
+  const existing = Array.isArray(clipDataById.get(clipId)?.tags) ? clipDataById.get(clipId).tags : [];
+  if (existing.some((t) => t.toLowerCase() === tag.toLowerCase())) {
+    return;
+  }
+  const nextTags = [...existing, tag];
+  try {
+    await persistClipTags(clipId, nextTags);
+    renderTagRow(clipCard, clipId, nextTags);
+    refreshMeTagFilterOptions();
+  } catch (err) {
+    alert(err?.message || "Couldn't add that tag.");
+  }
+}
+
+async function handleRemoveTag(clipCard, clipId, tag) {
+  const existing = Array.isArray(clipDataById.get(clipId)?.tags) ? clipDataById.get(clipId).tags : [];
+  const nextTags = existing.filter((t) => t !== tag);
+  try {
+    await persistClipTags(clipId, nextTags);
+    renderTagRow(clipCard, clipId, nextTags);
+    refreshMeTagFilterOptions();
+  } catch (err) {
+    alert(err?.message || "Couldn't remove that tag.");
+  }
+}
+
 document.addEventListener("click", (event) => {
   const summaryBtn = event.target.closest(".summary-btn");
   if (summaryBtn) {
@@ -1296,6 +1421,22 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  const addTagBtn = event.target.closest(".add-tag-btn");
+  if (addTagBtn) {
+    const clipCard = addTagBtn.closest(".clip-card");
+    if (clipCard && addTagBtn.dataset.clipId) void handleAddTag(clipCard, addTagBtn.dataset.clipId);
+    return;
+  }
+
+  const tagRemoveBtn = event.target.closest(".tag-remove");
+  if (tagRemoveBtn) {
+    const clipCard = tagRemoveBtn.closest(".clip-card");
+    if (clipCard && tagRemoveBtn.dataset.clipId) {
+      void handleRemoveTag(clipCard, tagRemoveBtn.dataset.clipId, tagRemoveBtn.dataset.tag || "");
+    }
+    return;
+  }
+
   const reportBtn = event.target.closest(".report-btn");
   if (reportBtn) {
     openClaimModal(reportBtn.dataset.clipId);
@@ -1329,6 +1470,26 @@ document.addEventListener("click", (event) => {
       .map((id) => id.trim())
       .filter(Boolean);
     if (clipIds.length) void saveClipsToDrive(clipIds, driveBtn);
+    return;
+  }
+
+  const pdfBtn = event.target.closest(".pdf-btn");
+  if (pdfBtn) {
+    const clipIds = (pdfBtn.dataset.clipId || pdfBtn.dataset.clipIds || "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    if (clipIds.length) exportClipsAsPdf(clipIds);
+    return;
+  }
+
+  const docsBtn = event.target.closest(".docs-btn");
+  if (docsBtn) {
+    const clipIds = (docsBtn.dataset.clipId || docsBtn.dataset.clipIds || "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    if (clipIds.length) void exportClipsToGoogleDocs(clipIds, docsBtn);
   }
 });
 
@@ -1469,6 +1630,125 @@ function exportFileName(clipIds) {
   return clipIds.length > 1 ? `cliproots-list-${first}.txt` : `cliproots-${first}.txt`;
 }
 
+// Same content as buildClipsExportText(), just marked up for PDF
+// (browser print-to-PDF, no extra library needed) and Google Docs
+// (Drive's own HTML-to-Doc conversion) - still only ever the clip's
+// text, never the underlying video/audio.
+function formatClipForExportHtml(c) {
+  const author = c.author_username ? `@${escapeHtml(c.author_username)}` : escapeHtml(c.author_display_name || "Unknown");
+  const date = c.created_at ? new Date(c.created_at).toLocaleString() : "";
+  const body = c.clip_type === "video"
+    ? `<p><strong>Video clip:</strong> ${escapeHtml(formatClipTime(c.video_start_seconds))}–${escapeHtml(formatClipTime(c.video_end_seconds))}<br><a href="${escapeHtml(videoSourceLink(c))}">${escapeHtml(videoSourceLink(c))}</a></p>`
+    : `<blockquote>${escapeHtml(c.quoted_text || "")}</blockquote>`;
+  const commentary = c.commentary ? `<p>${escapeHtml(c.commentary)}</p>` : "";
+  return `
+    <div class="clip">
+      <p class="meta">${author} · ${escapeHtml(date)}</p>
+      ${body}
+      ${commentary}
+      <p class="source">Source: <a href="${escapeHtml(c.source_url || "#")}">${escapeHtml(c.source_url || "")}</a></p>
+    </div>`;
+}
+
+function buildClipsExportHtml(clips) {
+  const title = `ClipRoots — ${clips.length} clip${clips.length === 1 ? "" : "s"}`;
+  const body = clips.map(formatClipForExportHtml).join("<hr>");
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>${escapeHtml(title)}</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 680px; margin: 40px auto; color: #211e17; }
+  h1 { font-size: 20px; }
+  blockquote { border-left: 3px solid #9c7233; margin: 12px 0; padding: 2px 16px; font-style: italic; }
+  .meta, .source { color: #6b6656; font-size: 12.5px; }
+  hr { border: none; border-top: 1px solid #e5e0d5; margin: 24px 0; }
+</style>
+</head>
+<body>
+<h1>${escapeHtml(title)}</h1>
+${body}
+</body>
+</html>`;
+}
+
+function exportClipsAsPdf(clipIds) {
+  const clips = resolveExportClips(clipIds);
+  if (!clips.length) {
+    alert("Couldn't find that clip to export. Try reloading the list.");
+    return;
+  }
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    alert("Your browser blocked the export window - allow pop-ups for ClipRoots and try again.");
+    return;
+  }
+  printWindow.document.write(buildClipsExportHtml(clips));
+  printWindow.document.close();
+  printWindow.onload = () => printWindow.print();
+}
+
+// Drive's files.create endpoint converts an uploaded text/html body into
+// a native Google Doc when the target metadata.mimeType is the
+// Workspace document type - still the drive.file scope, still just
+// creating a file this app itself made.
+async function uploadHtmlAsGoogleDoc(filename, html, token) {
+  const boundary = `cliproots-${Math.random().toString(36).slice(2)}`;
+  const body =
+    `--${boundary}\r\n` +
+    `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+    `${JSON.stringify({ name: filename, mimeType: "application/vnd.google-apps.document" })}\r\n` +
+    `--${boundary}\r\n` +
+    `Content-Type: text/html; charset=UTF-8\r\n\r\n` +
+    `${html}\r\n` +
+    `--${boundary}--`;
+
+  const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": `multipart/related; boundary=${boundary}`
+    },
+    body
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`Google Docs export failed (${response.status}). ${detail.slice(0, 200)}`);
+  }
+}
+
+async function exportClipsToGoogleDocs(clipIds, triggerBtn) {
+  const clips = resolveExportClips(clipIds);
+  if (!clips.length) {
+    alert("Couldn't find that clip to export. Try reloading the list.");
+    return;
+  }
+
+  const originalLabel = triggerBtn?.textContent;
+  if (triggerBtn) {
+    triggerBtn.disabled = true;
+    triggerBtn.textContent = "Exporting…";
+  }
+
+  try {
+    const token = await getGoogleAuthToken();
+    const docName = exportFileName(clipIds).replace(/\.txt$/, "");
+    await uploadHtmlAsGoogleDoc(docName, buildClipsExportHtml(clips), token);
+    if (triggerBtn) triggerBtn.textContent = "Exported ✓";
+    setTimeout(() => {
+      if (triggerBtn) triggerBtn.textContent = originalLabel;
+    }, 2000);
+  } catch (e) {
+    alert(e.message || "Couldn't export to Google Docs.");
+    if (triggerBtn) triggerBtn.textContent = originalLabel;
+  } finally {
+    if (triggerBtn) triggerBtn.disabled = false;
+  }
+}
+
 function downloadTextFile(filename, text) {
   const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -1493,12 +1773,24 @@ function downloadClips(clipIds) {
 
 // chrome.identity.getAuthToken only works once the extension has its
 // own OAuth client_id in manifest.json's oauth2 block (see there) -
-// until that's filled in with a real Google Cloud client ID, this
-// rejects with a clear message instead of a confusing browser error.
+// checked up front and rejected with a specific, actionable message,
+// since the placeholder otherwise surfaces as an opaque Chrome OAuth
+// error ("bad client id", "invalid_client", etc.) that doesn't say
+// what's actually wrong or how to fix it.
+const GOOGLE_CLIENT_ID_PLACEHOLDER = "YOUR_GOOGLE_OAUTH_CLIENT_ID";
+
 function getGoogleAuthToken() {
   return new Promise((resolve, reject) => {
     if (!chrome?.identity?.getAuthToken) {
       reject(new Error("Google Drive isn't available in this browser."));
+      return;
+    }
+    const configuredClientId = chrome.runtime.getManifest()?.oauth2?.client_id || "";
+    if (!configuredClientId || configuredClientId.includes(GOOGLE_CLIENT_ID_PLACEHOLDER)) {
+      reject(new Error(
+        "Google Drive isn't set up yet for this extension - manifest.json's oauth2.client_id is still the placeholder. " +
+        "Create a Google Cloud OAuth Client ID (Chrome Extension type) and put it there first."
+      ));
       return;
     }
     chrome.identity.getAuthToken({ interactive: true }, (token) => {

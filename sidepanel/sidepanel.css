@@ -972,6 +972,72 @@ a.video-range-badge:hover {
   font-weight: 600;
 }
 
+/* ---------- TAGS ---------- */
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  padding: 2px 4px 2px 9px;
+
+  border-radius: 999px;
+  border: 1px solid var(--primary-soft);
+
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.tag-remove {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+
+  border: none;
+  border-radius: 50%;
+  background: none;
+
+  color: var(--primary-dark);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tag-remove:hover {
+  background: var(--primary-soft);
+}
+
+.tag-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.tag-filter-row select {
+  padding: 5px 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--surface-raised);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 12px;
+}
+
 /* ---------- FEED ---------- */
 
 .toolbar {

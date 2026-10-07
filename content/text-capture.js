@@ -264,6 +264,19 @@
     window.addEventListener("scroll", removeButton, { passive: true });
     window.addEventListener("resize", removeButton, { passive: true });
 
+    // Right-click menu and keyboard shortcut both land here - same
+    // clipSelection() the floating button's own click handler calls,
+    // just triggered a different way. The button itself doesn't need
+    // to be showing; whatever's currently selected on the page is what
+    // gets clipped, same as if the user had clicked it.
+    chrome.runtime.onMessage.addListener((message) => {
+      if (message?.type !== MESSAGE.TRIGGER_CLIP_SELECTION) {
+        return;
+      }
+      lastSelectedText = getSelectionText();
+      void clipSelection();
+    });
+
     let previousUrl = location.href;
 
     setInterval(() => {

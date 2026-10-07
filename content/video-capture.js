@@ -478,6 +478,26 @@
 
     window.addEventListener("scroll", () => positionButton(activeVideo), { passive: true });
     window.addEventListener("resize", () => positionButton(activeVideo), { passive: true });
+
+    // Right-click "Clip this video" lands here - same start/finish
+    // toggle the overlay button's own click handler uses, just without
+    // requiring the button to be visible/clicked first. Acts on
+    // whichever video/audio element tick() is already tracking, same
+    // single-tracked-element model the button itself relies on.
+    chrome.runtime.onMessage.addListener((message) => {
+      if (message?.type !== MESSAGE.TRIGGER_CLIP_VIDEO) {
+        return;
+      }
+      if (!activeVideo) {
+        showToast("No video found on this page to clip.");
+        return;
+      }
+      if (capturing) {
+        void finishCapture();
+      } else {
+        startCapture();
+      }
+    });
   }
 
   root.ClipMarginalVideoCapture = Object.freeze({
