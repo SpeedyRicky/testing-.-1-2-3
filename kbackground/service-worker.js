@@ -39,7 +39,11 @@ chrome.runtime.onInstalled.addListener((details) => {
     chrome.contextMenus.create({
       id: CONTEXT_MENU_ID,
       title: "Clip this with ClipRoots",
-      contexts: ["selection"]
+      // "page" (not just "selection") so right-clicking a bare word -
+      // no drag-select first - still shows this item. The content
+      // script (text-capture.js) falls back to the word under the
+      // cursor when nothing's actually selected.
+      contexts: ["page", "selection"]
     });
     chrome.contextMenus.create({
       id: CONTEXT_MENU_VIDEO_ID,

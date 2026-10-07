@@ -17,6 +17,7 @@
 
   let clipButton = null;
   let lastSelectedText = "";
+  let lastRightClickedWord = "";
   let toastTimer = null;
   let attached = false;
 
@@ -64,6 +65,44 @@
       }
 
       return selection.toString().trim();
+    } catch {
+      return "";
+    }
+  }
+
+  // "Right-click a single word, no dragging/highlighting first" -
+  // chrome.contextMenus never hands the background script a click
+  // position, only selectionText (empty here, since nothing's
+  // selected). So the content script watches its own contextmenu
+  // event to find the word under the cursor itself, entirely
+  // separate from - and without touching - the existing
+  // highlight-then-click-the-button flow above.
+  function getWordAtPoint(x, y) {
+    try {
+      let range;
+      if (document.caretRangeFromPoint) {
+        range = document.caretRangeFromPoint(x, y);
+      } else if (document.caretPositionFromPoint) {
+        const pos = document.caretPositionFromPoint(x, y);
+        if (!pos) return "";
+        range = document.createRange();
+        range.setStart(pos.offsetNode, pos.offset);
+      }
+      if (!range) return "";
+
+      const node = range.startContainer;
+      if (node.nodeType !== Node.TEXT_NODE) return "";
+
+      const text = node.textContent;
+      const offset = range.startOffset;
+      const isWordChar = (ch) => /[\w'-]/.test(ch);
+
+      let start = offset;
+      let end = offset;
+      while (start > 0 && isWordChar(text[start - 1])) start--;
+      while (end < text.length && isWordChar(text[end])) end++;
+
+      return text.slice(start, end).trim();
     } catch {
       return "";
     }
@@ -264,16 +303,34 @@
     window.addEventListener("scroll", removeButton, { passive: true });
     window.addEventListener("resize", removeButton, { passive: true });
 
+    // Captures the word under the cursor on every right-click, but
+    // only matters when there's no active selection - a real
+    // selection already has its own text (used below), and still
+    // drives the existing floating "Clip this" button exactly as
+    // before. This is purely additive: it changes nothing about what
+    // happens when text is highlighted.
+    document.addEventListener(
+      "contextmenu",
+      (event) => {
+        if (!getSelectionText()) {
+          lastRightClickedWord = getWordAtPoint(event.clientX, event.clientY);
+        }
+      },
+      true
+    );
+
     // Right-click menu and keyboard shortcut both land here - same
     // clipSelection() the floating button's own click handler calls,
     // just triggered a different way. The button itself doesn't need
     // to be showing; whatever's currently selected on the page is what
-    // gets clipped, same as if the user had clicked it.
+    // gets clipped, same as if the user had clicked it. With nothing
+    // selected (a plain right-click on a word, not a drag-selection),
+    // falls back to the word the contextmenu listener just captured.
     chrome.runtime.onMessage.addListener((message) => {
       if (message?.type !== MESSAGE.TRIGGER_CLIP_SELECTION) {
         return;
       }
-      lastSelectedText = getSelectionText();
+      lastSelectedText = getSelectionText() || lastRightClickedWord;
       void clipSelection();
     });
 
