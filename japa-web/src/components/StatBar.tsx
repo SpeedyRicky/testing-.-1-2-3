@@ -1,6 +1,8 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 
-type Tone = "emerald" | "sky" | "amber" | "rose" | "violet" | "gold";
+export type Tone = "emerald" | "sky" | "amber" | "rose" | "violet" | "gold";
 
 const FILL: Record<Tone, string> = {
   emerald: "bg-emerald-400",

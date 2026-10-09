@@ -1,16 +1,18 @@
-/** @type {import('tailwindcss').Config} */
+import type { Config } from "tailwindcss";
+
 export default {
-  content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  content: ["./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: ["'JetBrains Mono'", "ui-monospace", "monospace"],
+        sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+        serif: ["var(--font-serif)", "Georgia", "serif"],
       },
       keyframes: {
         "toast-in": { from: { opacity: "0", transform: "translateY(12px) scale(.98)" }, to: { opacity: "1", transform: "none" } },
         "fade-in": { from: { opacity: "0" }, to: { opacity: "1" } },
-        "speak": { "0%,100%": { boxShadow: "0 0 0 0 rgba(52,211,153,.0)" }, "50%": { boxShadow: "0 0 0 3px rgba(52,211,153,.55)" } },
+        speak: { "0%,100%": { boxShadow: "0 0 0 0 rgba(52,211,153,0)" }, "50%": { boxShadow: "0 0 0 3px rgba(52,211,153,.55)" } },
       },
       animation: {
         "toast-in": "toast-in .25s ease-out",
@@ -20,4 +22,4 @@ export default {
     },
   },
   plugins: [],
-};
+} satisfies Config;

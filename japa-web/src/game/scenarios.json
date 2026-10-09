@@ -1,0 +1,541 @@
+{
+  "meta": {
+    "version": "0.4.0",
+    "note": "Illustrative game content, not immigration advice. Seeded from japa/data/japa_nodes.json; the web game now reads this file."
+  },
+  "routes": {
+    "STARTUP_VISA": {
+      "title": "The Startup Visa Pitch Route",
+      "short": "Startup Pitch",
+      "status": "playable",
+      "startSceneId": "SUV_PITCH_START",
+      "initialState": {
+        "currentLocation": "Home office, Lekki (Zoom)",
+        "energy": 100,
+        "walletNgn": 4500000,
+        "desperation": 30,
+        "routeStats": {
+          "investorInterest": 40,
+          "technicalCredibility": 40,
+          "scalabilityScore": 40
+        }
+      },
+      "bars": [
+        {
+          "key": "investorInterest",
+          "label": "Investor Interest"
+        },
+        {
+          "key": "technicalCredibility",
+          "label": "Technical Credibility"
+        },
+        {
+          "key": "scalabilityScore",
+          "label": "Scalability Score"
+        }
+      ]
+    },
+    "TOURIST_GAMBLE": {
+      "title": "The 180-Day Tourist Gamble",
+      "short": "Tourist Gamble",
+      "status": "playable",
+      "startSceneId": "TOURIST_HUB",
+      "initialState": {
+        "currentLocation": "Pearson Airport, Terminal 3",
+        "timeRemainingDays": 180,
+        "energy": 100,
+        "walletCad": 2500,
+        "walletNgn": 0,
+        "desperation": 25,
+        "routeStats": {
+          "networkScore": 0,
+          "resumeScore": 0,
+          "employerLeads": 0
+        }
+      },
+      "bars": [
+        {
+          "key": "timeRemainingDays",
+          "label": "Time remaining",
+          "max": 180,
+          "suffix": "d"
+        },
+        {
+          "key": "energy",
+          "label": "Energy"
+        },
+        {
+          "key": "desperation",
+          "label": "Desperation",
+          "invert": true
+        }
+      ]
+    },
+    "CAREGIVER_LMIA": {
+      "title": "The Hidden LMIA Interview",
+      "short": "LMIA Interview",
+      "status": "playable",
+      "startSceneId": "LMIA_INTERVIEW_KOVACS",
+      "initialState": {
+        "currentLocation": "Northline Logistics, Mississauga",
+        "energy": 100,
+        "desperation": 60,
+        "routeStats": {
+          "employerTrust": 20,
+          "lmiaProbability": 20
+        }
+      },
+      "bars": [
+        {
+          "key": "employerTrust",
+          "label": "Employer Trust"
+        },
+        {
+          "key": "lmiaProbability",
+          "label": "LMIA Probability"
+        },
+        {
+          "key": "desperation",
+          "label": "Desperation",
+          "invert": true
+        }
+      ]
+    },
+    "TARGETED_TRADE": {
+      "title": "Targeted Trade",
+      "short": "Trades",
+      "status": "coming_soon",
+      "bars": []
+    },
+    "PNP_RURAL": {
+      "title": "PNP Rural Stream",
+      "short": "PNP Rural",
+      "status": "coming_soon",
+      "bars": []
+    }
+  },
+  "scenes": {
+    "SUV_PITCH_START": {
+      "id": "SUV_PITCH_START",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "speaker": "Ms. Vance (Committee Chair)",
+      "dialogue": "Thank you for the presentation. Your fintech concept for sub-Saharan trade looks interesting on paper. However, Canada's regulatory market is heavily protected, and compliance here is notoriously brutal. Why should we back an unproven foreign platform over an established local player?",
+      "choices": [
+        {
+          "text": "Nigeria's fintech sector is much faster and more innovative than Canada's. Our tech is simply superior.",
+          "label": "ARROGANCE TRAP",
+          "nextSceneId": "SUV_PITCH_CHEN",
+          "effects": {
+            "investorInterest": -30,
+            "technicalCredibility": -10,
+            "desperation": 15
+          },
+          "feedback": "That dismissed the panel's knowledge of their own market."
+        },
+        {
+          "text": "We aren't competing with Canadian banks. Our software is an interoperable bridge that lets Canadian exporters settle invoices with West African suppliers in real time, removing 48-hour delays.",
+          "label": "HIGH VALUE MATCH",
+          "nextSceneId": "SUV_PITCH_CHEN",
+          "effects": {
+            "investorInterest": 25,
+            "scalabilityScore": 20
+          },
+          "feedback": "You framed it as direct economic value for Canada."
+        }
+      ]
+    },
+    "SUV_PITCH_CHEN": {
+      "id": "SUV_PITCH_CHEN",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "speaker": "Mr. Chen (Chief Technology Officer)",
+      "dialogue": "Let's look at your architecture. Your platform handles high-volume cross-border ledger balances. If the data pipes fail or a severe bottleneck occurs between Lagos and Toronto, how does your ledger protect financial integrity without crashing performance?",
+      "choices": [
+        {
+          "text": "We use advanced cloud systems and high-end security encryption to make sure everything stays secure and never crashes.",
+          "label": "TECHNICAL DROPOUT",
+          "nextSceneId": "SUV_PITCH_ROSS",
+          "effects": {
+            "technicalCredibility": -35
+          },
+          "feedback": "You did not answer the architecture question."
+        },
+        {
+          "text": "We use an asynchronous, event-driven design with message queues and a local encrypted buffer. If connectivity drops in Nigeria, transactions wait in the queue and settle through verified handshakes when the link returns.",
+          "label": "CRITICAL CRUISE",
+          "nextSceneId": "SUV_PITCH_ROSS",
+          "effects": {
+            "technicalCredibility": 40,
+            "investorInterest": 15,
+            "energy": -10
+          },
+          "feedback": "A precise answer. It also took real effort to deliver."
+        }
+      ]
+    },
+    "SUV_PITCH_ROSS": {
+      "id": "SUV_PITCH_ROSS",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "speaker": "Mr. Ross (Managing Partner)",
+      "dialogue": "Your team listing shows four co-founders, all in Lagos. If we issue a Letter of Support, the core team must relocate to Canada to scale this business. What happens if your Lead Developer decides to stay behind or fails their immigration check?",
+      "choices": [
+        {
+          "text": "That won't happen. We are best friends from university and fully committed to moving together. We trust each other completely.",
+          "label": "BUSINESS RISK",
+          "nextSceneId": "SUV_PITCH_RESOLVE",
+          "effects": {
+            "scalabilityScore": -20,
+            "investorInterest": -10
+          },
+          "feedback": "Investors back contingency plans, not friendships."
+        },
+        {
+          "text": "We've already planned for that. Our code and documentation follow strict conventions, and our legal agreement has a key-person clause so a vetted proxy developer in Ontario can step into oversight if a founder is delayed.",
+          "label": "OPERATIONAL FAILSAFE",
+          "nextSceneId": "SUV_PITCH_RESOLVE",
+          "effects": {
+            "scalabilityScore": 35,
+            "investorInterest": 20
+          },
+          "feedback": "That showed institutional maturity."
+        }
+      ]
+    },
+    "SUV_PITCH_RESOLVE": {
+      "id": "SUV_PITCH_RESOLVE",
+      "route": "STARTUP_VISA",
+      "layoutType": "RESOLUTION",
+      "branch": [
+        {
+          "when": {
+            "investorInterest": [
+              ">=",
+              70
+            ],
+            "technicalCredibility": [
+              ">=",
+              65
+            ]
+          },
+          "nextSceneId": "SUV_LOS_ISSUED"
+        },
+        {
+          "nextSceneId": "SUV_PITCH_FAIL"
+        }
+      ]
+    },
+    "SUV_LOS_ISSUED": {
+      "id": "SUV_LOS_ISSUED",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "speaker": "Maple Venture Incubator",
+      "dialogue": "The committee votes yes. A Letter of Support is on its way. This is the first step of a long process: the Letter of Support is required, but it does not by itself grant permanent residence.",
+      "onEnter": {
+        "streetCred": 20,
+        "desperation": -15
+      },
+      "outcome": {
+        "result": "win",
+        "reason": "SUV_LOS_ISSUED",
+        "title": "LETTER OF SUPPORT ISSUED",
+        "subtitle": "The committee backs your startup. Now the real paperwork begins."
+      }
+    },
+    "SUV_PITCH_FAIL": {
+      "id": "SUV_PITCH_FAIL",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "speaker": "Maple Venture Incubator",
+      "dialogue": "The committee passes on your pitch. You lose ₦500,000 in incorporation and consulting fees, and the Startup Visa route is blocked for now.",
+      "onEnter": {
+        "walletNgn": -500000,
+        "desperation": 20
+      },
+      "outcome": {
+        "result": "fail",
+        "reason": "SUV_REJECTED",
+        "title": "Suv Rejected"
+      }
+    },
+    "LMIA_INTERVIEW_KOVACS": {
+      "id": "LMIA_INTERVIEW_KOVACS",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "CORPORATE_OFFICE",
+      "speaker": "Mr. Kovacs (Operations Director)",
+      "dialogue": "Your operational background in Lagos is honestly fantastic. You've managed larger fleets than we have here. But I see you're on a visitor record, and we need someone who can start full-time immediately. Why should I spend our legal budget waiting on an LMIA for you?",
+      "choices": [
+        {
+          "text": "Please sir, my visa is running out and I don't want to go back to Nigeria. If you sponsor me, I'll work harder than anyone and never complain.",
+          "label": "CRITICAL LEAK",
+          "nextSceneId": "LMIA_ADVERTISING",
+          "effects": {
+            "employerTrust": -40,
+            "lmiaProbability": -50,
+            "desperation": 20
+          },
+          "feedback": "Managers read desperation as a compliance and liability risk."
+        },
+        {
+          "text": "I understand the hesitation. My background matches your logistics tracking software, so I won't need the usual three-month onboarding. I can clear your inventory backlog and save you more than the LMIA processing fee costs.",
+          "label": "HIGH ROI MATCH",
+          "nextSceneId": "LMIA_ADVERTISING",
+          "effects": {
+            "employerTrust": 30,
+            "lmiaProbability": 25
+          },
+          "feedback": "You framed the legal cost as an operating saving."
+        }
+      ]
+    },
+    "LMIA_ADVERTISING": {
+      "id": "LMIA_ADVERTISING",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "CORPORATE_OFFICE",
+      "speaker": "Mr. Kovacs (Operations Director)",
+      "dialogue": "The numbers make sense. But Service Canada requires me to show I advertised this job to Canadians and permanent residents and couldn't find a qualified person. How do we get past that?",
+      "choices": [
+        {
+          "text": "We can post a fake job listing with impossible requirements so no Canadian qualifies and the government has to approve my file.",
+          "label": "LEGAL HAZARD",
+          "nextSceneId": "LMIA_FRAUD_FAIL",
+          "effects": {},
+          "feedback": "Suggesting fraud to a legitimate employer ends the conversation."
+        },
+        {
+          "text": "Your freight runs through West African corridors. If the role genuinely needs knowledge of those trade compliance frameworks, that requirement can be documented in the posting.",
+          "label": "RISKY GAMBLE",
+          "nextSceneId": "LMIA_RESOLVE",
+          "effects": {
+            "lmiaProbability": 30,
+            "desperation": -20
+          },
+          "feedback": "A real, specific requirement can be legitimate. An inflated one gets scrutinised, and it can backfire."
+        },
+        {
+          "text": "Let's follow the advertising rules exactly. I'll help you document the real requirements of the role and any recruitment you've already done.",
+          "label": "COMPLIANT PATH",
+          "nextSceneId": "LMIA_RESOLVE",
+          "effects": {
+            "lmiaProbability": 15,
+            "employerTrust": 15
+          },
+          "feedback": "Slower, but nothing here can be used against either of you."
+        }
+      ]
+    },
+    "LMIA_FRAUD_FAIL": {
+      "id": "LMIA_FRAUD_FAIL",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "CORPORATE_OFFICE",
+      "speaker": "Mr. Kovacs",
+      "dialogue": "Mr. Kovacs stands up. 'This interview is over.' Misrepresentation in an immigration application can lead to a five-year inadmissibility period.",
+      "onEnter": {
+        "desperation": 25,
+        "streetCred": -10
+      },
+      "outcome": {
+        "result": "fail",
+        "reason": "BLATANT_MISREPRESENTATION",
+        "title": "Blatant Misrepresentation"
+      }
+    },
+    "LMIA_RESOLVE": {
+      "id": "LMIA_RESOLVE",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "RESOLUTION",
+      "branch": [
+        {
+          "when": {
+            "lmiaProbability": [
+              ">=",
+              50
+            ],
+            "employerTrust": [
+              ">=",
+              20
+            ]
+          },
+          "nextSceneId": "LMIA_SPONSORSHIP"
+        },
+        {
+          "nextSceneId": "LMIA_DECLINED"
+        }
+      ]
+    },
+    "LMIA_SPONSORSHIP": {
+      "id": "LMIA_SPONSORSHIP",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "CORPORATE_OFFICE",
+      "speaker": "Mr. Kovacs",
+      "dialogue": "Kovacs nods slowly. 'Send me what you have. I'll talk to our immigration lawyer.' A sponsorship offer is not a work permit yet, but you are in the process.",
+      "onEnter": {
+        "desperation": -10,
+        "streetCred": 15
+      },
+      "outcome": {
+        "result": "win",
+        "reason": "LMIA_SPONSORSHIP_STARTED",
+        "title": "EMPLOYER WILL SPONSOR",
+        "subtitle": "The LMIA process starts. The clock is still running."
+      }
+    },
+    "LMIA_DECLINED": {
+      "id": "LMIA_DECLINED",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "CORPORATE_OFFICE",
+      "speaker": "Mr. Kovacs",
+      "dialogue": "'I like you, but it's too much risk for us right now.' The interview ends politely and the clock keeps ticking.",
+      "onEnter": {
+        "desperation": 15
+      },
+      "outcome": {
+        "result": "fail",
+        "reason": "NO_SPONSORSHIP",
+        "title": "No Sponsorship"
+      }
+    },
+    "TOURIST_HUB": {
+      "id": "TOURIST_HUB",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "DASHBOARD",
+      "speaker": "The 180-Day Tourist Gamble",
+      "dialogue": "You landed on a visitor record with savings, a cousin's couch and a plan: find an employer willing to start an LMIA before your time runs out. Visitors can network and interview. Visitors cannot work.",
+      "dashboard": {
+        "dailyCostCad": 20,
+        "ngnPerCad": 1150,
+        "leadsToWin": 3,
+        "winSceneId": "TOURIST_WIN",
+        "lowTimeDays": 60,
+        "actions": [
+          {
+            "id": "job_fair",
+            "label": "Attend In-Person Tech/Job Fair",
+            "blurb": "Metro Toronto Convention Centre",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": -30,
+              "walletCad": -25,
+              "desperation": -3,
+              "networkScore": 8
+            },
+            "leadChance": 0.3,
+            "location": "Metro Toronto Convention Centre",
+            "consequences": [
+              "You collected 14 tote bags, 3 stress balls and one real business card. It belongs to a recruiter from your own village.",
+              "A booth handed you a free hoodie. It is the warmest thing you own.",
+              "You queued 40 minutes for the Shopify booth. They were out of stickers and jobs."
+            ],
+            "leadConsequences": [
+              "A logistics director asked for your CV, then your WhatsApp. Then actually replied. Lead acquired."
+            ]
+          },
+          {
+            "id": "cold_message",
+            "label": "Cold Message 10 Hiring Managers",
+            "blurb": "LinkedIn, from your cousin's couch",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": -15,
+              "desperation": 2
+            },
+            "leadChance": 0.12,
+            "location": "Cousin's couch, Brampton",
+            "consequences": [
+              "9 left you on 'seen'. One replied: 'Wrong person, I sell insurance. Are you covered?'",
+              "LinkedIn suggested you 'Open to Work' harder. You are already wearing the green banner like a cape.",
+              "A recruiter replied with a thumbs-up emoji and nothing else. You have analysed it for three hours."
+            ],
+            "leadConsequences": [
+              "An operations manager in Mississauga wrote back: 'Can you talk Thursday?' You screamed into a cushion."
+            ]
+          },
+          {
+            "id": "mentor_coffee",
+            "label": "Coffee Chat with a Naija-Canadian Mentor",
+            "blurb": "Tim Hortons, double-double on you",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": -10,
+              "walletCad": -8,
+              "desperation": -6,
+              "networkScore": 12,
+              "streetCred": 3
+            },
+            "leadChance": 0.08,
+            "location": "Tim Hortons, Square One",
+            "consequences": [
+              "She has been here 11 years. Her first advice: 'Buy proper boots.' Her second: 'Stop saying sir.'",
+              "He spent 40 minutes on Canadian work culture and 20 on why Jollof here is a scandal."
+            ],
+            "leadConsequences": [
+              "Your mentor forwarded your CV to her old manager. 'He owes me a favour.'"
+            ]
+          },
+          {
+            "id": "resume",
+            "label": "Canadianize Your Resume",
+            "blurb": "Delete the passport photo, add metrics",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": -20,
+              "desperation": -2,
+              "resumeScore": 15
+            },
+            "location": "Brampton Public Library",
+            "consequences": [
+              "You removed your photo, date of birth and state of origin. It already looks 40% more Canadian.",
+              "Your 4-page CV is now 2 pages. You mourn the loss of 'Hobbies: Reading and Travelling'."
+            ]
+          },
+          {
+            "id": "rest",
+            "label": "Rest on Cousin's Couch",
+            "blurb": "Recover energy, absorb the side-eye",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": 40,
+              "walletCad": -15,
+              "desperation": 4
+            },
+            "location": "Cousin's couch, Brampton",
+            "consequences": [
+              "Your cousin's wife asked, very politely, about 'your timeline'.",
+              "You slept 11 hours. The kids have started calling you 'Uncle Couch'."
+            ]
+          },
+          {
+            "id": "cash_job",
+            "label": "Take a Cash Warehouse Shift (Under the Table)",
+            "blurb": "CAD 150, no questions asked",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": -40,
+              "walletCad": 150
+            },
+            "location": "Unmarked warehouse, Etobicoke",
+            "fatal": "Working without authorization on visitor status can lead to removal and a ban on returning. Game over.",
+            "consequences": [
+              "The 'no questions asked' part lasted until the inspection."
+            ]
+          }
+        ]
+      }
+    },
+    "TOURIST_WIN": {
+      "id": "TOURIST_WIN",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "DASHBOARD",
+      "speaker": "Northline Logistics",
+      "dialogue": "Mr. Kovacs at Northline Logistics wants to meet you.",
+      "outcome": {
+        "result": "win",
+        "reason": "INTERVIEW_SECURED",
+        "title": "You got the meeting",
+        "subtitle": "The Hidden LMIA Interview is unlocked. Your desperation walks in with you."
+      },
+      "unlocksRoute": "CAREGIVER_LMIA"
+    }
+  }
+}

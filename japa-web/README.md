@@ -1,42 +1,63 @@
 # Japa: The Great Escape (web edition)
 
-A browser version of three Japa scenarios, built to be shared as a link.
-Vite + React + TypeScript + Tailwind. No backend, no tracking, nothing stored.
+Next.js 14 + TypeScript + Tailwind CSS + lucide-react. A data-driven game: every scene, route, stat bar and
+daily action lives in `src/game/scenarios.json`; React only renders what that file describes.
 
-| Mode | What it is |
-|---|---|
-| **The Startup Visa Pitch Route** | A Zoom-style 2x2 call with Ms. Vance, Mr. Chen and Mr. Ross. Answers move Investor Interest, Technical Credibility and Scalability Score; the Letter of Support resolution screen shows each criterion against its threshold. |
-| **The 180-Day Tourist Gamble** | A dashboard: tourist time remaining, energy, desperation, wallet in CAD with the NGN equivalent, location. Daily actions cost time, energy and money and pop a toast. Three employer leads win the round and carry you (and your desperation) into the LMIA interview. |
-| **The Hidden LMIA Interview** | The Mr. Kovacs dialogue tree in a boardroom theme. |
+| Route | Layout | What happens |
+|---|---|---|
+| **The Startup Visa Pitch Route** (`STARTUP_VISA`) | `ZOOM_GRID` | 2x2 Zoom call with Ms. Vance, Mr. Chen, Mr. Ross. Answers move Investor Interest, Technical Credibility, Scalability Score. Ends on the Letter of Support resolution screen. |
+| **The 180-Day Tourist Gamble** (`TOURIST_GAMBLE`) | `DASHBOARD` | Time remaining, energy, desperation, CAD wallet with ₦ conversion, location. Daily actions cost time, energy and money and show a toast. 3 employer leads win and unlock the LMIA interview, carrying your desperation and wallet in. |
+| **The Hidden LMIA Interview** (`CAREGIVER_LMIA`) | `CORPORATE_OFFICE` | Mr. Kovacs dialogue tree in a boardroom theme. |
+| Targeted Trade, PNP Rural | | Listed as "Soon". Add scenes and set `status` to `playable`. |
 
 ## Run
 ```
 npm install
-npm run dev        # http://localhost:5173
-npm test           # engine tests (vitest)
-npm run build      # type-check + production build into dist/
+npm run dev        # http://localhost:3000
+npm test           # 29 engine tests (vitest)
+npm run build      # type-check + production build
 ```
 
 ## Deploy to Vercel
-1. Push the repo to GitHub (already done if you are reading this there).
-2. vercel.com → **Add New… → Project** → import the repo.
-3. Set **Root Directory** to `japa-web`. Vercel detects Vite; `vercel.json` sets the build command and `dist` output.
-4. Deploy. Every push to the branch gets a preview URL.
+vercel.com → **Add New → Project** → import this repo → **Root Directory: `japa-web`** → Deploy.
+Vercel detects Next.js; no settings needed.
 
-## How it is built
-- `src/engine/machine.ts`: the state machine. One reducer, three modes (`pitch | tourist | lmia`), each keeping its
-  own progress when you switch. Events are plain objects (`SWITCH_MODE`, `PITCH_CHOOSE`, `TOURIST_ACTION`, ...).
-- `src/engine/dialogue.ts`: a TypeScript port of the Godot dialogue runner (`japa/scripts/global/narrative.gd`):
-  mutations, conditions, `auto_branch`, terminal outcomes.
-- `src/engine/pitch.ts`: `resolveLetterOfSupport()` reads the thresholds from the `suv_resolve` node, so the web
-  and Godot games always agree on who gets the Letter (Investor Interest ≥ 70 and Technical Credibility ≥ 65;
-  Scalability is tracked but not scored, as in the Godot game).
-- `src/engine/tourist.ts`: the tourist simulation. Pure; randomness is passed in as `rolls`, so it is testable.
-- Randomness, rates and costs are illustrative game values.
+For a single-file preview (no server): `node scripts/build-standalone.mjs out/japa.html`.
 
-## Content is shared with the Godot game
-The pitch and Kovacs dialogue come from `src/content/japa_nodes.json`, a copy of `../japa/data/japa_nodes.json`.
-Edit the Godot file, then run `npm run sync-content`.
+## Files
+```
+app/layout.tsx, app/page.tsx      Next.js shell (fonts, metadata)
+src/game/types.ts                 GameState and the scenarios.json schema
+src/game/scenarios.json           all content: routes, scenes, choices, effects, dashboard actions
+src/game/engine.ts                pure rules: effects, conditions, scene entry, resolution, dashboard actions
+src/game/machine.ts               the state machine (one reducer; each route keeps its own GameState)
+src/components/LayoutContainer.tsx  reads the current scene, maps stats to animated bars, picks layout + background by route
+src/components/layouts/*          ZoomGrid, CorporateOffice, Dashboard
+```
+
+## Adding a scene (no code)
+Add an entry under `scenes` in `scenarios.json`:
+```json
+"SUV_PITCH_CHEN": {
+  "id": "SUV_PITCH_CHEN", "route": "STARTUP_VISA", "layoutType": "ZOOM_GRID",
+  "speaker": "Mr. Chen (Chief Technology Officer)",
+  "dialogue": "Let's look at your architecture...",
+  "choices": [
+    { "text": "...", "label": "TECHNICAL DROPOUT", "nextSceneId": "SUV_PITCH_ROSS",
+      "effects": { "technicalCredibility": -35 }, "feedback": "You did not answer the architecture question." }
+  ]
+}
+```
+- `effects`: numbers added to any `GameState` stat (`energy`, `walletCad`, `desperation`, ...) or `routeStats` key.
+- `requires` + `lockedHint` on a choice lock it until a condition holds, e.g. `{ "streetCred": [">=", 20] }`.
+- A `RESOLUTION` scene decides automatically: `branch: [{ "when": {...}, "nextSceneId": "WIN" }, { "nextSceneId": "FAIL" }]`.
+  Its thresholds also draw the white tick on the stat bars.
+- A scene with `outcome` ends the run (`result`: `win` / `fail` / `neutral`).
+- `npm test` checks every link, stat name and dead end, so a typo fails the tests instead of the game.
+
+## Content source
+`scenarios.json` was seeded from the Godot game's `japa/data/japa_nodes.json` and is now the web game's own file.
+The Godot project is not updated automatically from it.
 
 ## Disclaimer
 A simulation for entertainment, not legal or immigration advice. Working without authorization on visitor status is

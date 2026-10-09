@@ -4,7 +4,7 @@
 
 @layer base {
   html { color-scheme: dark; }
-  body { @apply bg-zinc-950 text-zinc-100; }
+  body { @apply bg-zinc-950 text-zinc-100 antialiased; }
   button { -webkit-tap-highlight-color: transparent; }
 }
 
@@ -14,7 +14,7 @@
   .choice-btn {
     @apply w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-left text-sm leading-relaxed text-zinc-200
       transition-all duration-200 hover:border-white/25 hover:bg-white/[0.08] focus:outline-none focus-visible:ring-2
-      focus-visible:ring-emerald-400/60 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/10
+      focus-visible:ring-white/40 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/10
       disabled:hover:bg-white/[0.04];
   }
 }
