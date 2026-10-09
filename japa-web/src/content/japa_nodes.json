@@ -1,0 +1,1535 @@
+{
+  "game_meta": {
+    "version": "0.3.0",
+    "note": "Illustrative game content. Verify any immigration fact before treating it as current."
+  },
+  "scenarios": [
+    {
+      "id": "funding_pool",
+      "title": "The Japa Fund",
+      "subtitle": "Micro-loan, sell the car, or pitch Uncle Emeka",
+      "start_node": "fund_hub",
+      "phase": 1,
+      "replayable": true
+    },
+    {
+      "id": "agent_scam",
+      "title": "The Travel Consultant",
+      "subtitle": "Spot the fake LMIA offer",
+      "start_node": "encounter_agent_01",
+      "phase": 1,
+      "done_flag": "done_agent_scam"
+    },
+    {
+      "id": "devaluation",
+      "title": "Village People: Devaluation",
+      "subtitle": "The rate jumps overnight (can also strike at random)",
+      "start_node": "village_people_devaluation",
+      "phase": 1,
+      "done_flag": "done_devaluation"
+    },
+    {
+      "id": "suv_pitch",
+      "title": "Startup Pitch",
+      "subtitle": "Maple Venture Incubator, via Zoom",
+      "start_node": "suv_q1",
+      "phase": 1,
+      "setup": {
+        "investor_interest": 40,
+        "technical_credibility": 40,
+        "scalability": 40
+      },
+      "done_flag": "done_suv_pitch",
+      "reset_stats": [
+        "investor_interest",
+        "technical_credibility",
+        "scalability"
+      ]
+    },
+    {
+      "id": "embassy_interview",
+      "title": "The Visa Interview",
+      "subtitle": "Timed. The officer will not wait",
+      "start_node": "emb_q1",
+      "phase": 1,
+      "requires": {
+        "naira_wallet": [
+          ">=",
+          7000000
+        ],
+        "route.ielts_best_clb": [
+          ">=",
+          7
+        ]
+      },
+      "locked_hint": "Needs N7,000,000 in the bank and IELTS Writing CLB 7+",
+      "setup": {
+        "naira_wallet": -250000
+      },
+      "reset_stats": [
+        "officer_confidence"
+      ],
+      "done_flag": "visa_approved"
+    },
+    {
+      "id": "landing",
+      "title": "Touchdown",
+      "subtitle": "Border control and the exchange rate shock",
+      "start_node": "landing_01",
+      "phase": 1,
+      "done_flag": "done_landing",
+      "requires": {
+        "flag.visa_approved": [
+          "==",
+          true
+        ]
+      },
+      "locked_hint": "Get your visa approved at the embassy first"
+    },
+    {
+      "id": "landlord_split",
+      "title": "The Landlord",
+      "subtitle": "No credit score, family still in Lagos",
+      "start_node": "encounter_spousal_split_01",
+      "phase": 2,
+      "done_flag": "done_landlord_split"
+    },
+    {
+      "id": "lmia_interview",
+      "title": "The LMIA Interview",
+      "subtitle": "Mr. Kovacs, Mississauga",
+      "start_node": "kovacs_q1",
+      "phase": 2,
+      "setup": {
+        "employer_trust": 20,
+        "lmia_probability": 20,
+        "desperation": 60
+      },
+      "done_flag": "done_lmia_interview",
+      "reset_stats": [
+        "employer_trust",
+        "lmia_probability",
+        "desperation"
+      ]
+    },
+    {
+      "id": "year_one",
+      "title": "One Year On",
+      "subtitle": "The final chapter",
+      "start_node": "year_one_01",
+      "phase": 2,
+      "requires": {
+        "flag.done_landlord_split": [
+          "==",
+          true
+        ],
+        "flag.done_lmia_interview": [
+          "==",
+          true
+        ],
+        "canada_days": [
+          ">=",
+          30
+        ]
+      },
+      "locked_hint": "Find a home, win an employer's sponsorship and survive 30 days in Canada",
+      "done_flag": "done_year_one"
+    },
+    {
+      "id": "ev_fuel",
+      "title": "Fuel Price Surge",
+      "subtitle": "Village People event",
+      "start_node": "ev_fuel_01",
+      "phase": 1,
+      "event": true,
+      "replayable": true
+    },
+    {
+      "id": "ev_nepa",
+      "title": "No Light",
+      "subtitle": "Village People event",
+      "start_node": "ev_nepa_01",
+      "phase": 1,
+      "event": true,
+      "replayable": true
+    },
+    {
+      "id": "ev_hospital",
+      "title": "Hospital Bill",
+      "subtitle": "Village People event",
+      "start_node": "ev_hospital_01",
+      "phase": 1,
+      "event": true,
+      "replayable": true
+    },
+    {
+      "id": "ev_owambe",
+      "title": "Owambe Season",
+      "subtitle": "Village People event",
+      "start_node": "ev_owambe_01",
+      "phase": 1,
+      "event": true,
+      "replayable": true
+    },
+    {
+      "id": "ev_loan_call",
+      "title": "Loan Recovery",
+      "subtitle": "Village People event",
+      "start_node": "ev_loan_call_01",
+      "phase": 1,
+      "event": true,
+      "replayable": true
+    },
+    {
+      "id": "ev_devaluation",
+      "title": "Devaluation",
+      "subtitle": "Village People event",
+      "start_node": "village_people_devaluation",
+      "phase": 1,
+      "event": true,
+      "replayable": true
+    },
+    {
+      "id": "ev_winter",
+      "title": "Extreme Cold",
+      "subtitle": "Village People event",
+      "start_node": "ev_winter_01",
+      "phase": 2,
+      "event": true,
+      "replayable": true
+    },
+    {
+      "id": "ev_shift",
+      "title": "Shift Cancelled",
+      "subtitle": "Village People event",
+      "start_node": "ev_shift_01",
+      "phase": 2,
+      "event": true,
+      "replayable": true
+    },
+    {
+      "id": "ev_school_fees",
+      "title": "School Fees",
+      "subtitle": "Village People event",
+      "start_node": "ev_school_fees_01",
+      "phase": 2,
+      "event": true,
+      "replayable": true
+    },
+    {
+      "id": "ev_sowp",
+      "title": "SOWP Backlog",
+      "subtitle": "Village People event",
+      "start_node": "ev_sowp_01",
+      "phase": 2,
+      "event": true,
+      "replayable": true
+    }
+  ],
+  "dialogue_nodes": {
+    "encounter_agent_01": {
+      "speaker": "Alhaji Travel Consultant",
+      "text": "Ah, my brother! You are in luck. I have an urgent nanny slot open in Calgary. Approved LMIA is ready. No IELTS, no experience required. Just pay ₦4.5M cash upfront and you land in 4 weeks. Guaranteed.",
+      "choices": [
+        {
+          "text": "Wow, 4 weeks? Let's make the deposit right now!",
+          "next_node": "encounter_agent_scammed",
+          "mutations": {
+            "naira_wallet": -1500000,
+            "village_people_multiplier": 2.5
+          },
+          "tag": "FRAUD_PAID",
+          "feedback": "You handed money to a stranger on the strength of a promise."
+        },
+        {
+          "text": "Can you show me the employer's official LMIA approval and a written job offer first?",
+          "next_node": "encounter_agent_pushback",
+          "mutations": {
+            "street_cred": 15,
+            "mental_stress": 5
+          },
+          "tag": "GOOD_INSTINCT",
+          "feedback": "Asking for proof is exactly what a real recruiter expects."
+        },
+        {
+          "text": "That's not how LMIAs work. Agents can't sell them. No thanks.",
+          "next_node": "encounter_agent_escaped",
+          "mutations": {
+            "street_cred": 20
+          },
+          "tag": "RED_FLAG_SPOTTED",
+          "feedback": "You recognised the scam on the first pitch."
+        }
+      ]
+    },
+    "encounter_agent_pushback": {
+      "speaker": "Alhaji Travel Consultant",
+      "text": "Why are you asking me for numbers? Do you want to steal my connection? Trust the process, my friend! Pay the ₦1.5M commitment fee today or I give this visa to someone else.",
+      "choices": [
+        {
+          "text": "Fine, I can't risk losing the slot. (Transfer ₦1.5M)",
+          "next_node": "encounter_agent_scammed",
+          "mutations": {
+            "naira_wallet": -1500000,
+            "mental_stress": 10
+          },
+          "tag": "PRESSURE_WORKED",
+          "feedback": "Urgency and pressure are the scammer's main tools."
+        },
+        {
+          "text": "No verifiable job offer means no money leaves my pocket. Good day.",
+          "next_node": "encounter_agent_escaped",
+          "mutations": {
+            "street_cred": 30,
+            "mental_stress": -10
+          },
+          "tag": "SCAM_AVOIDED",
+          "feedback": "Walking away cost you nothing."
+        }
+      ]
+    },
+    "encounter_agent_scammed": {
+      "speaker": "System Notification",
+      "text": "CRITICAL FAILURE: Alhaji blocked you on WhatsApp. The document he provided was a photoshopped template. IRCC flagged it as misrepresentation, which can mean a five-year ban from Canada.",
+      "choices": [],
+      "outcome": "fail",
+      "terminal_condition": "GAME_OVER_FRAUD"
+    },
+    "encounter_agent_escaped": {
+      "speaker": "System Notification",
+      "text": "SUCCESS: You spotted the red flags. Legitimate LMIAs are applied for by employers and cannot be bought from agents. Your money stays secure.",
+      "choices": [
+        {
+          "text": "Return to Dashboard",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "done_agent_scam": true,
+            "street_cred": 5
+          }
+        }
+      ]
+    },
+    "village_people_devaluation": {
+      "speaker": "Village People Alert",
+      "text": "CRITICAL EMERGENCY: The parallel market rate has jumped overnight. Your saved tuition funds just lost 18% of their purchasing power against the Canadian dollar.",
+      "choices": [
+        {
+          "text": "Delay your intake and wait for the rate to recover.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "day": 30,
+            "mental_stress": 10
+          },
+          "tag": "PATIENCE_GAMBLE",
+          "feedback": "You push the intake back a semester. The rate might recover, or it might not."
+        },
+        {
+          "text": "Borrow from a fintech lender to cover the gap.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "naira_wallet": 600000,
+            "mental_stress": 20,
+            "in_debt": true
+          },
+          "tag": "PREDATORY_LENDER",
+          "feedback": "The money arrives fast. The repayment terms will not be kind."
+        },
+        {
+          "text": "Absorb the loss and keep going.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "mental_stress": 5,
+            "street_cred": 5
+          },
+          "tag": "TOUGH_IT_OUT",
+          "feedback": "You accept the hit and adjust the budget."
+        }
+      ],
+      "on_enter": {
+        "naira_wallet": -810000,
+        "mental_stress": 10,
+        "done_devaluation": true
+      }
+    },
+    "suv_q1": {
+      "speaker": "Ms. Vance (Committee Chair)",
+      "text": "Thank you for the presentation. Your fintech concept for sub-Saharan trade looks interesting on paper. However, Canada's regulatory market is heavily protected, and compliance here is notoriously brutal. Why should we back an unproven foreign platform over an established local player?",
+      "choices": [
+        {
+          "text": "Nigeria's fintech sector is much faster and more innovative than Canada's. Our tech is simply superior.",
+          "next_node": "suv_q2",
+          "mutations": {
+            "investor_interest": -30,
+            "technical_credibility": -10
+          },
+          "tag": "ARROGANCE_TRAP",
+          "feedback": "That dismissed the panel's knowledge of their own market."
+        },
+        {
+          "text": "We aren't competing with Canadian banks. Our software is an interoperable bridge that lets Canadian exporters settle invoices with West African suppliers in real time, removing 48-hour delays.",
+          "next_node": "suv_q2",
+          "mutations": {
+            "investor_interest": 25,
+            "scalability": 20
+          },
+          "tag": "HIGH_VALUE_MATCH",
+          "feedback": "You framed it as direct economic value for Canada."
+        }
+      ]
+    },
+    "suv_q2": {
+      "speaker": "Mr. Chen (Chief Technology Officer)",
+      "text": "Let's look at your architecture. Your platform handles high-volume cross-border ledger balances. If the data pipes fail or a severe bottleneck occurs between Lagos and Toronto, how does your ledger protect financial integrity without crashing performance?",
+      "choices": [
+        {
+          "text": "We use advanced cloud systems and high-end security encryption to make sure everything stays secure and never crashes.",
+          "next_node": "suv_q3",
+          "mutations": {
+            "technical_credibility": -35
+          },
+          "tag": "TECHNICAL_DROPOUT",
+          "feedback": "You did not answer the architecture question."
+        },
+        {
+          "text": "We use an asynchronous, event-driven design with message queues and a local encrypted buffer. If connectivity drops in Nigeria, transactions wait in the queue and settle through verified handshakes when the link returns.",
+          "next_node": "suv_q3",
+          "mutations": {
+            "technical_credibility": 40,
+            "investor_interest": 15,
+            "stamina": -10
+          },
+          "tag": "CRITICAL_CRUISE",
+          "feedback": "A precise answer. It also took real effort to deliver."
+        }
+      ]
+    },
+    "suv_q3": {
+      "speaker": "Mr. Ross (Managing Partner)",
+      "text": "Your team listing shows four co-founders, all in Lagos. If we issue a Letter of Support, the core team must relocate to Canada to scale this business. What happens if your Lead Developer decides to stay behind or fails their immigration check?",
+      "choices": [
+        {
+          "text": "That won't happen. We are best friends from university and fully committed to moving together. We trust each other completely.",
+          "next_node": "suv_resolve",
+          "mutations": {
+            "scalability": -20,
+            "investor_interest": -10
+          },
+          "tag": "BUSINESS_RISK",
+          "feedback": "Investors back contingency plans, not friendships."
+        },
+        {
+          "text": "We've already planned for that. Our code and documentation follow strict conventions, and our legal agreement has a key-person clause so a vetted proxy developer in Ontario can step into oversight if a founder is delayed.",
+          "next_node": "suv_resolve",
+          "mutations": {
+            "scalability": 35,
+            "investor_interest": 20
+          },
+          "tag": "OPERATIONAL_FAILSAFE",
+          "feedback": "That showed institutional maturity."
+        }
+      ]
+    },
+    "suv_resolve": {
+      "speaker": "System",
+      "text": "",
+      "choices": [],
+      "auto_branch": [
+        {
+          "when": {
+            "route.investor_interest": [
+              ">=",
+              70
+            ],
+            "route.technical_credibility": [
+              ">=",
+              65
+            ]
+          },
+          "next_node": "suv_los_issued"
+        },
+        {
+          "next_node": "suv_rejected"
+        }
+      ]
+    },
+    "suv_los_issued": {
+      "speaker": "Maple Venture Incubator",
+      "text": "The committee votes yes. A Letter of Support is on its way. This is the first step of a long process: the Letter of Support is required, but it does not by itself grant permanent residence.",
+      "choices": [],
+      "outcome": "win",
+      "terminal_condition": "SUV_LOS_ISSUED",
+      "on_enter": {
+        "done_suv_pitch": true,
+        "street_cred": 20,
+        "mental_stress": -15
+      },
+      "celebration": {
+        "title": "LETTER OF SUPPORT ISSUED",
+        "subtitle": "The committee backs your startup. Now the real paperwork begins.",
+        "style": "visa"
+      }
+    },
+    "suv_rejected": {
+      "speaker": "Maple Venture Incubator",
+      "text": "The committee passes on your pitch. You lose ₦500,000 in incorporation and consulting fees, and the Startup Visa route is blocked for now.",
+      "choices": [],
+      "outcome": "fail",
+      "terminal_condition": "SUV_REJECTED",
+      "on_enter": {
+        "naira_wallet": -500000,
+        "mental_stress": 20
+      }
+    },
+    "kovacs_q1": {
+      "speaker": "Mr. Kovacs (Operations Director)",
+      "text": "Your operational background in Lagos is honestly fantastic. You've managed larger fleets than we have here. But I see you're on a temporary visitor visa, and we need someone who can start full-time immediately. Why should I spend our legal budget waiting on an LMIA for you?",
+      "choices": [
+        {
+          "text": "Please sir, my visa is running out and I don't want to go back to Nigeria. If you sponsor me, I'll work harder than anyone and never complain.",
+          "next_node": "kovacs_q2",
+          "mutations": {
+            "employer_trust": -40,
+            "lmia_probability": -50,
+            "desperation": 10
+          },
+          "tag": "DESPERATION_PLAY",
+          "feedback": "Managers read desperation as a compliance and liability risk."
+        },
+        {
+          "text": "I understand the hesitation. My background matches your logistics tracking software, so I won't need the usual three-month onboarding. I can clear your inventory backlog and save you more than the LMIA processing fee costs.",
+          "next_node": "kovacs_q2",
+          "mutations": {
+            "employer_trust": 30,
+            "lmia_probability": 25
+          },
+          "tag": "STRONG_ROI_CASE",
+          "feedback": "You framed the legal cost as an operating saving."
+        }
+      ]
+    },
+    "kovacs_q2": {
+      "speaker": "Mr. Kovacs (Operations Director)",
+      "text": "The numbers make sense. But Service Canada requires me to show I advertised this job to Canadians and permanent residents and couldn't find a qualified person. How do we get past that?",
+      "choices": [
+        {
+          "text": "We can post a fake job listing with impossible requirements so no Canadian qualifies and the government has to approve my file.",
+          "next_node": "kovacs_fraud",
+          "mutations": {},
+          "tag": "LEGAL_HAZARD",
+          "feedback": "Suggesting fraud to a legitimate employer ends the conversation."
+        },
+        {
+          "text": "Your freight runs through West African corridors. If the role genuinely needs knowledge of those trade compliance frameworks, that requirement can be documented in the posting.",
+          "next_node": "kovacs_resolve",
+          "mutations": {
+            "lmia_probability": 30,
+            "desperation": -20
+          },
+          "tag": "RISKY_GAMBLE",
+          "feedback": "A real, specific requirement can be legitimate. An inflated one gets scrutinised, and it can backfire."
+        },
+        {
+          "text": "Let's follow the advertising rules exactly. I'll help you document the real requirements of the role and any recruitment you've already done.",
+          "next_node": "kovacs_resolve",
+          "mutations": {
+            "lmia_probability": 15,
+            "employer_trust": 15
+          },
+          "tag": "COMPLIANT_PATH",
+          "feedback": "Slower, but nothing here can be used against either of you."
+        }
+      ]
+    },
+    "kovacs_fraud": {
+      "speaker": "Mr. Kovacs",
+      "text": "Mr. Kovacs stands up. 'This interview is over.' Misrepresentation in an immigration application can lead to a five-year inadmissibility period.",
+      "choices": [],
+      "outcome": "fail",
+      "terminal_condition": "BLATANT_MISREPRESENTATION",
+      "on_enter": {
+        "mental_stress": 25,
+        "street_cred": -10
+      }
+    },
+    "kovacs_resolve": {
+      "speaker": "System",
+      "text": "",
+      "choices": [],
+      "auto_branch": [
+        {
+          "when": {
+            "route.lmia_probability": [
+              ">=",
+              50
+            ],
+            "route.employer_trust": [
+              ">=",
+              20
+            ]
+          },
+          "next_node": "kovacs_sponsors"
+        },
+        {
+          "next_node": "kovacs_declines"
+        }
+      ]
+    },
+    "kovacs_sponsors": {
+      "speaker": "Mr. Kovacs",
+      "text": "Kovacs nods slowly. 'Send me what you have. I'll talk to our immigration lawyer.' A sponsorship offer is not a work permit yet, but you are in the process.",
+      "choices": [],
+      "outcome": "win",
+      "terminal_condition": "LMIA_SPONSORSHIP_STARTED",
+      "on_enter": {
+        "done_lmia_interview": true,
+        "mental_stress": -10,
+        "street_cred": 15
+      },
+      "celebration": {
+        "title": "EMPLOYER WILL SPONSOR",
+        "subtitle": "The LMIA process starts. The clock is still running.",
+        "style": "visa"
+      }
+    },
+    "kovacs_declines": {
+      "speaker": "Mr. Kovacs",
+      "text": "'I like you, but it's too much risk for us right now.' The interview ends politely and the clock keeps ticking.",
+      "choices": [],
+      "outcome": "fail",
+      "terminal_condition": "NO_SPONSORSHIP",
+      "on_enter": {
+        "mental_stress": 15
+      }
+    },
+    "landing_01": {
+      "speaker": "Border Services Officer",
+      "text": "Welcome to Canada. What is the purpose of your trip, and how long do you plan to stay?",
+      "choices": [
+        {
+          "text": "I'm here under my approved permit. Here are my documents and my plan for the first month.",
+          "next_node": "landing_exchange",
+          "mutations": {
+            "street_cred": 10
+          },
+          "tag": "CLEAR_AND_HONEST",
+          "feedback": "Short, truthful and documented."
+        },
+        {
+          "text": "Um... I'm... I'm just going to see how things go.",
+          "next_node": "landing_exchange",
+          "mutations": {
+            "mental_stress": 10
+          },
+          "tag": "NERVOUS_RAMBLE",
+          "feedback": "You got through, but not comfortably."
+        }
+      ]
+    },
+    "landing_exchange": {
+      "speaker": "System Notification",
+      "text": "EXCHANGE RATE SHOCK: Your ₦2,000,000 is converted at today's rate. You now have CAD $1,428. Your wallet looks smaller than it ever did in Lagos.",
+      "choices": [],
+      "outcome": "win",
+      "terminal_condition": "LANDED_IN_CANADA",
+      "on_enter": {
+        "set_phase": 2,
+        "naira_wallet": -2000000,
+        "cad_wallet": 1428,
+        "mental_stress": 5,
+        "done_landing": true
+      },
+      "celebration": {
+        "title": "WELCOME TO CANADA",
+        "subtitle": "Immigration cleared. Your new life starts now. Get ready for the cold.",
+        "style": "border"
+      }
+    },
+    "encounter_spousal_split_01": {
+      "speaker": "Mr. Henderson (Brampton Landlord)",
+      "text": "The basement is quiet, family lives upstairs. Your file checks out, but you have no Canadian credit score. And I see your wife and two kids are still back in Lagos. If you fall behind on rent, how do I know you won't just vanish back home?",
+      "choices": [
+        {
+          "text": "I'll pay first, last, and an extra month in advance right now.",
+          "next_node": "landlord_approved",
+          "mutations": {
+            "cad_wallet": -3600,
+            "family_strain_index": 5
+          },
+          "tag": "PAY_UP_FRONT",
+          "feedback": "Cash up front settles most doubts.",
+          "requires": {
+            "cad_wallet": [
+              ">=",
+              3600
+            ]
+          },
+          "locked_hint": "Needs CAD $3,600 in your wallet"
+        },
+        {
+          "text": "A guarantor in Toronto will co-sign the lease.",
+          "next_node": "landlord_approved",
+          "mutations": {
+            "street_cred": 20
+          },
+          "tag": "LOCAL_GUARANTOR",
+          "feedback": "A local co-signer is worth more than a promise.",
+          "requires": {
+            "street_cred": [
+              ">=",
+              20
+            ]
+          },
+          "locked_hint": "Needs Street Cred 20"
+        },
+        {
+          "text": "My family joins me once my permit is confirmed. Here is my savings statement and my employment letter.",
+          "next_node": "landlord_approved",
+          "mutations": {
+            "street_cred": 10,
+            "family_strain_index": 5
+          },
+          "tag": "HONEST_AND_DOCUMENTED",
+          "feedback": "Honest, with paper to back it up."
+        },
+        {
+          "text": "I'm not going anywhere. Don't insult me.",
+          "next_node": "landlord_declined",
+          "mutations": {
+            "mental_stress": 10
+          },
+          "tag": "DEFENSIVE",
+          "feedback": "Defensiveness reads as a risk."
+        }
+      ]
+    },
+    "landlord_approved": {
+      "speaker": "Mr. Henderson",
+      "text": "Alright, welcome. Keep the noise down. The keys are yours.",
+      "choices": [
+        {
+          "text": "Move into the basement",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "unlocked_shelter": true,
+            "done_landlord_split": true
+          }
+        }
+      ]
+    },
+    "landlord_declined": {
+      "speaker": "Mr. Henderson",
+      "text": "I think we're done here. Good luck with your search.",
+      "choices": [
+        {
+          "text": "Back to the housing hunt",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "mental_stress": 5
+          }
+        }
+      ]
+    },
+    "fund_hub": {
+      "speaker": "Your Japa Fund",
+      "text": "You sit with a notebook and a calculator. The target is N7,000,000 in the bank before the visa interview. Every option has a price.",
+      "choices": [
+        {
+          "text": "Take a micro-loan from a fintech app (N1,500,000).",
+          "next_node": "fund_loan",
+          "requires": {
+            "flag.took_loan": [
+              "==",
+              false
+            ]
+          },
+          "locked_hint": "You already have a loan running"
+        },
+        {
+          "text": "Sell the Corolla (about N2,200,000).",
+          "next_node": "fund_car",
+          "requires": {
+            "flag.car_sold": [
+              "==",
+              false
+            ]
+          },
+          "locked_hint": "The car is already gone"
+        },
+        {
+          "text": "Pitch Uncle Emeka for support.",
+          "next_node": "uncle_01",
+          "requires": {
+            "flag.asked_uncle": [
+              "==",
+              false
+            ]
+          },
+          "locked_hint": "You can only ask Uncle once"
+        },
+        {
+          "text": "Close the notebook. Not today.",
+          "next_node": "dashboard_home"
+        }
+      ]
+    },
+    "fund_loan": {
+      "speaker": "QuickKash App",
+      "text": "Approved in four minutes. N1,500,000 lands in your account. The repayment schedule is in small grey print: 9% a month. Remember: borrowed money parked for a few weeks is not the same as savings, and visa officers look at where funds came from.",
+      "choices": [
+        {
+          "text": "Accept the loan.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "naira_wallet": 1500000,
+            "took_loan": true,
+            "in_debt": true,
+            "mental_stress": 12
+          },
+          "tag": "BORROWED_FUNDS",
+          "feedback": "Fast money. Be honest about it if anyone asks where it came from."
+        },
+        {
+          "text": "Cancel. The interest is madness.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "street_cred": 3
+          },
+          "tag": "SENSIBLE_CAUTION",
+          "feedback": "You kept your head."
+        }
+      ]
+    },
+    "fund_car": {
+      "speaker": "Buyer at Berger Car Mart",
+      "text": "The buyer walks round the Corolla twice and kicks a tyre. 'N2.2M, final. Cash today.' Without the car, the Bolt side hustle is gone.",
+      "choices": [
+        {
+          "text": "Sell it.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "naira_wallet": 2200000,
+            "car_sold": true,
+            "street_cred": 5,
+            "family_strain_index": 5
+          },
+          "tag": "BURNED_THE_BOATS",
+          "feedback": "Clean money with a paper trail. No more weekend driving, though."
+        },
+        {
+          "text": "Walk away. You still need the car.",
+          "next_node": "dashboard_home"
+        }
+      ]
+    },
+    "uncle_01": {
+      "speaker": "Uncle Emeka",
+      "text": "So you want to leave us too? Everybody is running. Tell me why I should put my money inside your Canada.",
+      "choices": [
+        {
+          "text": "Hand him a written plan: costs, timeline, and a repayment schedule from your first Canadian pay.",
+          "next_node": "uncle_yes",
+          "requires": {
+            "street_cred": [
+              ">=",
+              30
+            ]
+          },
+          "locked_hint": "Needs Street Cred 30 to be taken seriously",
+          "mutations": {
+            "asked_uncle": true
+          },
+          "tag": "BANKABLE_PLAN",
+          "feedback": "Uncle respects paperwork more than tears."
+        },
+        {
+          "text": "Uncle, you know how this country is. Please, help me.",
+          "next_node": "uncle_mood",
+          "mutations": {
+            "asked_uncle": true,
+            "mental_stress": 5
+          },
+          "tag": "EMOTIONAL_APPEAL",
+          "feedback": "It depends on how things stand with the family."
+        },
+        {
+          "text": "Promise to bring his son Chidi over within a year.",
+          "next_node": "uncle_promise",
+          "mutations": {
+            "asked_uncle": true
+          },
+          "tag": "OVERPROMISE",
+          "feedback": "You just took on a debt that is not about money."
+        }
+      ]
+    },
+    "uncle_mood": {
+      "speaker": "System",
+      "text": "",
+      "choices": [],
+      "auto_branch": [
+        {
+          "when": {
+            "family_strain_index": [
+              "<",
+              50
+            ]
+          },
+          "next_node": "uncle_some"
+        },
+        {
+          "next_node": "uncle_no"
+        }
+      ]
+    },
+    "uncle_yes": {
+      "speaker": "Uncle Emeka",
+      "text": "He reads it twice, then reaches for his chequebook. 'N1.2M. And you will write to me every month.'",
+      "choices": [
+        {
+          "text": "Back to the dashboard",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "naira_wallet": 1200000,
+            "family_strain_index": -5,
+            "street_cred": 5
+          }
+        }
+      ]
+    },
+    "uncle_some": {
+      "speaker": "Uncle Emeka",
+      "text": "He sighs. 'Because your mother is my sister.' N600,000, and a long lecture.",
+      "choices": [
+        {
+          "text": "Back to the dashboard",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "naira_wallet": 600000,
+            "mental_stress": 3
+          }
+        }
+      ]
+    },
+    "uncle_no": {
+      "speaker": "Uncle Emeka",
+      "text": "'After how you people treated me at the last family meeting?' He changes the TV channel. The answer is no.",
+      "choices": [
+        {
+          "text": "Back to the dashboard",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "mental_stress": 8,
+            "family_strain_index": 5
+          }
+        }
+      ]
+    },
+    "uncle_promise": {
+      "speaker": "Uncle Emeka",
+      "text": "His face lights up. 'Chidi! Did you hear?' N1,500,000, and now the whole family knows you are bringing Chidi.",
+      "choices": [
+        {
+          "text": "Back to the dashboard",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "naira_wallet": 1500000,
+            "promised_cousin": true,
+            "family_strain_index": 15,
+            "mental_stress": 5
+          }
+        }
+      ]
+    },
+    "emb_q1": {
+      "speaker": "Visa Officer",
+      "text": "Next. Passport and file. What is the purpose of your travel, and what will you do in your first three months?",
+      "time_limit": 20,
+      "timeout": {
+        "next_node": "emb_q2",
+        "mutations": {
+          "officer_confidence": -10,
+          "mental_stress": 8
+        },
+        "tag": "FROZE",
+        "feedback": "Silence in an interview reads as uncertainty."
+      },
+      "choices": [
+        {
+          "text": "I have a job offer in logistics. Month one is housing and onboarding; I have a written plan here.",
+          "next_node": "emb_q2",
+          "mutations": {
+            "officer_confidence": 25
+          },
+          "tag": "CLEAR_PURPOSE",
+          "feedback": "Specific, short and backed by paper."
+        },
+        {
+          "text": "Well, there are many opportunities, and my cousin says Toronto is good, and also...",
+          "next_node": "emb_q2",
+          "mutations": {
+            "officer_confidence": 5,
+            "mental_stress": 5
+          },
+          "tag": "RAMBLING",
+          "feedback": "The officer stopped writing halfway through."
+        },
+        {
+          "text": "To make money and send it home. After that, we will see.",
+          "next_node": "emb_q2",
+          "mutations": {
+            "officer_confidence": -10
+          },
+          "tag": "VAGUE_INTENT",
+          "feedback": "'We will see' is not a plan."
+        }
+      ]
+    },
+    "emb_q2": {
+      "speaker": "Visa Officer",
+      "text": "Your statement shows large deposits in the last two months. Where did these funds come from?",
+      "time_limit": 20,
+      "timeout": {
+        "next_node": "emb_q3",
+        "mutations": {
+          "officer_confidence": -15,
+          "mental_stress": 8
+        },
+        "tag": "FROZE",
+        "feedback": "Silence in an interview reads as uncertainty."
+      },
+      "choices": [
+        {
+          "text": "Here is the paper trail for every large deposit: salary, the car sale receipt, and any loan agreement.",
+          "next_node": "emb_q3",
+          "mutations": {
+            "officer_confidence": 25
+          },
+          "tag": "FULL_DISCLOSURE",
+          "feedback": "Transparency is the strongest answer to a funds question."
+        },
+        {
+          "text": "It is all my own savings, sir.",
+          "next_node": "emb_q2_check",
+          "tag": "BLANKET_CLAIM",
+          "feedback": "Fine if true. Dangerous if not."
+        },
+        {
+          "text": "Is there any way we can make this faster? I can show appreciation.",
+          "next_node": "emb_bribe",
+          "tag": "BRIBE_ATTEMPT",
+          "feedback": "Offering an official money is a crime, not a shortcut."
+        }
+      ]
+    },
+    "emb_q2_check": {
+      "speaker": "System",
+      "text": "",
+      "choices": [],
+      "auto_branch": [
+        {
+          "when": {
+            "flag.in_debt": [
+              "==",
+              true
+            ]
+          },
+          "next_node": "emb_misrep"
+        },
+        {
+          "next_node": "emb_q3"
+        }
+      ]
+    },
+    "emb_q3": {
+      "speaker": "Visa Officer",
+      "text": "Last question. Your English test, your experience: convince me you will be fine over there.",
+      "time_limit": 20,
+      "timeout": {
+        "next_node": "emb_resolve",
+        "mutations": {
+          "officer_confidence": -10,
+          "mental_stress": 8
+        },
+        "tag": "FROZE",
+        "feedback": "Silence in an interview reads as uncertainty."
+      },
+      "choices": [
+        {
+          "text": "Answer fluently, with examples from seven years of managing fleets in Lagos traffic.",
+          "next_node": "emb_resolve",
+          "requires": {
+            "route.ielts_prep": [
+              ">=",
+              3
+            ]
+          },
+          "locked_hint": "Study IELTS at least 3 times to answer this fluently",
+          "mutations": {
+            "officer_confidence": 30
+          },
+          "tag": "CONFIDENT_AND_FLUENT",
+          "feedback": "The preparation shows."
+        },
+        {
+          "text": "Show the Letter of Support from Maple Venture Incubator.",
+          "next_node": "emb_resolve",
+          "requires": {
+            "flag.done_suv_pitch": [
+              "==",
+              true
+            ]
+          },
+          "locked_hint": "Win the Startup Pitch first",
+          "mutations": {
+            "officer_confidence": 25
+          },
+          "tag": "INSTITUTIONAL_BACKING",
+          "feedback": "A third party vouches for you."
+        },
+        {
+          "text": "I am a hard worker. I will manage.",
+          "next_node": "emb_resolve",
+          "mutations": {
+            "officer_confidence": 10
+          },
+          "tag": "GENERIC_ANSWER",
+          "feedback": "True, but everyone says it."
+        }
+      ]
+    },
+    "emb_resolve": {
+      "speaker": "System",
+      "text": "",
+      "choices": [],
+      "auto_branch": [
+        {
+          "when": {
+            "route.officer_confidence": [
+              ">=",
+              60
+            ]
+          },
+          "next_node": "emb_approved"
+        },
+        {
+          "next_node": "emb_refused"
+        }
+      ]
+    },
+    "emb_approved": {
+      "speaker": "Visa Officer",
+      "text": "Thank you. Your passport will be returned with the visa. Safe travels.",
+      "choices": [],
+      "outcome": "win",
+      "terminal_condition": "VISA_APPROVED",
+      "on_enter": {
+        "visa_approved": true,
+        "mental_stress": -20,
+        "street_cred": 15,
+        "family_strain_index": -10
+      },
+      "celebration": {
+        "title": "VISA APPROVED",
+        "subtitle": "The stamp is in your passport. Touchdown is unlocked.",
+        "style": "visa"
+      }
+    },
+    "emb_refused": {
+      "speaker": "Visa Officer",
+      "text": "I'm not satisfied with your application today. You will receive a refusal letter with the reasons. You may apply again. The N250,000 in fees is gone, and the wait to reapply costs you two weeks.",
+      "choices": [],
+      "outcome": "fail",
+      "terminal_condition": "VISA_REFUSED",
+      "on_enter": {
+        "mental_stress": 20,
+        "day": 14,
+        "visa_refusals": 1
+      }
+    },
+    "emb_misrep": {
+      "speaker": "Visa Officer",
+      "text": "The officer slides a printout across: your loan disbursement from QuickKash. 'You told me this was savings.' Misrepresentation can bar you from applying for five years.",
+      "choices": [],
+      "outcome": "fail",
+      "terminal_condition": "GAME_OVER_MISREPRESENTATION"
+    },
+    "emb_bribe": {
+      "speaker": "Visa Officer",
+      "text": "The officer stops typing, calls a supervisor, and your interview ends. Your file is flagged.",
+      "choices": [],
+      "outcome": "fail",
+      "terminal_condition": "GAME_OVER_BRIBERY"
+    },
+    "year_one_01": {
+      "speaker": "Narrator",
+      "text": "Snow on the basement window. A lease in your name, an employer filing your paperwork, and a phone full of voice notes from Lagos. A year ago this was a plan in a notebook. How do you mark it?",
+      "choices": [
+        {
+          "text": "Send CAD $500 home for a proper celebration.",
+          "next_node": "year_one_end",
+          "requires": {
+            "cad_wallet": [
+              ">=",
+              500
+            ]
+          },
+          "locked_hint": "Needs CAD $500",
+          "mutations": {
+            "cad_wallet": -500,
+            "family_strain_index": -20
+          },
+          "tag": "SHARED_WIN",
+          "feedback": "Jollof in Lagos, on you."
+        },
+        {
+          "text": "A long video call with everyone, even Uncle Emeka.",
+          "next_node": "year_one_end",
+          "mutations": {
+            "family_strain_index": -10,
+            "mental_stress": -10
+          },
+          "tag": "PRESENT_FROM_AFAR",
+          "feedback": "The connection drops twice. Nobody minds."
+        },
+        {
+          "text": "A quiet night. You earned the rest.",
+          "next_node": "year_one_end",
+          "mutations": {
+            "mental_stress": -20
+          },
+          "tag": "SELF_CARE",
+          "feedback": "Survival mode can switch off for one evening."
+        }
+      ]
+    },
+    "year_one_end": {
+      "speaker": "Narrator",
+      "text": "You did not just leave. You landed, you held on, and you built something. The story continues, but this chapter is yours.",
+      "choices": [],
+      "outcome": "win",
+      "terminal_condition": "JAPA_COMPLETE",
+      "on_enter": {
+        "done_year_one": true,
+        "street_cred": 25
+      },
+      "celebration": {
+        "title": "YOU MADE IT",
+        "subtitle": "One year on. Lagos is proud of you.",
+        "style": "border"
+      }
+    },
+    "ev_fuel_01": {
+      "speaker": "Village People Alert",
+      "text": "Fuel queues again. The pump price jumped overnight and every danfo has doubled its fare.",
+      "choices": [
+        {
+          "text": "Pay the new fares and move on.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "naira_wallet": -80000
+          },
+          "tag": "ABSORB_THE_COST",
+          "feedback": "N80,000 gone this month."
+        },
+        {
+          "text": "Okada and trekking for the week.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "stamina": -20,
+            "mental_stress": 6
+          },
+          "tag": "LEG_POWER",
+          "feedback": "Cheaper. Your legs disagree."
+        },
+        {
+          "text": "Ask your manager to let you work from home.",
+          "next_node": "dashboard_home",
+          "requires": {
+            "street_cred": [
+              ">=",
+              25
+            ]
+          },
+          "locked_hint": "Needs Street Cred 25",
+          "mutations": {
+            "street_cred": 2
+          },
+          "tag": "NEGOTIATED",
+          "feedback": "Your track record bought you flexibility."
+        }
+      ]
+    },
+    "ev_nepa_01": {
+      "speaker": "Village People Alert",
+      "text": "NEPA has taken light for three days straight, right in your study week.",
+      "choices": [
+        {
+          "text": "Buy diesel for the generator.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "naira_wallet": -45000
+          },
+          "tag": "DIESEL_TAX",
+          "feedback": "Light restored, wallet lighter."
+        },
+        {
+          "text": "Study by rechargeable lamp.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "mental_stress": 8,
+            "ielts_prep": 1
+          },
+          "tag": "GRIND",
+          "feedback": "Harder, but the work still counts."
+        }
+      ]
+    },
+    "ev_hospital_01": {
+      "speaker": "Mummy (phone call)",
+      "text": "Your mother's voice is small. 'The doctor says the bill is N250,000. I didn't want to tell you.'",
+      "choices": [
+        {
+          "text": "Send the full amount now.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "naira_wallet": -250000,
+            "family_strain_index": -12
+          },
+          "tag": "BLACK_TAX",
+          "feedback": "Family first. The Japa fund waits."
+        },
+        {
+          "text": "Send N100,000 and call your siblings to split the rest.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "naira_wallet": -100000,
+            "family_strain_index": 4,
+            "mental_stress": 4
+          },
+          "tag": "SHARED_BURDEN",
+          "feedback": "Fair, but your siblings will talk."
+        },
+        {
+          "text": "Say you can't right now.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "family_strain_index": 20,
+            "mental_stress": 8
+          },
+          "tag": "HARD_NO",
+          "feedback": "The fund is safe. The silence afterwards is loud."
+        }
+      ]
+    },
+    "ev_owambe_01": {
+      "speaker": "Cousin Ngozi",
+      "text": "Owambe on Saturday! Aso-ebi is N45,000. Everybody will be there, and everybody will notice who isn't.",
+      "choices": [
+        {
+          "text": "Buy the aso-ebi and dance.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "naira_wallet": -45000,
+            "family_strain_index": -6,
+            "mental_stress": -6
+          },
+          "tag": "FAMILY_FACE",
+          "feedback": "Good for the soul, bad for the fund."
+        },
+        {
+          "text": "Go in your own clothes.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "mental_stress": 3,
+            "street_cred": 2
+          },
+          "tag": "UNBOTHERED",
+          "feedback": "Some aunties whispered. You survived."
+        },
+        {
+          "text": "Skip it. Overtime instead.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "naira_wallet": 30000,
+            "family_strain_index": 8,
+            "stamina": -15
+          },
+          "tag": "ABSENT",
+          "feedback": "The photos are all over WhatsApp. You are not in them."
+        }
+      ]
+    },
+    "ev_loan_call_01": {
+      "speaker": "QuickKash Recovery Agent",
+      "text": "'Good afternoon. Your repayment is due. If we don't hear from you, we will start calling your contacts.'",
+      "choices": [
+        {
+          "text": "Repay the loan in full (N1,650,000).",
+          "next_node": "dashboard_home",
+          "requires": {
+            "naira_wallet": [
+              ">=",
+              1650000
+            ]
+          },
+          "locked_hint": "Needs N1,650,000",
+          "mutations": {
+            "naira_wallet": -1650000,
+            "in_debt": false,
+            "mental_stress": -10
+          },
+          "tag": "DEBT_CLEARED",
+          "feedback": "Free. And now your funds really are your own."
+        },
+        {
+          "text": "Pay the interest only (N135,000).",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "naira_wallet": -135000,
+            "mental_stress": 6
+          },
+          "tag": "ROLLING_IT_OVER",
+          "feedback": "The principal is still there."
+        },
+        {
+          "text": "Ignore the call.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "mental_stress": 12,
+            "family_strain_index": 10
+          },
+          "tag": "SHAMED",
+          "feedback": "They really did call your aunt."
+        }
+      ]
+    },
+    "ev_winter_01": {
+      "speaker": "Environment Canada Alert",
+      "text": "Extreme cold warning: minus 28 with the wind. Your Lagos 'winter jacket' is a hoodie.",
+      "choices": [
+        {
+          "text": "Buy proper boots and a parka.",
+          "next_node": "dashboard_home",
+          "requires": {
+            "cad_wallet": [
+              ">=",
+              180
+            ]
+          },
+          "locked_hint": "Needs CAD $180",
+          "mutations": {
+            "cad_wallet": -180,
+            "winter_ready": true
+          },
+          "tag": "GEARED_UP",
+          "feedback": "Expensive, and the best money you've spent here."
+        },
+        {
+          "text": "Layer everything you own.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "stamina": -20,
+            "mental_stress": 8
+          },
+          "tag": "ONION_MODE",
+          "feedback": "You can't feel your toes."
+        }
+      ]
+    },
+    "ev_shift_01": {
+      "speaker": "Warehouse Supervisor (text)",
+      "text": "'Shift cancelled tomorrow, low volume.' That was your rent money.",
+      "choices": [
+        {
+          "text": "Grab a last-minute gig on a delivery app.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "stamina": -20,
+            "cad_wallet": 60
+          },
+          "tag": "HUSTLE",
+          "feedback": "Less money, but money."
+        },
+        {
+          "text": "Take the day to rest.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "mental_stress": 5,
+            "stamina": 15
+          },
+          "tag": "FORCED_REST",
+          "feedback": "Rest you didn't choose is still rest."
+        }
+      ]
+    },
+    "ev_school_fees_01": {
+      "speaker": "WhatsApp: Family Group",
+      "text": "'Your brother's school fees are due. Since you are in Canada now...' Seventeen people have read the message.",
+      "choices": [
+        {
+          "text": "Send CAD $250.",
+          "next_node": "dashboard_home",
+          "requires": {
+            "cad_wallet": [
+              ">=",
+              250
+            ]
+          },
+          "locked_hint": "Needs CAD $250",
+          "mutations": {
+            "cad_wallet": -250,
+            "family_strain_index": -12
+          },
+          "tag": "BLACK_TAX",
+          "feedback": "In Lagos it is a fortune. Here it is a week of groceries."
+        },
+        {
+          "text": "Explain your real situation on a voice note.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "family_strain_index": 6,
+            "mental_stress": -3,
+            "street_cred": 3
+          },
+          "tag": "HONEST_LIMITS",
+          "feedback": "Some understand. Some don't."
+        },
+        {
+          "text": "Leave them on read.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "family_strain_index": 15
+          },
+          "tag": "GHOSTED",
+          "feedback": "'Canada has changed you.'"
+        }
+      ]
+    },
+    "ev_sowp_01": {
+      "speaker": "IRCC Status Page",
+      "text": "Your spouse's open work permit application: still 'in progress'. Processing times just got longer.",
+      "choices": [
+        {
+          "text": "Submit a webform enquiry and keep waiting.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "mental_stress": 5,
+            "family_strain_index": 5
+          },
+          "tag": "PATIENCE",
+          "feedback": "Slow, but the only legitimate path."
+        },
+        {
+          "text": "Pay a 'consultant' on Facebook who promises to expedite it.",
+          "next_node": "dashboard_home",
+          "mutations": {
+            "cad_wallet": -300,
+            "mental_stress": 10
+          },
+          "tag": "SCAMMED_AGAIN",
+          "feedback": "Nobody can pay to jump an IRCC queue. The CAD $300 is gone."
+        }
+      ]
+    }
+  }
+}
