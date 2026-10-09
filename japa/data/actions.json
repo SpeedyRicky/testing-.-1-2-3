@@ -1,0 +1,128 @@
+{
+  "actions": [
+    {
+      "id": "office_shift",
+      "phase": 1,
+      "label": "Office Shift (Victoria Island)",
+      "detail": "-25 Stamina | +N60,000 | Stress +4",
+      "mutations": {
+        "stamina": -25,
+        "naira_wallet": 60000,
+        "mental_stress": 4,
+        "day": 1
+      }
+    },
+    {
+      "id": "bolt_driving",
+      "phase": 1,
+      "label": "Weekend Bolt Driving",
+      "detail": "-35 Stamina | +N95,000 | Stress +8 | Needs the car",
+      "requires": {
+        "flag.car_sold": [
+          "==",
+          false
+        ]
+      },
+      "locked_hint": "You sold the car",
+      "mutations": {
+        "stamina": -35,
+        "naira_wallet": 95000,
+        "mental_stress": 8,
+        "day": 1
+      }
+    },
+    {
+      "id": "study_ielts",
+      "phase": 1,
+      "label": "Study IELTS",
+      "detail": "-20 Stamina | -N5,000 | +1 IELTS prep | Stress +3",
+      "mutations": {
+        "stamina": -20,
+        "naira_wallet": -5000,
+        "ielts_prep": 1,
+        "mental_stress": 3,
+        "day": 1
+      }
+    },
+    {
+      "id": "family_time",
+      "phase": 1,
+      "label": "Sunday Rice with Family",
+      "detail": "-10 Stamina | -N20,000 | Strain -8 | Stress -5",
+      "mutations": {
+        "stamina": -10,
+        "naira_wallet": -20000,
+        "family_strain_index": -8,
+        "mental_stress": -5,
+        "day": 1
+      }
+    },
+    {
+      "id": "rest_lagos",
+      "phase": 1,
+      "label": "Rest a Day",
+      "detail": "+35 Stamina | Stress -8",
+      "mutations": {
+        "stamina": 35,
+        "mental_stress": -8,
+        "day": 1
+      }
+    },
+    {
+      "id": "remit",
+      "label": "Send Remittance",
+      "detail": "-CAD $400 | +Naira at the parallel rate | Strain -20",
+      "kind": "remittance",
+      "cad": 400,
+      "advance_day": 1,
+      "phase": 2
+    },
+    {
+      "id": "video_call",
+      "label": "Video Call Family",
+      "detail": "-10 Stamina | Strain -6 | Stress -8",
+      "mutations": {
+        "stamina": -10,
+        "family_strain_index": -6,
+        "mental_stress": -8,
+        "day": 1
+      },
+      "phase": 2
+    },
+    {
+      "id": "study_pgwp",
+      "label": "Study for Post-Grad Security",
+      "detail": "-20 Stamina | +5 Post-grad security",
+      "mutations": {
+        "stamina": -20,
+        "pgwp_security": 5,
+        "day": 1
+      },
+      "phase": 2
+    },
+    {
+      "id": "extra_delivery",
+      "label": "Extra Delivery Shift",
+      "detail": "-30 Stamina | +CAD $95 | Stress +5",
+      "mutations": {
+        "stamina": -30,
+        "cad_wallet": 95,
+        "mental_stress": 5,
+        "day": 1
+      },
+      "phase": 2
+    },
+    {
+      "id": "rest",
+      "label": "Rest a Day",
+      "detail": "+35 Stamina | Stress -8",
+      "mutations": {
+        "stamina": 35,
+        "mental_stress": -8,
+        "day": 1
+      },
+      "phase": 2
+    }
+  ],
+  "note": "Each action that advances `day` also pays daily living costs and rolls for a Village People event (systems/day_cycle.gd)."
+}

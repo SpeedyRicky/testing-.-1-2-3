@@ -1,0 +1,29 @@
+; Engine configuration file.
+config_version=5
+
+[application]
+
+config/name="The Great Japa Escape"
+run/main_scene="res://scenes/main_game_view.tscn"
+config/features=PackedStringArray("4.3", "GL Compatibility")
+run/max_fps=30
+
+[autoload]
+
+GameState="*res://scripts/global/game_state.gd"
+Localization="*res://scripts/global/localization.gd"
+Narrative="*res://scripts/global/narrative.gd"
+SaveStore="*res://scripts/global/save_store.gd"
+
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=1
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

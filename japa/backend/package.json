@@ -1,0 +1,10 @@
+{
+  "name": "japa-backend-reference",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reference backend: remote config, analytics ingest, Paystack init/webhook/claim. Deferred to M2+; see README.",
+  "type": "commonjs",
+  "engines": { "node": ">=18" },
+  "scripts": { "start": "node src/server.js", "test": "node --test test/*.test.js" },
+  "dependencies": { "express": "^4.19.2" }
+}

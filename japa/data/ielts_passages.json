@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "passages": [
+    {
+      "id": "relocation_letter",
+      "title": "Letter: Why I want to move",
+      "time_limit": 75,
+      "text": "Dear Sir or Madam[/,]\n\nI am writing to apply for permanent residence in Canada[./.] I have worked as a logistics manager in Lagos for seven years[,/,] and I hold a degree in engineering[;/.] My wife and I have two children[/,] and we hope to give them a safe[/,] stable life[/.] Canada offers strong schools[,/,] good healthcare[/,] and real opportunity[./.]\n\nWhy do you think I am a good candidate[./?] I speak English fluently[,/,] I have saved enough money[/,] and I am ready to work hard[/.] I look forward to hearing from you[!/.]\n\nYours faithfully[/,]\nAdaeze Okafor"
+    },
+    {
+      "id": "study_plan",
+      "title": "Essay: My study plan",
+      "time_limit": 70,
+      "text": "Studying abroad is expensive[;/,] but it can change a person's future[./.] Before I apply[/,] I must pass the language test[/,] get my degree assessed[/,] and prove that I have enough funds[./.]\n\nMany students ask[:/:] is it worth the cost[./?] In my view[/,] the answer is yes[,/.] However[/,] students must plan carefully[./.] They should compare schools[,/,] save early[/,] and avoid agents who promise easy visas[;/.] Honest preparation is the only reliable route[!/.]"
+    },
+    {
+      "id": "job_search",
+      "title": "Email: Job search update",
+      "time_limit": 65,
+      "text": "Hello Mr[./.] Kovacs[/,]\n\nThank you for meeting me yesterday[./.] I enjoyed learning about your warehouse operations[,/,] your delivery routes[/,] and your plans for growth[./.] Do you need more information from me[./?]\n\nI can send my references[,/,] my certificates[/,] and my work history by Friday[/.] If a different time suits you better[/,] please let me know[!/.] I appreciate your time[;/,] and I hope to speak again soon[./.]\n\nBest regards[/,]\nTunde Bello"
+    }
+  ]
+}

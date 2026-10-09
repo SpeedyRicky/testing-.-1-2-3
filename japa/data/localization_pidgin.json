@@ -1,0 +1,31 @@
+{
+  "strings": {
+    "encounter_agent_01": {
+      "pidgin_NG": "Ah, my brother! Your village people don lose block! I get one sharp care-giver slot for Calgary as we dey talk so. Approved LMIA dey ground down. No IELTS, zero experience join. Just drop ₦4.5M sharp-sharp make you land Canada in 4 weeks time. No capping!"
+    },
+    "encounter_agent_pushback": {
+      "pidgin_NG": "Ah-ah, wetin concern you with check-number? You wan bypass my connection? Form secure, my guy! Commit with ₦1.5M container fee today, or make I find another person look face."
+    },
+    "village_people_devaluation": {
+      "pidgin_NG": "VILLAGE PEOPLE MATTERS: Parallel market rate don jump over-night o! All your tuition change don fall flat by 18% inside value against Canadian Dollar as we dey look so."
+    },
+    "encounter_spousal_split_01": {
+      "pidgin_NG": "This down-apartment dey quiet o, my people dey up. Your paper pure, but your credit history for Canada dey zero. I look your file, your madam and two pikin still dey Lagos. If money structure look back, how I wan take know say you no go just load bag run go Nigeria?"
+    }
+  },
+  "ui": {
+    "phase_1_lagos": {
+      "title": "THE LAGOS GRIND",
+      "wallet_label": "Naira Balance",
+      "stress_label": "Village People Tracker",
+      "energy_label": "Stamina"
+    },
+    "phase_2_canada": {
+      "title": "THE CANADIAN REALITY",
+      "wallet_label": "CAD Balance",
+      "stress_label": "Winter Stress Gauge",
+      "strain_label": "Family Strain Index",
+      "weather_label": "Current Temp"
+    }
+  }
+}
