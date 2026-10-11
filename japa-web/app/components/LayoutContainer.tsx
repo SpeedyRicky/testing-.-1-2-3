@@ -13,6 +13,8 @@ import { LagosStageLayout } from "./layouts/LagosStageLayout";
 /** Per-route look. Class names are written out in full so Tailwind keeps them. */
 export const ROUTE_THEME: Record<RouteId, { backdrop: string; tones: Tone[]; accent: string }> = {
   LAGOS_LIFE: { backdrop: "", tones: [], accent: "text-amber-300" },
+  STUDY_PERMIT: { backdrop: "", tones: [], accent: "text-red-300" },
+  EXPRESS_ENTRY: { backdrop: "", tones: [], accent: "text-sky-300" },
   STARTUP_VISA: {
     backdrop: "bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.10),transparent_60%)]",
     tones: ["emerald", "sky", "violet"],
@@ -40,7 +42,7 @@ export interface LayoutProps {
 }
 
 const LAYOUTS: Record<Exclude<LayoutType, "RESOLUTION">, (p: LayoutProps) => React.JSX.Element> = {
-  LAGOS_STAGE: LagosStageLayout,
+  STORY_STAGE: LagosStageLayout,
   ZOOM_GRID: ZoomGridLayout,
   CORPORATE_OFFICE: CorporateOfficeLayout,
   DASHBOARD: DashboardLayout,

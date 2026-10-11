@@ -59,8 +59,9 @@ export function makeReducer(db: ScenarioDatabase = DB) {
         return state.toast ? { ...state, toast: null } : state;
       case "FOLLOW_UNLOCK": {
         // e.g. Tourist Gamble win -> LMIA interview, carrying the player's condition across.
-        const target = run && run.outcome?.result === "win" ? db.scenes[run.currentSceneId]?.unlocksRoute : undefined;
-        if (!run || !target) return state;
+        const scene = run ? db.scenes[run.currentSceneId] : undefined;
+        const target = run?.outcome && run.outcome.result !== "fail" ? scene?.unlocksRoute : undefined;
+        if (!run || !scene || !target) return state;
         const carried = newRun(db, target, {
           desperation: run.desperation,
           walletCad: run.walletCad,
@@ -68,7 +69,8 @@ export function makeReducer(db: ScenarioDatabase = DB) {
           streetCred: run.streetCred,
           timeRemainingDays: run.timeRemainingDays,
           flags: { ...run.flags, [`from_${run.activeRoute.toLowerCase()}`]: true },
-        });
+          routeStats: scene.carry?.routeStats,
+        }, scene.unlockStartSceneId);
         return { ...state, activeRoute: target, runs: { ...state.runs, [target]: carried }, toast: null };
       }
     }

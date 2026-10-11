@@ -5,35 +5,41 @@ import { DB, currentScene, explainResolution, presentChoices } from "@/game/engi
 import type { GameState, StatKey } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
 import { FeedbackChip } from "../FeedbackChip";
+import { Person, type PersonPose, type PersonWho } from "../Person";
 import { ShareOnX } from "../Popups";
 
-const PANEL = [
-  { id: "vance", name: "Ms. Vance", role: "Committee Chair", initials: "EV", hue: "from-indigo-500/30 to-violet-500/10" },
-  { id: "chen", name: "Mr. Chen", role: "Chief Technology Officer", initials: "DC", hue: "from-sky-500/30 to-cyan-500/10" },
-  { id: "ross", name: "Mr. Ross", role: "Managing Partner", initials: "JR", hue: "from-amber-500/30 to-orange-500/10" },
+const PANEL: { id: string; name: string; role: string; who: PersonWho; room: string; window?: "snow" | "city" | "night" }[] = [
+  { id: "vance", name: "Ms. Vance", role: "Committee Chair", who: "vance", room: "linear-gradient(#312e81, #1e1b4b)", window: "snow" },
+  { id: "chen", name: "Mr. Chen", role: "Chief Technology Officer", who: "chen", room: "linear-gradient(#0e7490, #164e63)", window: "city" },
+  { id: "ross", name: "Mr. Ross", role: "Managing Partner", who: "ross", room: "linear-gradient(#78350f, #451a03)", window: "snow" },
 ];
 
-function Tile({ name, role, initials, hue, speaking, you }: {
-  name: string; role: string; initials: string; hue: string; speaking: boolean; you?: boolean;
+type TileMood = "listen" | "talk" | "win" | "fail";
+
+/** One Zoom tile: a little 2D room with the person in it, animated by what is happening. */
+function Tile({ name, role, who, room, window: win, speaking, mood, you }: {
+  name: string; role: string; who: PersonWho; room: string; window?: "snow" | "city" | "night";
+  speaking: boolean; mood: TileMood; you?: boolean;
 }) {
   const live = speaking || you;
+  const pose: PersonPose = mood === "win" ? (you ? "cheer" : "wave")
+    : mood === "fail" ? (you ? "slump" : "idle")
+      : speaking ? "talk" : you ? "sit" : "idle";
   return (
-    <div className={`relative aspect-video max-w-full overflow-hidden rounded-xl border bg-zinc-900 transition-all duration-300 ${
-      speaking ? "animate-speak border-emerald-400/70" : "border-white/10"}`}>
-      <div className={`absolute inset-0 bg-gradient-to-br ${hue}`} />
-      <div className="absolute inset-0 flex items-center justify-center pb-7 sm:pb-4">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-zinc-950/60 text-xs font-semibold tracking-wide sm:h-16 sm:w-16 sm:text-lg ${
-          speaking ? "text-emerald-300" : "text-zinc-300"}`}>
-          {initials}
-        </div>
+    <div className={`relative aspect-video max-w-full overflow-hidden rounded-xl border transition-all duration-300 ${
+      speaking ? "animate-speak border-emerald-400/70" : "border-white/10"}`} style={{ background: room }}>
+      <div className="zoom-room">
+        <span className="prop shelf" />
+        <span className={`window-pane ${win ?? ""}`} />
+        <Person who={who} pose={pose} x={50} scale={1.25} />
       </div>
-      <div className="absolute bottom-2 left-2 flex max-w-[90%] items-center gap-1.5 rounded-md bg-black/60 px-2 py-1 text-[11px] text-zinc-200">
+      <div className="absolute bottom-2 left-2 z-10 flex max-w-[90%] items-center gap-1.5 rounded-md bg-black/60 px-2 py-1 text-[11px] text-zinc-200">
         {live ? <Mic className="h-3 w-3 shrink-0 text-emerald-400" /> : <MicOff className="h-3 w-3 shrink-0 text-zinc-500" />}
         <span className="truncate font-medium">{name}</span>
         <span className="hidden truncate text-zinc-400 sm:inline">· {role}</span>
       </div>
       {speaking && (
-        <div className="absolute right-2 top-2 hidden rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-300 sm:block">
+        <div className="absolute right-2 top-2 z-10 hidden rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-300 sm:block">
           Speaking
         </div>
       )}
@@ -96,6 +102,7 @@ export function ZoomGridLayout({ run, dispatch, bars }: LayoutProps) {
   const scene = currentScene(DB, run);
   const speaking = run.outcome ? null : PANEL.find((p) => scene?.speaker?.startsWith(p.name))?.id ?? null;
   const choices = presentChoices(DB, run);
+  const mood: TileMood = run.outcome ? (run.outcome.result === "win" ? "win" : "fail") : "listen";
   const answered = run.history.filter((h) => h.answer).length;
 
   return (
@@ -110,8 +117,9 @@ export function ZoomGridLayout({ run, dispatch, bars }: LayoutProps) {
             <span className="font-mono text-zinc-500">Q{Math.min(answered + 1, 3)}/3</span>
           </div>
           <div className="grid grid-cols-2 gap-2 p-2 sm:gap-3 sm:p-3">
-            {PANEL.map((p) => <Tile key={p.id} {...p} speaking={speaking === p.id} />)}
-            <Tile name="You" role="Founder, Lagos" initials="YOU" hue="from-emerald-500/25 to-teal-500/5" speaking={false} you />
+            {PANEL.map((p) => <Tile key={p.id} {...p} speaking={speaking === p.id} mood={mood} />)}
+            <Tile name="You" role="Founder, Lagos" who="you" room="linear-gradient(#14532d, #052e16)" window="night"
+              speaking={false} mood={mood} you />
           </div>
           <div className="flex items-center justify-center gap-2 border-t border-white/10 px-4 py-3 text-[11px] text-zinc-400">
             {[[Mic, "Mute"], [Video, "Stop video"], [MonitorUp, "Share"], [Users, "Participants (4)"]].map(([Icon, label]) => {

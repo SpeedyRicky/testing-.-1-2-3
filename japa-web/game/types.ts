@@ -3,19 +3,28 @@
 
 export type RouteId =
   | "LAGOS_LIFE"
+  | "STUDY_PERMIT"
+  | "EXPRESS_ENTRY"
   | "STARTUP_VISA"
   | "CAREGIVER_LMIA"
   | "TARGETED_TRADE"
   | "TOURIST_GAMBLE"
   | "PNP_RURAL";
 
-export type LayoutType = "LAGOS_STAGE" | "ZOOM_GRID" | "CORPORATE_OFFICE" | "DASHBOARD" | "RESOLUTION";
+export type LayoutType = "STORY_STAGE" | "ZOOM_GRID" | "CORPORATE_OFFICE" | "DASHBOARD" | "RESOLUTION";
 
-/** Lagos Life: which 2D stage to draw, and how the player travels into a scene. */
-export type StageKind =
+/** Which 2D stage to draw. The first group is Lagos Life's hand-built set (LagosStage);
+ *  the rest come from the stage kit in app/components/stages.ts. */
+export type LagosStageKind =
   | "yaba-dawn" | "yaba-street" | "cafe" | "call-sister" | "room-night" | "agent" | "annex"
   | "whatsapp" | "gig" | "video-job" | "embassy" | "outside" | "phone-text" | "airport" | "stay";
-export type Transit = "none" | "trek" | "danfo" | "okada" | "call" | "plane";
+export type KitStageKind =
+  | "ielts-centre" | "bank-hall" | "university-registry" | "french-class" | "ircc-portal"
+  | "pearson-arrivals" | "toronto-street" | "campus" | "lecture-hall" | "tim-hortons" | "basement"
+  | "job-fair" | "library" | "warehouse" | "boardroom" | "graduation" | "pr-landing";
+export type StageKind = LagosStageKind | KitStageKind;
+/** How the player travels into a scene (drawn by TravelRibbon). */
+export type Transit = "none" | "trek" | "danfo" | "okada" | "call" | "plane" | "streetcar" | "snow-walk";
 
 export interface RouteStats {
   investorInterest?: number; // Startup Visa
@@ -27,6 +36,29 @@ export interface RouteStats {
   languageScoreClb?: number; // Express Entry / IELTS mini-game
   provincialPoints?: number; // PNP Rural Stream
   papers?: number; // Lagos Life: document readiness, 0-100
+  // Express Entry profile (feeds the CRS calculator):
+  ageYears?: number;
+  /** 0 none, 1 secondary, 2 one-year, 3 two-year, 4 bachelor's/3-year, 5 two+ credentials, 6 master's, 7 PhD */
+  educationLevel?: number;
+  /** Foreign education only counts once an ECA is done (1). */
+  ecaComplete?: number;
+  clbFirst?: number; // English, same CLB assumed in all four abilities
+  nclcFrench?: number;
+  foreignWorkYears?: number;
+  canadianWorkYears?: number;
+  /** 0 none, 1 one- or two-year credential, 2 three years or longer */
+  canadianEducation?: number;
+  pnpNomination?: number;
+  siblingInCanada?: number;
+  crsScore?: number; // derived, recalculated after every change
+  // Student pathway:
+  programType?: number; // 1 public college diploma, 2 master's, 3 private career college
+  academicStanding?: number;
+  officerConfidence?: number;
+  scholarshipTried?: number;
+  familyAsked?: number;
+  landSold?: number;
+  crowdfunded?: number;
   // Added for the Tourist Gamble dashboard:
   networkScore?: number;
   resumeScore?: number;
@@ -60,6 +92,8 @@ export interface GameState {
   popup: Popup | null;
   /** Counts CAD spends so the UI can float "-$1,500 CAD" once per spend. */
   cadFloat: { amount: number; tick: number };
+  /** Dashboard routes: where the last action took place (drawn as a 2D stage). */
+  currentStage: StageKind | null;
 }
 
 export interface Popup {
@@ -89,6 +123,8 @@ export interface Choice {
   lockedHint?: string;
   /** Lagos Life: shows a floating "-$N CAD" when chosen. */
   floatCad?: number;
+  /** Values to overwrite (e.g. an IELTS result), applied after effects. */
+  set?: Effects;
 }
 
 export interface Outcome {
@@ -108,6 +144,9 @@ export interface DashboardAction {
   /** Chance of an employer lead before network and resume bonuses. */
   leadChance?: number;
   location: string;
+  /** The 2D stage for this action's location, and how the player gets there. */
+  stage?: StageKind;
+  transit?: Transit;
   /** Ends the run on the spot: things a visitor must never do. */
   fatal?: string;
   consequences: string[];
@@ -137,6 +176,9 @@ export interface Scene {
   outcome?: Omit<Outcome, "decidedBy">;
   dashboard?: DashboardConfig;
   unlocksRoute?: RouteId;
+  /** Where the unlocked route starts, and which stats travel with the player. */
+  unlockStartSceneId?: string;
+  carry?: { routeStats?: RouteStats };
   // Lagos Life stage scenes:
   title?: string;
   location?: string;
@@ -151,8 +193,8 @@ export interface BarSpec {
   suffix?: string;
   /** A rise is bad news (e.g. desperation). */
   invert?: boolean;
-  /** "ngn" formats the value as naira. */
-  format?: "ngn";
+  /** "ngn" / "cad" format the value as money. */
+  format?: "ngn" | "cad";
 }
 
 export interface TrapConfig {
@@ -176,8 +218,9 @@ export interface Rank {
   id: string;
   title: string;
   blurb: string;
-  /** Matches only when the run ended on this scene. */
+  /** Matches only when the run ended on this scene, or with this outcome reason. */
   sceneId?: string;
+  reason?: string;
   when?: Conditions;
 }
 
@@ -199,8 +242,22 @@ export interface RouteConfig {
   nextRoutes?: RouteId[];
 }
 
+/** CRS points tables for a candidate without a spouse. */
+export interface CrsTables {
+  source: string;
+  verifiedOn: string;
+  age: Record<string, number>;
+  education: number[];
+  languagePerAbility: { minClb: number; points: number }[];
+  secondLanguagePerAbility: { minClb: number; points: number }[];
+  canadianWork: number[];
+  transferability: { cap: number; groupCap: number };
+  additional: { pnp: number; sibling: number; frenchWithWeakEnglish: number; frenchWithEnglish: number; canadianEducation: number[] };
+}
+
 export interface ScenarioDatabase {
   meta: { version: string; note: string };
+  crs?: CrsTables;
   routes: Record<RouteId, RouteConfig>;
   scenes: Record<string, Scene>;
 }

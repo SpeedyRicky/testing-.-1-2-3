@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FileCheck2, Ghost, MapPin, Plane, Sparkles, Wallet, Zap } from "lucide-react";
-import { DB, choose, presentChoices, rankFor } from "@/game/engine";
+import { FileCheck2, Ghost, GraduationCap, Languages, MapPin, Plane, Sparkles, Trophy, Wallet, Zap } from "lucide-react";
+import { DB, choose, computeCrs, presentChoices, rankFor } from "@/game/engine";
 import { chance, rolls as rollDice } from "@/game/rng";
 import type { BarSpec, GameState, RouteId, Transit } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
-import { LagosStage } from "../LagosStage";
+import { SceneStage } from "../Stage2D";
 import { TravelRibbon } from "../TravelRibbon";
 import { CadFloat, GameOverModal, PopupModal } from "../Popups";
 
@@ -26,10 +26,23 @@ const HUD: Record<string, { icon: typeof Wallet; bar: string; tint: string; glow
   energy: { icon: Zap, bar: "from-amber-400 to-yellow-200", tint: "bg-amber-500/20 text-amber-300", glow: "shadow-amber-400/20" },
   papers: { icon: FileCheck2, bar: "from-sky-400 to-cyan-200", tint: "bg-sky-500/20 text-sky-300", glow: "shadow-sky-400/20" },
   desperation: { icon: Ghost, bar: "from-lime-400 to-rose-500", tint: "bg-lime-500/20 text-lime-200", glow: "shadow-lime-400/20" },
+  walletCad: { icon: Wallet, bar: "from-red-500 to-rose-300", tint: "bg-red-500/20 text-red-200", glow: "shadow-red-500/20" },
+  crsScore: { icon: Trophy, bar: "from-sky-400 to-indigo-300", tint: "bg-sky-500/20 text-sky-200", glow: "shadow-sky-400/20" },
+  clbFirst: { icon: Languages, bar: "from-violet-400 to-fuchsia-300", tint: "bg-violet-500/20 text-violet-200", glow: "shadow-violet-400/20" },
+  academicStanding: { icon: GraduationCap, bar: "from-amber-300 to-orange-400", tint: "bg-amber-500/20 text-amber-200", glow: "shadow-amber-400/20" },
+};
+
+/** Purple Lagos night for Lagos Life; cooler skies once the story heads for Canada. */
+const BACKDROP: Record<string, string> = {
+  LAGOS_LIFE: "bg-[radial-gradient(circle_at_top,_#3b1d6e_0%,_#07060c_55%)]",
+  STUDY_PERMIT: "bg-[radial-gradient(circle_at_top,_#7f1d1d_0%,_#07060c_55%)]",
+  EXPRESS_ENTRY: "bg-[radial-gradient(circle_at_top,_#1e3a8a_0%,_#07060c_55%)]",
 };
 
 const naira = (v: number) =>
   new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(v);
+const cad = (v: number) => `CAD $${Math.round(v).toLocaleString("en-CA")}`;
+const money = (spec: BarSpec, v: number) => (spec.format === "ngn" ? naira(v) : spec.format === "cad" ? cad(v) : null);
 
 function valueOf(run: GameState, key: BarSpec["key"]): number {
   return key in run.routeStats ? run.routeStats[key as keyof GameState["routeStats"]] ?? 0 : (run[key as keyof GameState] as number);
@@ -50,7 +63,7 @@ function HudMeter({ spec, value }: { spec: BarSpec; value: number }) {
   const theme = HUD[spec.key] ?? HUD.energy;
   const Icon = theme.icon;
   const pct = Math.max(0, Math.min(100, (value / (spec.max ?? 100)) * 100));
-  const shown = spec.format === "ngn" ? naira(value) : `${Math.round(value)}${spec.suffix ?? ""}`;
+  const shown = money(spec, value) ?? `${Math.round(value)}${spec.suffix ?? ""}`;
   // For invert meters (interference), a rise is bad news.
   const good = (delta.n > 0) !== !!spec.invert;
   const flash = delta.n === 0 ? "" : good ? "hud-flash-up" : "hud-flash-down";
@@ -73,7 +86,7 @@ function HudMeter({ spec, value }: { spec: BarSpec; value: number }) {
       {delta.n !== 0 && (
         <span key={delta.key} className={`animate-delta pointer-events-none absolute right-3 top-2 font-mono text-xs font-bold ${good ? "text-lime-300" : "text-rose-300"}`}>
           {delta.n > 0 ? "+" : ""}
-          {spec.format === "ngn" ? naira(delta.n) : delta.n}
+          {money(spec, delta.n) ?? delta.n}
         </span>
       )}
     </div>
@@ -93,10 +106,10 @@ function Confetti() {
 }
 
 /** The animated Lagos backdrop: orbs, stars and a plane taxiing across. */
-export function LagosBackdrop() {
+export function LagosBackdrop({ route = "LAGOS_LIFE" }: { route?: string }) {
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_#3b1d6e_0%,_#07060c_55%)]" />
+      <div className={`absolute inset-0 ${BACKDROP[route] ?? BACKDROP.LAGOS_LIFE}`} />
       <div className="bg-orb -left-20 top-10 h-72 w-72 animate-[drift_12s_ease-in-out_infinite] bg-fuchsia-600/30" />
       <div className="bg-orb right-[-4rem] top-32 h-80 w-80 animate-[drift-alt_14s_ease-in-out_infinite] bg-amber-500/20" />
       <div className="bg-orb bottom-[-3rem] left-1/3 h-64 w-64 animate-[drift_16s_ease-in-out_infinite] bg-sky-500/20" />
@@ -108,7 +121,38 @@ export function LagosBackdrop() {
   );
 }
 
-const TRAVEL_MS: Record<Transit, number> = { none: 0, call: 950, trek: 1250, danfo: 1250, okada: 1250, plane: 1250 };
+const TRAVEL_MS: Record<Transit, number> = {
+  none: 0, call: 950, trek: 1250, danfo: 1250, okada: 1250, plane: 1250, streetcar: 1250, "snow-walk": 1250,
+};
+
+/** Express Entry: where the points come from, so players see what each choice changed. */
+function CrsBreakdown({ run }: { run: GameState }) {
+  if (!DB.crs || run.routeStats.ageYears === undefined) return null;
+  const b = computeCrs(DB.crs, run.routeStats);
+  const rows: [string, number][] = [
+    ["Age", b.age], ["Education", b.education], ["English", b.language], ["French", b.secondLanguage],
+    ["Canadian work", b.canadianWork], ["Transferability", b.transferability], ["Additional", b.additional],
+  ];
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/30 p-4 backdrop-blur-md">
+      <div className="flex items-baseline justify-between">
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-200/80">CRS breakdown</p>
+        <p className="font-mono text-lg font-black text-white">{b.total}</p>
+      </div>
+      <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-4">
+        {rows.map(([k, v]) => (
+          <div key={k} className="flex justify-between gap-2 border-b border-white/5 py-1 text-xs">
+            <dt className="text-zinc-400">{k}</dt>
+            <dd className="font-mono text-zinc-100">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-2 text-[11px] leading-5 text-zinc-500">
+        Single applicant, same score in all four language abilities. Job offers add no points since March 2025.
+      </p>
+    </div>
+  );
+}
 
 export function LagosStageLayout({ run, dispatch }: LayoutProps) {
   const cfg = DB.routes[run.activeRoute];
@@ -152,6 +196,12 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
 
   const rank = ended ? rankFor(DB, run) : null;
   const nextRoutes = (cfg.nextRoutes ?? []).filter((r) => DB.routes[r]?.status === "playable");
+  // A scene that unlocks a route carries the player's profile into it; otherwise offer fresh starts.
+  const unlock = ended && scene?.unlocksRoute && run.outcome?.result !== "fail" ? scene.unlocksRoute : undefined;
+  const next = unlock
+    ? [{ label: `Continue: ${DB.routes[unlock].short}`, onClick: () => dispatch({ type: "FOLLOW_UNLOCK" }) }]
+    : isWin ? nextRoutes.map((r: RouteId) => ({ label: DB.routes[r].short, onClick: () => dispatch({ type: "SELECT_ROUTE", route: r }) }))
+      : undefined;
 
   return (
     <div className="relative">
@@ -160,18 +210,19 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
         <div>
           <p className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-300">
             <Sparkles className="h-3 w-3 animate-[bounce-soft_1.4s_ease-in-out_infinite]" />
-            Lagos Life · Japa
+            {cfg.short} · Japa
           </p>
           <p className="title-shimmer text-xl font-black tracking-tight sm:text-3xl">{cfg.tagline}</p>
         </div>
         <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {cfg.bars.map((b) => <HudMeter key={b.key} spec={b} value={valueOf(run, b.key)} />)}
         </dl>
+        <CrsBreakdown run={run} />
       </div>
 
       <div className="flex flex-col gap-4">
         <div className="relative">
-          {scene?.stage && <LagosStage scene={scene.stage} />}
+          {scene?.stage && <SceneStage stage={scene.stage} mood={ended ? (isWin ? "win" : "fail") : "calm"} />}
           <CadFloat amount={run.cadFloat.amount} tick={run.cadFloat.tick} />
           {travel && <TravelRibbon mode={travel.mode} destination={travel.destination} />}
         </div>
@@ -223,7 +274,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
           interference={run.desperation}
           routeName={cfg.title}
           onReset={() => dispatch({ type: "RESTART" })}
-          next={isWin ? nextRoutes.map((r: RouteId) => ({ label: DB.routes[r].short, onClick: () => dispatch({ type: "SELECT_ROUTE", route: r }) })) : undefined}
+          next={next}
         />
       )}
     </div>

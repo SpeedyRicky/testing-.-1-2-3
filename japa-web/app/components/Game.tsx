@@ -18,7 +18,7 @@ export function Game() {
   return (
     <div className="relative min-h-screen w-full">
       {/* Route backdrop sits behind everything, outside main's stacking context. */}
-      {state.activeRoute === "LAGOS_LIFE" && <LagosBackdrop />}
+      {run && DB.scenes[run.currentSceneId]?.layoutType === "STORY_STAGE" && <LagosBackdrop route={state.activeRoute} />}
       <header className="sticky top-0 z-40 border-b border-white/10 bg-zinc-950/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2.5">

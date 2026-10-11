@@ -1,0 +1,457 @@
+/* 2D stage kit for every route: Canadian scenery, interiors, props and extra poses.
+   Builds on lagos-2d.css (people, sky, skyline, road). Flat shapes only, no images. */
+
+.stage2d {
+  position: relative;
+  height: 260px;
+  overflow: hidden;
+  border-radius: 1.6rem;
+  background: #0f172a;
+  box-shadow: inset 0 -14px 0 rgb(0 0 0 / 0.35);
+}
+.stage2d.compact { height: 190px; border-radius: 1.2rem; }
+@media (min-width: 640px) {
+  .stage2d { height: 300px; }
+  .stage2d.compact { height: 220px; }
+}
+
+/* --- Sky and weather ------------------------------------------------------ */
+.sky-snow { background: linear-gradient(#94a3b8, #e2e8f0); }
+.sky-dayca { background: linear-gradient(#7dd3fc, #e0f2fe); }
+.sky-nightca { background: linear-gradient(#020617, #1e3a8a); }
+.snowfall {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 80px 120px, #fff 50%, transparent 51%),
+    radial-gradient(3px 3px at 150px 60px, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 210px 170px, #fff 50%, transparent 51%),
+    radial-gradient(3px 3px at 260px 20px, #fff 50%, transparent 51%);
+  background-size: 300px 200px;
+  animation: snow-fall 6s linear infinite;
+  opacity: 0.9;
+}
+@keyframes snow-fall {
+  from { background-position: 0 0; }
+  to { background-position: 40px 200px; }
+}
+
+/* --- Toronto skyline -------------------------------------------------------- */
+.skyline.toronto .bldg { background: #475569; box-shadow: inset 6px 10px 0 #334155; }
+.skyline.toronto .bldg.glass {
+  background: repeating-linear-gradient(#64748b, #64748b 6px, #94a3b8 6px, #94a3b8 8px);
+}
+.cn-tower {
+  position: absolute;
+  bottom: 38%;
+  left: 62%;
+  width: 8px;
+  height: 160px;
+  background: #cbd5e1;
+  z-index: 1;
+}
+.cn-tower::before {
+  content: "";
+  position: absolute;
+  top: 40px;
+  left: -9px;
+  width: 26px;
+  height: 14px;
+  border-radius: 7px;
+  background: #e2e8f0;
+}
+.cn-tower::after {
+  content: "";
+  position: absolute;
+  top: -34px;
+  left: 3px;
+  width: 2px;
+  height: 34px;
+  background: #e2e8f0;
+}
+
+/* --- Ground ----------------------------------------------------------------- */
+.ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34%;
+  z-index: 1;
+}
+.ground.snow { background: linear-gradient(#f8fafc, #cbd5e1); }
+.ground.slush { background: linear-gradient(#cbd5e1 0 18%, #334155 18%); }
+.ground.floor { background: linear-gradient(#78716c, #44403c); }
+.ground.carpet { background: linear-gradient(#1e3a5f, #172554); }
+.ground.tiles {
+  background: repeating-linear-gradient(90deg, #d6d3d1 0 38px, #a8a29e 38px 40px);
+}
+.ground.concrete { background: linear-gradient(#57534e, #292524); }
+.ground.grass { background: linear-gradient(#65a30d, #365314); }
+
+/* --- Interiors -------------------------------------------------------------- */
+.wall {
+  position: absolute;
+  inset: 0 0 34% 0;
+  background: var(--wall, #334155);
+}
+.wall.panel {
+  background:
+    linear-gradient(90deg, transparent 0 98%, rgb(0 0 0 / 0.07) 98%) 0 0 / 80px 100%,
+    var(--wall, #334155);
+}
+.window-pane {
+  position: absolute;
+  top: 12%;
+  height: 42%;
+  border: 4px solid #e2e8f0;
+  background: linear-gradient(#94a3b8, #e2e8f0);
+  z-index: 1;
+  overflow: hidden;
+}
+.window-pane.night { background: linear-gradient(#020617, #1e3a8a); }
+.window-pane.city {
+  background:
+    linear-gradient(transparent 55%, #475569 55% 70%, transparent 70%) 0 0 / 40px 100%,
+    linear-gradient(#7dd3fc, #e0f2fe);
+}
+.window-pane::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 48%, #e2e8f0 48% 52%, transparent 52%);
+}
+
+/* --- Props ------------------------------------------------------------------ */
+.prop { position: absolute; z-index: 3; }
+.prop-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.banner {
+  top: 8%;
+  padding: 5px 10px;
+  background: #b91c1c;
+  color: #fff;
+  border-radius: 3px;
+  transform: translateX(-50%);
+  box-shadow: 0 4px 0 rgb(0 0 0 / 0.25);
+}
+.banner.blue { background: #1d4ed8; }
+.banner.gold { background: #b45309; }
+.banner.green { background: #15803d; }
+.screen {
+  top: 10%;
+  height: 40%;
+  background: #0b1220;
+  border: 4px solid #1e293b;
+  border-radius: 4px;
+  color: #7dd3fc;
+  padding: 6px 8px;
+  transform: translateX(-50%);
+  box-shadow: 0 0 22px rgb(56 189 248 / 0.35);
+}
+.screen .prop-label,
+.board .prop-label { white-space: normal; line-height: 1.5; font-size: 9px; }
+.counter {
+  bottom: 22%;
+  height: 34px;
+  background: linear-gradient(#7c2d12, #431407);
+  border-top: 5px solid #a16207;
+  transform: translateX(-50%);
+}
+.menu-board {
+  top: 10%;
+  padding: 6px 10px;
+  background: #1c1917;
+  color: #fde68a;
+  border: 3px solid #a16207;
+  transform: translateX(-50%);
+}
+.shelf {
+  top: 12%;
+  height: 50%;
+  border: 4px solid #78350f;
+  background:
+    linear-gradient(#78350f, #78350f) 0 33% / 100% 4px no-repeat,
+    linear-gradient(#78350f, #78350f) 0 66% / 100% 4px no-repeat,
+    repeating-linear-gradient(90deg, #b91c1c 0 6px, #1d4ed8 6px 12px, #ca8a04 12px 16px, #15803d 16px 22px, #f8fafc 22px 25px);
+  transform: translateX(-50%);
+}
+.couch {
+  bottom: 22%;
+  height: 30px;
+  background: #7c3aed;
+  border-radius: 10px 10px 4px 4px;
+  box-shadow: inset 0 -8px 0 #5b21b6;
+  transform: translateX(-50%);
+}
+.couch::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: -18px;
+  height: 22px;
+  border-radius: 8px 8px 0 0;
+  background: #6d28d9;
+}
+.boxes {
+  bottom: 30%;
+  height: 54px;
+  background:
+    linear-gradient(90deg, #a16207 0 48%, transparent 48% 52%, #92400e 52%) 0 0 / 100% 50% no-repeat,
+    linear-gradient(90deg, #92400e 0 30%, transparent 30% 34%, #a16207 34%) 0 100% / 100% 50% no-repeat;
+  transform: translateX(-50%);
+}
+/* A table sits in front of seated people, hiding their legs. */
+.table {
+  bottom: 9%;
+  height: 26px;
+  background: linear-gradient(#78350f, #451a03);
+  border-radius: 4px;
+  transform: translateX(-50%);
+  z-index: 6;
+}
+.table.glass { background: linear-gradient(#cbd5e1, #64748b); opacity: 0.9; }
+.desk2 {
+  bottom: 9%;
+  height: 24px;
+  background: #57534e;
+  transform: translateX(-50%);
+  z-index: 6;
+}
+.laptop2 {
+  bottom: calc(9% + 24px);
+  width: 30px;
+  height: 20px;
+  background: #0ea5e9;
+  box-shadow: 0 0 14px #38bdf8;
+  border-radius: 2px 2px 0 0;
+  transform: translateX(-50%);
+  z-index: 6;
+  animation: twinkle 2s ease-in-out infinite;
+}
+.booth {
+  bottom: 22%;
+  height: 64px;
+  background: #e2e8f0;
+  border-top: 14px solid var(--booth, #dc2626);
+  transform: translateX(-50%);
+}
+.podium {
+  bottom: 22%;
+  width: 46px;
+  height: 52px;
+  background: linear-gradient(#78350f, #451a03);
+  transform: translateX(-50%);
+  z-index: 6;
+}
+.flag-ca {
+  top: 10%;
+  width: 54px;
+  height: 28px;
+  background: linear-gradient(90deg, #dc2626 0 25%, #fff 25% 75%, #dc2626 75%);
+  transform: translateX(-50%);
+  text-align: center;
+  line-height: 28px;
+  font-size: 14px;
+  color: #dc2626;
+}
+.flag-ng {
+  top: 10%;
+  width: 54px;
+  height: 28px;
+  background: linear-gradient(90deg, #15803d 0 33%, #fff 33% 66%, #15803d 66%);
+  transform: translateX(-50%);
+}
+.belt {
+  bottom: 22%;
+  height: 12px;
+  background: repeating-linear-gradient(90deg, #1f2937 0 10px, #374151 10px 20px);
+  transform: translateX(-50%);
+  animation: road-roll 1s linear infinite;
+}
+.suitcase {
+  bottom: 8%;
+  width: 22px;
+  height: 26px;
+  background: #b91c1c;
+  border-radius: 4px;
+  transform: translateX(-50%);
+  z-index: 6;
+}
+.board {
+  top: 10%;
+  min-height: 38%;
+  background: #14532d;
+  border: 5px solid #78350f;
+  color: #f8fafc;
+  padding: 8px;
+  transform: translateX(-50%);
+}
+.queue-rope {
+  bottom: 30%;
+  height: 4px;
+  background: #b91c1c;
+  transform: translateX(-50%);
+  z-index: 4;
+}
+
+/* Red TTC streetcar crossing the scene. */
+.streetcar-pass {
+  position: absolute;
+  bottom: 14%;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  z-index: 4;
+  animation: plane-taxi 11s linear infinite;
+}
+.streetcar {
+  position: relative;
+  width: 190px;
+  height: 56px;
+  background: linear-gradient(#dc2626 0 62%, #f8fafc 62% 72%, #dc2626 72%);
+  border: 3px solid #111;
+  border-radius: 14px 14px 4px 4px;
+}
+.streetcar.mini { width: 130px; height: 42px; }
+.streetcar::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 10px;
+  right: 10px;
+  height: 14px;
+  background: repeating-linear-gradient(90deg, #bae6fd 0 22px, #111 22px 26px);
+}
+.streetcar::after {
+  content: "";
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  width: 2px;
+  height: 16px;
+  background: #111;
+  transform: rotate(20deg);
+}
+
+/* A simple chair under anyone seated. */
+.chair {
+  position: absolute;
+  bottom: 5%;
+  width: 30px;
+  height: 22px;
+  border-radius: 3px 3px 0 0;
+  background: #1f2937;
+  box-shadow: inset 0 6px 0 #374151;
+  transform: translateX(-50%);
+  z-index: 4;
+}
+
+/* --- People extras ---------------------------------------------------------- */
+.p-scarf {
+  position: absolute;
+  left: 8px;
+  top: 27px;
+  width: 20px;
+  height: 6px;
+  border-radius: 3px;
+  z-index: 4;
+}
+.p-tie {
+  position: absolute;
+  left: 16px;
+  top: 29px;
+  width: 4px;
+  height: 14px;
+  border-radius: 2px;
+  z-index: 4;
+}
+.p-cap {
+  position: absolute;
+  left: 3px;
+  top: 2px;
+  width: 30px;
+  height: 6px;
+  background: #111;
+  z-index: 5;
+  transform: rotate(-6deg);
+}
+.p-cap::after {
+  content: "";
+  position: absolute;
+  right: 2px;
+  top: 4px;
+  width: 2px;
+  height: 12px;
+  background: #facc15;
+}
+.p-headwrap {
+  position: absolute;
+  left: 4px;
+  top: 0;
+  width: 28px;
+  height: 16px;
+  border-radius: 14px 14px 4px 4px;
+  z-index: 4;
+}
+.p-glasses {
+  position: absolute;
+  left: 3px;
+  top: 6px;
+  width: 14px;
+  height: 5px;
+  border: 2px solid #0b0b0b;
+  border-radius: 2px;
+  z-index: 3;
+}
+
+/* Talking: head bob plus a gesturing hand. */
+.person-talk .p-head,
+.person-talk .p-hair,
+.person-talk .p-headwrap { animation: talk-bob 0.5s ease-in-out infinite alternate; }
+.person-talk .p-arm-r { animation: talk-hand 0.9s ease-in-out infinite alternate; }
+@keyframes talk-bob {
+  from { transform: translateY(0) rotate(-2deg); }
+  to { transform: translateY(-1px) rotate(3deg); }
+}
+@keyframes talk-hand {
+  from { transform: rotate(-30deg); }
+  to { transform: rotate(-75deg); }
+}
+/* Celebrate: both arms up. */
+.person-cheer .p-arm-l { transform: rotate(150deg); animation: bounce-soft 0.5s ease-in-out infinite; }
+.person-cheer .p-arm-r { transform: rotate(-150deg); animation: bounce-soft 0.5s ease-in-out infinite; }
+.person-cheer .person { animation: bounce-soft 0.6s ease-in-out infinite; }
+/* Slump: head down, arms hanging. */
+.person-slump .p-head,
+.person-slump .p-hair { transform: translateY(4px); }
+.person-slump .person { filter: saturate(0.6); }
+
+/* --- Zoom tiles ------------------------------------------------------------- */
+.zoom-room {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.zoom-room .shelf { left: 22%; width: 34%; height: 44%; top: 10%; }
+.zoom-room .window-pane { right: 8%; width: 26%; }
+.zoom-room .person-wrap { bottom: -6%; }
+
+.speaking-ring {
+  position: absolute;
+  inset: 0;
+  border: 3px solid rgb(52 211 153 / 0.85);
+  border-radius: inherit;
+  z-index: 9;
+  pointer-events: none;
+}

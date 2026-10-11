@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
-  DB, applyEffects, applyMarketShock, choose, dismissPopup, enterScene, explainResolution, formatLabel, newRun,
+  DB, applyEffects, applyMarketShock, choose, computeCrs, dismissPopup, enterScene, explainResolution, formatLabel, newRun,
   presentChoices, rankFor, takeAction, thresholdsFor, trapChance,
 } from "./engine";
+import { STAGES } from "../app/components/stages";
 import { initialState, makeReducer } from "./machine";
 import type { GameState, RouteId, StatKey } from "./types";
 
@@ -59,11 +60,14 @@ describe("scenarios.json integrity", () => {
       "timeRemainingDays", "energy", "walletCad", "walletNgn", "desperation", "streetCred",
       "investorInterest", "technicalCredibility", "scalabilityScore", "employerTrust", "lmiaProbability",
       "vocationalHoursLogged", "languageScoreClb", "provincialPoints", "networkScore", "resumeScore", "employerLeads",
-      "papers",
+      "papers", "ageYears", "educationLevel", "ecaComplete", "clbFirst", "nclcFrench", "foreignWorkYears",
+      "canadianWorkYears", "canadianEducation", "pnpNomination", "siblingInCanada", "crsScore", "programType",
+      "academicStanding", "officerConfidence", "scholarshipTried", "familyAsked", "landSold", "crowdfunded",
     ]);
     const bad: string[] = [];
     for (const s of Object.values(DB.scenes)) {
       const maps = [s.onEnter, ...(s.choices ?? []).map((c) => c.effects), ...(s.dashboard?.actions ?? []).map((a) => a.effects)];
+      for (const c of s.choices ?? []) maps.push(c.set);
       for (const m of maps) for (const k of Object.keys(m ?? {})) if (!known.has(k)) bad.push(`${s.id}: ${k}`);
       for (const b of s.branch ?? []) for (const k of Object.keys(b.when ?? {})) if (!known.has(k)) bad.push(`${s.id}: ${k}`);
     }
@@ -176,7 +180,8 @@ describe("Tourist Gamble dashboard", () => {
 describe("state machine", () => {
   it("lists only playable routes and opens on Lagos Life", () => {
     const app = initialState();
-    expect(Object.keys(app.runs).sort()).toEqual(["CAREGIVER_LMIA", "LAGOS_LIFE", "STARTUP_VISA", "TOURIST_GAMBLE"]);
+    expect(Object.keys(app.runs).sort()).toEqual(
+      ["CAREGIVER_LMIA", "EXPRESS_ENTRY", "LAGOS_LIFE", "STARTUP_VISA", "STUDY_PERMIT", "TOURIST_GAMBLE"]);
     expect(app.activeRoute).toBe("LAGOS_LIFE");
     expect(reducer(app, { type: "SELECT_ROUTE", route: "PNP_RURAL" })).toBe(app);
   });
@@ -306,6 +311,168 @@ describe("Lagos Life (merged from the Cursor build)", () => {
   it("papers stay within 0-100", () => {
     const s = applyEffects(newRun(DB, "LAGOS_LIFE"), { papers: 500 });
     expect(s.routeStats.papers).toBe(100);
+  });
+});
+
+describe("2D stages", () => {
+  const LAGOS = ["yaba-dawn", "yaba-street", "cafe", "call-sister", "room-night", "agent", "annex", "whatsapp", "gig",
+    "video-job", "embassy", "outside", "phone-text", "airport", "stay"];
+  it("every scene and dashboard action points at a stage that exists", () => {
+    const missing: string[] = [];
+    const known = (k?: string) => !k || LAGOS.includes(k) || k in STAGES;
+    for (const s of Object.values(DB.scenes)) {
+      if (!known(s.stage)) missing.push(`${s.id}: ${s.stage}`);
+      for (const a of s.dashboard?.actions ?? []) if (!known(a.stage)) missing.push(`${a.id}: ${a.stage}`);
+    }
+    expect(missing).toEqual([]);
+  });
+  it("every story scene has a stage", () => {
+    const bare = Object.values(DB.scenes).filter((s) => s.layoutType === "STORY_STAGE" && !s.stage).map((s) => s.id);
+    expect(bare).toEqual([]);
+  });
+  it("dashboard actions move the 2D stage", () => {
+    const { state } = takeAction(DB, newRun(DB, "TOURIST_GAMBLE"), "mentor_coffee", [0.99, 0]);
+    expect(state.currentStage).toBe("tim-hortons");
+  });
+});
+
+describe("CRS calculator (hand-checked against the IRCC grid)", () => {
+  const t = DB.crs!;
+  it("29, bachelor's with ECA, CLB 9, 3 years foreign work = 429", () => {
+    const b = computeCrs(t, { ageYears: 29, educationLevel: 4, ecaComplete: 1, clbFirst: 9, foreignWorkYears: 3 });
+    expect(b).toMatchObject({ age: 110, education: 120, language: 124, transferability: 75, total: 429 });
+  });
+  it("foreign education counts for nothing without an ECA", () => {
+    expect(computeCrs(t, { ageYears: 29, educationLevel: 4, ecaComplete: 0 }).education).toBe(0);
+  });
+  it("French NCLC 7 adds second-language points and the 50-point French bonus", () => {
+    const b = computeCrs(t, { ageYears: 30, educationLevel: 4, ecaComplete: 1, clbFirst: 9, nclcFrench: 7, foreignWorkYears: 3 });
+    expect(b).toMatchObject({ age: 105, secondLanguage: 12, additional: 50, total: 486 });
+  });
+  it("transferability caps at 50 per group and 100 overall", () => {
+    const b = computeCrs(t, { ageYears: 31, educationLevel: 6, clbFirst: 9, foreignWorkYears: 3, canadianWorkYears: 2, canadianEducation: 1 });
+    expect(b.transferability).toBe(100);
+    expect(b.additional).toBe(15);
+  });
+  it("a provincial nomination adds 600", () => {
+    expect(computeCrs(t, { ageYears: 29, pnpNomination: 1 }).additional).toBe(600);
+  });
+  it("age points fall after 29", () => {
+    expect([29, 30, 35, 40, 45].map((a) => computeCrs(t, { ageYears: a }).age)).toEqual([110, 105, 77, 50, 0]);
+  });
+});
+
+describe("Express Entry route", () => {
+  it("starts at CRS 110 with no test or ECA", () => {
+    expect(newRun(DB, "EXPRESS_ENTRY").routeStats.crsScore).toBe(110);
+  });
+
+  it("prepared IELTS + ECA reaches 429 but misses the CEC draw without Canadian experience", () => {
+    const s = play("EXPRESS_ENTRY", ["three months first", "official express transcript", "Refresh the rounds"]);
+    expect(s.routeStats.crsScore).toBe(429);
+    expect(s.currentSceneId).toBe("EE_BELOW");
+  });
+
+  it("the French pivot wins an ITA, then proof of funds and documents lead to PR", () => {
+    const s = play("EXPRESS_ENTRY", ["three months first", "official express transcript", "Refresh the rounds",
+      "Enrol at the French institute", "Update your profile", "Refresh the rounds", "Start the application",
+      "Work overtime", "Work overtime", "Submit six months", "Queue for the certificate"]);
+    expect(s.outcome).toMatchObject({ result: "win", reason: "PERMANENT_RESIDENCE" });
+    expect(rankFor(DB, s)?.id).toBe("pr");
+    expect(s.energy).toBeGreaterThan(0);
+  });
+
+  it("a rushed CLB 7 plus French still falls short of the French cutoff", () => {
+    const s = play("EXPRESS_ENTRY", ["Book the test for Saturday", "official express transcript", "Refresh the rounds",
+      "Enrol at the French institute", "Update your profile", "Refresh the rounds"]);
+    expect(s.routeStats.crsScore).toBe(393);
+    expect(s.currentSceneId).toBe("EE_BELOW");
+  });
+
+  it("proof of funds stays locked until savings reach CAD 15,263; borrowing is fraud", () => {
+    const s = play("EXPRESS_ENTRY", ["three months first", "official express transcript", "Refresh the rounds",
+      "Enrol at the French institute", "Update your profile", "Refresh the rounds", "Start the application"]);
+    expect(presentChoices(DB, s).find((c) => c.text.startsWith("Submit six months"))?.enabled).toBe(false);
+    const f = choose(DB, s, presentChoices(DB, s).findIndex((c) => c.text.startsWith("Borrow")));
+    expect(f.outcome?.reason).toBe("MISREPRESENTATION");
+  });
+
+  it("fake IELTS papers, documents and job offers are all instant fails", () => {
+    expect(play("EXPRESS_ENTRY", ["leaked paper"]).outcome?.reason).toBe("MISREPRESENTATION");
+    expect(play("EXPRESS_ENTRY", ["three months first", "connect"]).outcome?.reason).toBe("MISREPRESENTATION");
+    expect(play("EXPRESS_ENTRY", ["three months first", "official express", "Refresh", "'job offer'"]).outcome?.reason)
+      .toBe("MISREPRESENTATION");
+  });
+});
+
+describe("Student pathway", () => {
+  const FUND_ALL = ["entrance scholarship", "Family sponsorship", "Sell the plot", "Crowdfund"];
+  it("master's: fund it, write a specific plan, graduate with a PGWP", () => {
+    const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", ...FUND_ALL,
+      "funds are ready", "specific plan", "Wait for the decision", "Board the flight", "proper boots",
+      "Campus cafe", "Library every night"]);
+    expect(s.outcome).toMatchObject({ result: "win", reason: "PGWP_ISSUED" });
+    expect(rankFor(DB, s)?.id).toBe("pgwp");
+  });
+
+  it("funds below tuition + CAD 23,448 + travel send you back to the funding plan", () => {
+    const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "Family sponsorship", "funds are ready"]);
+    expect(s.currentSceneId).toBe("ST_FUNDS_SHORT");
+  });
+
+  it("each funding source can only be used once", () => {
+    const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "Family sponsorship"]);
+    expect(presentChoices(DB, s).find((c) => c.text.startsWith("Family sponsorship"))?.enabled).toBe(false);
+  });
+
+  it("a template study plan gets refused", () => {
+    const s = play("STUDY_PERMIT", ["Two-year Supply Chain", "Work out the money", "entrance scholarship",
+      "Family sponsorship", "funds are ready", "template", "Wait for the decision"]);
+    expect(s.outcome?.reason).toBe("STUDY_PERMIT_REFUSED");
+  });
+
+  it("private career college graduates get no PGWP", () => {
+    const s = play("STUDY_PERMIT", ["private career college", "Work out the money", "Family sponsorship",
+      "funds are ready", "specific plan", "Wait for the decision", "Board the flight", "proper boots",
+      "Campus cafe", "Library every night"]);
+    expect(s.outcome?.reason).toBe("NOT_PGWP_ELIGIBLE");
+  });
+
+  it("working 40 cash hours a week breaches study permit conditions", () => {
+    const s = play("STUDY_PERMIT", ["Two-year Supply Chain", "Work out the money", "entrance scholarship",
+      "Family sponsorship", "funds are ready", "specific plan", "Wait for the decision", "Board the flight",
+      "proper boots", "Cash shifts"]);
+    expect(s.outcome?.reason).toBe("STATUS_BREACH");
+  });
+
+  it("fake admission letters and parked money are misrepresentation", () => {
+    expect(play("STUDY_PERMIT", ["guaranteed admission letter"]).outcome?.reason).toBe("MISREPRESENTATION");
+    expect(play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "park"]).outcome?.reason)
+      .toBe("MISREPRESENTATION");
+  });
+
+  it("a PGWP carries the graduate into Express Entry with Canadian education", () => {
+    let app = reducer(initialState(), { type: "SELECT_ROUTE", route: "STUDY_PERMIT" });
+    const picks = ["Master's in Engineering", "Work out the money", ...FUND_ALL, "funds are ready", "specific plan",
+      "Wait for the decision", "Board the flight", "proper boots", "Campus cafe", "Library every night"];
+    for (const p of picks) {
+      const idx = presentChoices(DB, app.runs.STUDY_PERMIT!).findIndex((c) => c.text.includes(p));
+      app = reducer(app, { type: "CHOOSE", index: idx, rolls: [1, 0] });
+    }
+    app = reducer(app, { type: "FOLLOW_UNLOCK" });
+    const ee = app.runs.EXPRESS_ENTRY!;
+    expect(app.activeRoute).toBe("EXPRESS_ENTRY");
+    expect(ee.currentSceneId).toBe("EE_CANADA_START");
+    expect(ee.routeStats).toMatchObject({ canadianEducation: 1, educationLevel: 6, clbFirst: 9 });
+    // One year of Canadian work: 513, just under the 518 CEC cutoff. A second year clears it.
+    let s = choose(DB, ee, 0);
+    expect(s.routeStats.crsScore).toBe(513);
+    s = choose(DB, s, 0); // refresh the rounds page
+    expect(s.currentSceneId).toBe("EE_BELOW");
+    s = choose(DB, s, presentChoices(DB, s).findIndex((c) => c.text.startsWith("Work a second year")));
+    expect(s.routeStats.crsScore).toBe(521);
+    s = choose(DB, s, 0);
+    expect(s.currentSceneId).toBe("EE_ITA_CEC");
   });
 });
 

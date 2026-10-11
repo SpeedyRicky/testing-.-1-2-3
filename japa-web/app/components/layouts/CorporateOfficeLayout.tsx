@@ -5,6 +5,7 @@ import { DB, currentScene, formatLabel, presentChoices } from "@/game/engine";
 import type { LayoutProps } from "../LayoutContainer";
 import { FeedbackChip } from "../FeedbackChip";
 import { ShareOnX } from "../Popups";
+import { SceneStage } from "../Stage2D";
 
 export function CorporateOfficeLayout({ run, dispatch, bars }: LayoutProps) {
   const scene = currentScene(DB, run);
@@ -39,6 +40,9 @@ export function CorporateOfficeLayout({ run, dispatch, bars }: LayoutProps) {
         </div>
       </div>
       <div className="h-1.5 bg-gradient-to-r from-[#3b2414] via-[#6b4226] to-[#3b2414]" aria-hidden />
+      <div className="p-3 sm:p-4">
+        <SceneStage stage="boardroom" compact mood={run.outcome ? (won ? "win" : "fail") : "talk"} />
+      </div>
 
       <div className="grid lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <section className="min-w-0 space-y-4 p-5 sm:p-6 lg:border-r lg:border-white/10">

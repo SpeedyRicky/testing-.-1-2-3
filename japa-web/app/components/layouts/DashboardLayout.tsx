@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Clock, MapPin, RotateCcw, Target, Wallet, X } from "lucide-react";
 import { DB, canTake, currentScene, dashboardOf, leadChance } from "@/game/engine";
 import { rolls as rollDice } from "@/game/rng";
 import type { DashboardAction } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
 import { ShareOnX } from "../Popups";
+import { SceneStage } from "../Stage2D";
+import { TravelRibbon } from "../TravelRibbon";
+import type { Transit } from "@/game/types";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
 
@@ -39,6 +42,25 @@ export function DashboardLayout({ run, dispatch, bars, toast }: LayoutProps) {
   const status = run.outcome ? (run.outcome.result === "win" ? "won" : "lost") : "playing";
   const day = 1 + (DB.routes.TOURIST_GAMBLE.initialState?.timeRemainingDays ?? 180) - run.timeRemainingDays;
 
+  // Travelling to an action's location: a short ribbon over the 2D stage.
+  const [travel, setTravel] = useState<{ mode: Transit; destination: string } | null>(null);
+  const travelTimer = useRef<number | undefined>(undefined);
+  const stageRef = useRef<HTMLDivElement>(null);
+  useEffect(() => () => window.clearTimeout(travelTimer.current), []);
+  const stage = run.currentStage ?? scene?.stage ?? "pearson-arrivals";
+  function act(a: (typeof hub.actions)[number]) {
+    dispatch({ type: "TAKE_ACTION", actionId: a.id, rolls: rollDice() });
+    if (a.transit && a.transit !== "none" && !a.fatal) {
+      setTravel({ mode: a.transit, destination: a.location });
+      const box = stageRef.current?.getBoundingClientRect();
+      if (box && (box.bottom < 0 || box.top > window.innerHeight)) {
+        stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      window.clearTimeout(travelTimer.current);
+      travelTimer.current = window.setTimeout(() => setTravel(null), 1100);
+    }
+  }
+
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => dispatch({ type: "DISMISS_TOAST" }), 4500);
@@ -47,6 +69,10 @@ export function DashboardLayout({ run, dispatch, bars, toast }: LayoutProps) {
 
   return (
     <div className="space-y-5">
+      <div className="relative scroll-mt-28" ref={stageRef}>
+        <SceneStage stage={stage} mood={run.outcome ? (run.outcome.result === "win" ? "win" : "fail") : "calm"} />
+        {travel && <TravelRibbon mode={travel.mode} destination={travel.destination} />}
+      </div>
       <div className="card overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-5 py-3">
           <div className="font-mono text-xs tracking-wider text-zinc-400">
@@ -111,7 +137,7 @@ export function DashboardLayout({ run, dispatch, bars, toast }: LayoutProps) {
               <button
                 key={a.id}
                 disabled={!ok}
-                onClick={() => dispatch({ type: "TAKE_ACTION", actionId: a.id, rolls: rollDice() })}
+                onClick={() => act(a)}
                 className={`rounded-2xl border p-4 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 disabled:cursor-not-allowed disabled:opacity-40 ${
                   a.fatal ? "border-rose-500/20 bg-rose-500/[0.04] hover:border-rose-500/40"
                     : "border-white/10 bg-white/[0.03] hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.06]"}`}

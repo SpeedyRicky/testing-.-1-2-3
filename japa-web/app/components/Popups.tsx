@@ -9,11 +9,13 @@ const RANK_VIBE: Record<string, string> = {
   pearson: "from-red-500/25 via-zinc-900 to-green-900/40",
   village: "from-emerald-900/40 via-zinc-950 to-rose-950/50",
   flagged: "from-rose-900/50 via-zinc-950 to-zinc-900",
+  pr: "from-red-600/30 via-zinc-950 to-sky-900/40",
+  pgwp: "from-amber-300/25 via-red-900/30 to-zinc-950",
   hustle: "from-zinc-800 via-zinc-950 to-amber-950/40",
 };
 
 const RANK_EMOJI: Record<string, string> = {
-  vanier: "🎓🔥", pearson: "🇨🇦✈️🇳🇬", village: "👻", flagged: "🚫", hustle: "🚌",
+  vanier: "🎓🔥", pearson: "🇨🇦✈️🇳🇬", village: "👻", flagged: "🚫", hustle: "🚌", pr: "🇨🇦🍁", pgwp: "🎓🍁",
 };
 
 function RankGlyph({ id }: { id: string }) {
@@ -35,6 +37,15 @@ function RankGlyph({ id }: { id: string }) {
     );
   }
   if (id === "village") return <Ghost className="mx-auto h-10 w-10 text-lime-300" />;
+  if (id === "pr") return <span className="block text-center text-4xl" aria-hidden>🇨🇦🍁</span>;
+  if (id === "pgwp") {
+    return (
+      <div className="flex items-center justify-center gap-3 text-4xl">
+        <GraduationCap className="h-10 w-10 text-amber-200" />
+        <span aria-hidden>🍁</span>
+      </div>
+    );
+  }
   if (id === "flagged") return <ShieldAlert className="mx-auto h-10 w-10 text-rose-300" />;
   return <span className="block text-center text-4xl">🚌</span>;
 }

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.5.0",
+    "version": "0.6.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -142,8 +142,198 @@
         }
       ],
       "nextRoutes": [
+        "STUDY_PERMIT",
+        "EXPRESS_ENTRY",
         "STARTUP_VISA",
         "TOURIST_GAMBLE"
+      ]
+    },
+    "STUDY_PERMIT": {
+      "title": "Student Pathway",
+      "short": "Student",
+      "status": "playable",
+      "tagline": "Study permit, winter, PGWP.",
+      "startSceneId": "ST_START",
+      "initialState": {
+        "currentLocation": "Yaba, Lagos",
+        "energy": 100,
+        "walletCad": 18000,
+        "desperation": 30,
+        "routeStats": {
+          "programType": 0,
+          "academicStanding": 50,
+          "officerConfidence": 0,
+          "scholarshipTried": 0,
+          "familyAsked": 0,
+          "landSold": 0,
+          "crowdfunded": 0
+        }
+      },
+      "bars": [
+        {
+          "key": "walletCad",
+          "label": "Funds",
+          "max": 60000,
+          "format": "cad"
+        },
+        {
+          "key": "energy",
+          "label": "Energy"
+        },
+        {
+          "key": "academicStanding",
+          "label": "Grades"
+        },
+        {
+          "key": "desperation",
+          "label": "Village People Interference %",
+          "suffix": "%",
+          "invert": true
+        }
+      ],
+      "collapse": {
+        "any": {
+          "energy": [
+            "<=",
+            0
+          ],
+          "desperation": [
+            ">=",
+            100
+          ]
+        },
+        "sceneId": "ST_BURNOUT"
+      },
+      "ranks": [
+        {
+          "id": "pgwp",
+          "reason": "PGWP_ISSUED",
+          "title": "Graduate with a PGWP",
+          "blurb": "Degree done, work permit approved. Canadian experience starts Monday."
+        },
+        {
+          "id": "flagged",
+          "reason": "MISREPRESENTATION",
+          "title": "Flagged for misrepresentation",
+          "blurb": "Fake letters and parked money get checked. The five-year bar is real."
+        },
+        {
+          "id": "pearson",
+          "reason": "STUDY_PERMIT_REFUSED",
+          "title": "Refused, for now",
+          "blurb": "A stronger study plan is the usual fix. Rewrite it and apply again."
+        },
+        {
+          "id": "village",
+          "reason": "STATUS_BREACH",
+          "title": "Out of status",
+          "blurb": "Cash shifts felt like a shortcut. The study permit had conditions."
+        },
+        {
+          "id": "hustle",
+          "title": "Back to the plan",
+          "blurb": "Not this term. The library still knows your name."
+        }
+      ],
+      "nextRoutes": [
+        "EXPRESS_ENTRY"
+      ]
+    },
+    "EXPRESS_ENTRY": {
+      "title": "Express Entry",
+      "short": "Express Entry",
+      "status": "playable",
+      "tagline": "Every point counts.",
+      "startSceneId": "EE_START",
+      "initialState": {
+        "currentLocation": "Yaba, Lagos",
+        "energy": 100,
+        "walletCad": 13000,
+        "desperation": 30,
+        "routeStats": {
+          "ageYears": 29,
+          "educationLevel": 4,
+          "ecaComplete": 0,
+          "clbFirst": 0,
+          "nclcFrench": 0,
+          "foreignWorkYears": 3,
+          "canadianWorkYears": 0,
+          "canadianEducation": 0,
+          "pnpNomination": 0,
+          "siblingInCanada": 0
+        }
+      },
+      "bars": [
+        {
+          "key": "crsScore",
+          "label": "CRS score",
+          "max": 600
+        },
+        {
+          "key": "clbFirst",
+          "label": "English (CLB)",
+          "max": 12
+        },
+        {
+          "key": "walletCad",
+          "label": "Settlement funds",
+          "max": 15263,
+          "format": "cad"
+        },
+        {
+          "key": "desperation",
+          "label": "Village People Interference %",
+          "suffix": "%",
+          "invert": true
+        }
+      ],
+      "collapse": {
+        "any": {
+          "energy": [
+            "<=",
+            0
+          ],
+          "desperation": [
+            ">=",
+            100
+          ],
+          "walletCad": [
+            "<=",
+            0
+          ]
+        },
+        "sceneId": "EE_BURNOUT"
+      },
+      "ranks": [
+        {
+          "id": "pr",
+          "reason": "PERMANENT_RESIDENCE",
+          "title": "Permanent Resident",
+          "blurb": "ITA, eAPR, COPR. Welcome to Canada. The winter coat is not optional."
+        },
+        {
+          "id": "flagged",
+          "reason": "MISREPRESENTATION",
+          "title": "Flagged for misrepresentation",
+          "blurb": "Shortcuts end in five-year bans. Every point has to be real."
+        },
+        {
+          "id": "pgwp",
+          "reason": "SWITCHED_TO_STUDY",
+          "title": "Plan B: the classroom",
+          "blurb": "Canadian education plus Canadian work is the strongest Express Entry profile there is."
+        },
+        {
+          "id": "village",
+          "reason": "BURNOUT",
+          "title": "The pool can wait",
+          "blurb": "Rest first. Profiles last a year."
+        },
+        {
+          "id": "hustle",
+          "title": "Still in the pool",
+          "blurb": "Not this round. The next draw is in two weeks."
+        }
       ]
     },
     "STARTUP_VISA": {
@@ -260,7 +450,7 @@
     "LAGOS_YABA_DAWN": {
       "id": "LAGOS_YABA_DAWN",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "Generator coughs. Light dies.",
       "location": "Yaba, Lagos",
       "stage": "yaba-dawn",
@@ -301,7 +491,7 @@
     "LAGOS_JOB_BOARD": {
       "id": "LAGOS_JOB_BOARD",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "Four hundred applicants. One reply.",
       "location": "Computer Village, Ikeja",
       "stage": "cafe",
@@ -344,7 +534,7 @@
     "LAGOS_AUNTY_CALL": {
       "id": "LAGOS_AUNTY_CALL",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "Ada does not sugarcoat.",
       "location": "Peckham × Yaba FaceTime",
       "stage": "call-sister",
@@ -376,7 +566,7 @@
     "LAGOS_YABA_DUSK": {
       "id": "LAGOS_YABA_DUSK",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "The street is louder than your plan.",
       "location": "Yaba market edge",
       "stage": "yaba-street",
@@ -417,7 +607,7 @@
     "LAGOS_CV_NIGHT": {
       "id": "LAGOS_CV_NIGHT",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "The document starts to look like a person.",
       "location": "Yaba room, 3 a.m.",
       "stage": "room-night",
@@ -449,7 +639,7 @@
     "LAGOS_AGENT_OFFICE": {
       "id": "LAGOS_AGENT_OFFICE",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "The office smells like toner and panic.",
       "location": "Ikeja GRA, second floor",
       "stage": "agent",
@@ -482,7 +672,7 @@
     "LAGOS_DOCUMENT_GRIND": {
       "id": "LAGOS_DOCUMENT_GRIND",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "Photocopies, stamps, another queue.",
       "location": "Immigration annex, Alausa",
       "stage": "annex",
@@ -514,7 +704,7 @@
     "LAGOS_SHOWING_MONEY": {
       "id": "LAGOS_SHOWING_MONEY",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "Love, with conditions.",
       "location": "WhatsApp: Ada & the family group",
       "stage": "whatsapp",
@@ -548,7 +738,7 @@
     "LAGOS_WEEKEND_GIG": {
       "id": "LAGOS_WEEKEND_GIG",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "Cash in the pocket. Dust in the lungs.",
       "location": "Surulere rain, then the okada home",
       "stage": "gig",
@@ -591,7 +781,7 @@
     "LAGOS_BERLIN_CALL": {
       "id": "LAGOS_BERLIN_CALL",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "7:03 a.m. The call connects.",
       "location": "Yaba, on borrowed light",
       "stage": "video-job",
@@ -623,7 +813,7 @@
     "LAGOS_EMBASSY_QUEUE": {
       "id": "LAGOS_EMBASSY_QUEUE",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "The queue is a weather system.",
       "location": "Visa application centre, Victoria Island",
       "stage": "embassy",
@@ -656,7 +846,7 @@
     "LAGOS_DECISION_GATE": {
       "id": "LAGOS_DECISION_GATE",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "They take the passport. You take the wait.",
       "location": "Outside the centre, VI sun",
       "stage": "outside",
@@ -678,7 +868,7 @@
     "LAGOS_OUTCOME": {
       "id": "LAGOS_OUTCOME",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "A text at 11:41 p.m.",
       "location": "Yaba mattress, phone glowing",
       "stage": "phone-text",
@@ -697,7 +887,7 @@
     "LAGOS_ENDING_WIN": {
       "id": "LAGOS_ENDING_WIN",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "You japa.",
       "location": "Airside, MMA2 → the glass",
       "stage": "airport",
@@ -713,7 +903,7 @@
     "LAGOS_ENDING_STAY": {
       "id": "LAGOS_ENDING_STAY",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "The country keeps you.",
       "location": "Yaba, same generator, new month",
       "stage": "stay",
@@ -1067,7 +1257,9 @@
             ],
             "leadConsequences": [
               "A logistics director asked for your CV, then your WhatsApp. Then actually replied. Lead acquired."
-            ]
+            ],
+            "stage": "job-fair",
+            "transit": "streetcar"
           },
           {
             "id": "cold_message",
@@ -1087,7 +1279,9 @@
             ],
             "leadConsequences": [
               "An operations manager in Mississauga wrote back: 'Can you talk Thursday?' You screamed into a cushion."
-            ]
+            ],
+            "stage": "basement",
+            "transit": "none"
           },
           {
             "id": "mentor_coffee",
@@ -1109,7 +1303,9 @@
             ],
             "leadConsequences": [
               "Your mentor forwarded your CV to her old manager. 'He owes me a favour.'"
-            ]
+            ],
+            "stage": "tim-hortons",
+            "transit": "snow-walk"
           },
           {
             "id": "resume",
@@ -1125,7 +1321,9 @@
             "consequences": [
               "You removed your photo, date of birth and state of origin. It already looks 40% more Canadian.",
               "Your 4-page CV is now 2 pages. You mourn the loss of 'Hobbies: Reading and Travelling'."
-            ]
+            ],
+            "stage": "library",
+            "transit": "snow-walk"
           },
           {
             "id": "rest",
@@ -1141,7 +1339,9 @@
             "consequences": [
               "Your cousin's wife asked, very politely, about 'your timeline'.",
               "You slept 11 hours. The kids have started calling you 'Uncle Couch'."
-            ]
+            ],
+            "stage": "basement",
+            "transit": "none"
           },
           {
             "id": "cash_job",
@@ -1156,10 +1356,13 @@
             "fatal": "Working without authorization on visitor status can lead to removal and a ban on returning. Game over.",
             "consequences": [
               "The 'no questions asked' part lasted until the inspection."
-            ]
+            ],
+            "stage": "warehouse",
+            "transit": "streetcar"
           }
         ]
-      }
+      },
+      "stage": "pearson-arrivals"
     },
     "TOURIST_WIN": {
       "id": "TOURIST_WIN",
@@ -1178,7 +1381,7 @@
     "LAGOS_MISREPRESENTATION": {
       "id": "LAGOS_MISREPRESENTATION",
       "route": "LAGOS_LIFE",
-      "layoutType": "LAGOS_STAGE",
+      "layoutType": "STORY_STAGE",
       "title": "The statement wasn't yours.",
       "location": "Visa Application Centre, Ikeja",
       "stage": "embassy",
@@ -1190,6 +1393,1358 @@
         "reason": "MISREPRESENTATION",
         "title": "Flagged for misrepresentation"
       }
+    },
+    "EE_START": {
+      "id": "EE_START",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "The calculator says 110.",
+      "location": "Yaba, Lagos",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "Yaba, Lagos",
+      "dialogue": "You are 29, with a B.Sc. and three years as a logistics analyst. The IRCC calculator is blunt: without a language test or an Educational Credential Assessment (ECA), your Comprehensive Ranking System score is 110. Every point from here has to be earned.",
+      "choices": [
+        {
+          "text": "Book IELTS General Training and study for three months first",
+          "label": "PREPARED",
+          "nextSceneId": "EE_ECA",
+          "effects": {
+            "energy": -20,
+            "walletCad": -320,
+            "desperation": 4
+          },
+          "set": {
+            "clbFirst": 9
+          },
+          "feedback": "Band 7.5+ across the board: CLB 9. The single biggest jump in your score."
+        },
+        {
+          "text": "Book the test for Saturday. How hard can it be?",
+          "label": "RUSHED",
+          "nextSceneId": "EE_ECA",
+          "effects": {
+            "walletCad": -320
+          },
+          "set": {
+            "clbFirst": 7
+          },
+          "feedback": "CLB 7. You passed, but every ability is worth 14 points less than at CLB 9."
+        },
+        {
+          "text": "Pay an agent who 'guarantees' Band 8 with a leaked paper",
+          "label": "FRAUD",
+          "nextSceneId": "EE_FRAUD_IELTS",
+          "effects": {
+            "walletCad": -900
+          }
+        }
+      ]
+    },
+    "EE_ECA": {
+      "id": "EE_ECA",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Transcripts, sealed and direct.",
+      "location": "University registry, Lagos",
+      "stage": "university-registry",
+      "transitIn": "danfo",
+      "speaker": "University registry, Lagos",
+      "dialogue": "WES will only accept transcripts sent directly by your university. The registry window says six to eight weeks. Without the ECA, your degree is worth zero points.",
+      "choices": [
+        {
+          "text": "Pay the official express transcript fee and courier",
+          "label": "PAID_THE_PROPER_FEE",
+          "nextSceneId": "EE_PROFILE",
+          "effects": {
+            "walletCad": -260,
+            "desperation": 4
+          },
+          "set": {
+            "ecaComplete": 1
+          },
+          "feedback": "WES confirms a Canadian bachelor's equivalent: +120 points, and it unlocks transferability points."
+        },
+        {
+          "text": "Go back every week and follow up in person",
+          "label": "PERSISTENCE",
+          "nextSceneId": "EE_PROFILE",
+          "effects": {
+            "energy": -25,
+            "desperation": 10
+          },
+          "set": {
+            "ecaComplete": 1
+          },
+          "feedback": "Seven weeks and four danfos later, the transcripts go out. ECA done."
+        },
+        {
+          "text": "Ask a 'connect' to print a transcript tonight",
+          "label": "FRAUD",
+          "nextSceneId": "EE_FRAUD_DOCS",
+          "effects": {}
+        }
+      ]
+    },
+    "EE_PROFILE": {
+      "id": "EE_PROFILE",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "You are in the pool.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "Profile submitted. Your CRS is on the meter above, with the breakdown under it. Draws in 2026 have mostly been category-based: Canadian Experience Class around 507-523, French-language draws between 382 and 420, and provincial nominee draws far higher because a nomination adds 600 points.",
+      "choices": [
+        {
+          "text": "Refresh the rounds page on draw night",
+          "label": "",
+          "nextSceneId": "EE_DRAW",
+          "effects": {}
+        }
+      ]
+    },
+    "EE_PROFILE_UPDATE": {
+      "id": "EE_PROFILE_UPDATE",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Profile updated.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "The new score is in. The next round of invitations is days away.",
+      "choices": [
+        {
+          "text": "Refresh the rounds page on draw night",
+          "label": "",
+          "nextSceneId": "EE_DRAW",
+          "effects": {}
+        }
+      ]
+    },
+    "EE_DRAW": {
+      "id": "EE_DRAW",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "RESOLUTION",
+      "branch": [
+        {
+          "when": {
+            "pnpNomination": [
+              ">=",
+              1
+            ]
+          },
+          "nextSceneId": "EE_ITA_PNP"
+        },
+        {
+          "when": {
+            "canadianWorkYears": [
+              ">=",
+              1
+            ],
+            "crsScore": [
+              ">=",
+              518
+            ]
+          },
+          "nextSceneId": "EE_ITA_CEC"
+        },
+        {
+          "when": {
+            "nclcFrench": [
+              ">=",
+              7
+            ],
+            "crsScore": [
+              ">=",
+              400
+            ]
+          },
+          "nextSceneId": "EE_ITA_FRENCH"
+        },
+        {
+          "nextSceneId": "EE_BELOW"
+        }
+      ]
+    },
+    "EE_BELOW": {
+      "id": "EE_BELOW",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Not this round.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "This round: Canadian Experience Class, 2,000 invitations, cutoff 518. You need Canadian work experience for that one. Last month's French-language draw went down to 399, but only for NCLC 7 in French. Your score is on the meter. What now?",
+      "choices": [
+        {
+          "text": "Enrol at the French institute: nine months to NCLC 7 (TEF Canada)",
+          "label": "FRENCH_PIVOT",
+          "nextSceneId": "EE_FRENCH",
+          "effects": {
+            "energy": -25,
+            "walletCad": -950,
+            "desperation": 10,
+            "ageYears": 1
+          },
+          "set": {
+            "nclcFrench": 7
+          },
+          "feedback": "Nine months later: NCLC 7. That is up to +62 points and access to French-language draws."
+        },
+        {
+          "text": "Retake IELTS and push for CLB 10",
+          "label": "RETAKE",
+          "nextSceneId": "EE_PROFILE_UPDATE",
+          "effects": {
+            "energy": -15,
+            "walletCad": -320,
+            "desperation": 5
+          },
+          "set": {
+            "clbFirst": 10
+          },
+          "feedback": "CLB 10 adds 3 points per ability over CLB 9. Useful, but small."
+        },
+        {
+          "text": "Work a second year in Canada, then update your profile",
+          "label": "CANADIAN_EXPERIENCE",
+          "nextSceneId": "EE_PROFILE_UPDATE",
+          "effects": {
+            "canadianWorkYears": 1,
+            "ageYears": 1,
+            "walletCad": 6000,
+            "desperation": 4
+          },
+          "feedback": "Canadian experience is worth more each year, and it maxes out your transferability points.",
+          "requires": {
+            "canadianWorkYears": [
+              ">=",
+              1
+            ]
+          },
+          "lockedHint": "Needs at least one year of Canadian work experience"
+        },
+        {
+          "text": "Apply to your province's Express Entry stream",
+          "label": "PROVINCIAL_NOMINATION",
+          "nextSceneId": "EE_PROFILE_UPDATE",
+          "effects": {
+            "walletCad": -1500,
+            "ageYears": 1,
+            "desperation": 8
+          },
+          "set": {
+            "pnpNomination": 1
+          },
+          "feedback": "Nominated. +600 points. In 2026 most provinces favour people already working there.",
+          "requires": {
+            "canadianWorkYears": [
+              ">=",
+              1
+            ]
+          },
+          "lockedHint": "Provinces are mostly choosing people already working there"
+        },
+        {
+          "text": "Do a master's in Canada instead (Student route)",
+          "label": "SWITCH_ROUTES",
+          "nextSceneId": "EE_SWITCH",
+          "effects": {}
+        },
+        {
+          "text": "Rest for a month and reset",
+          "label": "",
+          "nextSceneId": "EE_PROFILE_UPDATE",
+          "effects": {
+            "energy": 35,
+            "desperation": -12,
+            "walletCad": -300
+          }
+        },
+        {
+          "text": "Pay an agent for a 'job offer' to add points",
+          "label": "FRAUD",
+          "nextSceneId": "EE_FRAUD_JOB",
+          "effects": {
+            "walletCad": -1200
+          }
+        }
+      ]
+    },
+    "EE_FRENCH": {
+      "id": "EE_FRENCH",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Bonjour, NCLC 7.",
+      "location": "French institute, Lagos",
+      "stage": "french-class",
+      "transitIn": "danfo",
+      "speaker": "French institute, Lagos",
+      "dialogue": "Nine months of evenings, verb tables on the danfo and one very patient Madame Leclerc. You also had a birthday: turning 30 costs 5 age points. Check the meter.",
+      "choices": [
+        {
+          "text": "Update your profile with the TEF Canada results",
+          "label": "",
+          "nextSceneId": "EE_PROFILE_UPDATE",
+          "effects": {}
+        }
+      ]
+    },
+    "EE_ITA_FRENCH": {
+      "id": "EE_ITA_FRENCH",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Invitation to apply!",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "French-language proficiency draw. Your score clears the cutoff. You have 60 days to submit a complete application for permanent residence.",
+      "choices": [
+        {
+          "text": "Start the application",
+          "label": "",
+          "nextSceneId": "EE_FUNDS",
+          "effects": {}
+        }
+      ]
+    },
+    "EE_ITA_CEC": {
+      "id": "EE_ITA_CEC",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Invitation to apply!",
+      "location": "Toronto",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "Toronto",
+      "dialogue": "Canadian Experience Class draw. Your Canadian work experience carried you over the cutoff. 60 days to submit.",
+      "choices": [
+        {
+          "text": "Start the application",
+          "label": "",
+          "nextSceneId": "EE_FUNDS",
+          "effects": {}
+        }
+      ]
+    },
+    "EE_ITA_PNP": {
+      "id": "EE_ITA_PNP",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Invitation to apply!",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "Provincial nominee draw. With 600 nomination points, the cutoff was never in doubt. 60 days to submit.",
+      "choices": [
+        {
+          "text": "Start the application",
+          "label": "",
+          "nextSceneId": "EE_FUNDS",
+          "effects": {}
+        }
+      ]
+    },
+    "EE_FUNDS": {
+      "id": "EE_FUNDS",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Proof of funds.",
+      "location": "Bank, Lagos",
+      "stage": "bank-hall",
+      "transitIn": "danfo",
+      "speaker": "Bank, Lagos",
+      "dialogue": "Federal Skilled Worker applicants must show settlement funds in their own name: CAD $15,263 for one person (the figure in use since July 2025). Borrowed money does not count. Canadian Experience Class applicants are exempt.",
+      "choices": [
+        {
+          "text": "Submit six months of statements",
+          "label": "FUNDS_PROVEN",
+          "nextSceneId": "EE_DOCS",
+          "effects": {
+            "energy": -5
+          },
+          "feedback": "Steady savings with a clear history.",
+          "requires": {
+            "walletCad": [
+              ">=",
+              15263
+            ]
+          },
+          "lockedHint": "Needs CAD $15,263 in savings"
+        },
+        {
+          "text": "You're applying under the Canadian Experience Class: no funds needed",
+          "label": "CEC_EXEMPT",
+          "nextSceneId": "EE_DOCS",
+          "effects": {},
+          "feedback": "CEC applicants do not need to show settlement funds.",
+          "requires": {
+            "canadianWorkYears": [
+              ">=",
+              1
+            ]
+          },
+          "lockedHint": "Only for Canadian Experience Class"
+        },
+        {
+          "text": "Work overtime for four more months and save",
+          "label": "SAVING_UP",
+          "nextSceneId": "EE_FUNDS",
+          "effects": {
+            "energy": -15,
+            "walletCad": 3000,
+            "desperation": 5
+          },
+          "feedback": "Four months of overtime: +CAD 3,000. The balance climbs; so does the tiredness."
+        },
+        {
+          "text": "Borrow from your cousin for a week to show the balance",
+          "label": "FRAUD",
+          "nextSceneId": "EE_FRAUD_FUNDS",
+          "effects": {}
+        }
+      ]
+    },
+    "EE_DOCS": {
+      "id": "EE_DOCS",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Police certificate. Medical. Uploads.",
+      "location": "Police HQ, Lagos",
+      "stage": "annex",
+      "transitIn": "danfo",
+      "speaker": "Police HQ, Lagos",
+      "dialogue": "A police character certificate, a medical with an IRCC panel physician, and every document scanned and uploaded before the deadline.",
+      "choices": [
+        {
+          "text": "Queue for the certificate and book the panel physician properly",
+          "label": "DONE_RIGHT",
+          "nextSceneId": "EE_COPR",
+          "effects": {
+            "energy": -10,
+            "walletCad": -450,
+            "desperation": 4
+          }
+        },
+        {
+          "text": "Pay someone to 'skip' the medical",
+          "label": "FRAUD",
+          "nextSceneId": "EE_FRAUD_DOCS",
+          "effects": {}
+        }
+      ]
+    },
+    "EE_COPR": {
+      "id": "EE_COPR",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Welcome to Canada.",
+      "location": "Toronto Pearson",
+      "stage": "pr-landing",
+      "transitIn": "plane",
+      "speaker": "Toronto Pearson",
+      "dialogue": "Confirmation of Permanent Residence. The officer stamps the papers and says the words: welcome to Canada. You are a permanent resident.",
+      "outcome": {
+        "result": "win",
+        "reason": "PERMANENT_RESIDENCE",
+        "title": "Permanent resident"
+      }
+    },
+    "EE_SWITCH": {
+      "id": "EE_SWITCH",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Plan B is a classroom.",
+      "location": "Toronto",
+      "stage": "campus",
+      "transitIn": "plane",
+      "speaker": "Toronto",
+      "dialogue": "You switch to the Student route. A Canadian credential adds points, and the post-graduation work permit gives you the Canadian experience that Express Entry rewards most.",
+      "outcome": {
+        "result": "neutral",
+        "reason": "SWITCHED_TO_STUDY",
+        "title": "Switching to the Student route"
+      },
+      "unlocksRoute": "STUDY_PERMIT"
+    },
+    "EE_CANADA_START": {
+      "id": "EE_CANADA_START",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "PGWP in hand.",
+      "location": "Toronto",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "Toronto",
+      "dialogue": "You graduated, got your post-graduation work permit and found a full-time job in supply chain. Express Entry counts Canadian work in full years.",
+      "choices": [
+        {
+          "text": "Work a full year, then create your Express Entry profile",
+          "label": "CANADIAN_EXPERIENCE",
+          "nextSceneId": "EE_PROFILE",
+          "effects": {
+            "canadianWorkYears": 1,
+            "ageYears": 1,
+            "walletCad": 5000,
+            "energy": -10
+          },
+          "feedback": "One year of skilled Canadian work: +40 points and more transferability."
+        }
+      ]
+    },
+    "EE_FRAUD_IELTS": {
+      "id": "EE_FRAUD_IELTS",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "The paper was never leaked.",
+      "location": "IELTS Test Centre",
+      "stage": "ielts-centre",
+      "transitIn": "none",
+      "speaker": "IELTS Test Centre",
+      "dialogue": "The 'leaked paper' was last year's practice test. Your result is flagged for review, and test fraud is reported. Misrepresentation can bar you from Canada for five years.",
+      "outcome": {
+        "result": "fail",
+        "reason": "MISREPRESENTATION",
+        "title": "Flagged"
+      }
+    },
+    "EE_FRAUD_DOCS": {
+      "id": "EE_FRAUD_DOCS",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "The document was fake.",
+      "location": "Lagos",
+      "stage": "university-registry",
+      "transitIn": "none",
+      "speaker": "Lagos",
+      "dialogue": "IRCC verifies documents with the issuing body. A forged document is misrepresentation: refusal and a five-year ban.",
+      "outcome": {
+        "result": "fail",
+        "reason": "MISREPRESENTATION",
+        "title": "Flagged for misrepresentation"
+      }
+    },
+    "EE_FRAUD_JOB": {
+      "id": "EE_FRAUD_JOB",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "There is no job.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "The 'employer' does not exist. Since March 25, 2025 a job offer adds no CRS points anyway, and a fake one is misrepresentation.",
+      "outcome": {
+        "result": "fail",
+        "reason": "MISREPRESENTATION",
+        "title": "Flagged for misrepresentation"
+      }
+    },
+    "EE_FRAUD_FUNDS": {
+      "id": "EE_FRAUD_FUNDS",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Whose money is this?",
+      "location": "Bank, Lagos",
+      "stage": "bank-hall",
+      "transitIn": "none",
+      "speaker": "Bank, Lagos",
+      "dialogue": "The officer asks for the source of a large recent deposit. Borrowed funds presented as savings is misrepresentation.",
+      "outcome": {
+        "result": "fail",
+        "reason": "MISREPRESENTATION",
+        "title": "Flagged for misrepresentation"
+      }
+    },
+    "EE_BURNOUT": {
+      "id": "EE_BURNOUT",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "You ran out of you.",
+      "location": "Yaba, Lagos",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "Yaba, Lagos",
+      "dialogue": "The profile expires while you sleep for a week straight. The pool will still be there. Rest first.",
+      "outcome": {
+        "result": "fail",
+        "reason": "BURNOUT",
+        "title": "Burnout"
+      }
+    },
+    "ST_START": {
+      "id": "ST_START",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Three admission emails.",
+      "location": "Cyber cafe, Yaba",
+      "stage": "cafe",
+      "transitIn": "none",
+      "speaker": "Cyber cafe, Yaba",
+      "dialogue": "The most common route to Canada starts with a classroom. Your inbox has three offers. Choose carefully: the program decides your tuition, your funds and whether you get a post-graduation work permit (PGWP).",
+      "choices": [
+        {
+          "text": "Master's in Engineering Management, public university (1 year, CAD 32,000)",
+          "label": "MASTERS",
+          "nextSceneId": "ST_LOA",
+          "effects": {
+            "desperation": 4
+          },
+          "set": {
+            "programType": 2
+          },
+          "feedback": "Master's graduates are exempt from the PGWP field-of-study list."
+        },
+        {
+          "text": "Two-year Supply Chain diploma, public college (CAD 18,000 a year)",
+          "label": "COLLEGE",
+          "nextSceneId": "ST_LOA",
+          "effects": {},
+          "set": {
+            "programType": 1
+          },
+          "feedback": "College diplomas must be on IRCC's field-of-study list for a PGWP. Check the program's CIP code."
+        },
+        {
+          "text": "One-year certificate at a cheap private career college (CAD 9,000)",
+          "label": "CHEAP_OPTION",
+          "nextSceneId": "ST_LOA",
+          "effects": {
+            "desperation": -3
+          },
+          "set": {
+            "programType": 3
+          },
+          "feedback": "Cheaper. Read the PGWP rules before you pay."
+        },
+        {
+          "text": "An agent promises a 'guaranteed admission letter' from a top university for N2.5M, no transcripts needed",
+          "label": "FRAUD",
+          "nextSceneId": "ST_FAKE_LOA",
+          "effects": {}
+        }
+      ]
+    },
+    "ST_LOA": {
+      "id": "ST_LOA",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Letter of acceptance.",
+      "location": "Yaba, Lagos",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "Yaba, Lagos",
+      "dialogue": "Your letter of acceptance arrives from a designated learning institution. If your program needs a provincial attestation letter (PAL), the school requests it from the province. In 2026 most master's and doctoral students at public institutions are exempt.",
+      "choices": [
+        {
+          "text": "Work out the money",
+          "label": "",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {}
+        }
+      ]
+    },
+    "ST_FUNDS": {
+      "id": "ST_FUNDS",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Show the money.",
+      "location": "Bank, Lagos",
+      "stage": "bank-hall",
+      "transitIn": "danfo",
+      "speaker": "Bank, Lagos",
+      "dialogue": "You need first-year tuition, CAD 23,448 for living costs (applications from September 1, 2026) and money for travel. Since July 2026 officers also ask where the money came from. Master's: about CAD 57,500. College: about CAD 43,500. Private certificate: about CAD 34,500.",
+      "choices": [
+        {
+          "text": "Apply for the entrance scholarship (write the essay tonight)",
+          "label": "SCHOLARSHIP",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {
+            "energy": -15,
+            "walletCad": 7500,
+            "scholarshipTried": 1,
+            "officerConfidence": 10
+          },
+          "feedback": "Awarded: CAD 7,500 off tuition. Officers like a scholarship letter too.",
+          "requires": {
+            "scholarshipTried": [
+              "<",
+              1
+            ]
+          },
+          "lockedHint": "You already applied"
+        },
+        {
+          "text": "Family sponsorship: Daddy and Uncle Emeka sign letters with their statements and source of funds",
+          "label": "FAMILY_SPONSOR",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {
+            "walletCad": 20000,
+            "desperation": 10,
+            "familyAsked": 1
+          },
+          "feedback": "CAD 20,000 with a paper trail. The family WhatsApp group will want updates.",
+          "requires": {
+            "familyAsked": [
+              "<",
+              1
+            ]
+          },
+          "lockedHint": "The family has given what it can"
+        },
+        {
+          "text": "Sell the plot in the village (deed and sale agreement as proof of source)",
+          "label": "SOLD_THE_LAND",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {
+            "walletCad": 12000,
+            "desperation": 12,
+            "landSold": 1
+          },
+          "feedback": "CAD 12,000, documented. Your mother cried, then helped with the paperwork.",
+          "requires": {
+            "landSold": [
+              "<",
+              1
+            ]
+          },
+          "lockedHint": "The land is already sold"
+        },
+        {
+          "text": "Crowdfund on X and WhatsApp",
+          "label": "CROWDFUNDED",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {
+            "walletCad": 3000,
+            "streetCred": 5,
+            "desperation": 4,
+            "crowdfunded": 1
+          },
+          "feedback": "CAD 3,000 from 140 people. Keep the receipts: they are your source of funds.",
+          "requires": {
+            "crowdfunded": [
+              "<",
+              1
+            ]
+          },
+          "lockedHint": "You already ran the campaign"
+        },
+        {
+          "text": "Ask a friend to 'park' N25M in your account for two weeks",
+          "label": "FRAUD",
+          "nextSceneId": "ST_FUNDS_PARKING",
+          "effects": {}
+        },
+        {
+          "text": "The funds are ready: book biometrics and submit",
+          "label": "",
+          "nextSceneId": "ST_FUNDS_CHECK",
+          "effects": {}
+        }
+      ]
+    },
+    "ST_FUNDS_CHECK": {
+      "id": "ST_FUNDS_CHECK",
+      "route": "STUDY_PERMIT",
+      "layoutType": "RESOLUTION",
+      "branch": [
+        {
+          "when": {
+            "programType": [
+              "==",
+              2
+            ],
+            "walletCad": [
+              ">=",
+              57448
+            ]
+          },
+          "nextSceneId": "ST_SOP"
+        },
+        {
+          "when": {
+            "programType": [
+              "==",
+              1
+            ],
+            "walletCad": [
+              ">=",
+              43448
+            ]
+          },
+          "nextSceneId": "ST_SOP"
+        },
+        {
+          "when": {
+            "programType": [
+              "==",
+              3
+            ],
+            "walletCad": [
+              ">=",
+              34448
+            ]
+          },
+          "nextSceneId": "ST_SOP"
+        },
+        {
+          "nextSceneId": "ST_FUNDS_SHORT"
+        }
+      ]
+    },
+    "ST_FUNDS_SHORT": {
+      "id": "ST_FUNDS_SHORT",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "The numbers don't add up yet.",
+      "location": "Bank, Lagos",
+      "stage": "bank-hall",
+      "transitIn": "none",
+      "speaker": "Bank, Lagos",
+      "dialogue": "Tuition plus CAD 23,448 plus travel is more than you can show. An application without enough funds is refused, and the refusal stays on your record.",
+      "choices": [
+        {
+          "text": "Back to the funding plan",
+          "label": "",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {}
+        }
+      ]
+    },
+    "ST_SOP": {
+      "id": "ST_SOP",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "The study plan.",
+      "location": "Yaba, Lagos",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "Yaba, Lagos",
+      "dialogue": "The officer will read one document to understand you: your study plan. Why this program, why Canada, and what happens after.",
+      "choices": [
+        {
+          "text": "Write a specific plan: how the program builds on three years in logistics, and your career path",
+          "label": "SPECIFIC_PLAN",
+          "nextSceneId": "ST_VFS",
+          "effects": {
+            "officerConfidence": 45,
+            "energy": -10
+          },
+          "feedback": "Concrete, consistent with your history, easy to believe."
+        },
+        {
+          "text": "Download a template and change the names",
+          "label": "TEMPLATE",
+          "nextSceneId": "ST_VFS",
+          "effects": {
+            "officerConfidence": 10
+          },
+          "feedback": "Officers read thousands of these. Templates read like templates."
+        },
+        {
+          "text": "Say plainly that the plan is permanent residence",
+          "label": "DUAL_INTENT",
+          "nextSceneId": "ST_VFS",
+          "effects": {
+            "officerConfidence": 20
+          },
+          "feedback": "Wanting PR later is allowed (dual intent), but the officer must still believe the study plan itself."
+        }
+      ]
+    },
+    "ST_VFS": {
+      "id": "ST_VFS",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Biometrics at the VAC.",
+      "location": "Visa Application Centre, Ikeja",
+      "stage": "embassy",
+      "transitIn": "danfo",
+      "speaker": "Visa Application Centre, Ikeja",
+      "dialogue": "Fingerprints, photo, a long wait on a plastic chair. Your file goes to an officer.",
+      "choices": [
+        {
+          "text": "Wait for the decision",
+          "label": "",
+          "nextSceneId": "ST_DECISION",
+          "effects": {
+            "desperation": 6
+          }
+        }
+      ]
+    },
+    "ST_DECISION": {
+      "id": "ST_DECISION",
+      "route": "STUDY_PERMIT",
+      "layoutType": "RESOLUTION",
+      "branch": [
+        {
+          "when": {
+            "officerConfidence": [
+              ">=",
+              45
+            ]
+          },
+          "nextSceneId": "ST_APPROVED"
+        },
+        {
+          "nextSceneId": "ST_REFUSED"
+        }
+      ]
+    },
+    "ST_APPROVED": {
+      "id": "ST_APPROVED",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Study permit approved.",
+      "location": "Murtala Muhammed Airport",
+      "stage": "airport",
+      "transitIn": "call",
+      "speaker": "Murtala Muhammed Airport",
+      "dialogue": "The port of entry letter lands in your inbox. Ada screams on the phone. Pack for winter.",
+      "choices": [
+        {
+          "text": "Board the flight to Toronto",
+          "label": "",
+          "nextSceneId": "ST_ARRIVAL",
+          "effects": {
+            "desperation": -15
+          }
+        }
+      ]
+    },
+    "ST_REFUSED": {
+      "id": "ST_REFUSED",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Refused.",
+      "location": "Yaba, Lagos",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "Yaba, Lagos",
+      "dialogue": "'I am not satisfied that you will leave Canada at the end of your stay, based on the purpose of your visit.' A stronger study plan is the usual fix. You can apply again.",
+      "outcome": {
+        "result": "fail",
+        "reason": "STUDY_PERMIT_REFUSED",
+        "title": "Study permit refused"
+      }
+    },
+    "ST_ARRIVAL": {
+      "id": "ST_ARRIVAL",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Terminal 3, January.",
+      "location": "Toronto Pearson",
+      "stage": "pearson-arrivals",
+      "transitIn": "plane",
+      "speaker": "Toronto Pearson",
+      "dialogue": "The officer checks your letter and issues the study permit. Outside it is -18°C and your Lagos 'jacket' is a hoodie.",
+      "choices": [
+        {
+          "text": "Buy proper boots and a parka before anything else (CAD 350)",
+          "label": "WINTER_READY",
+          "nextSceneId": "ST_TERM",
+          "effects": {
+            "walletCad": -350,
+            "desperation": -4
+          },
+          "feedback": "Warm, and slightly poorer."
+        },
+        {
+          "text": "The hoodie will do",
+          "label": "HOODIE_GAMBLE",
+          "nextSceneId": "ST_TERM",
+          "effects": {
+            "energy": -20,
+            "desperation": 8
+          },
+          "feedback": "You cannot feel your toes by the streetcar stop."
+        }
+      ]
+    },
+    "ST_TERM": {
+      "id": "ST_TERM",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "First term.",
+      "location": "Campus, Toronto",
+      "stage": "lecture-hall",
+      "transitIn": "streetcar",
+      "speaker": "Campus, Toronto",
+      "dialogue": "Rent is CAD 950 for a basement room. Students can work up to 24 hours a week off campus during classes and full-time in scheduled breaks.",
+      "choices": [
+        {
+          "text": "Campus cafe job, 12 hours a week",
+          "label": "BALANCED",
+          "nextSceneId": "ST_FINALS",
+          "effects": {
+            "walletCad": -14000,
+            "academicStanding": 25,
+            "energy": -15
+          },
+          "feedback": "Less money, more sleep, better grades."
+        },
+        {
+          "text": "Warehouse nights, the full 24 hours a week allowed off campus",
+          "label": "MAXED_THE_HOURS",
+          "nextSceneId": "ST_FINALS",
+          "effects": {
+            "walletCad": -10000,
+            "academicStanding": 10,
+            "energy": -30,
+            "desperation": 8
+          },
+          "feedback": "Legal, tiring, and your grades feel it."
+        },
+        {
+          "text": "Cash shifts, 40 hours a week, no paperwork",
+          "label": "BREACHED_CONDITIONS",
+          "nextSceneId": "ST_STATUS_BREACH",
+          "effects": {}
+        }
+      ]
+    },
+    "ST_FINALS": {
+      "id": "ST_FINALS",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Finals week.",
+      "location": "Campus library, Toronto",
+      "stage": "library",
+      "transitIn": "snow-walk",
+      "speaker": "Campus library, Toronto",
+      "dialogue": "Snow outside, coffee inside. Your grades decide whether you graduate on time.",
+      "choices": [
+        {
+          "text": "Library every night until the last exam",
+          "label": "LOCKED_IN",
+          "nextSceneId": "ST_GRAD",
+          "effects": {
+            "academicStanding": 20,
+            "energy": -20
+          }
+        },
+        {
+          "text": "Pick up extra shifts instead",
+          "label": "SPLIT_FOCUS",
+          "nextSceneId": "ST_GRAD",
+          "effects": {
+            "academicStanding": -10,
+            "walletCad": 1200
+          }
+        }
+      ]
+    },
+    "ST_GRAD": {
+      "id": "ST_GRAD",
+      "route": "STUDY_PERMIT",
+      "layoutType": "RESOLUTION",
+      "branch": [
+        {
+          "when": {
+            "academicStanding": [
+              "<",
+              60
+            ]
+          },
+          "nextSceneId": "ST_PROBATION"
+        },
+        {
+          "when": {
+            "programType": [
+              "==",
+              3
+            ]
+          },
+          "nextSceneId": "ST_NO_PGWP"
+        },
+        {
+          "when": {
+            "programType": [
+              "==",
+              2
+            ]
+          },
+          "nextSceneId": "ST_PGWP_MASTERS"
+        },
+        {
+          "nextSceneId": "ST_PGWP_COLLEGE"
+        }
+      ]
+    },
+    "ST_PGWP_MASTERS": {
+      "id": "ST_PGWP_MASTERS",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Convocation.",
+      "location": "Toronto",
+      "stage": "graduation",
+      "transitIn": "snow-walk",
+      "speaker": "Toronto",
+      "dialogue": "Master's degree in hand and a post-graduation work permit approved. A Canadian credential and Canadian work experience are what Express Entry rewards most.",
+      "outcome": {
+        "result": "win",
+        "reason": "PGWP_ISSUED",
+        "title": "Graduate with a PGWP"
+      },
+      "unlocksRoute": "EXPRESS_ENTRY",
+      "unlockStartSceneId": "EE_CANADA_START",
+      "carry": {
+        "routeStats": {
+          "ecaComplete": 1,
+          "clbFirst": 9,
+          "nclcFrench": 0,
+          "foreignWorkYears": 3,
+          "canadianWorkYears": 0,
+          "canadianEducation": 1,
+          "pnpNomination": 0,
+          "siblingInCanada": 0,
+          "ageYears": 30,
+          "educationLevel": 6
+        }
+      }
+    },
+    "ST_PGWP_COLLEGE": {
+      "id": "ST_PGWP_COLLEGE",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Convocation.",
+      "location": "Toronto",
+      "stage": "graduation",
+      "transitIn": "snow-walk",
+      "speaker": "Toronto",
+      "dialogue": "Diploma in hand, and because the program is on the field-of-study list, your PGWP is approved. Next: Canadian work experience and Express Entry.",
+      "outcome": {
+        "result": "win",
+        "reason": "PGWP_ISSUED",
+        "title": "Graduate with a PGWP"
+      },
+      "unlocksRoute": "EXPRESS_ENTRY",
+      "unlockStartSceneId": "EE_CANADA_START",
+      "carry": {
+        "routeStats": {
+          "ecaComplete": 1,
+          "clbFirst": 9,
+          "nclcFrench": 0,
+          "foreignWorkYears": 3,
+          "canadianWorkYears": 0,
+          "canadianEducation": 1,
+          "pnpNomination": 0,
+          "siblingInCanada": 0,
+          "ageYears": 31,
+          "educationLevel": 5
+        }
+      }
+    },
+    "ST_NO_PGWP": {
+      "id": "ST_NO_PGWP",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "No PGWP.",
+      "location": "Toronto",
+      "stage": "graduation",
+      "transitIn": "snow-walk",
+      "speaker": "Toronto",
+      "dialogue": "You graduated, but private career college programs are generally not eligible for a post-graduation work permit. Your study permit expires in 90 days.",
+      "outcome": {
+        "result": "fail",
+        "reason": "NOT_PGWP_ELIGIBLE",
+        "title": "Graduated, no work permit"
+      }
+    },
+    "ST_PROBATION": {
+      "id": "ST_PROBATION",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Academic probation.",
+      "location": "Campus, Toronto",
+      "stage": "lecture-hall",
+      "transitIn": "none",
+      "speaker": "Campus, Toronto",
+      "dialogue": "Your grades dropped below the line. You must repeat the term, and the extra tuition is on you.",
+      "outcome": {
+        "result": "fail",
+        "reason": "ACADEMIC_PROBATION",
+        "title": "Academic probation"
+      }
+    },
+    "ST_STATUS_BREACH": {
+      "id": "ST_STATUS_BREACH",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Out of status.",
+      "location": "Etobicoke",
+      "stage": "warehouse",
+      "transitIn": "streetcar",
+      "speaker": "Etobicoke",
+      "dialogue": "Working beyond your study permit conditions can cost you your status and future applications.",
+      "outcome": {
+        "result": "fail",
+        "reason": "STATUS_BREACH",
+        "title": "Study permit conditions breached"
+      }
+    },
+    "ST_FAKE_LOA": {
+      "id": "ST_FAKE_LOA",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "The letter was fake.",
+      "location": "Agent's office, Ikeja",
+      "stage": "agent",
+      "transitIn": "danfo",
+      "speaker": "Agent's office, Ikeja",
+      "dialogue": "IRCC now verifies every letter of acceptance directly with the school. A fake one is misrepresentation: refusal and a five-year ban.",
+      "outcome": {
+        "result": "fail",
+        "reason": "MISREPRESENTATION",
+        "title": "Flagged for misrepresentation"
+      }
+    },
+    "ST_FUNDS_PARKING": {
+      "id": "ST_FUNDS_PARKING",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Parked money.",
+      "location": "Bank, Lagos",
+      "stage": "bank-hall",
+      "transitIn": "none",
+      "speaker": "Bank, Lagos",
+      "dialogue": "A large deposit two weeks before applying, with no source. Officers ask where it came from, and parked funds presented as your own is misrepresentation.",
+      "outcome": {
+        "result": "fail",
+        "reason": "MISREPRESENTATION",
+        "title": "Flagged for misrepresentation"
+      }
+    },
+    "ST_BURNOUT": {
+      "id": "ST_BURNOUT",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Running on empty.",
+      "location": "Toronto",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "Toronto",
+      "dialogue": "Exhaustion caught up with you. Rest, then try again.",
+      "outcome": {
+        "result": "fail",
+        "reason": "BURNOUT",
+        "title": "Burnout"
+      }
+    }
+  },
+  "crs": {
+    "source": "IRCC Comprehensive Ranking System criteria, candidate without a spouse or common-law partner. Arranged employment points removed March 25, 2025. canada.ca could not be reached from the build environment: re-check these tables against IRCC before release.",
+    "verifiedOn": "2026-10-11 (secondary sources; tables unchanged since 2017 apart from arranged employment)",
+    "age": {
+      "17": 0,
+      "18": 99,
+      "19": 105,
+      "20": 110,
+      "21": 110,
+      "22": 110,
+      "23": 110,
+      "24": 110,
+      "25": 110,
+      "26": 110,
+      "27": 110,
+      "28": 110,
+      "29": 110,
+      "30": 105,
+      "31": 99,
+      "32": 94,
+      "33": 88,
+      "34": 83,
+      "35": 77,
+      "36": 72,
+      "37": 66,
+      "38": 61,
+      "39": 55,
+      "40": 50,
+      "41": 39,
+      "42": 28,
+      "43": 17,
+      "44": 6,
+      "45": 0
+    },
+    "education": [
+      0,
+      30,
+      90,
+      98,
+      120,
+      128,
+      135,
+      150
+    ],
+    "languagePerAbility": [
+      {
+        "minClb": 4,
+        "points": 6
+      },
+      {
+        "minClb": 6,
+        "points": 9
+      },
+      {
+        "minClb": 7,
+        "points": 17
+      },
+      {
+        "minClb": 8,
+        "points": 23
+      },
+      {
+        "minClb": 9,
+        "points": 31
+      },
+      {
+        "minClb": 10,
+        "points": 34
+      }
+    ],
+    "secondLanguagePerAbility": [
+      {
+        "minClb": 5,
+        "points": 1
+      },
+      {
+        "minClb": 7,
+        "points": 3
+      },
+      {
+        "minClb": 9,
+        "points": 6
+      }
+    ],
+    "canadianWork": [
+      0,
+      40,
+      53,
+      64,
+      72,
+      80
+    ],
+    "transferability": {
+      "cap": 100,
+      "groupCap": 50
+    },
+    "additional": {
+      "pnp": 600,
+      "sibling": 15,
+      "frenchWithWeakEnglish": 25,
+      "frenchWithEnglish": 50,
+      "canadianEducation": [
+        0,
+        15,
+        30
+      ]
     }
   }
 }

@@ -1,7 +1,7 @@
 // Pure game logic over scenarios.json. No React, no randomness (rolls are passed in),
 // so every rule is unit-testable. Same semantics as the Godot runner (narrative.gd).
 import type {
-  Choice, Conditions, CoreStat, DashboardAction, Effects, GameState, Op, Rank, RouteId, RouteStats,
+  Choice, Conditions, CoreStat, CrsTables, DashboardAction, Effects, GameState, Op, Rank, RouteId, RouteStats,
   ScenarioDatabase, Scene, StatKey, Toast,
 } from "./types";
 import data from "./scenarios.json";
@@ -38,7 +38,81 @@ export function applyEffects(state: GameState, effects: Effects = {}): GameState
       next.routeStats[k] = PERCENT_ROUTE.has(k) ? Math.min(100, Math.max(0, v)) : v;
     }
   }
-  return next;
+  return withDerived(next);
+}
+
+/** Overwrites values (e.g. a test result), then recalculates derived stats. */
+export function applySet(state: GameState, values: Effects = {}): GameState {
+  const next: GameState = { ...state, routeStats: { ...state.routeStats } };
+  for (const [key, value] of Object.entries(values) as [StatKey, number][]) {
+    if (!Number.isFinite(value)) continue;
+    if (isCore(key)) next[key] = value;
+    else next.routeStats[key as keyof RouteStats] = value;
+  }
+  return withDerived(next);
+}
+
+// --- Express Entry: Comprehensive Ranking System ---------------------------------
+
+export interface CrsBreakdown {
+  age: number;
+  education: number;
+  language: number;
+  secondLanguage: number;
+  canadianWork: number;
+  transferability: number;
+  additional: number;
+  total: number;
+}
+
+function perAbility(table: { minClb: number; points: number }[], clb: number): number {
+  let pts = 0;
+  for (const row of table) if (clb >= row.minClb) pts = row.points;
+  return pts;
+}
+
+/** CRS for a candidate without a spouse, assuming the same CLB in all four abilities.
+ *  Arranged employment earns nothing (removed March 25, 2025). */
+export function computeCrs(t: CrsTables, rs: RouteStats): CrsBreakdown {
+  const ageYears = rs.ageYears ?? 30;
+  const age = t.age[String(Math.min(45, Math.max(17, ageYears)))] ?? 0;
+  const eduLevel = rs.ecaComplete || (rs.canadianEducation ?? 0) > 0 ? rs.educationLevel ?? 0 : 0;
+  const education = t.education[eduLevel] ?? 0;
+  const clb = rs.clbFirst ?? 0;
+  const nclc = rs.nclcFrench ?? 0;
+  const language = perAbility(t.languagePerAbility, clb) * 4;
+  const secondLanguage = perAbility(t.secondLanguagePerAbility, nclc) * 4;
+  const canYears = Math.min(5, rs.canadianWorkYears ?? 0);
+  const canadianWork = t.canadianWork[canYears] ?? 0;
+
+  // Skill transferability: two groups of up to 50, 100 in total.
+  const post1 = eduLevel >= 2;
+  const post2 = eduLevel >= 5;
+  const eduLang = clb >= 9 ? (post2 ? 50 : post1 ? 25 : 0) : clb >= 7 ? (post2 ? 25 : post1 ? 13 : 0) : 0;
+  const eduCan = canYears >= 2 ? (post2 ? 50 : post1 ? 25 : 0) : canYears >= 1 ? (post2 ? 25 : post1 ? 13 : 0) : 0;
+  const fw = rs.foreignWorkYears ?? 0;
+  const fwBand = fw >= 3 ? 2 : fw >= 1 ? 1 : 0;
+  const fwLang = clb >= 9 ? [0, 25, 50][fwBand] : clb >= 7 ? [0, 13, 25][fwBand] : 0;
+  const fwCan = canYears >= 2 ? [0, 25, 50][fwBand] : canYears >= 1 ? [0, 13, 25][fwBand] : 0;
+  const groupCap = t.transferability.groupCap;
+  const transferability = Math.min(t.transferability.cap, Math.min(groupCap, eduLang + eduCan) + Math.min(groupCap, fwLang + fwCan));
+
+  const a = t.additional;
+  const french = nclc >= 7 ? (clb >= 5 ? a.frenchWithEnglish : a.frenchWithWeakEnglish) : 0;
+  const additional = Math.min(600,
+    (rs.pnpNomination ? a.pnp : 0) + (rs.siblingInCanada ? a.sibling : 0) + french
+    + (a.canadianEducation[rs.canadianEducation ?? 0] ?? 0));
+
+  const total = age + education + language + secondLanguage + canadianWork + transferability + additional;
+  return { age, education, language, secondLanguage, canadianWork, transferability, additional, total };
+}
+
+/** Keeps derived stats current. Runs that track an Express Entry profile get a live CRS. */
+function withDerived(state: GameState): GameState {
+  if (!DB.crs || state.routeStats.ageYears === undefined) return state;
+  const crsScore = computeCrs(DB.crs, state.routeStats).total;
+  if (state.routeStats.crsScore === crsScore) return state;
+  return { ...state, routeStats: { ...state.routeStats, crsScore } };
 }
 
 export function check(current: number, op: Op, target: number): boolean {
@@ -86,7 +160,9 @@ export function enterScene(db: ScenarioDatabase, state: GameState, sceneId: stri
   }
 }
 
-export function newRun(db: ScenarioDatabase, route: RouteId, carry: Partial<GameState> = {}): GameState {
+export function newRun(
+  db: ScenarioDatabase, route: RouteId, carry: Partial<GameState> = {}, startSceneId?: string,
+): GameState {
   const cfg = db.routes[route];
   const init = cfg.initialState ?? {};
   const base: GameState = {
@@ -105,12 +181,14 @@ export function newRun(db: ScenarioDatabase, route: RouteId, carry: Partial<Game
     history: [],
     popup: null,
     cadFloat: { amount: 0, tick: 0 },
+    currentStage: null,
     ...init,
-    routeStats: { ...(init.routeStats ?? {}) },
     ...carry,
+    routeStats: { ...(init.routeStats ?? {}), ...(carry.routeStats ?? {}) },
   };
-  if (!cfg.startSceneId) return base;
-  return enterScene(db, { ...base, history: [] }, cfg.startSceneId);
+  const start = startSceneId ?? cfg.startSceneId;
+  if (!start) return withDerived(base);
+  return enterScene(db, withDerived({ ...base, history: [] }), start);
 }
 
 export function currentScene(db: ScenarioDatabase, state: GameState): Scene | undefined {
@@ -136,7 +214,7 @@ export function choose(db: ScenarioDatabase, state: GameState, index: number, ro
   const choice = currentScene(db, state)?.choices?.[index];
   if (!choice || (choice.requires && !evaluate(state, choice.requires))) return state;
   const route = db.routes[state.activeRoute];
-  let s = applyEffects(state, choice.effects);
+  let s = applySet(applyEffects(state, choice.effects), choice.set);
   const history = [...s.history];
   history[history.length - 1] = { ...history[history.length - 1], answer: choice.text, label: choice.label };
   s = { ...s, history, lastChoice: choice.label || choice.feedback ? { label: choice.label, feedback: choice.feedback ?? "" } : null };
@@ -189,7 +267,10 @@ export function dismissPopup(state: GameState): GameState {
 /** The end-of-run rank for routes that define ranks (first match wins). */
 export function rankFor(db: ScenarioDatabase, state: GameState): Rank | null {
   const ranks = db.routes[state.activeRoute].ranks ?? [];
-  return ranks.find((r) => (!r.sceneId || r.sceneId === state.currentSceneId) && (!r.when || evaluate(state, r.when))) ?? null;
+  return ranks.find((r) =>
+    (!r.sceneId || r.sceneId === state.currentSceneId)
+    && (!r.reason || r.reason === state.outcome?.reason)
+    && (!r.when || evaluate(state, r.when))) ?? null;
 }
 
 // --- Resolution screens --------------------------------------------------------
@@ -256,7 +337,7 @@ export function takeAction(
     const text = action.consequences[0];
     return {
       state: {
-        ...state, currentLocation: action.location,
+        ...state, currentLocation: action.location, currentStage: action.stage ?? state.currentStage,
         outcome: { result: "fail", reason: "UNAUTHORIZED_WORK", title: "Run over", subtitle: action.fatal },
         history: [...state.history, { sceneId: state.currentSceneId, answer: action.label }],
       },
@@ -279,6 +360,7 @@ export function takeAction(
   s = {
     ...s,
     currentLocation: action.location,
+    currentStage: action.stage ?? s.currentStage,
     history: [...s.history, { sceneId: state.currentSceneId, answer: action.label }],
   };
 

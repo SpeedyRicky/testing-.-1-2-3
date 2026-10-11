@@ -7,6 +7,8 @@ const COPY: Record<Exclude<Transit, "none">, string> = {
   okada: "Okada weaving the potholes",
   call: "Calling Ada in Peckham…",
   plane: "Airside. The country lets go, maybe.",
+  streetcar: "501 Queen streetcar. Mind the gap.",
+  "snow-walk": "Walking. -18°C with the wind.",
 };
 
 export function TravelRibbon({
@@ -22,7 +24,7 @@ export function TravelRibbon({
     <div className="travel-ribbon" role="status">
       <p className="travel-kicker">{COPY[mode]}</p>
       <p className="travel-dest">{destination}</p>
-      <div className="travel-stage">
+      <div className={`travel-stage ${mode === "streetcar" || mode === "snow-walk" ? "travel-snow" : ""}`}>
         {mode === "danfo" ? (
           <div className="danfo-bus">
             <span className="danfo-stripe" />
@@ -52,6 +54,19 @@ export function TravelRibbon({
             <Person who="you" pose="phone" x={28} scale={1} caption="Tolu" />
             <span className="call-dots">···</span>
             <Person who="ada" pose="phone" x={72} scale={1} caption="Ada · Peckham" />
+          </>
+        ) : null}
+        {mode === "streetcar" ? (
+          <div className="danfo-bus" style={{ background: "transparent", border: "none" }}>
+            <span className="streetcar" style={{ display: "block", margin: "0 auto" }} />
+            <Person who="you" pose="sit" x={50} scale={0.5} wear={["scarf"]} />
+          </div>
+        ) : null}
+        {mode === "snow-walk" ? (
+          <>
+            <Person who="you" pose="walk" x={48} scale={0.9} caption="You" wear={["scarf"]} />
+            <Person who="npc" pose="walk" x={22} scale={0.7} delay="0.2s" wear={["scarf"]} />
+            <span className="snowfall" />
           </>
         ) : null}
         {mode === "plane" ? (
