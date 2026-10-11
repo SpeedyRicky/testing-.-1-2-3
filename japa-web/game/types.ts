@@ -1,9 +1,21 @@
 // The game's data contract. Scenes, routes and actions live in scenarios.json;
 // components only render what these types describe.
 
-export type RouteId = "STARTUP_VISA" | "CAREGIVER_LMIA" | "TARGETED_TRADE" | "TOURIST_GAMBLE" | "PNP_RURAL";
+export type RouteId =
+  | "LAGOS_LIFE"
+  | "STARTUP_VISA"
+  | "CAREGIVER_LMIA"
+  | "TARGETED_TRADE"
+  | "TOURIST_GAMBLE"
+  | "PNP_RURAL";
 
-export type LayoutType = "ZOOM_GRID" | "CORPORATE_OFFICE" | "DASHBOARD" | "RESOLUTION";
+export type LayoutType = "LAGOS_STAGE" | "ZOOM_GRID" | "CORPORATE_OFFICE" | "DASHBOARD" | "RESOLUTION";
+
+/** Lagos Life: which 2D stage to draw, and how the player travels into a scene. */
+export type StageKind =
+  | "yaba-dawn" | "yaba-street" | "cafe" | "call-sister" | "room-night" | "agent" | "annex"
+  | "whatsapp" | "gig" | "video-job" | "embassy" | "outside" | "phone-text" | "airport" | "stay";
+export type Transit = "none" | "trek" | "danfo" | "okada" | "call" | "plane";
 
 export interface RouteStats {
   investorInterest?: number; // Startup Visa
@@ -14,6 +26,7 @@ export interface RouteStats {
   vocationalHoursLogged?: number; // Targeted Trade
   languageScoreClb?: number; // Express Entry / IELTS mini-game
   provincialPoints?: number; // PNP Rural Stream
+  papers?: number; // Lagos Life: document readiness, 0-100
   // Added for the Tourist Gamble dashboard:
   networkScore?: number;
   resumeScore?: number;
@@ -43,6 +56,19 @@ export interface GameState {
   outcome: Outcome | null;
   /** Scenes visited, with the answer given, for transcripts. */
   history: { sceneId: string; answer?: string; label?: string }[];
+  /** A pop-up waiting to be dismissed (Village People trap, parallel-market shock). */
+  popup: Popup | null;
+  /** Counts CAD spends so the UI can float "-$1,500 CAD" once per spend. */
+  cadFloat: { amount: number; tick: number };
+}
+
+export interface Popup {
+  kind: "trap" | "market";
+  id: string;
+  kicker: string;
+  title: string;
+  body: string;
+  button?: string;
 }
 
 /** Numeric GameState fields an effect may change directly. */
@@ -61,6 +87,8 @@ export interface Choice {
   feedback?: string;
   requires?: Conditions;
   lockedHint?: string;
+  /** Lagos Life: shows a floating "-$N CAD" when chosen. */
+  floatCad?: number;
 }
 
 export interface Outcome {
@@ -109,6 +137,11 @@ export interface Scene {
   outcome?: Omit<Outcome, "decidedBy">;
   dashboard?: DashboardConfig;
   unlocksRoute?: RouteId;
+  // Lagos Life stage scenes:
+  title?: string;
+  location?: string;
+  stage?: StageKind;
+  transitIn?: Transit;
 }
 
 export interface BarSpec {
@@ -118,6 +151,34 @@ export interface BarSpec {
   suffix?: string;
   /** A rise is bad news (e.g. desperation). */
   invert?: boolean;
+  /** "ngn" formats the value as naira. */
+  format?: "ngn";
+}
+
+export interface TrapConfig {
+  base: number;
+  scale: number;
+  exponent: number;
+  items: { id: string; kicker: string; title: string; body: string; effects: Effects }[];
+}
+
+export interface MarketShockConfig {
+  intervalSeconds: number;
+  chance: number;
+  kicker: string;
+  title: string;
+  body: string;
+  button: string;
+  multiply: Effects;
+}
+
+export interface Rank {
+  id: string;
+  title: string;
+  blurb: string;
+  /** Matches only when the run ended on this scene. */
+  sceneId?: string;
+  when?: Conditions;
 }
 
 export interface RouteConfig {
@@ -127,6 +188,15 @@ export interface RouteConfig {
   startSceneId?: string;
   initialState?: Partial<Omit<GameState, "routeStats">> & { routeStats?: RouteStats };
   bars: BarSpec[];
+  tagline?: string;
+  /** If any condition holds after a move, the run jumps to sceneId. */
+  collapse?: { any: Conditions; sceneId: string };
+  traps?: TrapConfig;
+  marketShock?: MarketShockConfig;
+  /** End-of-run ranks, first match wins. */
+  ranks?: Rank[];
+  /** Routes offered as the next chapter after a win. */
+  nextRoutes?: RouteId[];
 }
 
 export interface ScenarioDatabase {

@@ -1,64 +1,59 @@
-# Japa: The Great Escape (web edition)
+# Japa: The Great Escape
 
-Next.js 14 + TypeScript + Tailwind CSS + lucide-react. A data-driven game: every scene, route, stat bar and
-daily action lives in `src/game/scenarios.json`; React only renders what that file describes.
+Survive Lagos Life, pitch a Canadian incubator, gamble 180 days as a tourist, and face Mr. Kovacs in the boardroom.
+Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · lucide-react.
 
-| Route | Layout | What happens |
-|---|---|---|
-| **The Startup Visa Pitch Route** (`STARTUP_VISA`) | `ZOOM_GRID` | 2x2 Zoom call with Ms. Vance, Mr. Chen, Mr. Ross. Answers move Investor Interest, Technical Credibility, Scalability Score. Ends on the Letter of Support resolution screen. |
-| **The 180-Day Tourist Gamble** (`TOURIST_GAMBLE`) | `DASHBOARD` | Time remaining, energy, desperation, CAD wallet with ₦ conversion, location. Daily actions cost time, energy and money and show a toast. 3 employer leads win and unlock the LMIA interview, carrying your desperation and wallet in. |
-| **The Hidden LMIA Interview** (`CAREGIVER_LMIA`) | `CORPORATE_OFFICE` | Mr. Kovacs dialogue tree in a boardroom theme. |
-| Targeted Trade, PNP Rural | | Listed as "Soon". Add scenes and set `status` to `playable`. |
-
-## Run
-```
+## Run it
+```bash
 npm install
-npm run dev        # http://localhost:3000
-npm test           # 29 engine tests (vitest)
-npm run build      # type-check + production build
+npm run dev          # open http://localhost:3000 once the terminal says "Ready"
+npm test             # 41 engine tests
+npm run lint
+npm run build
 ```
+
+## Routes
+| Tab | Layout | What happens |
+|---|---|---|
+| **Lagos Life** | `LAGOS_STAGE` | Animated Yaba street scenes, danfo/okada/trek travel, calls with Ada in Peckham. Keep Cash, Energy, Papers and Village People Interference alive. Traps and parallel-market shocks strike at random. Ends with a rank you can post on X; a win offers the next chapter. |
+| **Startup Pitch** | `ZOOM_GRID` | 2x2 Zoom call with Ms. Vance, Mr. Chen, Mr. Ross, ending on the Letter of Support resolution. |
+| **Tourist Gamble** | `DASHBOARD` | 180 days on a visitor record: daily actions, toasts, CAD/₦ wallet. 3 employer leads unlock the boardroom. |
+| **LMIA Interview** | `CORPORATE_OFFICE` | The Mr. Kovacs dialogue tree. |
+| Trades, PNP Rural | | Coming soon: add scenes and set `status` to `playable`. |
+
+## How it fits together
+```
+app/layout.tsx, app/page.tsx         Next.js shell (Geist + Source Serif fonts)
+app/globals.css, app/lagos-2d.css    Tailwind v4 theme + the hand-built 2D Lagos stage
+app/components/Game.tsx              header, route tabs, Reset run
+app/components/LayoutContainer.tsx   reads the current scene, picks layout + background by route, draws stat bars
+app/components/layouts/              LagosStageLayout, ZoomGridLayout, DashboardLayout, CorporateOfficeLayout
+app/components/LagosStage, Person, TravelRibbon, Popups   the Lagos visuals, pop-ups, game-over card, Post on X
+game/scenarios.json                  ALL content: routes, scenes, choices, effects, traps, market shock, ranks
+game/types.ts                        GameState and the scenarios.json schema
+game/engine.ts                       pure rules (effects, conditions, endings, traps, market shock, ranks, dashboard)
+game/machine.ts                      the state machine: one reducer, each route keeps its own progress
+game/rng.ts                          dice rolls (passed into the engine, so the rules stay testable)
+```
+
+## Adding content without code
+Everything a player sees comes from `game/scenarios.json`.
+- **A scene:** add it under `scenes` with `route`, `layoutType`, `speaker`/`dialogue` (or `title`/`location`/`stage`/`transitIn`
+  for Lagos) and `choices`. Each choice has `text`, `nextSceneId` and `effects` (e.g. `{ "walletNgn": -35000, "papers": 8 }`).
+- **A locked choice:** `requires` + `lockedHint`, e.g. `{ "streetCred": [">=", 20] }`.
+- **An automatic decision:** a `RESOLUTION` scene with `branch: [{ "when": {...}, "nextSceneId": "WIN" }, { "nextSceneId": "FAIL" }]`.
+- **An ending:** a scene with `outcome` (`win` / `fail`). Lagos ranks are listed under `routes.LAGOS_LIFE.ranks`.
+- **Traps, market shock, collapse rule:** tune the numbers under `routes.LAGOS_LIFE`.
+
+`npm test` checks every link, stat name and dead end, so a typo fails the tests, not the game.
+
+## Share a preview
+`npm run standalone` writes `out/japa-standalone.html`, a single file that runs without a server.
 
 ## Deploy to Vercel
-vercel.com → **Add New → Project** → import this repo → **Root Directory: `japa-web`** → Deploy.
-Vercel detects Next.js; no settings needed.
-
-For a single-file preview (no server): `node scripts/build-standalone.mjs out/japa.html`.
-
-## Files
-```
-app/layout.tsx, app/page.tsx      Next.js shell (fonts, metadata)
-src/game/types.ts                 GameState and the scenarios.json schema
-src/game/scenarios.json           all content: routes, scenes, choices, effects, dashboard actions
-src/game/engine.ts                pure rules: effects, conditions, scene entry, resolution, dashboard actions
-src/game/machine.ts               the state machine (one reducer; each route keeps its own GameState)
-src/components/LayoutContainer.tsx  reads the current scene, maps stats to animated bars, picks layout + background by route
-src/components/layouts/*          ZoomGrid, CorporateOffice, Dashboard
-```
-
-## Adding a scene (no code)
-Add an entry under `scenes` in `scenarios.json`:
-```json
-"SUV_PITCH_CHEN": {
-  "id": "SUV_PITCH_CHEN", "route": "STARTUP_VISA", "layoutType": "ZOOM_GRID",
-  "speaker": "Mr. Chen (Chief Technology Officer)",
-  "dialogue": "Let's look at your architecture...",
-  "choices": [
-    { "text": "...", "label": "TECHNICAL DROPOUT", "nextSceneId": "SUV_PITCH_ROSS",
-      "effects": { "technicalCredibility": -35 }, "feedback": "You did not answer the architecture question." }
-  ]
-}
-```
-- `effects`: numbers added to any `GameState` stat (`energy`, `walletCad`, `desperation`, ...) or `routeStats` key.
-- `requires` + `lockedHint` on a choice lock it until a condition holds, e.g. `{ "streetCred": [">=", 20] }`.
-- A `RESOLUTION` scene decides automatically: `branch: [{ "when": {...}, "nextSceneId": "WIN" }, { "nextSceneId": "FAIL" }]`.
-  Its thresholds also draw the white tick on the stat bars.
-- A scene with `outcome` ends the run (`result`: `win` / `fail` / `neutral`).
-- `npm test` checks every link, stat name and dead end, so a typo fails the tests instead of the game.
-
-## Content source
-`scenarios.json` was seeded from the Godot game's `japa/data/japa_nodes.json` and is now the web game's own file.
-The Godot project is not updated automatically from it.
+vercel.com → Add New → Project → import the repo → Deploy (set Root Directory if the game is in a subfolder).
 
 ## Disclaimer
-A simulation for entertainment, not legal or immigration advice. Working without authorization on visitor status is
-an instant fail in the game because it can lead to removal in real life. Check IRCC (canada.ca) for real rules.
+A simulation for entertainment, not legal or immigration advice. Fraud options (fake documents, borrowed bank
+statements, unauthorized work, fake job postings) are instant fails because they carry real penalties.
+Check IRCC (canada.ca) for real rules.

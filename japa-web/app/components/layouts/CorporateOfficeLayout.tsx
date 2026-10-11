@@ -4,6 +4,7 @@ import { Building2, RotateCcw } from "lucide-react";
 import { DB, currentScene, formatLabel, presentChoices } from "@/game/engine";
 import type { LayoutProps } from "../LayoutContainer";
 import { FeedbackChip } from "../FeedbackChip";
+import { ShareOnX } from "../Popups";
 
 export function CorporateOfficeLayout({ run, dispatch, bars }: LayoutProps) {
   const scene = currentScene(DB, run);
@@ -73,9 +74,13 @@ export function CorporateOfficeLayout({ run, dispatch, bars }: LayoutProps) {
             <div className={`animate-fade-in rounded-2xl border p-5 ${won ? "border-emerald-400/30 bg-emerald-400/[0.05]" : "border-rose-500/30 bg-rose-500/[0.05]"}`}>
               <div className={`font-serif text-xl ${won ? "text-emerald-300" : "text-rose-300"}`}>{run.outcome.title}</div>
               <p className="mt-1 text-sm leading-relaxed text-zinc-400">{run.outcome.subtitle ?? scene?.dialogue}</p>
-              <button onClick={() => dispatch({ type: "RESTART" })} className="choice-btn mt-4 flex items-center justify-center gap-2 font-medium">
-                <RotateCcw className="h-4 w-4" /> Request another meeting
-              </button>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <ShareOnX className="sm:flex-1"
+                  text={won ? "Mr. Kovacs agreed to sponsor my LMIA in Japa: The Great Escape. 🇨🇦" : `Mr. Kovacs said no. ${run.outcome.title} in Japa: The Great Escape.`} />
+                <button onClick={() => dispatch({ type: "RESTART" })} className="choice-btn flex items-center justify-center gap-2 font-medium sm:flex-1">
+                  <RotateCcw className="h-4 w-4" /> Request another meeting
+                </button>
+              </div>
             </div>
           )}
         </section>

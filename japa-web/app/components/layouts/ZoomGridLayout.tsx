@@ -5,6 +5,7 @@ import { DB, currentScene, explainResolution, presentChoices } from "@/game/engi
 import type { GameState, StatKey } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
 import { FeedbackChip } from "../FeedbackChip";
+import { ShareOnX } from "../Popups";
 
 const PANEL = [
   { id: "vance", name: "Ms. Vance", role: "Committee Chair", initials: "EV", hue: "from-indigo-500/30 to-violet-500/10" },
@@ -79,8 +80,11 @@ function Resolution({ run, onRestart }: { run: GameState; onRestart: () => void 
           ? currentScene(DB, run)?.dialogue
           : `${currentScene(DB, run)?.dialogue ?? ""} Short on: ${short.map((c) => `${LABELS[c.key]} (${Math.round(c.value)} of ${c.threshold})`).join(", ")}.`}
       </p>
-      <div className="border-t border-white/10 px-5 py-4">
-        <button onClick={onRestart} className="choice-btn flex items-center justify-center gap-2 font-medium">
+      <div className="flex flex-col gap-2 border-t border-white/10 px-5 py-4 sm:flex-row">
+        <ShareOnX className="sm:flex-1"
+          text={won ? "Maple Venture Incubator just issued my Letter of Support in Japa: The Great Escape. 🇳🇬➡️🇨🇦"
+            : "The Startup Visa committee passed on my pitch in Japa: The Great Escape. Back to the deck. 🇳🇬"} />
+        <button onClick={onRestart} className="choice-btn flex items-center justify-center gap-2 font-medium sm:flex-1">
           <RotateCcw className="h-4 w-4" /> Pitch again
         </button>
       </div>

@@ -1,0 +1,467 @@
+.lagos-stage {
+  position: relative;
+  height: 280px;
+  overflow: hidden;
+  border-radius: 1.6rem;
+  background: linear-gradient(#7dd3fc, #fde68a 42%, #65a30d 42%, #365314 100%);
+  box-shadow: inset 0 -18px 0 #1c1917;
+}
+.lagos-stage[data-scene="call-sister"],
+.lagos-stage[data-scene="whatsapp"] {
+  background: #0b0b12;
+}
+.lagos-sky {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 54%;
+  background: linear-gradient(#7dd3fc, #fdba74);
+}
+.lagos-sky.dusk {
+  background: linear-gradient(#fb7185, #f59e0b);
+}
+.lagos-sky.night {
+  background: linear-gradient(#0f172a, #1e1b4b);
+}
+.lagos-sun {
+  position: absolute;
+  right: 12%;
+  top: 18%;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: #fde68a;
+  box-shadow: 0 0 24px #f59e0b;
+}
+.lagos-cloud {
+  position: absolute;
+  background: #fff;
+  opacity: 0.7;
+  height: 14px;
+  border-radius: 999px;
+  animation: drift 10s ease-in-out infinite;
+}
+.lagos-cloud.c1 {
+  width: 70px;
+  top: 22%;
+  left: 10%;
+}
+.lagos-cloud.c2 {
+  width: 50px;
+  top: 30%;
+  left: 55%;
+  animation-delay: 1.4s;
+}
+.skyline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 38%;
+  height: 90px;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 0 8px;
+}
+.bldg {
+  display: block;
+  background: #334155;
+  width: 18%;
+  height: 70%;
+  box-shadow: inset 8px 12px 0 #1e293b;
+}
+.b1 { height: 58%; }
+.b2 { height: 92%; }
+.b3 { height: 64%; width: 12%; }
+.b4 { height: 80%; }
+.b5 { height: 50%; width: 22%; }
+.shop {
+  position: absolute;
+  bottom: 34%;
+  min-width: 88px;
+  padding: 6px 8px 18px;
+  background: #78350f;
+  color: #fde68a;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-align: center;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+.shop::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 6px;
+  height: 8px;
+  background: #1c1917;
+}
+.road {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34%;
+  background: #1c1917;
+}
+.lane {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 46%;
+  height: 4px;
+  background: repeating-linear-gradient(90deg, #facc15 0px, #facc15 18px, transparent 18px, transparent 36px);
+  animation: road-roll 0.8s linear infinite;
+}
+@keyframes road-roll {
+  from { background-position: 0 0; }
+  to { background-position: 36px 0; }
+}
+.genny {
+  position: absolute;
+  bottom: 36%;
+  left: 6%;
+  z-index: 3;
+  background: #a3e635;
+  color: #14532d;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 8px 10px;
+  border-radius: 4px;
+  animation: twinkle 0.4s steps(2, end) infinite;
+}
+.desk {
+  position: absolute;
+  bottom: 28%;
+  left: 28%;
+  width: 120px;
+  height: 18px;
+  background: #44403c;
+  z-index: 3;
+  border-radius: 2px;
+}
+.laptop {
+  position: absolute;
+  left: 40px;
+  bottom: 18px;
+  width: 36px;
+  height: 22px;
+  background: #0ea5e9;
+  border-radius: 2px 2px 0 0;
+}
+.laptop.glow {
+  box-shadow: 0 0 18px #38bdf8;
+  animation: twinkle 1.6s ease-in-out infinite;
+}
+.office {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(#cbd5e1, #64748b 55%, #1e293b 55%);
+}
+.office.cool {
+  background: linear-gradient(#e0f2fe, #94a3b8 52%, #0f172a 52%);
+}
+.room-wall {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 72%;
+  background: repeating-linear-gradient(#1e1b4b, #1e1b4b 20px, #312e81 20px, #312e81 22px);
+}
+.split-call {
+  display: grid;
+  grid-template-columns: 1fr 18px 1fr;
+  height: 100%;
+}
+.call-pane {
+  position: relative;
+  overflow: hidden;
+}
+.call-pane p {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  z-index: 4;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fde68a;
+}
+.call-pane.lagos {
+  background: linear-gradient(#1e1b4b, #365314);
+}
+.call-pane.peckham {
+  background: linear-gradient(#94a3b8, #334155);
+}
+.uk-brick {
+  position: absolute;
+  top: 30%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(#9f1239, #9f1239 12px, #881337 12px, #881337 14px);
+}
+.call-pulse {
+  background: repeating-linear-gradient(180deg, transparent, #4ade80 8px, transparent 16px);
+  animation: twinkle 0.6s linear infinite;
+}
+.ada-inset {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 92px;
+  height: 110px;
+  border: 2px solid #fde68a;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(#94a3b8, #1e293b);
+  z-index: 6;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  animation: stamp 0.6s cubic-bezier(0.2, 1.4, 0.3, 1) both;
+}
+.ada-inset p {
+  position: relative;
+  z-index: 2;
+  margin: 4px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fde68a;
+}
+.rain {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(110deg, transparent 0px, transparent 12px, rgba(255, 255, 255, 0.18) 12px, rgba(255, 255, 255, 0.18) 13px);
+  animation: road-roll 0.35s linear infinite;
+  pointer-events: none;
+  z-index: 5;
+}
+.danfo-pass,
+.okada-pass {
+  position: absolute;
+  bottom: 10%;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  z-index: 4;
+  animation: plane-taxi 9s linear infinite;
+}
+.danfo-bus {
+  position: relative;
+  width: 210px;
+  height: 70px;
+  background: #facc15;
+  border: 3px solid #111;
+  border-radius: 6px 18px 4px 4px;
+  margin: 40px auto 0;
+}
+.danfo-bus.mini {
+  width: 140px;
+  height: 48px;
+  margin: 0;
+}
+.danfo-stripe {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 18px;
+  height: 10px;
+  background: #000;
+}
+.danfo-win {
+  position: absolute;
+  top: 6px;
+  width: 28px;
+  height: 16px;
+  background: #7dd3fc;
+  border: 2px solid #111;
+}
+.danfo-win.w1 { left: 18px; }
+.danfo-win.w2 { left: 56px; }
+.danfo-win.w3 { left: 94px; }
+.okada-bike {
+  position: relative;
+  width: 90px;
+  height: 18px;
+  background: #111;
+  border-radius: 999px;
+  margin: 70px auto 0;
+}
+.okada-bike::before,
+.okada-bike::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  width: 18px;
+  height: 18px;
+  border: 3px solid #111;
+  border-radius: 999px;
+  background: #444;
+}
+.okada-bike::before { left: 6px; }
+.okada-bike::after { right: 6px; }
+.plane-rig { position: relative; height: 120px; }
+.plane-body {
+  font-size: 48px;
+  display: block;
+  text-align: center;
+  animation: plane-taxi 3s linear infinite;
+}
+.travel-ribbon {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(7, 6, 12, 0.88);
+  animation: scene-in 0.3s ease both;
+}
+.travel-kicker {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #fde68a;
+}
+.travel-dest {
+  font-size: 22px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+.travel-stage {
+  position: relative;
+  width: 90%;
+  max-width: 520px;
+  height: 160px;
+  overflow: hidden;
+  border-radius: 1.2rem;
+  background: linear-gradient(#38bdf8 40%, #365314 40%, #1c1917 78%);
+}
+.call-dots {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translateX(-50%);
+  color: #4ade80;
+  letter-spacing: 0.4em;
+  animation: twinkle 0.7s linear infinite;
+}
+.person-wrap {
+  position: absolute;
+  bottom: 8%;
+  z-index: 5;
+  transform-origin: bottom center;
+}
+.person-name {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+.person {
+  position: relative;
+  width: 36px;
+  height: 78px;
+}
+.p-head {
+  position: absolute;
+  left: 8px;
+  top: 10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 8px 8px 10px 10px;
+  z-index: 2;
+}
+.p-hair {
+  position: absolute;
+  left: 7px;
+  top: 6px;
+  width: 22px;
+  height: 12px;
+  border-radius: 10px 10px 2px 2px;
+  z-index: 3;
+}
+.p-eye {
+  position: absolute;
+  top: 8px;
+  width: 3px;
+  height: 3px;
+  background: #0b0b0b;
+  border-radius: 99px;
+}
+.p-eye.e1 { left: 4px; }
+.p-eye.e2 { right: 4px; }
+.p-torso {
+  position: absolute;
+  left: 9px;
+  top: 28px;
+  width: 18px;
+  height: 24px;
+  border-radius: 4px;
+}
+.p-arm {
+  position: absolute;
+  top: 30px;
+  width: 6px;
+  height: 22px;
+  border-radius: 3px;
+  transform-origin: top center;
+}
+.p-arm-l { left: 4px; }
+.p-arm-r { right: 4px; }
+.p-leg {
+  position: absolute;
+  top: 50px;
+  width: 7px;
+  height: 26px;
+  border-radius: 3px;
+  transform-origin: top center;
+}
+.p-leg-l { left: 10px; }
+.p-leg-r { right: 10px; }
+.p-phone {
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  width: 8px;
+  height: 14px;
+  background: #111;
+  border-radius: 2px;
+  box-shadow: 0 0 8px #4ade80;
+}
+.person-idle .p-arm-r { animation: bounce-soft 1.6s ease-in-out infinite; }
+.person-walk .p-leg-l { animation: stride 0.4s ease-in-out infinite; }
+.person-walk .p-leg-r { animation: stride 0.4s ease-in-out infinite reverse; }
+.person-walk .p-arm-l { animation: stride 0.4s ease-in-out infinite reverse; }
+.person-walk .p-arm-r { animation: stride 0.4s ease-in-out infinite; }
+.person-phone .p-arm-r { transform: rotate(-110deg); }
+.person-wave .p-arm-r { animation: wave-arm 0.7s ease-in-out infinite; }
+.person-sit .p-leg-l,
+.person-sit .p-leg-r { height: 14px; top: 58px; }
+.person-sit .person { height: 64px; }
+.person-queue .p-arm-l { transform: rotate(12deg); }
+@keyframes stride {
+  from { transform: rotate(22deg); }
+  to { transform: rotate(-22deg); }
+}
+@keyframes wave-arm {
+  from { transform: rotate(-20deg); }
+  to { transform: rotate(-90deg); }
+}
+@media (min-width: 640px) {
+  .lagos-stage { height: 320px; }
+}

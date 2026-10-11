@@ -3,8 +3,10 @@
 import { useEffect } from "react";
 import { ArrowRight, Clock, MapPin, RotateCcw, Target, Wallet, X } from "lucide-react";
 import { DB, canTake, currentScene, dashboardOf, leadChance } from "@/game/engine";
+import { rolls as rollDice } from "@/game/rng";
 import type { DashboardAction } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
+import { ShareOnX } from "../Popups";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
 
@@ -48,7 +50,7 @@ export function DashboardLayout({ run, dispatch, bars, toast }: LayoutProps) {
       <div className="card overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-5 py-3">
           <div className="font-mono text-xs tracking-wider text-zinc-400">
-            THE 180-DAY TOURIST GAMBLE <span className="text-zinc-600">//</span> DAY {day}
+            THE 180-DAY TOURIST GAMBLE <span className="text-zinc-600">{"//"}</span> DAY {day}
           </div>
           <div className="text-xs text-zinc-500">
             Status:{" "}
@@ -86,6 +88,9 @@ export function DashboardLayout({ run, dispatch, bars, toast }: LayoutProps) {
                 Walk into the boardroom <ArrowRight className="h-4 w-4" />
               </button>
             )}
+            <ShareOnX className="!rounded-xl !py-2.5"
+              text={status === "won" ? `Day ${day} of the 180-Day Tourist Gamble: I landed an LMIA interview. Japa: The Great Escape 🇨🇦`
+                : `My 180-Day Tourist Gamble ended on day ${day}: ${run.outcome.title}. Japa: The Great Escape 🇳🇬`} />
             <button onClick={() => dispatch({ type: "RESTART" })}
               className="flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-zinc-300 transition hover:border-white/25">
               <RotateCcw className="h-4 w-4" /> Start a new 180 days
@@ -106,7 +111,7 @@ export function DashboardLayout({ run, dispatch, bars, toast }: LayoutProps) {
               <button
                 key={a.id}
                 disabled={!ok}
-                onClick={() => dispatch({ type: "TAKE_ACTION", actionId: a.id, rolls: [Math.random(), Math.random()] })}
+                onClick={() => dispatch({ type: "TAKE_ACTION", actionId: a.id, rolls: rollDice() })}
                 className={`rounded-2xl border p-4 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 disabled:cursor-not-allowed disabled:opacity-40 ${
                   a.fatal ? "border-rose-500/20 bg-rose-500/[0.04] hover:border-rose-500/40"
                     : "border-white/10 bg-white/[0.03] hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.06]"}`}

@@ -1,18 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
-  DB, applyEffects, choose, enterScene, explainResolution, formatLabel, newRun, presentChoices, takeAction, thresholdsFor,
+  DB, applyEffects, applyMarketShock, choose, dismissPopup, enterScene, explainResolution, formatLabel, newRun,
+  presentChoices, rankFor, takeAction, thresholdsFor, trapChance,
 } from "./engine";
 import { initialState, makeReducer } from "./machine";
 import type { GameState, RouteId, StatKey } from "./types";
 
 const reducer = makeReducer();
 
-function play(route: RouteId, picks: string[]): GameState {
+/** Plays by choice text. Rolls default to "no trap" so paths are deterministic. */
+function play(route: RouteId, picks: string[], rolls: [number, number] = [1, 0]): GameState {
   let s = newRun(DB, route);
   for (const pick of picks) {
     const idx = presentChoices(DB, s).findIndex((c) => c.text.includes(pick));
-    expect(idx, `choice containing "${pick}"`).toBeGreaterThanOrEqual(0);
-    s = choose(DB, s, idx);
+    expect(idx, `choice containing "${pick}" at ${s.currentSceneId}`).toBeGreaterThanOrEqual(0);
+    s = dismissPopup(choose(DB, s, idx, rolls));
   }
   return s;
 }
@@ -57,6 +59,7 @@ describe("scenarios.json integrity", () => {
       "timeRemainingDays", "energy", "walletCad", "walletNgn", "desperation", "streetCred",
       "investorInterest", "technicalCredibility", "scalabilityScore", "employerTrust", "lmiaProbability",
       "vocationalHoursLogged", "languageScoreClb", "provincialPoints", "networkScore", "resumeScore", "employerLeads",
+      "papers",
     ]);
     const bad: string[] = [];
     for (const s of Object.values(DB.scenes)) {
@@ -171,15 +174,15 @@ describe("Tourist Gamble dashboard", () => {
 });
 
 describe("state machine", () => {
-  it("lists only playable routes and starts on the pitch", () => {
+  it("lists only playable routes and opens on Lagos Life", () => {
     const app = initialState();
-    expect(Object.keys(app.runs).sort()).toEqual(["CAREGIVER_LMIA", "STARTUP_VISA", "TOURIST_GAMBLE"]);
-    expect(app.activeRoute).toBe("STARTUP_VISA");
+    expect(Object.keys(app.runs).sort()).toEqual(["CAREGIVER_LMIA", "LAGOS_LIFE", "STARTUP_VISA", "TOURIST_GAMBLE"]);
+    expect(app.activeRoute).toBe("LAGOS_LIFE");
     expect(reducer(app, { type: "SELECT_ROUTE", route: "PNP_RURAL" })).toBe(app);
   });
 
   it("keeps each route's progress when switching", () => {
-    let app = initialState();
+    let app = reducer(initialState(), { type: "SELECT_ROUTE", route: "STARTUP_VISA" });
     app = reducer(app, { type: "CHOOSE", index: 1 });
     app = reducer(app, { type: "SELECT_ROUTE", route: "TOURIST_GAMBLE" });
     app = reducer(app, { type: "TAKE_ACTION", actionId: "resume", rolls: [0.9, 0] });
@@ -206,7 +209,7 @@ describe("state machine", () => {
   });
 
   it("restart resets only the active route", () => {
-    let app = initialState();
+    let app = reducer(initialState(), { type: "SELECT_ROUTE", route: "STARTUP_VISA" });
     app = reducer(app, { type: "CHOOSE", index: 1 });
     app = reducer(app, { type: "SELECT_ROUTE", route: "TOURIST_GAMBLE" });
     app = reducer(app, { type: "TAKE_ACTION", actionId: "resume", rolls: [0.9, 0] });
@@ -214,6 +217,95 @@ describe("state machine", () => {
     app = reducer(app, { type: "RESTART" });
     expect(app.runs.STARTUP_VISA?.currentSceneId).toBe("SUV_PITCH_START");
     expect(app.runs.TOURIST_GAMBLE?.routeStats.resumeScore).toBe(15);
+  });
+});
+
+describe("Lagos Life (merged from the Cursor build)", () => {
+  const HONEST = ["Call Sister Ada", "Leave the call", "Book the appointment", "Answer every question",
+    "Pick Ada's call", "Open the email"];
+
+  it("starts in Yaba with the original meters (hope 64 = interference 36)", () => {
+    const s = newRun(DB, "LAGOS_LIFE");
+    expect(s.currentSceneId).toBe("LAGOS_YABA_DAWN");
+    expect(s).toMatchObject({ walletNgn: 280000, energy: 72, desperation: 36 });
+    expect(s.routeStats.papers).toBe(18);
+  });
+
+  it("the remote-job path runs out of energy (original balance, kept on purpose)", () => {
+    const s = play("LAGOS_LIFE", ["Danfo to Computer Village", "Rewrite the CV", "Take the interview",
+      "Use the offer as the spine", "Answer every question", "Pick Ada's call", "Open the email"]);
+    expect(s.outcome?.result).toBe("fail");
+    expect(s.energy).toBeLessThanOrEqual(12);
+  });
+
+  it("a borrowed bank statement is an instant fail", () => {
+    const s = play("LAGOS_LIFE", ["Call Sister Ada", "Ask her to lend", "friend's statement"]);
+    expect(s.outcome).toMatchObject({ result: "fail", reason: "MISREPRESENTATION" });
+    expect(rankFor(DB, s)?.id).toBe("flagged");
+  });
+
+  it("the honest annex path wins and ranks Vanier Scholar", () => {
+    const s = play("LAGOS_LIFE", HONEST);
+    expect(s.outcome).toMatchObject({ result: "win", reason: "JAPA_APPROVED", decidedBy: "LAGOS_RESOLVE" });
+    expect(rankFor(DB, s)?.id).toBe("vanier");
+  });
+
+  it("over-explaining at the embassy still loses on papers", () => {
+    const s = play("LAGOS_LIFE", ["Danfo to Computer Village", "Danfo to the visa consultant", "Pay 'facilitation'",
+      "Over-explain", "Pick Ada's call", "Open the email"]);
+    expect(s.outcome?.result).toBe("fail");
+    expect(s.currentSceneId).toBe("LAGOS_ENDING_STAY");
+    expect(["pearson", "village", "hustle"]).toContain(rankFor(DB, s)?.id);
+  });
+
+  it("paying the consultant floats -$1,500 CAD", () => {
+    const s = play("LAGOS_LIFE", ["Danfo to Computer Village", "Danfo to the visa consultant"]);
+    expect(s.cadFloat).toEqual({ amount: 1500, tick: 1 });
+  });
+
+  it("trap chance rises with interference, as in the original formula", () => {
+    const s = newRun(DB, "LAGOS_LIFE");
+    expect(trapChance(DB, s)).toBeCloseTo(0.05 + Math.pow(0.36, 1.65) * 0.72, 6);
+    expect(trapChance(DB, { ...s, desperation: 100 })).toBeCloseTo(0.77, 6);
+    expect(trapChance(DB, newRun(DB, "STARTUP_VISA"))).toBe(0);
+  });
+
+  it("a trap applies its hit, shows a pop-up and blocks moves until dismissed", () => {
+    const start = newRun(DB, "LAGOS_LIFE");
+    const s = choose(DB, start, 0, [0, 0]);
+    expect(s.popup).toMatchObject({ kind: "trap", id: "ielts" });
+    expect(s.desperation).toBe(36 - 6 + 16);
+    expect(s.routeStats.papers).toBe(18 - 14);
+    expect(choose(DB, s, 0)).toBe(s);
+    expect(dismissPopup(s).popup).toBeNull();
+  });
+
+  it("traps never fire on the move into the ending", () => {
+    let s = play("LAGOS_LIFE", HONEST.slice(0, -1));
+    s = choose(DB, s, 0, [0, 0]);
+    expect(s.popup).toBeNull();
+    expect(s.outcome).not.toBeNull();
+  });
+
+  it("any meter running out collapses the run", () => {
+    const broke = { ...newRun(DB, "LAGOS_LIFE"), walletNgn: 1000 };
+    const s = choose(DB, broke, 1); // call Ada costs N2,000
+    expect(s.currentSceneId).toBe("LAGOS_ENDING_STAY");
+    expect(s.outcome?.result).toBe("fail");
+  });
+
+  it("the parallel-market shock cuts cash and papers by 25%", () => {
+    const s = applyMarketShock(DB, newRun(DB, "LAGOS_LIFE"));
+    expect(s.walletNgn).toBe(210000);
+    expect(s.routeStats.papers).toBe(13);
+    expect(s.popup?.kind).toBe("market");
+    expect(applyMarketShock(DB, s)).toBe(s);
+    expect(applyMarketShock(DB, newRun(DB, "STARTUP_VISA")).popup).toBeNull();
+  });
+
+  it("papers stay within 0-100", () => {
+    const s = applyEffects(newRun(DB, "LAGOS_LIFE"), { papers: 500 });
+    expect(s.routeStats.papers).toBe(100);
   });
 });
 

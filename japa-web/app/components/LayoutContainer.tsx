@@ -8,9 +8,11 @@ import { StatBar, type Tone } from "./StatBar";
 import { ZoomGridLayout } from "./layouts/ZoomGridLayout";
 import { CorporateOfficeLayout } from "./layouts/CorporateOfficeLayout";
 import { DashboardLayout } from "./layouts/DashboardLayout";
+import { LagosStageLayout } from "./layouts/LagosStageLayout";
 
 /** Per-route look. Class names are written out in full so Tailwind keeps them. */
 export const ROUTE_THEME: Record<RouteId, { backdrop: string; tones: Tone[]; accent: string }> = {
+  LAGOS_LIFE: { backdrop: "", tones: [], accent: "text-amber-300" },
   STARTUP_VISA: {
     backdrop: "bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.10),transparent_60%)]",
     tones: ["emerald", "sky", "violet"],
@@ -37,7 +39,8 @@ export interface LayoutProps {
   toast: Toast | null;
 }
 
-const LAYOUTS: Record<Exclude<LayoutType, "RESOLUTION">, (p: LayoutProps) => JSX.Element> = {
+const LAYOUTS: Record<Exclude<LayoutType, "RESOLUTION">, (p: LayoutProps) => React.JSX.Element> = {
+  LAGOS_STAGE: LagosStageLayout,
   ZOOM_GRID: ZoomGridLayout,
   CORPORATE_OFFICE: CorporateOfficeLayout,
   DASHBOARD: DashboardLayout,
@@ -80,8 +83,10 @@ export function LayoutContainer({ run, dispatch, toast }: Omit<LayoutProps, "bar
   const Layout = LAYOUTS[layoutType];
 
   return (
-    <div className={`-mx-4 rounded-none px-4 py-1 transition-[background] duration-700 sm:mx-0 sm:rounded-3xl sm:px-0 ${ROUTE_THEME[route].backdrop}`}>
-      <Layout run={run} dispatch={dispatch} bars={bars} toast={toast} />
-    </div>
+    <>
+      <div className={`relative z-10 -mx-4 rounded-none px-4 py-1 transition-[background] duration-700 sm:mx-0 sm:rounded-3xl sm:px-0 ${ROUTE_THEME[route].backdrop}`}>
+        <Layout run={run} dispatch={dispatch} bars={bars} toast={toast} />
+      </div>
+    </>
   );
 }

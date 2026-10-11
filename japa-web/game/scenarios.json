@@ -1,0 +1,1195 @@
+{
+  "meta": {
+    "version": "0.5.0",
+    "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
+  },
+  "routes": {
+    "LAGOS_LIFE": {
+      "title": "Lagos Life",
+      "short": "Lagos Life",
+      "status": "playable",
+      "tagline": "Trek, danfo, call Ada.",
+      "startSceneId": "LAGOS_YABA_DAWN",
+      "initialState": {
+        "currentLocation": "Yaba, Lagos",
+        "energy": 72,
+        "walletNgn": 280000,
+        "desperation": 36,
+        "routeStats": {
+          "papers": 18
+        }
+      },
+      "bars": [
+        {
+          "key": "walletNgn",
+          "label": "Cash",
+          "max": 500000,
+          "format": "ngn"
+        },
+        {
+          "key": "energy",
+          "label": "Energy"
+        },
+        {
+          "key": "papers",
+          "label": "Papers"
+        },
+        {
+          "key": "desperation",
+          "label": "Village People Interference %",
+          "suffix": "%",
+          "invert": true
+        }
+      ],
+      "collapse": {
+        "any": {
+          "walletNgn": [
+            "<=",
+            0
+          ],
+          "energy": [
+            "<=",
+            0
+          ],
+          "desperation": [
+            ">=",
+            100
+          ]
+        },
+        "sceneId": "LAGOS_ENDING_STAY"
+      },
+      "traps": {
+        "base": 0.05,
+        "scale": 0.72,
+        "exponent": 1.65,
+        "items": [
+          {
+            "id": "ielts",
+            "kicker": "Critical trap",
+            "title": "IELTS speaking: Band 5.5",
+            "body": "The examiner asked about your hometown. Village People Interference scrambled the answer. The recording is already on a server in Cambridge.",
+            "effects": {
+              "desperation": 16,
+              "energy": -10,
+              "papers": -14
+            }
+          },
+          {
+            "id": "landlord",
+            "kicker": "Critical trap",
+            "title": "Landlord ghosted you",
+            "body": "The viewing was at 4. The gate man has not seen anyone. Your deposit is a voice note that will never be opened.",
+            "effects": {
+              "desperation": 16,
+              "energy": -10,
+              "papers": -8
+            }
+          }
+        ]
+      },
+      "marketShock": {
+        "intervalSeconds": 32,
+        "chance": 0.22,
+        "kicker": "State modifier · parallel market",
+        "title": "The rate just moved.",
+        "body": "The parallel market rate jumped to naira 1,800/$! Your proof of funds has lost 25% of its purchasing power overnight.",
+        "button": "Recalculate the envelope",
+        "multiply": {
+          "walletNgn": 0.75,
+          "papers": 0.75
+        }
+      },
+      "ranks": [
+        {
+          "id": "flagged",
+          "sceneId": "LAGOS_MISREPRESENTATION",
+          "title": "Flagged at the VAC",
+          "blurb": "The account name was your friend's. The five-year bar is real, and no danfo goes around it."
+        },
+        {
+          "id": "vanier",
+          "sceneId": "LAGOS_ENDING_WIN",
+          "title": "Vanier Scholar",
+          "blurb": "The committee saw the file. The fire stayed lit. Ada is already buying you a winter coat that is too optimistic."
+        },
+        {
+          "id": "pearson",
+          "sceneId": "LAGOS_ENDING_STAY",
+          "when": {
+            "papers": [
+              ">=",
+              28
+            ]
+          },
+          "title": "Deported at Pearson Airport",
+          "blurb": "You cleared MMA2. Canada did not clear you. The officer stamped the dream on the way back to the gate."
+        },
+        {
+          "id": "village",
+          "when": {
+            "desperation": [
+              ">=",
+              70
+            ]
+          },
+          "title": "Village People Took the Call",
+          "blurb": "Interference hit critical. IELTS, landlords, and a cousin in the group chat finished the route for you."
+        },
+        {
+          "id": "hustle",
+          "title": "Still on the Corridor",
+          "blurb": "Not Pearson. Not Vanier. Yaba still knows your name. The next danfo is boarding."
+        }
+      ],
+      "nextRoutes": [
+        "STARTUP_VISA",
+        "TOURIST_GAMBLE"
+      ]
+    },
+    "STARTUP_VISA": {
+      "title": "The Startup Visa Pitch Route",
+      "short": "Startup Pitch",
+      "status": "playable",
+      "startSceneId": "SUV_PITCH_START",
+      "initialState": {
+        "currentLocation": "Home office, Lekki (Zoom)",
+        "energy": 100,
+        "walletNgn": 4500000,
+        "desperation": 30,
+        "routeStats": {
+          "investorInterest": 40,
+          "technicalCredibility": 40,
+          "scalabilityScore": 40
+        }
+      },
+      "bars": [
+        {
+          "key": "investorInterest",
+          "label": "Investor Interest"
+        },
+        {
+          "key": "technicalCredibility",
+          "label": "Technical Credibility"
+        },
+        {
+          "key": "scalabilityScore",
+          "label": "Scalability Score"
+        }
+      ]
+    },
+    "TOURIST_GAMBLE": {
+      "title": "The 180-Day Tourist Gamble",
+      "short": "Tourist Gamble",
+      "status": "playable",
+      "startSceneId": "TOURIST_HUB",
+      "initialState": {
+        "currentLocation": "Pearson Airport, Terminal 3",
+        "timeRemainingDays": 180,
+        "energy": 100,
+        "walletCad": 2500,
+        "walletNgn": 0,
+        "desperation": 25,
+        "routeStats": {
+          "networkScore": 0,
+          "resumeScore": 0,
+          "employerLeads": 0
+        }
+      },
+      "bars": [
+        {
+          "key": "timeRemainingDays",
+          "label": "Time remaining",
+          "max": 180,
+          "suffix": "d"
+        },
+        {
+          "key": "energy",
+          "label": "Energy"
+        },
+        {
+          "key": "desperation",
+          "label": "Desperation",
+          "invert": true
+        }
+      ]
+    },
+    "CAREGIVER_LMIA": {
+      "title": "The Hidden LMIA Interview",
+      "short": "LMIA Interview",
+      "status": "playable",
+      "startSceneId": "LMIA_INTERVIEW_KOVACS",
+      "initialState": {
+        "currentLocation": "Northline Logistics, Mississauga",
+        "energy": 100,
+        "desperation": 60,
+        "routeStats": {
+          "employerTrust": 20,
+          "lmiaProbability": 20
+        }
+      },
+      "bars": [
+        {
+          "key": "employerTrust",
+          "label": "Employer Trust"
+        },
+        {
+          "key": "lmiaProbability",
+          "label": "LMIA Probability"
+        },
+        {
+          "key": "desperation",
+          "label": "Desperation",
+          "invert": true
+        }
+      ]
+    },
+    "TARGETED_TRADE": {
+      "title": "Targeted Trade",
+      "short": "Trades",
+      "status": "coming_soon",
+      "bars": []
+    },
+    "PNP_RURAL": {
+      "title": "PNP Rural Stream",
+      "short": "PNP Rural",
+      "status": "coming_soon",
+      "bars": []
+    }
+  },
+  "scenes": {
+    "LAGOS_YABA_DAWN": {
+      "id": "LAGOS_YABA_DAWN",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "Generator coughs. Light dies.",
+      "location": "Yaba, Lagos",
+      "stage": "yaba-dawn",
+      "transitIn": "none",
+      "speaker": "Yaba, Lagos",
+      "dialogue": "NEPA has packed up. Your roommate is already in a Europe group chat. Downstairs, Yaba is waking. Your sister Ada in Peckham sent three missed calls. Japa this year, or watch another circle leave.",
+      "choices": [
+        {
+          "text": "Danfo to Computer Village and hunt remote jobs",
+          "label": "",
+          "nextSceneId": "LAGOS_JOB_BOARD",
+          "effects": {
+            "energy": -12,
+            "desperation": -6
+          }
+        },
+        {
+          "text": "Call Sister Ada in Peckham about the visa story",
+          "label": "",
+          "nextSceneId": "LAGOS_AUNTY_CALL",
+          "effects": {
+            "walletNgn": -2000,
+            "desperation": -8,
+            "papers": 4
+          }
+        },
+        {
+          "text": "Sleep. Trek the street when dusk is cheaper.",
+          "label": "",
+          "nextSceneId": "LAGOS_YABA_DUSK",
+          "effects": {
+            "energy": 18,
+            "desperation": 10
+          }
+        }
+      ]
+    },
+    "LAGOS_JOB_BOARD": {
+      "id": "LAGOS_JOB_BOARD",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "Four hundred applicants. One reply.",
+      "location": "Computer Village, Ikeja",
+      "stage": "cafe",
+      "transitIn": "danfo",
+      "speaker": "Computer Village, Ikeja",
+      "dialogue": "The cyber cafe hums like a generator. A Toronto listing wants three years of React and right to work in Canada. You have a bootcamp PDF, stubborn data, and Ada typing 'have you left the house??' from Peckham.",
+      "choices": [
+        {
+          "text": "Rewrite the CV like you already live in Zone 2",
+          "label": "",
+          "nextSceneId": "LAGOS_CV_NIGHT",
+          "effects": {
+            "energy": -10,
+            "papers": 12,
+            "desperation": -4
+          }
+        },
+        {
+          "text": "Danfo to the visa consultant blasting your status",
+          "label": "",
+          "nextSceneId": "LAGOS_AGENT_OFFICE",
+          "effects": {
+            "walletNgn": -35000,
+            "desperation": 6,
+            "papers": 8
+          },
+          "floatCad": 1500
+        },
+        {
+          "text": "Trek back to Yaba and rethink the whole plan",
+          "label": "",
+          "nextSceneId": "LAGOS_YABA_DUSK",
+          "effects": {
+            "energy": -8,
+            "desperation": 4
+          }
+        }
+      ]
+    },
+    "LAGOS_AUNTY_CALL": {
+      "id": "LAGOS_AUNTY_CALL",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "Ada does not sugarcoat.",
+      "location": "Peckham × Yaba FaceTime",
+      "stage": "call-sister",
+      "transitIn": "call",
+      "speaker": "Peckham × Yaba FaceTime",
+      "dialogue": "Her kitchen is grey London morning. Yours is generator light. She will write an invitation letter. She will not lie on a bank statement. 'Bring your own proof, Tolu, or don't come and disgrace me at Heathrow.'",
+      "choices": [
+        {
+          "text": "Leave the call. Trek the annex and start a real paper trail",
+          "label": "",
+          "nextSceneId": "LAGOS_DOCUMENT_GRIND",
+          "effects": {
+            "papers": 16,
+            "energy": -14,
+            "walletNgn": -8000
+          }
+        },
+        {
+          "text": "Ask her to lend you the showing-money",
+          "label": "",
+          "nextSceneId": "LAGOS_SHOWING_MONEY",
+          "effects": {
+            "desperation": 8,
+            "papers": 6
+          }
+        }
+      ]
+    },
+    "LAGOS_YABA_DUSK": {
+      "id": "LAGOS_YABA_DUSK",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "The street is louder than your plan.",
+      "location": "Yaba market edge",
+      "stage": "yaba-street",
+      "transitIn": "trek",
+      "speaker": "Yaba market edge",
+      "dialogue": "Pepper soup steam, danfo horns, a preacher on a megaphone. People are going somewhere: work, church, the park, abroad in their heads. Ada's last voice note is still unplayed.",
+      "choices": [
+        {
+          "text": "Catch another danfo to the job hunt",
+          "label": "",
+          "nextSceneId": "LAGOS_JOB_BOARD",
+          "effects": {
+            "energy": -6,
+            "desperation": -2
+          }
+        },
+        {
+          "text": "Step aside and call Ada properly",
+          "label": "",
+          "nextSceneId": "LAGOS_AUNTY_CALL",
+          "effects": {
+            "walletNgn": -1500,
+            "desperation": -4
+          }
+        },
+        {
+          "text": "Okada to a Surulere weekend gig",
+          "label": "",
+          "nextSceneId": "LAGOS_WEEKEND_GIG",
+          "effects": {
+            "walletNgn": 45000,
+            "energy": -20,
+            "desperation": -3
+          }
+        }
+      ]
+    },
+    "LAGOS_CV_NIGHT": {
+      "id": "LAGOS_CV_NIGHT",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "The document starts to look like a person.",
+      "location": "Yaba room, 3 a.m.",
+      "stage": "room-night",
+      "transitIn": "trek",
+      "speaker": "Yaba room, 3 a.m.",
+      "dialogue": "You quantify the internships. You hide the generator. A recruiter in Berlin replies. Ada is asleep in Peckham; her status still says 'call me when light comes.'",
+      "choices": [
+        {
+          "text": "Take the interview. Buy data. Set two alarms.",
+          "label": "",
+          "nextSceneId": "LAGOS_BERLIN_CALL",
+          "effects": {
+            "walletNgn": -12000,
+            "energy": -16,
+            "desperation": -14
+          }
+        },
+        {
+          "text": "Ghost it and go back to the street",
+          "label": "",
+          "nextSceneId": "LAGOS_YABA_DUSK",
+          "effects": {
+            "desperation": 14,
+            "energy": 8
+          }
+        }
+      ]
+    },
+    "LAGOS_AGENT_OFFICE": {
+      "id": "LAGOS_AGENT_OFFICE",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "The office smells like toner and panic.",
+      "location": "Ikeja GRA, second floor",
+      "stage": "agent",
+      "transitIn": "danfo",
+      "speaker": "Ikeja GRA, second floor",
+      "dialogue": "He talks fast: Schengen, Canada express, 'we know people'. Ada would shout if she saw this receipt. Your folder is heavier. Your stomach is not.",
+      "choices": [
+        {
+          "text": "Pay 'facilitation' then danfo to the visa centre",
+          "label": "",
+          "nextSceneId": "LAGOS_EMBASSY_QUEUE",
+          "effects": {
+            "walletNgn": -90000,
+            "papers": 10,
+            "desperation": 12
+          },
+          "floatCad": 1500
+        },
+        {
+          "text": "Walk out. Trek the annex with a clean file",
+          "label": "",
+          "nextSceneId": "LAGOS_DOCUMENT_GRIND",
+          "effects": {
+            "desperation": -6,
+            "energy": -6
+          }
+        }
+      ]
+    },
+    "LAGOS_DOCUMENT_GRIND": {
+      "id": "LAGOS_DOCUMENT_GRIND",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "Photocopies, stamps, another queue.",
+      "location": "Immigration annex, Alausa",
+      "stage": "annex",
+      "transitIn": "danfo",
+      "speaker": "Immigration annex, Alausa",
+      "dialogue": "Bodies in a line that does not move and also never ends. A clerk calls names like a danfo conductor. Ada texts a photo of the invitation letter, steam from a kettle behind her.",
+      "choices": [
+        {
+          "text": "Book the appointment. Danfo to the visa centre",
+          "label": "",
+          "nextSceneId": "LAGOS_EMBASSY_QUEUE",
+          "effects": {
+            "walletNgn": -48000,
+            "papers": 18,
+            "energy": -12,
+            "desperation": -10
+          }
+        },
+        {
+          "text": "Envelope too thin. Okada to the weekend hustle",
+          "label": "",
+          "nextSceneId": "LAGOS_WEEKEND_GIG",
+          "effects": {
+            "energy": -4
+          }
+        }
+      ]
+    },
+    "LAGOS_SHOWING_MONEY": {
+      "id": "LAGOS_SHOWING_MONEY",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "Love, with conditions.",
+      "location": "WhatsApp: Ada & the family group",
+      "stage": "whatsapp",
+      "transitIn": "call",
+      "speaker": "WhatsApp: Ada & the family group",
+      "dialogue": "Ada will send a statement snapshot, not a transfer. 'If they ask whose money, tell the truth.' Uncle in Abuja laughs from the group chat: Canada is for people with uncles in Canada.",
+      "choices": [
+        {
+          "text": "Hang up. Build an honest file at the annex",
+          "label": "",
+          "nextSceneId": "LAGOS_DOCUMENT_GRIND",
+          "effects": {
+            "papers": 10,
+            "desperation": -8,
+            "energy": -8
+          }
+        },
+        {
+          "text": "Borrow a friend's statement and go anyway",
+          "label": "MISREPRESENTATION",
+          "nextSceneId": "LAGOS_MISREPRESENTATION",
+          "effects": {
+            "papers": 20,
+            "desperation": 16,
+            "walletNgn": -5000
+          },
+          "feedback": "Submitting someone else's bank statement as your own is misrepresentation."
+        }
+      ]
+    },
+    "LAGOS_WEEKEND_GIG": {
+      "id": "LAGOS_WEEKEND_GIG",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "Cash in the pocket. Dust in the lungs.",
+      "location": "Surulere rain, then the okada home",
+      "stage": "gig",
+      "transitIn": "okada",
+      "speaker": "Surulere rain, then the okada home",
+      "dialogue": "You fix a POS network, then two Bolt trips in the rain. The envelope thickens. A woman under a shop awning is shouting into her phone the same way you shout to Ada: 'I am coming. Traffic.'",
+      "choices": [
+        {
+          "text": "Bank it. Danfo to the paperwork",
+          "label": "",
+          "nextSceneId": "LAGOS_DOCUMENT_GRIND",
+          "effects": {
+            "papers": 4,
+            "desperation": -6
+          }
+        },
+        {
+          "text": "Trek home and spend some on a better portfolio",
+          "label": "",
+          "nextSceneId": "LAGOS_CV_NIGHT",
+          "effects": {
+            "walletNgn": -18000,
+            "papers": 8,
+            "desperation": -8,
+            "energy": -6
+          }
+        },
+        {
+          "text": "One more weekend. Trek back to Yaba.",
+          "label": "",
+          "nextSceneId": "LAGOS_YABA_DUSK",
+          "effects": {
+            "walletNgn": 20000,
+            "energy": -18,
+            "desperation": 6
+          }
+        }
+      ]
+    },
+    "LAGOS_BERLIN_CALL": {
+      "id": "LAGOS_BERLIN_CALL",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "7:03 a.m. The call connects.",
+      "location": "Yaba, on borrowed light",
+      "stage": "video-job",
+      "transitIn": "call",
+      "speaker": "Yaba, on borrowed light",
+      "dialogue": "Berlin asks about a race condition you actually fixed. Then they ask if you can fly. Ada is on speaker from the bus to work: 'Say yes. We will figure Heathrow.'",
+      "choices": [
+        {
+          "text": "Use the offer as the spine. Danfo to the visa centre",
+          "label": "",
+          "nextSceneId": "LAGOS_EMBASSY_QUEUE",
+          "effects": {
+            "papers": 22,
+            "desperation": -18,
+            "energy": -10
+          }
+        },
+        {
+          "text": "Panic. Go back to the street and call Ada later",
+          "label": "",
+          "nextSceneId": "LAGOS_YABA_DUSK",
+          "effects": {
+            "desperation": 12,
+            "energy": 6
+          }
+        }
+      ]
+    },
+    "LAGOS_EMBASSY_QUEUE": {
+      "id": "LAGOS_EMBASSY_QUEUE",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "The queue is a weather system.",
+      "location": "Visa application centre, Victoria Island",
+      "stage": "embassy",
+      "transitIn": "danfo",
+      "speaker": "Visa application centre, Victoria Island",
+      "dialogue": "Plastic chairs. Names like a lottery. A man in front is whispering to his brother in Houston. You hold Ada's letter like it can stand in the line for you.",
+      "choices": [
+        {
+          "text": "Answer every question like the form already knows you",
+          "label": "",
+          "nextSceneId": "LAGOS_DECISION_GATE",
+          "effects": {
+            "desperation": -8,
+            "energy": -14,
+            "papers": 6
+          }
+        },
+        {
+          "text": "Over-explain. Fill silences. Offer extra papers.",
+          "label": "",
+          "nextSceneId": "LAGOS_DECISION_GATE",
+          "effects": {
+            "desperation": 6,
+            "energy": -10,
+            "papers": -4
+          }
+        }
+      ]
+    },
+    "LAGOS_DECISION_GATE": {
+      "id": "LAGOS_DECISION_GATE",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "They take the passport. You take the wait.",
+      "location": "Outside the centre, VI sun",
+      "stage": "outside",
+      "transitIn": "trek",
+      "speaker": "Outside the centre, VI sun",
+      "dialogue": "You step into the heat. Ada is already ringing. Tracking sites lie. WhatsApp groups lie louder. You go home and live inside a status page.",
+      "choices": [
+        {
+          "text": "Pick Ada's call, then wait with the phone on loud",
+          "label": "",
+          "nextSceneId": "LAGOS_OUTCOME",
+          "effects": {
+            "energy": -8,
+            "desperation": -4
+          }
+        }
+      ]
+    },
+    "LAGOS_OUTCOME": {
+      "id": "LAGOS_OUTCOME",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "A text at 11:41 p.m.",
+      "location": "Yaba mattress, phone glowing",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "Yaba mattress, phone glowing",
+      "dialogue": "Ada is typing. The embassy mail is sitting unopened. If the file and the spirit held, the country lets you leave. If not, you are still here — which is not the same as finished.",
+      "choices": [
+        {
+          "text": "Open the email. Call Ada either way.",
+          "label": "",
+          "nextSceneId": "LAGOS_RESOLVE",
+          "effects": {}
+        }
+      ]
+    },
+    "LAGOS_ENDING_WIN": {
+      "id": "LAGOS_ENDING_WIN",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "You japa.",
+      "location": "Airside, MMA2 → the glass",
+      "stage": "airport",
+      "transitIn": "plane",
+      "speaker": "Airside, MMA2 → the glass",
+      "dialogue": "Plastic tray. Stamped page. Ada is on FaceTime from arrivals in a future you have not reached yet, and also from Peckham right now, crying and laughing. You go. That is the deal.",
+      "outcome": {
+        "result": "win",
+        "reason": "JAPA_APPROVED",
+        "title": "You japa"
+      }
+    },
+    "LAGOS_ENDING_STAY": {
+      "id": "LAGOS_ENDING_STAY",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "The country keeps you.",
+      "location": "Yaba, same generator, new month",
+      "stage": "stay",
+      "transitIn": "none",
+      "speaker": "Yaba, same generator, new month",
+      "dialogue": "Ada does not drop the call. 'We try again. I am not going anywhere.' Rice that tastes like delay. Tomorrow you can trek another corridor. People do.",
+      "outcome": {
+        "result": "fail",
+        "reason": "STAYED_IN_LAGOS",
+        "title": "The country keeps you"
+      }
+    },
+    "LAGOS_RESOLVE": {
+      "id": "LAGOS_RESOLVE",
+      "route": "LAGOS_LIFE",
+      "layoutType": "RESOLUTION",
+      "branch": [
+        {
+          "when": {
+            "papers": [
+              ">=",
+              48
+            ],
+            "desperation": [
+              "<=",
+              60
+            ],
+            "energy": [
+              ">",
+              12
+            ]
+          },
+          "nextSceneId": "LAGOS_ENDING_WIN"
+        },
+        {
+          "nextSceneId": "LAGOS_ENDING_STAY"
+        }
+      ]
+    },
+    "SUV_PITCH_START": {
+      "id": "SUV_PITCH_START",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "speaker": "Ms. Vance (Committee Chair)",
+      "dialogue": "Thank you for the presentation. Your fintech concept for sub-Saharan trade looks interesting on paper. However, Canada's regulatory market is heavily protected, and compliance here is notoriously brutal. Why should we back an unproven foreign platform over an established local player?",
+      "choices": [
+        {
+          "text": "Nigeria's fintech sector is much faster and more innovative than Canada's. Our tech is simply superior.",
+          "label": "ARROGANCE TRAP",
+          "nextSceneId": "SUV_PITCH_CHEN",
+          "effects": {
+            "investorInterest": -30,
+            "technicalCredibility": -10,
+            "desperation": 15
+          },
+          "feedback": "That dismissed the panel's knowledge of their own market."
+        },
+        {
+          "text": "We aren't competing with Canadian banks. Our software is an interoperable bridge that lets Canadian exporters settle invoices with West African suppliers in real time, removing 48-hour delays.",
+          "label": "HIGH VALUE MATCH",
+          "nextSceneId": "SUV_PITCH_CHEN",
+          "effects": {
+            "investorInterest": 25,
+            "scalabilityScore": 20
+          },
+          "feedback": "You framed it as direct economic value for Canada."
+        }
+      ]
+    },
+    "SUV_PITCH_CHEN": {
+      "id": "SUV_PITCH_CHEN",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "speaker": "Mr. Chen (Chief Technology Officer)",
+      "dialogue": "Let's look at your architecture. Your platform handles high-volume cross-border ledger balances. If the data pipes fail or a severe bottleneck occurs between Lagos and Toronto, how does your ledger protect financial integrity without crashing performance?",
+      "choices": [
+        {
+          "text": "We use advanced cloud systems and high-end security encryption to make sure everything stays secure and never crashes.",
+          "label": "TECHNICAL DROPOUT",
+          "nextSceneId": "SUV_PITCH_ROSS",
+          "effects": {
+            "technicalCredibility": -35
+          },
+          "feedback": "You did not answer the architecture question."
+        },
+        {
+          "text": "We use an asynchronous, event-driven design with message queues and a local encrypted buffer. If connectivity drops in Nigeria, transactions wait in the queue and settle through verified handshakes when the link returns.",
+          "label": "CRITICAL CRUISE",
+          "nextSceneId": "SUV_PITCH_ROSS",
+          "effects": {
+            "technicalCredibility": 40,
+            "investorInterest": 15,
+            "energy": -10
+          },
+          "feedback": "A precise answer. It also took real effort to deliver."
+        }
+      ]
+    },
+    "SUV_PITCH_ROSS": {
+      "id": "SUV_PITCH_ROSS",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "speaker": "Mr. Ross (Managing Partner)",
+      "dialogue": "Your team listing shows four co-founders, all in Lagos. If we issue a Letter of Support, the core team must relocate to Canada to scale this business. What happens if your Lead Developer decides to stay behind or fails their immigration check?",
+      "choices": [
+        {
+          "text": "That won't happen. We are best friends from university and fully committed to moving together. We trust each other completely.",
+          "label": "BUSINESS RISK",
+          "nextSceneId": "SUV_PITCH_RESOLVE",
+          "effects": {
+            "scalabilityScore": -20,
+            "investorInterest": -10
+          },
+          "feedback": "Investors back contingency plans, not friendships."
+        },
+        {
+          "text": "We've already planned for that. Our code and documentation follow strict conventions, and our legal agreement has a key-person clause so a vetted proxy developer in Ontario can step into oversight if a founder is delayed.",
+          "label": "OPERATIONAL FAILSAFE",
+          "nextSceneId": "SUV_PITCH_RESOLVE",
+          "effects": {
+            "scalabilityScore": 35,
+            "investorInterest": 20
+          },
+          "feedback": "That showed institutional maturity."
+        }
+      ]
+    },
+    "SUV_PITCH_RESOLVE": {
+      "id": "SUV_PITCH_RESOLVE",
+      "route": "STARTUP_VISA",
+      "layoutType": "RESOLUTION",
+      "branch": [
+        {
+          "when": {
+            "investorInterest": [
+              ">=",
+              70
+            ],
+            "technicalCredibility": [
+              ">=",
+              65
+            ]
+          },
+          "nextSceneId": "SUV_LOS_ISSUED"
+        },
+        {
+          "nextSceneId": "SUV_PITCH_FAIL"
+        }
+      ]
+    },
+    "SUV_LOS_ISSUED": {
+      "id": "SUV_LOS_ISSUED",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "speaker": "Maple Venture Incubator",
+      "dialogue": "The committee votes yes. A Letter of Support is on its way. This is the first step of a long process: the Letter of Support is required, but it does not by itself grant permanent residence.",
+      "onEnter": {
+        "streetCred": 20,
+        "desperation": -15
+      },
+      "outcome": {
+        "result": "win",
+        "reason": "SUV_LOS_ISSUED",
+        "title": "LETTER OF SUPPORT ISSUED",
+        "subtitle": "The committee backs your startup. Now the real paperwork begins."
+      }
+    },
+    "SUV_PITCH_FAIL": {
+      "id": "SUV_PITCH_FAIL",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "speaker": "Maple Venture Incubator",
+      "dialogue": "The committee passes on your pitch. You lose ₦500,000 in incorporation and consulting fees, and the Startup Visa route is blocked for now.",
+      "onEnter": {
+        "walletNgn": -500000,
+        "desperation": 20
+      },
+      "outcome": {
+        "result": "fail",
+        "reason": "SUV_REJECTED",
+        "title": "Suv Rejected"
+      }
+    },
+    "LMIA_INTERVIEW_KOVACS": {
+      "id": "LMIA_INTERVIEW_KOVACS",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "CORPORATE_OFFICE",
+      "speaker": "Mr. Kovacs (Operations Director)",
+      "dialogue": "Your operational background in Lagos is honestly fantastic. You've managed larger fleets than we have here. But I see you're on a visitor record, and we need someone who can start full-time immediately. Why should I spend our legal budget waiting on an LMIA for you?",
+      "choices": [
+        {
+          "text": "Please sir, my visa is running out and I don't want to go back to Nigeria. If you sponsor me, I'll work harder than anyone and never complain.",
+          "label": "CRITICAL LEAK",
+          "nextSceneId": "LMIA_ADVERTISING",
+          "effects": {
+            "employerTrust": -40,
+            "lmiaProbability": -50,
+            "desperation": 20
+          },
+          "feedback": "Managers read desperation as a compliance and liability risk."
+        },
+        {
+          "text": "I understand the hesitation. My background matches your logistics tracking software, so I won't need the usual three-month onboarding. I can clear your inventory backlog and save you more than the LMIA processing fee costs.",
+          "label": "HIGH ROI MATCH",
+          "nextSceneId": "LMIA_ADVERTISING",
+          "effects": {
+            "employerTrust": 30,
+            "lmiaProbability": 25
+          },
+          "feedback": "You framed the legal cost as an operating saving."
+        }
+      ]
+    },
+    "LMIA_ADVERTISING": {
+      "id": "LMIA_ADVERTISING",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "CORPORATE_OFFICE",
+      "speaker": "Mr. Kovacs (Operations Director)",
+      "dialogue": "The numbers make sense. But Service Canada requires me to show I advertised this job to Canadians and permanent residents and couldn't find a qualified person. How do we get past that?",
+      "choices": [
+        {
+          "text": "We can post a fake job listing with impossible requirements so no Canadian qualifies and the government has to approve my file.",
+          "label": "LEGAL HAZARD",
+          "nextSceneId": "LMIA_FRAUD_FAIL",
+          "effects": {},
+          "feedback": "Suggesting fraud to a legitimate employer ends the conversation."
+        },
+        {
+          "text": "Your freight runs through West African corridors. If the role genuinely needs knowledge of those trade compliance frameworks, that requirement can be documented in the posting.",
+          "label": "RISKY GAMBLE",
+          "nextSceneId": "LMIA_RESOLVE",
+          "effects": {
+            "lmiaProbability": 30,
+            "desperation": -20
+          },
+          "feedback": "A real, specific requirement can be legitimate. An inflated one gets scrutinised, and it can backfire."
+        },
+        {
+          "text": "Let's follow the advertising rules exactly. I'll help you document the real requirements of the role and any recruitment you've already done.",
+          "label": "COMPLIANT PATH",
+          "nextSceneId": "LMIA_RESOLVE",
+          "effects": {
+            "lmiaProbability": 15,
+            "employerTrust": 15
+          },
+          "feedback": "Slower, but nothing here can be used against either of you."
+        }
+      ]
+    },
+    "LMIA_FRAUD_FAIL": {
+      "id": "LMIA_FRAUD_FAIL",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "CORPORATE_OFFICE",
+      "speaker": "Mr. Kovacs",
+      "dialogue": "Mr. Kovacs stands up. 'This interview is over.' Misrepresentation in an immigration application can lead to a five-year inadmissibility period.",
+      "onEnter": {
+        "desperation": 25,
+        "streetCred": -10
+      },
+      "outcome": {
+        "result": "fail",
+        "reason": "BLATANT_MISREPRESENTATION",
+        "title": "Blatant Misrepresentation"
+      }
+    },
+    "LMIA_RESOLVE": {
+      "id": "LMIA_RESOLVE",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "RESOLUTION",
+      "branch": [
+        {
+          "when": {
+            "lmiaProbability": [
+              ">=",
+              50
+            ],
+            "employerTrust": [
+              ">=",
+              20
+            ]
+          },
+          "nextSceneId": "LMIA_SPONSORSHIP"
+        },
+        {
+          "nextSceneId": "LMIA_DECLINED"
+        }
+      ]
+    },
+    "LMIA_SPONSORSHIP": {
+      "id": "LMIA_SPONSORSHIP",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "CORPORATE_OFFICE",
+      "speaker": "Mr. Kovacs",
+      "dialogue": "Kovacs nods slowly. 'Send me what you have. I'll talk to our immigration lawyer.' A sponsorship offer is not a work permit yet, but you are in the process.",
+      "onEnter": {
+        "desperation": -10,
+        "streetCred": 15
+      },
+      "outcome": {
+        "result": "win",
+        "reason": "LMIA_SPONSORSHIP_STARTED",
+        "title": "EMPLOYER WILL SPONSOR",
+        "subtitle": "The LMIA process starts. The clock is still running."
+      }
+    },
+    "LMIA_DECLINED": {
+      "id": "LMIA_DECLINED",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "CORPORATE_OFFICE",
+      "speaker": "Mr. Kovacs",
+      "dialogue": "'I like you, but it's too much risk for us right now.' The interview ends politely and the clock keeps ticking.",
+      "onEnter": {
+        "desperation": 15
+      },
+      "outcome": {
+        "result": "fail",
+        "reason": "NO_SPONSORSHIP",
+        "title": "No Sponsorship"
+      }
+    },
+    "TOURIST_HUB": {
+      "id": "TOURIST_HUB",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "DASHBOARD",
+      "speaker": "The 180-Day Tourist Gamble",
+      "dialogue": "You landed on a visitor record with savings, a cousin's couch and a plan: find an employer willing to start an LMIA before your time runs out. Visitors can network and interview. Visitors cannot work.",
+      "dashboard": {
+        "dailyCostCad": 20,
+        "ngnPerCad": 1150,
+        "leadsToWin": 3,
+        "winSceneId": "TOURIST_WIN",
+        "lowTimeDays": 60,
+        "actions": [
+          {
+            "id": "job_fair",
+            "label": "Attend In-Person Tech/Job Fair",
+            "blurb": "Metro Toronto Convention Centre",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": -30,
+              "walletCad": -25,
+              "desperation": -3,
+              "networkScore": 8
+            },
+            "leadChance": 0.3,
+            "location": "Metro Toronto Convention Centre",
+            "consequences": [
+              "You collected 14 tote bags, 3 stress balls and one real business card. It belongs to a recruiter from your own village.",
+              "A booth handed you a free hoodie. It is the warmest thing you own.",
+              "You queued 40 minutes for the Shopify booth. They were out of stickers and jobs."
+            ],
+            "leadConsequences": [
+              "A logistics director asked for your CV, then your WhatsApp. Then actually replied. Lead acquired."
+            ]
+          },
+          {
+            "id": "cold_message",
+            "label": "Cold Message 10 Hiring Managers",
+            "blurb": "LinkedIn, from your cousin's couch",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": -15,
+              "desperation": 2
+            },
+            "leadChance": 0.12,
+            "location": "Cousin's couch, Brampton",
+            "consequences": [
+              "9 left you on 'seen'. One replied: 'Wrong person, I sell insurance. Are you covered?'",
+              "LinkedIn suggested you 'Open to Work' harder. You are already wearing the green banner like a cape.",
+              "A recruiter replied with a thumbs-up emoji and nothing else. You have analysed it for three hours."
+            ],
+            "leadConsequences": [
+              "An operations manager in Mississauga wrote back: 'Can you talk Thursday?' You screamed into a cushion."
+            ]
+          },
+          {
+            "id": "mentor_coffee",
+            "label": "Coffee Chat with a Naija-Canadian Mentor",
+            "blurb": "Tim Hortons, double-double on you",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": -10,
+              "walletCad": -8,
+              "desperation": -6,
+              "networkScore": 12,
+              "streetCred": 3
+            },
+            "leadChance": 0.08,
+            "location": "Tim Hortons, Square One",
+            "consequences": [
+              "She has been here 11 years. Her first advice: 'Buy proper boots.' Her second: 'Stop saying sir.'",
+              "He spent 40 minutes on Canadian work culture and 20 on why Jollof here is a scandal."
+            ],
+            "leadConsequences": [
+              "Your mentor forwarded your CV to her old manager. 'He owes me a favour.'"
+            ]
+          },
+          {
+            "id": "resume",
+            "label": "Canadianize Your Resume",
+            "blurb": "Delete the passport photo, add metrics",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": -20,
+              "desperation": -2,
+              "resumeScore": 15
+            },
+            "location": "Brampton Public Library",
+            "consequences": [
+              "You removed your photo, date of birth and state of origin. It already looks 40% more Canadian.",
+              "Your 4-page CV is now 2 pages. You mourn the loss of 'Hobbies: Reading and Travelling'."
+            ]
+          },
+          {
+            "id": "rest",
+            "label": "Rest on Cousin's Couch",
+            "blurb": "Recover energy, absorb the side-eye",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": 40,
+              "walletCad": -15,
+              "desperation": 4
+            },
+            "location": "Cousin's couch, Brampton",
+            "consequences": [
+              "Your cousin's wife asked, very politely, about 'your timeline'.",
+              "You slept 11 hours. The kids have started calling you 'Uncle Couch'."
+            ]
+          },
+          {
+            "id": "cash_job",
+            "label": "Take a Cash Warehouse Shift (Under the Table)",
+            "blurb": "CAD 150, no questions asked",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": -40,
+              "walletCad": 150
+            },
+            "location": "Unmarked warehouse, Etobicoke",
+            "fatal": "Working without authorization on visitor status can lead to removal and a ban on returning. Game over.",
+            "consequences": [
+              "The 'no questions asked' part lasted until the inspection."
+            ]
+          }
+        ]
+      }
+    },
+    "TOURIST_WIN": {
+      "id": "TOURIST_WIN",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "DASHBOARD",
+      "speaker": "Northline Logistics",
+      "dialogue": "Mr. Kovacs at Northline Logistics wants to meet you.",
+      "outcome": {
+        "result": "win",
+        "reason": "INTERVIEW_SECURED",
+        "title": "You got the meeting",
+        "subtitle": "The Hidden LMIA Interview is unlocked. Your desperation walks in with you."
+      },
+      "unlocksRoute": "CAREGIVER_LMIA"
+    },
+    "LAGOS_MISREPRESENTATION": {
+      "id": "LAGOS_MISREPRESENTATION",
+      "route": "LAGOS_LIFE",
+      "layoutType": "LAGOS_STAGE",
+      "title": "The statement wasn't yours.",
+      "location": "Visa Application Centre, Ikeja",
+      "stage": "embassy",
+      "transitIn": "danfo",
+      "speaker": "Visa Application Centre, Ikeja",
+      "dialogue": "The officer compares the account name with your passport, then slides the statement back. A borrowed bank statement is misrepresentation, and that can bar you from applying for five years.",
+      "outcome": {
+        "result": "fail",
+        "reason": "MISREPRESENTATION",
+        "title": "Flagged for misrepresentation"
+      }
+    }
+  }
+}

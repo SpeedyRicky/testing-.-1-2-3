@@ -1,7 +1,7 @@
 // Pure game logic over scenarios.json. No React, no randomness (rolls are passed in),
 // so every rule is unit-testable. Same semantics as the Godot runner (narrative.gd).
 import type {
-  Choice, Conditions, CoreStat, DashboardAction, Effects, GameState, Op, RouteId, RouteStats,
+  Choice, Conditions, CoreStat, DashboardAction, Effects, GameState, Op, Rank, RouteId, RouteStats,
   ScenarioDatabase, Scene, StatKey, Toast,
 } from "./types";
 import data from "./scenarios.json";
@@ -12,6 +12,8 @@ const CORE: ReadonlySet<string> = new Set<CoreStat>([
   "timeRemainingDays", "energy", "walletCad", "walletNgn", "desperation", "streetCred",
 ]);
 const PERCENT: ReadonlySet<string> = new Set(["energy", "desperation"]);
+/** Route stats that are 0-100 meters rather than open-ended scores. */
+const PERCENT_ROUTE: ReadonlySet<string> = new Set(["papers"]);
 const MAX_HOPS = 16;
 
 export const isCore = (key: string): key is CoreStat => CORE.has(key);
@@ -32,7 +34,8 @@ export function applyEffects(state: GameState, effects: Effects = {}): GameState
       next[key] = PERCENT.has(key) ? Math.min(100, Math.max(0, v)) : Math.max(0, v);
     } else {
       const k = key as keyof RouteStats;
-      next.routeStats[k] = (next.routeStats[k] ?? 0) + delta;
+      const v = (next.routeStats[k] ?? 0) + delta;
+      next.routeStats[k] = PERCENT_ROUTE.has(k) ? Math.min(100, Math.max(0, v)) : v;
     }
   }
   return next;
@@ -52,6 +55,12 @@ export function check(current: number, op: Op, target: number): boolean {
 
 export function evaluate(state: GameState, conditions: Conditions = {}): boolean {
   return (Object.entries(conditions) as [StatKey, [Op, number]][]).every(([key, [op, target]]) =>
+    check(getStat(state, key), op, target));
+}
+
+/** True if at least one condition holds. */
+export function evaluateAny(state: GameState, conditions: Conditions = {}): boolean {
+  return (Object.entries(conditions) as [StatKey, [Op, number]][]).some(([key, [op, target]]) =>
     check(getStat(state, key), op, target));
 }
 
@@ -94,6 +103,8 @@ export function newRun(db: ScenarioDatabase, route: RouteId, carry: Partial<Game
     lastChoice: null,
     outcome: null,
     history: [],
+    popup: null,
+    cadFloat: { amount: 0, tick: 0 },
     ...init,
     routeStats: { ...(init.routeStats ?? {}) },
     ...carry,
@@ -118,16 +129,67 @@ export function presentChoices(db: ScenarioDatabase, state: GameState): Presente
   }));
 }
 
-/** Takes a dialogue choice. Invalid or locked choices return the same state object. */
-export function choose(db: ScenarioDatabase, state: GameState, index: number): GameState {
-  if (state.outcome) return state;
+/** Takes a dialogue choice. Invalid or locked choices return the same state object.
+ *  `rolls` = [trap roll, trap pick roll] in [0, 1); only routes with traps use them. */
+export function choose(db: ScenarioDatabase, state: GameState, index: number, rolls: [number, number] = [1, 0]): GameState {
+  if (state.outcome || state.popup) return state;
   const choice = currentScene(db, state)?.choices?.[index];
   if (!choice || (choice.requires && !evaluate(state, choice.requires))) return state;
+  const route = db.routes[state.activeRoute];
   let s = applyEffects(state, choice.effects);
   const history = [...s.history];
   history[history.length - 1] = { ...history[history.length - 1], answer: choice.text, label: choice.label };
-  s = { ...s, history, lastChoice: { label: choice.label, feedback: choice.feedback ?? "" } };
+  s = { ...s, history, lastChoice: choice.label || choice.feedback ? { label: choice.label, feedback: choice.feedback ?? "" } : null };
+  if (choice.floatCad) s = { ...s, cadFloat: { amount: choice.floatCad, tick: s.cadFloat.tick + 1 } };
+
+  // Village People traps strike on ordinary moves, never on the move into an ending.
+  const target = db.scenes[choice.nextSceneId];
+  const endingMove = !target || !!target.branch || !!target.outcome;
+  if (route.traps && !endingMove && rolls[0] < trapChance(db, s)) {
+    const items = route.traps.items;
+    const trap = items[Math.floor(rolls[1] * items.length) % items.length];
+    s = applyEffects(s, trap.effects);
+    s = { ...s, popup: { kind: "trap", id: trap.id, kicker: trap.kicker, title: trap.title, body: trap.body } };
+  }
+
+  if (route.collapse && evaluateAny(s, route.collapse.any)) {
+    return enterScene(db, s, route.collapse.sceneId);
+  }
   return enterScene(db, s, choice.nextSceneId);
+}
+
+// --- Lagos Life modifiers --------------------------------------------------------
+
+/** Village People Interference is the desperation meter. */
+export function trapChance(db: ScenarioDatabase, state: GameState): number {
+  const t = db.routes[state.activeRoute].traps;
+  if (!t) return 0;
+  return t.base + Math.pow(state.desperation / 100, t.exponent) * t.scale;
+}
+
+/** The parallel market jumps: wallet and papers shrink by the configured factors. */
+export function applyMarketShock(db: ScenarioDatabase, state: GameState): GameState {
+  const m = db.routes[state.activeRoute].marketShock;
+  if (!m || state.outcome || state.popup) return state;
+  const next: GameState = { ...state, routeStats: { ...state.routeStats } };
+  for (const [key, factor] of Object.entries(m.multiply) as [StatKey, number][]) {
+    if (isCore(key)) next[key] = Math.floor(next[key] * factor);
+    else {
+      const k = key as keyof RouteStats;
+      next.routeStats[k] = Math.floor((next.routeStats[k] ?? 0) * factor);
+    }
+  }
+  return { ...next, popup: { kind: "market", id: "market", kicker: m.kicker, title: m.title, body: m.body, button: m.button } };
+}
+
+export function dismissPopup(state: GameState): GameState {
+  return state.popup ? { ...state, popup: null } : state;
+}
+
+/** The end-of-run rank for routes that define ranks (first match wins). */
+export function rankFor(db: ScenarioDatabase, state: GameState): Rank | null {
+  const ranks = db.routes[state.activeRoute].ranks ?? [];
+  return ranks.find((r) => (!r.sceneId || r.sceneId === state.currentSceneId) && (!r.when || evaluate(state, r.when))) ?? null;
 }
 
 // --- Resolution screens --------------------------------------------------------
