@@ -129,7 +129,7 @@ export interface RunMods {
 }
 
 export interface Popup {
-  kind: "trap" | "market";
+  kind: "trap" | "market" | "blessing";
   id: string;
   kicker: string;
   title: string;
@@ -296,6 +296,8 @@ export interface RouteConfig {
   /** If any condition holds after a move, the run jumps to sceneId. */
   collapse?: { any: Conditions; sceneId: string };
   traps?: TrapConfig;
+  /** Good surprises: more likely the worse things are going ("God dey"). Same item shape as traps. */
+  blessings?: { base: number; scale: number; items: TrapConfig["items"] };
   /** Reality-check lessons by outcome reason, for endings without their own `lesson`. */
   lessons?: Record<string, string>;
   marketShock?: MarketShockConfig;

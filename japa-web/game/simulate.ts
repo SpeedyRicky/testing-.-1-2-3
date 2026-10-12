@@ -74,7 +74,7 @@ export function playOnce(db: ScenarioDatabase, route: RouteId, policy: Policy, r
     }
     const c = pick(db, s, policy, rnd);
     if (!c) break;
-    const next = choose(db, s, c.index, [rnd(), rnd(), rnd()]);
+    const next = choose(db, s, c.index, [rnd(), rnd(), rnd(), rnd()]);
     if (next.popup) traps++;
     s = dismissPopup(next);
   }

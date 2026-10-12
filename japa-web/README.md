@@ -10,7 +10,7 @@ Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · lucide-react.
 ```bash
 npm install
 npm run dev          # open http://localhost:3000 once the terminal says "Ready"
-npm test             # 144 engine tests, including seeded balance checks
+npm test             # 147 engine tests, including seeded balance checks
 npm run simulate     # balance report: thousands of simulated playthroughs per route
 npm run lint
 npm run build
@@ -68,6 +68,15 @@ gambles: they always fail.
 - **Streak:** finish a run on consecutive days.
 - Progress is saved per player on this device (`japa.meta.v1`); mid-run state too (`japa.save.v1`), so a refresh
   continues where you were. A first-time "How to play" tour opens once; the ? button reopens it.
+
+## Achievements, blessings, keyboard and sharing
+- **17 achievements** pay JP: Clean hands (win without a shady move), Honest exit, Scam spotter, Permanent resident,
+  Protected person, Collector (10 endings), Completionist (30), Three-star general, Daily winner, 3- and 7-day streaks,
+  and more. They're listed under Japa Hub → Your record.
+- **Blessings:** good surprises (a credit alert from Aunty, NEPA light for 24 hours, a department bursary, a pro bono
+  lawyer, a landlord who drops the rent), more likely when Village People Interference is high. `routes.<ROUTE>.blessings`.
+- **Keyboard:** number keys 1-9 pick choices.
+- **Share:** the game-over card has Post on X and Copy result: route, ending, your stars per level, interference.
 
 ## Balance
 `game/simulate.ts` plays each route thousands of times with three seeded players: random, careful (avoids frauds and

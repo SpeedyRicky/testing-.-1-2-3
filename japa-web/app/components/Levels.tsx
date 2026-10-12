@@ -56,6 +56,21 @@ function update(player: string, route: RouteId, change: (p: RouteProgress) => Ro
   write({ progress: { ...cur.progress, [key]: change(p) }, banner: banner === undefined ? cur.banner : banner });
 }
 
+/** This player's best stars for each level of a route. */
+export function useBestStars(route: RouteId): number[] {
+  const { profile } = usePlayer();
+  const { progress } = useSyncExternalStore(store.subscribe, store.get, store.server);
+  const p = progress[progressKey(profile?.username ?? "guest", route)];
+  return levelsFor(DB, route).map((_, i) => p?.best[i] ?? 0);
+}
+
+/** Levels where this player has all three stars, across routes. */
+export function threeStarCount(player: string): number {
+  return Object.entries(read().progress)
+    .filter(([k]) => k.startsWith(`${player}|`))
+    .reduce((n, [, p]) => n + p.best.filter((b) => b >= 3).length, 0);
+}
+
 const dismissBanner = () => { const cur = read(); if (cur.banner) write({ ...cur, banner: null }); };
 
 /** Watches the run: saves a snapshot when a level starts, records stars when one ends, raises the banner. */

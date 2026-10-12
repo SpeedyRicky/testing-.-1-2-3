@@ -100,6 +100,53 @@ export function applyBundle(run: GameState, b: RunMods & { effects: Effects }): 
   return { ...s, mods };
 }
 
+// --- Achievements ---------------------------------------------------------------------------------
+
+export interface AchievementContext {
+  run: GameState;
+  meta: MetaState;
+  endingsFound: number;
+  threeStarLevels: number;
+  today: string;
+}
+export interface Achievement { id: string; name: string; blurb: string; jp: number; test: (c: AchievementContext) => boolean }
+
+const SHADY = /FRAUD|MISREP|SCAM|BOUGHT|PAID_FOR|PAY_TO_PLAY|INFLATED|FAKE|HAZARD|CASH/i;
+const labels = (r: GameState) => r.history.map((h) => h.label ?? "");
+const ended = (r: GameState, ...ids: string[]) => ids.includes(r.currentSceneId);
+
+export const ACHIEVEMENTS: Achievement[] = [
+  { id: "first-run", name: "First japa", blurb: "Finish any run.", jp: 20, test: () => true },
+  { id: "clean-hands", name: "Clean hands", blurb: "Win a route without a single shady move.", jp: 60,
+    test: (c) => c.run.outcome?.result === "win" && !labels(c.run).some((l) => SHADY.test(l)) },
+  { id: "honest-exit", name: "Honest exit", blurb: "Tell the officer the truth: you came to find work.", jp: 40,
+    test: (c) => labels(c.run).includes("HONEST_EXIT") },
+  { id: "scam-spotter", name: "Scam spotter", blurb: "Check or report a scam instead of paying it.", jp: 40,
+    test: (c) => labels(c.run).some((l) => l === "VERIFIED" || l === "REPORTED") },
+  { id: "pr", name: "Permanent resident", blurb: "Land with a COPR through Express Entry.", jp: 80, test: (c) => ended(c.run, "EE_COPR") },
+  { id: "pgwp", name: "Convocation", blurb: "Graduate in Canada with a PGWP.", jp: 60,
+    test: (c) => ended(c.run, "ST_PGWP_MASTERS", "ST_PGWP_COLLEGE", "ST_PGWP_BACHELORS") },
+  { id: "protected", name: "Protected person", blurb: "Win a refugee claim with a true story.", jp: 80, test: (c) => ended(c.run, "KW_ACCEPTED") },
+  { id: "los", name: "Letter of Support", blurb: "Win the Startup Visa pitch.", jp: 60, test: (c) => ended(c.run, "SUV_LOS_ISSUED") },
+  { id: "kovacs", name: "Kovacs said yes", blurb: "Get an employer to start an LMIA, legally.", jp: 60, test: (c) => ended(c.run, "LMIA_SPONSORSHIP") },
+  { id: "field", name: "Back in your field", blurb: "End Year One working in your profession.", jp: 80, test: (c) => ended(c.run, "FY_FIELD") },
+  { id: "village-fan", name: "Village People's favourite", blurb: "Lose a run to Village People Interference at 100%.", jp: 20,
+    test: (c) => c.run.desperation >= 100 },
+  { id: "collector", name: "Collector", blurb: "Find 10 endings.", jp: 50, test: (c) => c.endingsFound >= 10 },
+  { id: "completionist", name: "Completionist", blurb: "Find 30 endings.", jp: 150, test: (c) => c.endingsFound >= 30 },
+  { id: "three-stars", name: "Three-star general", blurb: "Earn all three stars on a level.", jp: 40, test: (c) => c.threeStarLevels >= 1 },
+  { id: "daily-win", name: "Daily winner", blurb: "Win a daily challenge.", jp: 50,
+    test: (c) => c.run.mods?.daily === c.today && c.run.outcome?.result !== "fail" },
+  { id: "streak-3", name: "Consistent", blurb: "Play three days in a row.", jp: 40, test: (c) => c.meta.streak.count >= 3 },
+  { id: "streak-7", name: "Japa every day", blurb: "Play seven days in a row.", jp: 120, test: (c) => c.meta.streak.count >= 7 },
+];
+
+/** Achievements earned by this finished run that the player didn't already have. */
+export function newAchievements(c: AchievementContext): Achievement[] {
+  const have = new Set(c.meta.achievements ?? []);
+  return ACHIEVEMENTS.filter((a) => !have.has(a.id) && a.test(c));
+}
+
 // --- Earning JP ---------------------------------------------------------------------------------------
 
 export interface MetaState {
@@ -114,6 +161,7 @@ export interface MetaState {
   runs: number;
   /** Recent award keys, so a restored or replayed ending never pays twice. */
   awarded: string[];
+  achievements?: string[];
 }
 
 export const NEW_META: MetaState = {

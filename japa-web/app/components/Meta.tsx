@@ -7,12 +7,13 @@ import { DB } from "@/game/engine";
 import { endingKey } from "@/game/endings";
 import type { AppEvent, Bundle } from "@/game/machine";
 import {
-  FLAIRS, MAX_EQUIPPED, NEW_META, PERKS, TITLES, buy, bundleFor, dailyFor, dayKey, grant, nextTitle, runAward, titleFor,
+  ACHIEVEMENTS, FLAIRS, MAX_EQUIPPED, NEW_META, PERKS, TITLES, buy, bundleFor, dailyFor, dayKey, grant, newAchievements, nextTitle, runAward, titleFor,
   toggleEquip, touchStreak, type Award, type MetaState,
 } from "@/game/meta";
 import type { GameState, RouteId } from "@/game/types";
 import { useCinematic } from "./Cinematic";
-import { recordEnding } from "./Endings";
+import { foundCount, recordEnding } from "./Endings";
+import { threeStarCount } from "./Levels";
 import { usePlayer } from "./Player";
 import { useSfxOnMount } from "./Sound";
 
@@ -93,13 +94,24 @@ export function useRunRewards(run: GameState | undefined, dispatch: React.Dispat
     const day = today();
     const m0 = touchStreak(metaOf(player), day);
     const dailyDone = run.mods?.daily === day && m0.dailyDone === day;
-    const award = runAward(dailyDone ? { ...run, mods: { ...run.mods, daily: undefined } } : run,
+    const base = runAward(dailyDone ? { ...run, mods: { ...run.mods, daily: undefined } } : run,
       { key, newEnding: isNew, today: day, streak: m0.streak.count });
+    const earned = m0.awarded.includes(key) ? [] : newAchievements({
+      run, meta: m0, endingsFound: foundCount(), threeStarLevels: threeStarCount(player), today: day,
+    });
+    const award: Award = {
+      ...base,
+      lines: [...base.lines, ...earned.map((a) => ({ label: `🏆 ${a.name}`, jp: a.jp }))],
+      total: base.total + earned.reduce((s, a) => s + a.jp, 0),
+    };
     updateMeta(player, (m) => {
       const touched = touchStreak(m, day);
       const paidOut = grant(touched, award);
       if (paidOut === touched) return touched;
-      return { ...paidOut, runs: paidOut.runs + 1, dailyDone: run.mods?.daily === day ? day : paidOut.dailyDone };
+      return {
+        ...paidOut, runs: paidOut.runs + 1, dailyDone: run.mods?.daily === day ? day : paidOut.dailyDone,
+        achievements: [...(paidOut.achievements ?? []), ...earned.map((a) => a.id)],
+      };
     }, award);
   }, [run, ending, playing, player]);
 }
@@ -122,7 +134,7 @@ function AwardCard({ award, onClose }: { award: Award; onClose: () => void }) {
     return () => window.clearTimeout(t);
   }, [onClose]);
   return (
-    <div className="award-toast fixed inset-x-0 bottom-5 z-[60] flex justify-center px-4" role="status">
+    <div className="award-toast fixed inset-x-0 top-3 z-[60] flex justify-center px-4 sm:bottom-5 sm:top-auto" role="status">
       <div className="w-full max-w-sm rounded-2xl border border-amber-300/50 bg-zinc-950/95 p-4 shadow-[0_20px_60px_-20px_rgba(251,191,36,0.7)]">
         <div className="flex items-center justify-between gap-3">
           <p className="flex items-center gap-2 text-lg font-black text-amber-200"><Coins className="h-5 w-5" /> +{award.total} JP</p>
@@ -288,6 +300,22 @@ function Hub({ dispatch, run, onClose }: { dispatch: React.Dispatch<AppEvent>; r
                 </div>
               ))}
             </dl>
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-amber-200/80">
+                Achievements · {(meta.achievements ?? []).length}/{ACHIEVEMENTS.length}
+              </h3>
+              <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+                {ACHIEVEMENTS.map((a) => {
+                  const got = (meta.achievements ?? []).includes(a.id);
+                  return (
+                    <li key={a.id} className={`rounded-xl border px-3 py-2 text-sm ${got ? "border-amber-300/40 bg-amber-300/10" : "border-white/10 bg-white/[0.02] text-zinc-500"}`}>
+                      <p className={`font-semibold ${got ? "text-amber-100" : ""}`}>{got ? "🏆" : "🔒"} {a.name} <span className="font-mono text-xs opacity-70">+{a.jp}</span></p>
+                      <p className="text-xs opacity-80">{a.blurb}</p>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
             <ol className="space-y-1.5 text-sm">
               {TITLES.map((t) => (
                 <li key={t.title} className={`flex items-center justify-between rounded-lg px-3 py-1.5 ${meta.lifetime >= t.min ? "bg-amber-300/10 text-amber-100" : "text-zinc-500"}`}>

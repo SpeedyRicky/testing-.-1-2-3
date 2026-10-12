@@ -264,7 +264,43 @@
             }
           ]
         }
-      ]
+      ],
+      "blessings": {
+        "base": 0.04,
+        "scale": 0.1,
+        "items": [
+          {
+            "id": "alert",
+            "kicker": "God dey",
+            "title": "Credit alert",
+            "body": "Aunty in {relCity} sent ₦50,000 'for transport'. The voice note says 'don't tell your father'.",
+            "effects": {
+              "walletNgn": 50000,
+              "desperation": -8
+            }
+          },
+          {
+            "id": "light",
+            "kicker": "God dey",
+            "title": "NEPA brought light for 24 hours",
+            "body": "Fridge humming, phone charged, laptop charged, you charged. You sleep like a baby.",
+            "effects": {
+              "energy": 15,
+              "desperation": -4
+            }
+          },
+          {
+            "id": "queue",
+            "kicker": "God dey",
+            "title": "A stranger shows you the right queue",
+            "body": "An old man at the annex points you past three wrong windows. You never get his name.",
+            "effects": {
+              "papers": 8,
+              "energy": 4
+            }
+          }
+        ]
+      }
     },
     "STUDY_PERMIT": {
       "title": "Student Pathway",
@@ -566,7 +602,43 @@
             }
           ]
         }
-      ]
+      ],
+      "blessings": {
+        "base": 0.04,
+        "scale": 0.1,
+        "items": [
+          {
+            "id": "bursary",
+            "kicker": "Blessing",
+            "title": "Department bursary",
+            "body": "The international student office has an emergency bursary. You qualify. CAD 1,500.",
+            "effects": {
+              "walletCad": 1500,
+              "desperation": -6
+            }
+          },
+          {
+            "id": "coat",
+            "kicker": "Blessing",
+            "title": "A senior gives you her coat",
+            "body": "A final-year student from Ibadan hands you a proper parka. 'I'm graduating. Take am.'",
+            "effects": {
+              "energy": 8,
+              "desperation": -8
+            }
+          },
+          {
+            "id": "ra",
+            "kicker": "Blessing",
+            "title": "Research assistant job",
+            "body": "Your professor needs someone to clean data, 10 hours a week, on campus. It counts, and it pays.",
+            "effects": {
+              "walletCad": 1200,
+              "academicStanding": 5
+            }
+          }
+        ]
+      }
     },
     "EXPRESS_ENTRY": {
       "title": "Express Entry",
@@ -878,7 +950,41 @@
             }
           ]
         }
-      ]
+      ],
+      "blessings": {
+        "base": 0.04,
+        "scale": 0.1,
+        "items": [
+          {
+            "id": "prayer",
+            "kicker": "Blessing",
+            "title": "Send-forth prayer meeting",
+            "body": "The family gathers, pastor anoints your passport photo, Mummy cries. You feel lighter.",
+            "effects": {
+              "desperation": -10
+            }
+          },
+          {
+            "id": "reference",
+            "kicker": "Blessing",
+            "title": "Your old boss writes a glowing reference",
+            "body": "Signed, stamped, on letterhead, with your actual duties. Unprompted.",
+            "effects": {
+              "desperation": -6,
+              "energy": 4
+            }
+          },
+          {
+            "id": "naira",
+            "kicker": "Blessing",
+            "title": "The naira rallied for a week",
+            "body": "Same savings, more dollars. You convert before it changes its mind.",
+            "effects": {
+              "walletCad": 700
+            }
+          }
+        ]
+      }
     },
     "STARTUP_VISA": {
       "title": "The Startup Visa Pitch Route",
@@ -1334,7 +1440,39 @@
             }
           ]
         }
-      ]
+      ],
+      "blessings": {
+        "base": 0.04,
+        "scale": 0.1,
+        "items": [
+          {
+            "id": "room",
+            "kicker": "Blessing",
+            "title": "A free room for a month",
+            "body": "A church member in Etobicoke has a spare room and no questions.",
+            "effects": {
+              "walletCad": 500,
+              "desperation": -8
+            }
+          },
+          {
+            "id": "probono",
+            "kicker": "Blessing",
+            "title": "A lawyer takes your case pro bono",
+            "body": "A refugee clinic lawyer read your file and said yes.",
+            "effects": {
+              "kwEvidence": 8,
+              "kwCredibility": 5
+            },
+            "when": {
+              "kwBasis": [
+                ">=",
+                1
+              ]
+            }
+          }
+        ]
+      }
     },
     "CAREGIVER_LMIA": {
       "title": "The Hidden LMIA Interview",
@@ -1748,7 +1886,43 @@
             }
           ]
         }
-      ]
+      ],
+      "blessings": {
+        "base": 0.05,
+        "scale": 0.1,
+        "items": [
+          {
+            "id": "reference",
+            "kicker": "Blessing",
+            "title": "Your first Canadian reference",
+            "body": "Your volunteer coordinator writes you a reference without being asked.",
+            "effects": {
+              "careerScore": 6,
+              "desperation": -4
+            }
+          },
+          {
+            "id": "rent",
+            "kicker": "Blessing",
+            "title": "The landlord drops the rent",
+            "body": "'You're quiet and you pay on time.' CAD 100 off every month.",
+            "effects": {
+              "walletCad": 600,
+              "desperation": -6
+            }
+          },
+          {
+            "id": "groupchat",
+            "kicker": "Blessing",
+            "title": "The group chat delivers",
+            "body": "Someone's company is hiring and they'll refer you. The Naija network works.",
+            "effects": {
+              "careerScore": 8,
+              "community": 5
+            }
+          }
+        ]
+      }
     },
     "TARGETED_TRADE": {
       "title": "Targeted Trade",

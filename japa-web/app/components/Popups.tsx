@@ -1,6 +1,8 @@
 "use client";
 
-import { Flame, Ghost, GraduationCap, Plane, Share2, ShieldAlert, TriangleAlert } from "lucide-react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { Flame, Ghost, GraduationCap, Plane, Share2, ShieldAlert, Sparkles, TriangleAlert } from "lucide-react";
 import type { Popup, Rank } from "@/game/types";
 import { useSfxOnMount } from "./Sound";
 
@@ -73,21 +75,55 @@ export function ShareOnX({ text, className = "" }: { text: string; className?: s
   );
 }
 
+/** Copies the result text; if the browser refuses, shows it so the player can copy it by hand. */
+function CopyResult({ text }: { text: string }) {
+  const [state, setState] = useState<"idle" | "copied" | "manual">("idle");
+  return (
+    <>
+      <button type="button"
+        onClick={() => navigator.clipboard?.writeText(text).then(() => setState("copied"), () => setState("manual")) ?? setState("manual")}
+        className="flex-1 rounded-2xl border border-white/20 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/10">
+        {state === "copied" ? "Copied!" : "Copy result"}
+      </button>
+      {state === "manual" ? (
+        <textarea readOnly value={text} aria-label="Your result" rows={5} onFocus={(e) => e.currentTarget.select()}
+          className="mt-2 w-full basis-full rounded-xl border border-white/15 bg-black/40 p-2 font-mono text-xs text-zinc-200" />
+      ) : null}
+    </>
+  );
+}
+
+/** Full-screen layer on <body> (above the sticky header), scrollable when the card is taller than the screen. */
+function Overlay({ className, children }: { className: string; children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { const t = window.setTimeout(() => setMounted(true), 0); return () => window.clearTimeout(t); }, []);
+  if (!mounted) return null;
+  return createPortal(
+    <div className={`fixed inset-0 z-50 overflow-y-auto p-4 ${className}`} role="dialog" aria-modal="true">
+      <div className="flex min-h-full items-center justify-center py-6">{children}</div>
+    </div>,
+    document.body,
+  );
+}
+
 /** Village People trap or parallel-market shock. */
 export function PopupModal({ popup, onDismiss }: { popup: Popup; onDismiss: () => void }) {
   const market = popup.kind === "market";
-  useSfxOnMount(market ? "cashOut" : "trap");
+  const blessing = popup.kind === "blessing";
+  useSfxOnMount(market ? "cashOut" : blessing ? "good" : "trap");
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true">
+    <Overlay className="bg-black/70 backdrop-blur-sm">
       <div
         className={`animate-scene-in relative w-full max-w-md rounded-3xl border p-6 ${
           market
             ? "border-amber-300/40 bg-gradient-to-b from-zinc-900 to-zinc-950 shadow-[0_0_80px_-20px_rgba(251,191,36,0.7)]"
-            : "border-rose-400/40 bg-gradient-to-b from-rose-950/80 to-zinc-950"
+            : blessing
+              ? "border-emerald-300/50 bg-gradient-to-b from-emerald-950/80 to-zinc-950 shadow-[0_0_80px_-20px_rgba(52,211,153,0.6)]"
+              : "border-rose-400/40 bg-gradient-to-b from-rose-950/80 to-zinc-950"
         }`}
       >
-        <p className={`inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] ${market ? "text-amber-300" : "text-rose-300"}`}>
-          {!market && <TriangleAlert className="h-3.5 w-3.5" />}
+        <p className={`inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] ${market ? "text-amber-300" : blessing ? "text-emerald-300" : "text-rose-300"}`}>
+          {blessing ? <Sparkles className="h-3.5 w-3.5" /> : !market && <TriangleAlert className="h-3.5 w-3.5" />}
           {popup.kicker}
         </p>
         <h3 className="mt-2 text-2xl font-black text-white">{popup.title}</h3>
@@ -97,20 +133,23 @@ export function PopupModal({ popup, onDismiss }: { popup: Popup; onDismiss: () =
           autoFocus
           onClick={onDismiss}
           className={`mt-6 w-full rounded-2xl px-4 py-3 text-sm font-black transition duration-500 ease-out ${
-            market ? "bg-amber-300 text-zinc-950 hover:bg-amber-200" : "border border-white/15 font-bold text-white hover:bg-white/10"
+            market ? "bg-amber-300 text-zinc-950 hover:bg-amber-200" : blessing ? "bg-emerald-300 text-zinc-950 hover:bg-emerald-200" : "border border-white/15 font-bold text-white hover:bg-white/10"
           }`}
         >
           {popup.button ?? "Keep moving"}
         </button>
       </div>
-    </div>
+    </Overlay>
   );
 }
 
 export function GameOverModal({
-  rank, interference, routeName, next, onReset, lesson, won,
+  rank, interference, routeName, next, onReset, lesson, won, stars, moves,
 }: {
   rank: Rank;
+  /** Best stars per level on this route, for the share text. */
+  stars?: number[];
+  moves?: number;
   /** The run ended in a win (otherwise the rank decides). */
   won?: boolean;
   /** "Reality check" for this ending. */
@@ -120,9 +159,16 @@ export function GameOverModal({
   next?: { label: string; onClick: () => void }[];
   onReset: () => void;
 }) {
-  const text = `I ranked ${rank.title} ${RANK_EMOJI[rank.id] ?? ""} in ${routeName} · Japa. Village People Interference: ${Math.round(interference)}%.`;
+  const starRow = (stars ?? []).map((n, i) => `L${i + 1} ${"⭐".repeat(n)}${"☆".repeat(Math.max(0, 3 - n))}`).join(" · ");
+  const text = [
+    `Japa 🇳🇬→🇨🇦 · ${routeName}`,
+    `${rank.title} ${RANK_EMOJI[rank.id] ?? ""}`.trim(),
+    starRow,
+    `Village People Interference ${Math.round(interference)}%${moves ? ` · ${moves} moves` : ""}`,
+    "Can you japa better? #JapaTheGame",
+  ].filter(Boolean).join("\n");
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md" role="dialog" aria-modal="true">
+    <Overlay className="bg-black/75 backdrop-blur-md">
       <div className={`animate-scene-in relative w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/15 bg-gradient-to-br p-7 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)] ${RANK_VIBE[rank.id] ?? RANK_VIBE.hustle}`}>
         <p className="text-center text-[11px] font-bold uppercase tracking-[0.28em] text-amber-200">{won ?? WIN_RANKS.has(rank.id) ? "You made it" : "Game Over"} · {routeName}</p>
         <div className="mt-5"><RankGlyph id={rank.id} /></div>
@@ -150,13 +196,14 @@ export function GameOverModal({
         )}
         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <ShareOnX text={text} className="flex-1" />
+          <CopyResult text={text} />
           <button type="button" onClick={onReset}
             className="flex-1 rounded-2xl border border-white/20 px-4 py-3 text-sm font-bold text-white transition duration-500 ease-out hover:bg-white/10">
             Run it back
           </button>
         </div>
       </div>
-    </div>
+    </Overlay>
   );
 }
 

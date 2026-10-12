@@ -5,8 +5,10 @@ import { FileCheck2, Ghost, GraduationCap, Languages, MapPin, Plane, Sparkles, T
 import { DB, choose, computeCrs, presentChoices, rankFor } from "@/game/engine";
 import { lessonFor } from "@/game/endings";
 import { OddsChip } from "../OddsChip";
+import { useBestStars } from "../Levels";
 import { describeChoice } from "@/game/cinematic";
 import { useCinematic } from "../Cinematic";
+import { useChoiceKeys } from "../useChoiceKeys";
 import { usePlayer } from "../Player";
 import { chance, rolls as rollDice } from "@/game/rng";
 import type { BarSpec, GameState, RouteId, Transit } from "@/game/types";
@@ -187,7 +189,9 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
     return () => window.clearInterval(id);
   }, [shock, live, dispatch]);
 
-  const { play } = useCinematic();
+  const { play, playing } = useCinematic();
+  const bestStars = useBestStars(run.activeRoute);
+  useChoiceKeys(choices, pick, !moving && !run.popup && !playing && !run.outcome);
   const { t } = usePlayer();
 
   /** Choice -> cutscene -> travel ribbon -> next scene. The meters update at once underneath. */
@@ -198,7 +202,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
     if (next === run) return;
     const choice = DB.scenes[run.currentSceneId]?.choices?.[index];
     // Describe the choice itself; a Village People trap gets its own pop-up afterwards.
-    const clean = next.popup ? choose(DB, run, index, [1, 0, rolls[2]]) : next;
+    const clean = next.popup ? choose(DB, run, index, [1, 0, rolls[2], 1]) : next;
     const spec = describeChoice(DB, run, clean, t(choice?.text, run), clean.lastChoice?.label ?? choice?.label ?? "",
       t(clean.lastChoice?.feedback ?? choice?.feedback, run));
     dispatch({ type: "CHOOSE", index, rolls });
@@ -288,12 +292,14 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
         </article>
       </div>
 
-      {run.popup && !run.outcome && !moving && <PopupModal popup={run.popup} onDismiss={() => dispatch({ type: "DISMISS_POPUP" })} />}
+      {run.popup && !run.outcome && !moving && <PopupModal popup={{ ...run.popup, title: t(run.popup.title, run), body: t(run.popup.body, run) }} onDismiss={() => dispatch({ type: "DISMISS_POPUP" })} />}
       {ended && rank && (
         <GameOverModal
           rank={{ ...rank, title: t(rank.title), blurb: t(rank.blurb) }}
           lesson={lessonFor(DB, run) ? t(lessonFor(DB, run), run) : undefined}
           won={isWin}
+          stars={bestStars}
+          moves={run.history.filter((h) => h.answer).length}
           interference={run.desperation}
           routeName={cfg.title}
           onReset={() => dispatch({ type: "RESTART" })}

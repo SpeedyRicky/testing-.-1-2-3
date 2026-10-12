@@ -40,6 +40,9 @@ const store = {
   },
 };
 
+/** How many endings this device has found. */
+export const foundCount = () => read().found.length;
+
 /** Records an ending; true the first time this player's device sees it. */
 export const recordEnding = (key: string) => store.add(key);
 
@@ -49,21 +52,16 @@ const ROUTE_ORDER = Object.keys(DB.routes) as RouteId[];
 
 /** Header chip: "Endings 7/43", opens the cabinet. Pops a badge when a new ending is found. */
 export function EndingsButton() {
-  const { found, lastNew } = useFound();
+  const { found } = useFound();
   const endings = useMemo(() => allEndings(DB), []);
   const [open, setOpen] = useState(false);
   const count = endings.filter((e) => found.includes(e.key)).length;
-  const fresh = lastNew ? endings.find((e) => e.key === lastNew) : undefined;
   return (
     <>
       <button type="button" onClick={() => setOpen(true)}
         className="relative inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:-translate-y-0.5 hover:border-amber-300/60 hover:text-white active:scale-95">
         <Trophy className="h-3.5 w-3.5 text-amber-300" /> Endings {count}/{endings.length}
-        {fresh ? (
-          <span key={fresh.key} role="status" className="ending-badge pointer-events-none absolute right-0 top-full z-50 mt-2 w-max max-w-[16rem] rounded-xl border border-amber-300/50 bg-zinc-950 px-3 py-2 text-left text-xs text-amber-100 shadow-xl">
-            New ending: <b className="text-white">{fresh.title}</b>
-          </span>
-        ) : null}
+
       </button>
       {open ? <Cabinet found={found} onClose={() => setOpen(false)} /> : null}
     </>

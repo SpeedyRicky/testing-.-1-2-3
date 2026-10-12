@@ -17,12 +17,12 @@ import {
 import { initialState, makeReducer } from "./machine";
 import { allEndings, endingKey, lessonFor } from "./endings";
 import { levelIndexOf, levelProgress, levelsFor, starsFor } from "./levels";
-import { gambleOdds } from "./engine";
+import { blessingChance, gambleOdds } from "./engine";
 import { GROOVES, moodFor } from "./music";
 import { makeSave, readSave } from "./save";
 import { PLAYABLE_ROUTES, simulate } from "./simulate";
 import {
-  DAILY_MODIFIERS, NEW_META, applyBundle, bundleFor, buy, dailyFor, grant, runAward, titleFor, toggleEquip, touchStreak,
+  ACHIEVEMENTS, DAILY_MODIFIERS, NEW_META, applyBundle, newAchievements, bundleFor, buy, dailyFor, grant, runAward, titleFor, toggleEquip, touchStreak,
 } from "./meta";
 import type { GameState, RouteId, StatKey } from "./types";
 
@@ -131,7 +131,7 @@ describe("scenarios.json integrity", () => {
       for (const b of s.branch ?? []) for (const k of Object.keys(b.when ?? {})) if (!known.has(k)) bad.push(`${s.id}: ${k}`);
     }
     for (const [id, route] of Object.entries(DB.routes)) {
-      for (const t of route.traps?.items ?? []) {
+      for (const t of [...(route.traps?.items ?? []), ...(route.blessings?.items ?? [])]) {
         for (const k of [...Object.keys(t.effects), ...Object.keys(t.when ?? {})]) if (!known.has(k)) bad.push(`${id} trap ${t.id}: ${k}`);
       }
     }
@@ -1058,6 +1058,18 @@ describe("levels", () => {
   });
 });
 
+describe("blessings", () => {
+  it("good surprises use their own roll, come more often when things are bad, and never in tests by default", () => {
+    const s = newRun(DB, "NIGERIA_LIFE");
+    const idx = choiceIndex(s, (c) => c.text.includes("about the visa story"));
+    expect(choose(DB, s, idx).popup).toBeNull();
+    const blessed = choose(DB, s, idx, [1, 0, 0, 0]);
+    expect(blessed.popup?.kind).toBe("blessing");
+    expect(blessingChance(DB, { ...s, desperation: 90 })).toBeGreaterThan(blessingChance(DB, { ...s, desperation: 10 }));
+    expect(blessingChance(DB, newRun(DB, "STARTUP_VISA"))).toBe(0);
+  });
+});
+
 describe("risky choices", () => {
   it("odds come from preparation and stay within limits", () => {
     const g = { odds: 0.2, bonus: [{ key: "clbFirst" as StatKey, per: 0.05 }], max: 0.7, success: { feedback: "" }, fail: { feedback: "" } };
@@ -1180,6 +1192,27 @@ describe("balance (seeded simulated playthroughs)", () => {
       expect(smart.stuck / smart.runs, "stuck runs").toBeLessThanOrEqual(0.05);
     });
   }
+});
+
+describe("achievements", () => {
+  const ctx = (run: GameState, extra: Partial<Parameters<typeof newAchievements>[0]> = {}) =>
+    ({ run, meta: NEW_META, endingsFound: 1, threeStarLevels: 0, today: "2026-10-12", ...extra });
+
+  it("a clean win earns Clean hands; a shady move anywhere in the run doesn't", () => {
+    const clean = play("CAREGIVER_LMIA", ["I understand the hesitation", "Job Bank median", "follow the advertising rules", "employers can't recover"]);
+    const ids = newAchievements(ctx(clean)).map((a) => a.id);
+    expect(ids).toEqual(expect.arrayContaining(["first-run", "clean-hands", "kovacs"]));
+    const shady = play("EXPRESS_ENTRY", ["leaked"]);
+    expect(newAchievements(ctx(shady)).map((a) => a.id)).not.toContain("clean-hands");
+  });
+
+  it("honest exits and scam reports count; achievements are only earned once", () => {
+    const honest = play2(newRun(DB, "TOURIST_GAMBLE"), ["Kawosoke at the counter", "nothing will happen to me"]);
+    expect(newAchievements(ctx(honest)).map((a) => a.id)).toContain("honest-exit");
+    const owned = { ...NEW_META, achievements: ACHIEVEMENTS.map((a) => a.id) };
+    expect(newAchievements(ctx(honest, { meta: owned }))).toEqual([]);
+    expect(newAchievements(ctx(honest, { endingsFound: 12 })).map((a) => a.id)).toContain("collector");
+  });
 });
 
 describe("saves", () => {

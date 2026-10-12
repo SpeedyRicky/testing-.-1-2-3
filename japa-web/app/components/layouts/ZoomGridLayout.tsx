@@ -6,6 +6,7 @@ import { describeChoice } from "@/game/cinematic";
 import { rolls as rollDice } from "@/game/rng";
 import { OddsChip } from "../OddsChip";
 import { useCinematic } from "../Cinematic";
+import { useChoiceKeys } from "../useChoiceKeys";
 import { usePlayer } from "../Player";
 import type { GameState, StatKey } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
@@ -107,7 +108,8 @@ export function ZoomGridLayout({ run, dispatch, bars }: LayoutProps) {
   const scene = currentScene(DB, run);
   const speaking = run.outcome ? null : PANEL.find((p) => scene?.speaker?.startsWith(p.name))?.id ?? null;
   const choices = presentChoices(DB, run);
-  const { play } = useCinematic();
+  const { play, playing } = useCinematic();
+  useChoiceKeys(choices, pick, !playing && !run.outcome);
   const { t, profile } = usePlayer();
   function pick(index: number) {
     const choice = scene?.choices?.[index];

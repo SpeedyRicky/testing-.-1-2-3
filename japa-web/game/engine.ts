@@ -251,6 +251,13 @@ export function choose(db: ScenarioDatabase, state: GameState, index: number, ro
     const trap = items[Math.floor((rolls[1] ?? 0) * items.length) % items.length];
     s = applyEffects(s, trap.effects);
     s = { ...s, popup: { kind: "trap", id: trap.id, kicker: trap.kicker, title: trap.title, body: trap.body } };
+  } else if (!endingMove && route.blessings && (rolls[3] ?? 1) < blessingChance(db, s)) {
+    const pool = route.blessings.items.filter((b) => !b.when || evaluate(s, b.when));
+    if (pool.length) {
+      const b = pool[Math.floor((rolls[1] ?? 0) * pool.length) % pool.length];
+      s = applyEffects(s, b.effects);
+      s = { ...s, popup: { kind: "blessing", id: b.id, kicker: b.kicker, title: b.title, body: b.body, button: "Thank God" } };
+    }
   }
 
   if (route.collapse && evaluateAny(s, route.collapse.any)) {
@@ -266,6 +273,12 @@ export function trapChance(db: ScenarioDatabase, state: GameState): number {
   const t = db.routes[state.activeRoute].traps;
   if (!t) return 0;
   return (t.base + Math.pow(state.desperation / 100, t.exponent) * t.scale) * (state.mods?.trapFactor ?? 1);
+}
+
+/** Blessings come more often when Village People Interference is high. */
+export function blessingChance(db: ScenarioDatabase, state: GameState): number {
+  const b = db.routes[state.activeRoute].blessings;
+  return b ? b.base + (state.desperation / 100) * b.scale : 0;
 }
 
 /** The parallel market jumps: wallet and papers shrink by the configured factors. */
