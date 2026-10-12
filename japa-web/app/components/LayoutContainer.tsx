@@ -15,6 +15,7 @@ export const ROUTE_THEME: Record<RouteId, { backdrop: string; tones: Tone[]; acc
   NIGERIA_LIFE: { backdrop: "", tones: [], accent: "text-amber-300" },
   STUDY_PERMIT: { backdrop: "", tones: [], accent: "text-red-300" },
   EXPRESS_ENTRY: { backdrop: "", tones: [], accent: "text-sky-300" },
+  FIRST_YEAR: { backdrop: "", tones: [], accent: "text-emerald-300" },
   STARTUP_VISA: {
     backdrop: "bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.10),transparent_60%)]",
     tones: ["emerald", "sky", "violet"],

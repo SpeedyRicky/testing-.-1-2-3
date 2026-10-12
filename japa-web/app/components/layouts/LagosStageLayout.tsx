@@ -41,6 +41,8 @@ const BACKDROP: Record<string, string> = {
   NIGERIA_LIFE: "bg-[radial-gradient(circle_at_top,_#3b1d6e_0%,_#07060c_55%)]",
   STUDY_PERMIT: "bg-[radial-gradient(circle_at_top,_#7f1d1d_0%,_#07060c_55%)]",
   EXPRESS_ENTRY: "bg-[radial-gradient(circle_at_top,_#1e3a8a_0%,_#07060c_55%)]",
+  TOURIST_GAMBLE: "bg-[radial-gradient(circle_at_top,_#78350f_0%,_#07060c_55%)]",
+  FIRST_YEAR: "bg-[radial-gradient(circle_at_top,_#065f46_0%,_#07060c_55%)]",
 };
 
 const naira = (v: number) =>
@@ -288,6 +290,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
         <GameOverModal
           rank={{ ...rank, title: t(rank.title), blurb: t(rank.blurb) }}
           lesson={lessonFor(DB, run) ? t(lessonFor(DB, run), run) : undefined}
+          won={isWin}
           interference={run.desperation}
           routeName={cfg.title}
           onReset={() => dispatch({ type: "RESTART" })}

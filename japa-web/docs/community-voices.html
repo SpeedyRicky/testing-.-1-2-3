@@ -1,0 +1,259 @@
+<title>Japa Community Voices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column; rule tables scroll sideways on phones; a sticky route index. */
+:root {
+  --paper: #f5f6f3;
+  --panel: #ffffff;
+  --ink: #15201b;
+  --muted: #5a6660;
+  --line: #d9ded9;
+  --green: #0b7a4b;
+  --green-soft: #e3f1ea;
+  --red: #b4142c;
+  --red-soft: #f8e6e8;
+  --amber: #8a5a00;
+  --amber-soft: #f6edd8;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1512; --panel: #151d19; --ink: #e7eee9; --muted: #9aa8a0; --line: #26322c;
+    --green: #4cc38a; --green-soft: #133224; --red: #f0788a; --red-soft: #35161c; --amber: #e2b45a; --amber-soft: #33270f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f1512; --panel: #151d19; --ink: #e7eee9; --muted: #9aa8a0; --line: #26322c;
+  --green: #4cc38a; --green-soft: #133224; --red: #f0788a; --red-soft: #35161c; --amber: #e2b45a; --amber-soft: #33270f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font: 16px/1.65 var(--body); }
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: 1.7rem; font-weight: 800; margin-top: 56px; }
+h3 { font-size: 1.15rem; font-weight: 600; margin-top: 28px; }
+p { margin: 0; max-width: 68ch; }
+.stack { display: grid; gap: 14px; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); }
+.lede { font-size: 1.12rem; color: var(--muted); }
+nav.index { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; background: var(--paper); border-bottom: 1px solid var(--line); margin-top: 28px; }
+nav.index ul { display: flex; flex-wrap: wrap; gap: 6px 18px; list-style: none; margin: 0; padding: 10px 0; }
+nav.index a { color: var(--ink); text-decoration: none; font-weight: 600; font-size: 14px; }
+nav.index a:hover, nav.index a:focus-visible { color: var(--green); text-decoration: underline; }
+a { color: var(--green); }
+a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.callout { border-left: 3px solid var(--red); background: var(--red-soft); padding: 14px 16px; border-radius: 0 8px 8px 0; }
+.callout.green { border-color: var(--green); background: var(--green-soft); }
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14.5px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+th { font: 500 11.5px/1.3 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); background: var(--paper); }
+tr:last-child td { border-bottom: 0; }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill { display: inline-block; font: 500 11px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 7px; border-radius: 999px; white-space: nowrap; }
+.built { background: var(--green-soft); color: var(--green); }
+.next { background: var(--amber-soft); color: var(--amber); }
+.check { background: var(--red-soft); color: var(--red); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.lever { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 6px; min-width: 0; }
+.lever b { font-family: var(--display); font-size: 1.05rem; }
+.lever span { color: var(--muted); font-size: 14.5px; }
+ol.flow { margin: 0; padding-left: 22px; display: grid; gap: 8px; max-width: 72ch; }
+ul.plain { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 72ch; }
+.src { font-size: 13.5px; color: var(--muted); }
+.src li { overflow-wrap: anywhere; }
+footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13.5px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+<div class="wrap">
+  <header class="stack">
+    <p class="eyebrow">Japa: The Great Escape · community research · October 2026</p>
+    <h1>Japa voices: what people say about every route to Canada</h1>
+    <p class="lede">Recurring stories from Nigerians who tried each pathway between 2022 and 2026, the real rule behind each one, and the scene it became in the game. Game version 0.11 ships everything marked <span class="pill built">built</span>.</p>
+    <p class="callout green">How this was gathered: five research passes covered Reddit, Nairaland, X, YouTube and TikTok stories as reported by Nigerian outlets (Legit.ng, BusinessDay, Punch, Guardian, TheCable, Vanguard) and Canadian outlets (CBC, Global News, Toronto Star, CTV), plus IRCC, IRB and StatCan data. Most forum pages could not be opened directly, so community voice comes through news coverage and search summaries. Everything is paraphrased; no individual is named. Items marked <span class="pill check">verify</span> came from a single or commercial source.</p>
+    <p class="callout">Entertainment research, not legal or immigration advice.</p>
+  </header>
+
+  <nav class="index" aria-label="Sections">
+    <ul>
+      <li><a href="#before">Before you leave</a></li>
+      <li><a href="#student">Student</a></li>
+      <li><a href="#ee">Express Entry &amp; PNP</a></li>
+      <li><a href="#tourist">Visitor &amp; Kawosoke</a></li>
+      <li><a href="#work">LMIA, caregiver, startup</a></li>
+      <li><a href="#after">Year One</a></li>
+      <li><a href="#design">What it adds to the game</a></li>
+      <li><a href="#sources">Sources</a></li>
+    </ul>
+  </nav>
+
+  <section id="before" class="stack">
+    <h2>Before you leave Nigeria</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>What people say</th><th>The reality</th><th>Feeling</th><th>In the game</th></tr></thead>
+      <tbody>
+        <tr><td>"My agent said 100% sure." People paid ₦2m to ₦15m for a "guaranteed visa", then the office became a phone repair shop.</td><td>Nobody can guarantee a Canadian visa. The EFCC has arrested serial visa scammers; IRCC and the Nigeria Police both warn about it.</td><td>Betrayal, shame</td><td>"100% guaranteed visa" event (Nigeria); "guaranteed visa" choice after a study refusal. <span class="pill built">built</span></td></tr>
+        <tr><td>"We sold Papa's land." Almost every story involves selling land, a car, gold or a business, or borrowing from relatives.</td><td>Where the money comes from shapes what the family expects later (black tax).</td><td>Pride, then debt</td><td>"Papa wants to sell the village land" event. <span class="pill built">built</span></td></tr>
+        <tr><td>"My savings shrank while I waited." Proof-of-funds targets moved out of reach as the naira fell.</td><td>The naira fell about 55% in a year to ~₦1,043/$ (late 2023) and hit ₦1,413/$ in January 2024. Sudden large deposits look suspicious; guides suggest a ~20% buffer.</td><td>Helplessness</td><td>Naira events in Express Entry and Student. <span class="pill built">built</span></td></tr>
+        <tr><td>Passport appointments rescheduled, police certificates expiring before the booklet arrives, the police portal down.</td><td>Passport fees doubled from September 1, 2025 (₦100k / ₦200k). IRCC accepts proof a police certificate was requested when it can't arrive in time.</td><td>Limbo</td><td>Passport-office event; "submit with a letter of explanation" choice in Express Entry. <span class="pill built">built</span></td></tr>
+        <tr><td>"Canada needs 650,000 workers, share to 10 groups."</td><td>Fact-checkers (Africa Check, 211Check) debunked these. The Seasonal Agricultural Worker Program doesn't take Nigerians at all.</td><td>False hope</td><td>Hoax event. <span class="pill built">built</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="src">63% of Nigerians said they'd relocate if they could (NOIPolls, Aug 2023); 56% have considered emigrating (Afrobarometer).</p>
+  </section>
+
+  <section id="student" class="stack">
+    <h2>Student pathway</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>What people say</th><th>The reality</th><th>Feeling</th><th>In the game</th></tr></thead>
+      <tbody>
+        <tr><td>"They said I won't leave Canada." Two lines of boilerplate; Nairaland advice is to order GCMS notes to see the real reason.</td><td>Insufficient funds appeared in ~71–74% of Nigerian refusals (2021–2024). Only about 1 in 4 Nigerian applications was approved in Jan–Apr 2026 <span class="pill check">ApplyBoard</span>.</td><td>Dread, shame</td><td>A refusal is now a scene: order GCMS notes and fix the plan, resubmit the same file, or pay a "guaranteed visa" agent. <span class="pill built">built</span></td></tr>
+        <tr><td>"Fund parking." Vendors put money in your account for a fee.</td><td>Misrepresentation, 5-year ban. The Federal Court upheld a ban in 2026 even though the applicant really had the money.</td><td>Temptation</td><td>"Park ₦25M" choice already fails. <span class="pill built">built</span></td></tr>
+        <tr><td>Living-cost proof keeps rising.</td><td>CAD 20,635 (Jan 2024) → 22,895 (Sept 2025) → 23,448 (Sept 1, 2026).</td><td></td><td>The game uses CAD 23,448. <span class="pill built">built</span></td></tr>
+        <tr><td>"25 students in one Brampton basement." Bunk beds at CAD 375, post-dated cheques, no lease; Facebook landlords who vanish after the deposit.</td><td>Overcrowded basements are illegal and unsafe; a student died in a shared-house fire in Cape Breton (2023). Churches meet students at the airport.</td><td>Shock, then relief</td><td>New "Where will you sleep?" scene: church host family, bunk bed or a Facebook deposit scam. <span class="pill built">built</span></td></tr>
+        <tr><td>Programs cut mid-way after the cap; "we were cash cows."</td><td>Ontario colleges cut ~600 programs and ~10,000 jobs; Conestoga's international intake fell ~80%.</td><td>Abandoned</td><td>"Your program was suspended" event. <span class="pill built">built</span></td></tr>
+        <tr><td>"Japa to sapa." Food banks, noodles until Friday, a sign saying "not for international students".</td><td>Campus food banks exist and ask no questions.</td><td>Shame</td><td>"Japa to sapa" event. <span class="pill built">built</span></td></tr>
+        <tr><td>Working more than 24 hours "to send money home".</td><td>24 h/week off campus during classes; breaching it can end your status. Two Nigerian students were removed in 2013 over off-campus work.</td><td>Guilt</td><td>Cash shifts already fail; "Mummy needs money" event. <span class="pill built">built</span></td></tr>
+        <tr><td>"I did everything right and still might have to leave."</td><td>PGWP needs CLB 7 (degree) or CLB 5 (college) since Nov 2024; spousal work permits narrowed in Jan 2025.</td><td>Cliff edge</td><td>PGWP language-test scene. <span class="pill built">built</span> Spouse scene <span class="pill next">next</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="src">Nigeria had 3,902 study-permit "no-shows" in Mar–May 2024 (~10.7%). In Jan–Sept 2024, Nigerians made 1,990 asylum claims while holding study permits.</p>
+  </section>
+
+  <section id="ee" class="stack">
+    <h2>Express Entry and provincial nominations</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>What people say</th><th>The reality</th><th>Feeling</th><th>In the game</th></tr></thead>
+      <tbody>
+        <tr><td>"One band short." Retaking IELTS for "8777" and CLB 9.</td><td>One band can be worth ~20–25 points. IELTS costs ~₦279,500 and is computer-only in Nigeria since May 2025.</td><td>Despair, cost</td><td>"One band short" event. <span class="pill built">built</span></td></tr>
+        <tr><td>"Registry wahala." Unpaid bursary holds, ASUU strikes, couriers, months of back-and-forth with WES.</td><td>WES rejects transcripts you carry yourself; the school must send them.</td><td>Frustration</td><td>"ASUU strike, registry closed" event. <span class="pill built">built</span></td></tr>
+        <tr><td>"3 points off for 3 draws." Draw-night refreshing and Telegram rumours.</td><td>2026 draws mostly target CEC (~507–523), French (as low as the 380s), healthcare (~467–475) and trades (~476). Category draws now need 12 months of recent experience.</td><td>Hope, then not</td><td>Category draws and a "Telegram says a draw is coming" event. <span class="pill built">built</span></td></tr>
+        <tr><td>"Just write the reference letter yourself."</td><td>Copying NOC duties word for word is a known red flag and can bring a procedural fairness letter (PFL). Misrepresentation means a 5-year ban.</td><td>Fear</td><td>New reference-letter scene and a PFL you can answer, ignore or fake. <span class="pill built">built</span></td></tr>
+        <tr><td>"LMIA for points."</td><td>Job-offer points were removed March 25, 2025. Selling LMIAs is illegal.</td><td>Betrayal</td><td>Fraud ending already in place. <span class="pill built">built</span></td></tr>
+        <tr><td>PNP roulette: Ontario barely draws, Nova Scotia stopped most overseas files.</td><td>PNP target is 91,500 for 2026, after 2025 allocations were halved.</td><td>Whiplash</td><td>Province choice <span class="pill next">next</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="src">Nigeria received 7,263 ITAs in 2023 (#2) and 6,696 in 2024 (#3, behind Cameroon's 10,141, which is mostly French-language draws).</p>
+  </section>
+
+  <section id="tourist" class="stack">
+    <h2>Visitor visa and Kawosoke</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>What people say</th><th>The reality</th><th>Feeling</th><th>In the game</th></tr></thead>
+      <tbody>
+        <tr><td>"Even the Chief of Defence Staff was refused." (Feb 2025)</td><td>Refusals cite IRPR 179(b). Nigeria's visitor approval was 38% in 2020; World Cup 2026 visas for Nigerians were ~90% refused <span class="pill check">verify</span>.</td><td>Humiliation</td><td>VFS application scene <span class="pill next">next</span></td></tr>
+        <tr><td>"Come as a visitor, switch to a work permit."</td><td>That public policy ended without warning on August 28, 2024.</td><td>Plan collapsed</td><td>Dashboard copy; cash work still fails. <span class="pill built">built</span></td></tr>
+        <tr><td>"LMIA job, CAD 25k, pay in naira." WhatsApp and Kijiji offers; a CBC undercover reporter was quoted CAD 25,000.</td><td>Charging a worker for an LMIA is illegal; the employer pays the CAD 1,000 fee.</td><td>Desperation</td><td>New dashboard card: answer the WhatsApp, then pay, verify or report. <span class="pill built">built</span></td></tr>
+        <tr><td>"The city has no more shelter." Claimants slept on the pavement at 129 Peter St in summer 2023; Black churches housed hundreds until money ran out.</td><td>A Nigerian man died outside a full Mississauga shelter in Nov 2023. Claimants were placed in Niagara Falls hotels.</td><td>Cold, then community</td><td>Kawosoke claim scene now opens on where you sleep; church hall choice; Niagara hotel event. <span class="pill built">built</span></td></tr>
+        <tr><td>Waiting months for the work permit; cash jobs; tips to CBSA from co-workers.</td><td>Unauthorized work by claimants can bring a removal order.</td><td>Pride vs survival</td><td>New "cash warehouse job before the permit" choice ends the run. <span class="pill built">built</span></td></tr>
+        <tr><td>Hearings decided on credibility and "why not Lagos?"</td><td>Common refusal grounds: shifting stories, forged documents, internal flight alternative. A 2025 Federal Court case exposed a paid newspaper story and a doubtful "wanted" poster.</td><td>Dread</td><td>Credibility and Evidence meters, IFA question. <span class="pill built">built</span></td></tr>
+        <tr><td>Genuine LGBTQ claimants fear being disbelieved after a lifetime of hiding.</td><td>Up to 14 years in prison under the SSMPA (2014). The Federal Court has called stereotype-based disbelief "perverse". In 2017 Legal Aid Ontario flagged suspicious patterns, warning that fraud hurts real refugees.</td><td>Fear</td><td>Real stories can win; bought stories always fail. <span class="pill built">built</span></td></tr>
+        <tr><td>"The clock was running and I didn't know."</td><td>Bill C-12 (March 26, 2026): claims made more than a year after entry go only to a paper PRRA.</td><td>Panic</td><td>Late-claim branch <span class="pill next">next</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="src">IRB backlog ~296,200 claims and ~22-month wait (Sept 2025). Nigerian claims: 2,230 approved in 2024; 3,463 approved in 2025. Canada removed 438 Nigerians in 2025. 21.4% of Nigerian claims in 2013–2023 cited sexual orientation.</p>
+  </section>
+
+  <section id="work" class="stack">
+    <h2>LMIA, caregiver and Startup Visa</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>What people say</th><th>The reality</th><th>Feeling</th><th>In the game</th></tr></thead>
+      <tbody>
+        <tr><td>"Small fee, then another fee." ₦300k for medicals, ₦500k for the offer letter, then a fake LMIA on old letterhead.</td><td>Climbing fees are the classic scam pattern. Canadians alone lost CAD 49M to job scams in 2024.</td><td>Sunk cost</td><td>LMIA seller scene. <span class="pill built">built</span> Fee ladder <span class="pill next">next</span></td></tr>
+        <tr><td>"Oga holds my passport." Closed work permits make it risky to complain.</td><td>A UN rapporteur called low-wage streams a "breeding ground for contemporary slavery" (2024). The vulnerable-worker open permit is the legal exit.</td><td>Trapped</td><td>Closed-permit scene <span class="pill next">next</span></td></tr>
+        <tr><td>"Caregiver na the easy route."</td><td>The 2025 home care pilots filled their 2,750 caps on day one; no new applications from March 31, 2026 to March 30, 2030.</td><td>Door closed</td><td>Caregiver "training fee" scam <span class="pill next">next</span></td></tr>
+        <tr><td>"RN in Lagos, PSW in Brampton."</td><td>NNAS, provincial regulator, NCLEX and often bridging (CAD ~21k); 18–36 months. Over 42,000 nurses left Nigeria in 3 years.</td><td>Pride</td><td>Credential-wall scene in Year One; healthcare draws in EE. <span class="pill built">built</span></td></tr>
+        <tr><td>"Pay the incubator, get PR."</td><td>The Startup Visa paused from January 1, 2026 with a ~42,000-person backlog.</td><td>Limbo</td><td>Startup Pitch lesson mentions the pause. <span class="pill built">built</span></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="after" class="stack">
+    <h2>Year One in Canada (new route)</h2>
+    <p>The most consistent message across every source: landing is not the end. v0.11 adds <b>Year One in Canada</b>, playable on its own and unlocked by permanent residence or refugee protection. It tracks Savings, Career, Community and "Japa blues".</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Scene</th><th>What people say</th><th>The reality</th></tr></thead>
+      <tbody>
+        <tr><td>Landing day</td><td>"Nobody told me the order: SIN, bank, phone, health card."</td><td>The newcomer phone promo ends; credit history starts from zero.</td></tr>
+        <tr><td>Six months upfront</td><td>Landlords ask for months of rent because you have no credit.</td><td>In Ontario a landlord can't demand more than first-and-last as a deposit.</td></tr>
+        <tr><td>No Canadian experience</td><td>"Your Nigerian experience doesn't count."</td><td>Foreign-degree holders are about twice as likely to be overqualified (StatCan). Most jobs come by referral.</td></tr>
+        <tr><td>The credential wall</td><td>Nurses, doctors and engineers face 1–2 years of exams and bridging.</td><td>Bridging programs and bridge jobs (PSW) are the common path.</td></tr>
+        <tr><td>Mummy is calling</td><td>"Na you we dey look." Black tax with no budget.</td><td>Advice is a fixed share (10–20%) in a separate family account.</td></tr>
+        <tr><td>January</td><td>"I didn't know seasonal depression existed until I got here."</td><td>51.7% of Nigerian immigrants in one study screened positive for depression. Churches and associations are lifelines.</td></tr>
+        <tr><td>Month nine</td><td>"Jobless after 8 months."</td><td>Unemployment hit 7.1% in Aug 2025 (youth 14.5%); newcomers have historically been ~11.7% unemployed. EI exists for this.</td></tr>
+        <tr><td>Detty December</td><td>IJGB season, "japada", reverse japa.</td><td>One in five immigrants leaves Canada within 25 years. PR needs 2 of every 5 years in Canada.</td></tr>
+      </tbody>
+    </table></div>
+    <p>Events: basement flood, the landlord's "nephew", phone promo ending, a CAD 500 credit card, and a church potluck that turns into a job lead.</p>
+  </section>
+
+  <section id="design" class="stack">
+    <h2>What this adds to the game</h2>
+    <div class="grid2">
+      <div class="lever"><b>Reality check on every ending</b><span>All 46 endings now end with one plain-language rule from the real process, shown in the game-over card.</span></div>
+      <div class="lever"><b>Endings cabinet</b><span>A header chip counts endings found (0/46) and opens a cabinet grouped by route; hidden endings stay locked. A badge pops when you find a new one.</span></div>
+      <div class="lever"><b>Mistakes you can recover from</b><span>A study refusal is no longer a dead end: GCMS notes let you fix the plan. A PFL can be answered.</span></div>
+      <div class="lever"><b>Scams as choices, not lectures</b><span>Guaranteed visas, LMIA sellers, Facebook landlords and bought stories are offered like real temptations, then show the real cost.</span></div>
+      <div class="lever"><b>The life after</b><span>Year One turns "I landed" into a new run, which is where most real stories actually happen.</span></div>
+      <div class="lever"><b>More random events</b><span>Fifteen new events from these stories across Nigeria, Student, Express Entry and Year One.</span></div>
+    </div>
+  </section>
+
+  <section id="sources" class="stack">
+    <h2>Sources</h2>
+    <ul class="plain src">
+      <li><a href="https://www.applyboard.com/applyinsights-article/canadian-student-visa-refusal-reasons-25-26" target="_blank" rel="noopener">ApplyBoard: study permit refusal reasons 2025–26</a></li>
+      <li><a href="https://www.cicnews.com/2025/07/ircc-increases-minimum-cost-of-living-requirements-for-international-students-0757335.html" target="_blank" rel="noopener">CIC News: student cost-of-living requirement</a></li>
+      <li><a href="https://blogto.com/city/2024/01/25-international-students-basement-brampton/" target="_blank" rel="noopener">blogTO: 25 students in a Brampton basement</a></li>
+      <li><a href="https://globalnews.ca/news/10912982/ontario-college-layoffs-international-student-reliance" target="_blank" rel="noopener">Global News: Ontario college layoffs</a></li>
+      <li><a href="https://www.theglobeandmail.com/politics/article-canada-urged-to-investigate-decline-in-nigerian-study-permit-approvals/" target="_blank" rel="noopener">Globe and Mail: Nigerian study permit approvals</a></li>
+      <li><a href="https://gazettengr.com/nigerians-indians-top-list-of-50000-international-students-who-failed-to-report-to-canadian-colleges-varsities/" target="_blank" rel="noopener">Gazette NG: study permit no-shows</a></li>
+      <li><a href="https://dadkhah.ca/blog/case-law/3460/federal-court-upholds-5-year-ban-for-non-genuine-bank-statement/" target="_blank" rel="noopener">Federal Court upholds 5-year ban for non-genuine bank statement</a></li>
+      <li><a href="https://cicnews.com/2024/12/breaking-ircc-to-remove-lmia-based-points-from-express-entry-comprehensive-ranking-system-1249649.html" target="_blank" rel="noopener">CIC News: LMIA points removed</a></li>
+      <li><a href="https://immigrationstartguide.com/blog/nigerian-university-not-sending-transcript-wes" target="_blank" rel="noopener">Nigerian universities and WES transcripts</a></li>
+      <li><a href="https://immigrationstartguide.com/blog/nigeria-pcc-canada-express-entry-possap" target="_blank" rel="noopener">Nigeria police certificate (POSSAP) for Express Entry</a></li>
+      <li><a href="https://libertyimmigration.ca/procedural-fairness-letter-misrepresentation-section-40-defense-5-year-ban-mitigation-strategies/" target="_blank" rel="noopener">Procedural fairness letters and misrepresentation</a></li>
+      <li><a href="https://moving2canada.com/news/2026-express-entry-categories/" target="_blank" rel="noopener">Moving2Canada: 2026 Express Entry categories</a></li>
+      <li><a href="https://www.cicnews.com/2026/01/pnp-year-in-review-0164381.html" target="_blank" rel="noopener">CIC News: PNP year in review</a></li>
+      <li><a href="https://www.canada.ca/en/immigration-refugees-citizenship/news/notices/ends-tpp-allowing-visitors-apply-work-permits-within-country.html" target="_blank" rel="noopener">IRCC: end of the visitor-to-work-permit policy</a></li>
+      <li><a href="https://www.icirnigeria.org/they-can-go-to-hell-ribadu-blasts-canada-for-denying-nigerian-military-chiefs-visas/" target="_blank" rel="noopener">ICIR: Canada refuses Nigerian military chiefs' visas</a></li>
+      <li><a href="https://toronto.ctvnews.ca/shelters-are-full-refugees-gather-outside-downtown-toronto-intake-centre-1.6590857" target="_blank" rel="noopener">CTV: refugees outside Toronto's shelter intake centre</a></li>
+      <li><a href="https://globalnews.ca/news/9839071/asylum-seekers-relocated-toronto-church" target="_blank" rel="noopener">Global News: asylum seekers housed by a Toronto church</a></li>
+      <li><a href="https://globalnews.ca/news/10095841/asylum-claimant-dies-mississauga-shelter" target="_blank" rel="noopener">Global News: claimant dies outside Mississauga shelter</a></li>
+      <li><a href="https://gazettengr.com/canada-deports-ondo-pastor-for-bribing-nigerian-police-to-declare-him-wanted-for-asylum-claim/" target="_blank" rel="noopener">Gazette NG: Ondo pastor case</a></li>
+      <li><a href="https://www.legalaid.on.ca/news/lao-responds-to-news-coverage-of-nigerian-lgbtq-refugee-claims/" target="_blank" rel="noopener">Legal Aid Ontario on Nigerian LGBTQ claims</a></li>
+      <li><a href="https://newcanadianmedia.ca/domestic-violence-sexual-orientation-and-religion-top-list-of-nigerian-asylum-claim-reasons-in-the-last-decade/" target="_blank" rel="noopener">New Canadian Media: Nigerian claim reasons 2013–2023</a></li>
+      <li><a href="https://irb-cisr.gc.ca/en/transparency/proactive-disclosure/Pages/cimm-nov-2025.aspx" target="_blank" rel="noopener">IRB: CIMM briefing, November 2025</a></li>
+      <li><a href="https://www.icirnigeria.org/canada-deports-366-nigerians/" target="_blank" rel="noopener">ICIR: Canada deports 366 Nigerians</a></li>
+      <li><a href="https://theijf.org/ijf-cbc-lmia-undercover" target="_blank" rel="noopener">IJF/CBC: LMIA undercover investigation</a></li>
+      <li><a href="https://www.cbc.ca/lite/story/1.7253257" target="_blank" rel="noopener">CBC: Lagos man's fake LMIA</a></li>
+      <li><a href="https://www.efcc.gov.ng/news-and-information/news-release/8979-efcc-arrests-alleged-serial-canadian-visa-scammer-in-abuja" target="_blank" rel="noopener">EFCC: serial Canadian visa scammer arrested</a></li>
+      <li><a href="https://www.cicnews.com/2025/12/change-home-care-worker-pilots-will-not-return-in-2026-1263765.html" target="_blank" rel="noopener">CIC News: home care worker pilots won't return in 2026</a></li>
+      <li><a href="https://www.ctvnews.ca/politics/article/canadas-foreign-worker-program-a-breeding-ground-for-contemporary-slavery-says-un-report/" target="_blank" rel="noopener">CTV: UN report on temporary foreign workers</a></li>
+      <li><a href="https://www.bloomberg.com/news/articles/2026-01-08/how-canada-s-start-up-visa-program-went-wrong" target="_blank" rel="noopener">Bloomberg: how the Start-up Visa went wrong</a></li>
+      <li><a href="https://www.icirnigeria.org/why-we-came-up-with-new-verification-guidelines-nmcn/" target="_blank" rel="noopener">ICIR: NMCN verification guidelines</a></li>
+      <li><a href="https://africacheck.org/fact-checks/fbchecks/more-670000-jobs-available-foreigners-canada-no-just-another-scam" target="_blank" rel="noopener">Africa Check: "Canada jobs" hoax</a></li>
+      <li><a href="https://businessday.ng/news/article/the-unfiltered-reality-of-the-nigerian-immigrant-experience-in-canada/" target="_blank" rel="noopener">BusinessDay: the unfiltered reality of the Nigerian immigrant experience</a></li>
+      <li><a href="https://businessday.ng/real-estate/article/how-japa-wave-drives-unending-land-cycle-in-nigeria/" target="_blank" rel="noopener">BusinessDay: japa and the land cycle</a></li>
+      <li><a href="https://guardian.ng/features/nigerias-new-passport-fees-spark-outcry-mixed-experiences/" target="_blank" rel="noopener">Guardian NG: new passport fees</a></li>
+      <li><a href="https://www.legit.ng/people/1698099-lady-relocated-canada-laments-s-jobless-homeless-didnt-warn/" target="_blank" rel="noopener">Legit.ng: "jobless and homeless — nobody warned me"</a></li>
+      <li><a href="https://www.cbc.ca/1.7568479" target="_blank" rel="noopener">CBC First Person: leaving Nigeria</a></li>
+      <li><a href="https://www.mentalhealthdataprizeafrica.aphrc.org/repository/paper/33910/depression-among-immigrant-nigerians-in-canada" target="_blank" rel="noopener">Depression among Nigerian immigrants in Canada (study)</a></li>
+      <li><a href="https://www150.statcan.gc.ca/n1/daily-quotidien/221130/g-a003-eng.htm" target="_blank" rel="noopener">StatCan: overqualification of immigrants</a></li>
+      <li><a href="https://www.signal49.ca/wp-content/uploads/2022/10/the-leaky-bucket-summary_nov2025.pdf" target="_blank" rel="noopener">The Leaky Bucket (Nov 2025): immigrants who leave</a></li>
+      <li><a href="https://maytree.com/publications/how-we-can-break-down-the-housing-barriers-that-newcomers-face/" target="_blank" rel="noopener">Maytree: newcomer housing barriers</a></li>
+      <li><a href="https://nairametrics.com/2025/03/14/riding-the-detty-december-and-the-japada-return-to-motherland-wave/" target="_blank" rel="noopener">Nairametrics: Detty December and japada</a></li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>Prepared for the Japa: The Great Escape team, October 12, 2026. A simulation for entertainment, not legal or immigration advice.</p>
+  </footer>
+</div>

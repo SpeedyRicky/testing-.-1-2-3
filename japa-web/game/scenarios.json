@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.10.0",
+    "version": "0.11.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -84,6 +84,47 @@
               "energy": -10,
               "papers": -8
             }
+          },
+          {
+            "id": "agent100",
+            "kicker": "Critical trap",
+            "title": "'100% guaranteed visa, ₦8.5m'",
+            "body": "A smooth agent in a nice office promises a Canada work visa, half upfront. Your cousin paid him last year. Your cousin is still here.",
+            "effects": {
+              "desperation": 10,
+              "papers": -6
+            }
+          },
+          {
+            "id": "nis",
+            "kicker": "Critical trap",
+            "title": "Passport appointment moved again",
+            "body": "The passport office reschedules for the third time. Your police certificate will expire before the booklet is ready.",
+            "effects": {
+              "desperation": 12,
+              "energy": -8,
+              "papers": -8
+            }
+          },
+          {
+            "id": "hoax",
+            "kicker": "Critical trap",
+            "title": "'Canada needs 650,000 workers, share to 10 groups'",
+            "body": "Your aunty forwarded it with three prayer emojis. Fact-checkers debunked it years ago. Seasonal farm programs don't even take Nigerians.",
+            "effects": {
+              "desperation": 6,
+              "energy": -4
+            }
+          },
+          {
+            "id": "land",
+            "kicker": "Family",
+            "title": "Papa wants to sell the village land",
+            "body": "The family meeting agrees to sell the plot for your japa. Everyone is proud. Everyone will remember.",
+            "effects": {
+              "walletNgn": 400000,
+              "desperation": 8
+            }
           }
         ]
       },
@@ -145,7 +186,8 @@
         "STUDY_PERMIT",
         "EXPRESS_ENTRY",
         "STARTUP_VISA",
-        "TOURIST_GAMBLE"
+        "TOURIST_GAMBLE",
+        "FIRST_YEAR"
       ]
     },
     "STUDY_PERMIT": {
@@ -238,7 +280,8 @@
         }
       ],
       "nextRoutes": [
-        "EXPRESS_ENTRY"
+        "EXPRESS_ENTRY",
+        "FIRST_YEAR"
       ],
       "traps": {
         "base": 0.04,
@@ -284,6 +327,37 @@
               "energy": -12,
               "academicStanding": -5
             }
+          },
+          {
+            "id": "cancelled",
+            "kicker": "College",
+            "title": "Your program was suspended",
+            "body": "The college cut 40 programs after international enrolment fell. Yours is one of them. You transfer and update your permit; the paperwork costs a month.",
+            "effects": {
+              "walletCad": -600,
+              "desperation": 10,
+              "energy": -8
+            }
+          },
+          {
+            "id": "mummy",
+            "kicker": "Black tax",
+            "title": "Mummy needs money",
+            "body": "CAD 300 for a relative's hospital bill, between pay cheques. You send it. You eat noodles until Friday.",
+            "effects": {
+              "walletCad": -300,
+              "desperation": 6
+            }
+          },
+          {
+            "id": "foodbank",
+            "kicker": "Sapa",
+            "title": "Japa to sapa",
+            "body": "The campus food bank has no sign on the door and no questions. You go. You don't post it.",
+            "effects": {
+              "walletCad": 120,
+              "desperation": 4
+            }
           }
         ]
       }
@@ -311,7 +385,8 @@
           "pnpNomination": 0,
           "siblingInCanada": 0,
           "familyAsked": 0,
-          "eeCategory": 0
+          "eeCategory": 0,
+          "pflRisk": 0
         }
       },
       "bars": [
@@ -361,6 +436,12 @@
           "reason": "PERMANENT_RESIDENCE",
           "title": "Permanent Resident",
           "blurb": "ITA, eAPR, COPR. Welcome to Canada. The winter coat is not optional."
+        },
+        {
+          "id": "refused",
+          "reason": "PFL_IGNORED",
+          "title": "Ghosted IRCC",
+          "blurb": "They wrote first. You didn't answer. Refused."
         },
         {
           "id": "flagged",
@@ -430,9 +511,42 @@
               "ageYears": 1,
               "desperation": 4
             }
+          },
+          {
+            "id": "oneband",
+            "kicker": "IELTS",
+            "title": "One band short",
+            "body": "L8 R7 W6.5 S7. Writing missed CLB 9 by half a band, about 20 points. The retake costs ₦279,500.",
+            "effects": {
+              "desperation": 10,
+              "walletCad": -250
+            }
+          },
+          {
+            "id": "strike",
+            "kicker": "Registry",
+            "title": "ASUU strike, registry closed",
+            "body": "Your transcript can't leave the university until the strike ends and an old bursary hold is cleared. WES won't accept copies you carry yourself.",
+            "effects": {
+              "desperation": 8,
+              "energy": -6
+            }
+          },
+          {
+            "id": "telegram",
+            "kicker": "Draw night",
+            "title": "Telegram says a draw is coming",
+            "body": "Three hundred people refresh the rounds page at 2 p.m. Ottawa time. It is a French draw. You do not speak French.",
+            "effects": {
+              "desperation": 6,
+              "energy": -4
+            }
           }
         ]
-      }
+      },
+      "nextRoutes": [
+        "FIRST_YEAR"
+      ]
     },
     "STARTUP_VISA": {
       "title": "The Startup Visa Pitch Route",
@@ -524,6 +638,18 @@
           "reason": "MISREPRESENTATION",
           "title": "Bought story, sold dream",
           "blurb": "The paralegal sold the same page forty times. The board noticed. Five-year bar, removal, and the real ones get believed less."
+        },
+        {
+          "id": "lmiascam",
+          "reason": "LMIA_SCAM",
+          "title": "CAD 25k for a PDF",
+          "blurb": "Positive LMIA, negative bank balance."
+        },
+        {
+          "id": "caught",
+          "reason": "UNAUTHORIZED_WORK",
+          "title": "Cash job, CBSA tip",
+          "blurb": "Eight shifts, one angry co-worker, one removal order."
         },
         {
           "id": "village",
@@ -668,6 +794,153 @@
           "invert": true
         }
       ]
+    },
+    "FIRST_YEAR": {
+      "title": "Year One in Canada",
+      "short": "Year One",
+      "status": "playable",
+      "tagline": "You landed. Now the real japa starts.",
+      "startSceneId": "FY_LANDING",
+      "initialState": {
+        "currentLocation": "Toronto Pearson, Terminal 3",
+        "energy": 90,
+        "walletCad": 6000,
+        "desperation": 30,
+        "routeStats": {
+          "careerScore": 15,
+          "community": 10
+        }
+      },
+      "bars": [
+        {
+          "key": "walletCad",
+          "label": "Savings",
+          "max": 15000,
+          "format": "cad"
+        },
+        {
+          "key": "careerScore",
+          "label": "Career",
+          "max": 100
+        },
+        {
+          "key": "community",
+          "label": "Community",
+          "max": 100
+        },
+        {
+          "key": "desperation",
+          "label": "Japa blues %",
+          "suffix": "%",
+          "invert": true
+        }
+      ],
+      "collapse": {
+        "any": {
+          "energy": [
+            "<=",
+            0
+          ],
+          "desperation": [
+            ">=",
+            100
+          ],
+          "walletCad": [
+            "<=",
+            0
+          ]
+        },
+        "sceneId": "FY_BURNOUT"
+      },
+      "traps": {
+        "base": 0.05,
+        "scale": 0.6,
+        "exponent": 1.5,
+        "items": [
+          {
+            "id": "flood",
+            "kicker": "Basement life",
+            "title": "The basement flooded",
+            "body": "Spring thaw, a sump pump older than you, and your Ankara now smells like a swimming pool. The landlord says it is 'an act of God'.",
+            "effects": {
+              "walletCad": -250,
+              "energy": -10,
+              "desperation": 8
+            }
+          },
+          {
+            "id": "nephew",
+            "kicker": "Housing",
+            "title": "The landlord's nephew needs the unit",
+            "body": "Suddenly there is a nephew. Moving again costs a weekend, a truck and another first-and-last.",
+            "effects": {
+              "walletCad": -900,
+              "energy": -12,
+              "desperation": 10
+            }
+          },
+          {
+            "id": "promo",
+            "kicker": "Bills",
+            "title": "The newcomer phone promo ended",
+            "body": "Your CAD 35 plan is now CAD 75. Nobody read the fine print, least of all you.",
+            "effects": {
+              "walletCad": -120,
+              "desperation": 4
+            }
+          },
+          {
+            "id": "potluck",
+            "kicker": "Community",
+            "title": "Church potluck jollof, and a lead",
+            "body": "Someone's aunty tastes your jollof, approves, and mentions her company is hiring. Referrals: the hidden job market.",
+            "effects": {
+              "community": 10,
+              "careerScore": 8,
+              "desperation": -8
+            }
+          },
+          {
+            "id": "credit",
+            "kicker": "Money",
+            "title": "Your first credit card: limit CAD 500",
+            "body": "No credit history, so the bank starts you small. Paying it in full every month is how the score grows.",
+            "effects": {
+              "careerScore": 2,
+              "desperation": -2
+            }
+          }
+        ]
+      },
+      "ranks": [
+        {
+          "id": "field",
+          "reason": "BACK_IN_FIELD",
+          "title": "Back in your field",
+          "blurb": "Bridging, networking and a referral from a potluck. The LinkedIn post writes itself."
+        },
+        {
+          "id": "surviving",
+          "reason": "SURVIVING",
+          "title": "Surviving, not thriving",
+          "blurb": "Bills paid, family helped, career on pause. Year two is when it turns, if you plan it."
+        },
+        {
+          "id": "japada",
+          "reason": "REVERSE_JAPA",
+          "title": "Japada: reverse japa",
+          "blurb": "You went home. The group chat will talk. You will sleep."
+        },
+        {
+          "id": "village",
+          "reason": "BURNOUT",
+          "title": "Year One won",
+          "blurb": "Out of money, out of energy, out of you. Settlement agencies are free; ask earlier next time."
+        }
+      ],
+      "lessons": {
+        "BURNOUT": "Newcomers in their first five years have had far higher unemployment than people born in Canada. Settlement agencies, food banks, EI and free counselling exist for the hard months; using them is not failure."
+      }
     },
     "TARGETED_TRADE": {
       "title": "Targeted Trade",
@@ -1552,6 +1825,23 @@
             "transit": "snow-walk"
           },
           {
+            "id": "lmia_whatsapp",
+            "label": "Answer the WhatsApp: 'Positive LMIA, CAD 25k Only'",
+            "blurb": "A cousin's friend's agent. 'Calgary warehouse, approved LMIA, pay in naira'",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": -5,
+              "desperation": 2
+            },
+            "location": "Cousin's couch, Brampton",
+            "consequences": [
+              "The voice note is very confident. The LMIA number is 'coming'."
+            ],
+            "stage": "basement",
+            "transit": "none",
+            "goToSceneId": "TR_LMIA_SELLER"
+          },
+          {
             "id": "resume",
             "label": "Canadianize Your Resume",
             "blurb": "Delete the passport photo, add metrics",
@@ -1867,7 +2157,7 @@
       "stage": "ircc-portal",
       "transitIn": "none",
       "speaker": "IRCC portal",
-      "dialogue": "This round: Canadian Experience Class, 2,000 invitations, cutoff 518. Last month's French-language draw went down to the 380s, but only for NCLC 7 in French. Healthcare draws sat around 470 and trades around 476, if your job is on those lists and you have six months of recent experience in it. Your score is on the meter. What now?",
+      "dialogue": "This round: Canadian Experience Class, 2,000 invitations, cutoff 518. Last month's French-language draw went down to the 380s, but only for NCLC 7 in French. Healthcare draws sat around 470 and trades around 476, if your job is on those lists and you have a year of recent experience in it. Your score is on the meter. What now?",
       "choices": [
         {
           "text": "Enrol at the French institute: nine months to NCLC 7 (TEF Canada)",
@@ -2054,7 +2344,7 @@
         {
           "text": "Submit six months of statements",
           "label": "FUNDS_PROVEN",
-          "nextSceneId": "EE_DOCS",
+          "nextSceneId": "EE_REFERENCE",
           "effects": {
             "energy": -5
           },
@@ -2070,7 +2360,7 @@
         {
           "text": "You're applying under the Canadian Experience Class: no funds needed",
           "label": "CEC_EXEMPT",
-          "nextSceneId": "EE_DOCS",
+          "nextSceneId": "EE_REFERENCE",
           "effects": {},
           "feedback": "CEC applicants do not need to show settlement funds.",
           "requires": {
@@ -2127,17 +2417,28 @@
       "stage": "annex",
       "transitIn": "danfo",
       "speaker": "Police command, {city}",
-      "dialogue": "A police character certificate, a medical with an IRCC panel physician, and every document scanned and uploaded before the deadline.",
+      "dialogue": "A police character certificate through the Nigeria Police online portal (when it is up), a medical with an IRCC panel physician before you submit, and every document uploaded within 60 days of the invitation.",
       "choices": [
         {
           "text": "Queue for the certificate and book the panel physician properly",
           "label": "DONE_RIGHT",
-          "nextSceneId": "EE_COPR",
+          "nextSceneId": "EE_REVIEW",
           "effects": {
             "energy": -10,
             "walletCad": -450,
             "desperation": 4
           }
+        },
+        {
+          "text": "The police portal is down for weeks: submit on time with proof you applied and a letter of explanation",
+          "label": "LOE_SUBMITTED",
+          "nextSceneId": "EE_REVIEW",
+          "effects": {
+            "energy": -8,
+            "walletCad": -300,
+            "desperation": 6
+          },
+          "feedback": "IRCC accepts proof that a police certificate was requested when it can't arrive in time. Missing the deadline is worse."
         },
         {
           "text": "Pay someone to 'skip' the medical",
@@ -2162,7 +2463,9 @@
         "reason": "PERMANENT_RESIDENCE",
         "title": "Permanent resident",
         "lesson": "Permanent residence comes after the ITA, a complete application (police certificates, medical, funds, reference letters) and months of processing. Keep living in Canada at least two of every five years to keep it."
-      }
+      },
+      "unlocksRoute": "FIRST_YEAR",
+      "unlockStartSceneId": "FY_LANDING"
     },
     "EE_SWITCH": {
       "id": "EE_SWITCH",
@@ -2688,17 +2991,41 @@
       "route": "STUDY_PERMIT",
       "layoutType": "STORY_STAGE",
       "title": "Refused.",
-      "location": "{area}, {city}",
+      "location": "Your inbox",
       "stage": "phone-text",
       "transitIn": "none",
-      "speaker": "{area}, {city}",
-      "dialogue": "'I am not satisfied that you will leave Canada at the end of your stay, based on the purpose of your visit.' A stronger study plan is the usual fix. You can apply again.",
-      "outcome": {
-        "result": "fail",
-        "reason": "STUDY_PERMIT_REFUSED",
-        "title": "Study permit refused",
-        "lesson": "Most study permit refusals cite purpose of visit, ties to home or funds. Reapply only after fixing the reason the officer gave; asking for the officer's notes shows exactly what they thought."
-      }
+      "speaker": "Your inbox",
+      "dialogue": "'I am not satisfied that you will leave Canada at the end of your stay, based on the purpose of your visit.' Two lines. Your family group chat has already seen your face.",
+      "choices": [
+        {
+          "text": "Order your GCMS notes (about 30 days) and fix the reason the officer actually wrote down",
+          "label": "GCMS_NOTES",
+          "nextSceneId": "ST_SOP",
+          "effects": {
+            "walletCad": -150,
+            "desperation": 6,
+            "energy": -8
+          },
+          "feedback": "The notes showed the officer's real concern: the study plan didn't connect to your background. Now you can fix it."
+        },
+        {
+          "text": "Reapply next week with the same file",
+          "label": "SAME_FILE",
+          "nextSceneId": "ST_REFUSED_AGAIN",
+          "effects": {
+            "walletCad": -235,
+            "desperation": 10
+          }
+        },
+        {
+          "text": "Pay an agent ₦3 million for a 'guaranteed visa'",
+          "label": "FRAUD",
+          "nextSceneId": "ST_AGENT_SCAM",
+          "effects": {
+            "walletCad": -2600
+          }
+        }
+      ]
     },
     "ST_ARRIVAL": {
       "id": "ST_ARRIVAL",
@@ -2714,7 +3041,7 @@
         {
           "text": "Buy proper boots and a parka before anything else (CAD 350)",
           "label": "WINTER_READY",
-          "nextSceneId": "ST_TERM",
+          "nextSceneId": "ST_HOUSING",
           "effects": {
             "walletCad": -350,
             "desperation": -4
@@ -2724,7 +3051,7 @@
         {
           "text": "The hoodie will do",
           "label": "HOODIE_GAMBLE",
-          "nextSceneId": "ST_TERM",
+          "nextSceneId": "ST_HOUSING",
           "effects": {
             "energy": -20,
             "desperation": 8
@@ -3401,7 +3728,7 @@
       "stage": "shelter",
       "transitIn": "streetcar",
       "speaker": "Downtown Toronto",
-      "dialogue": "Eligibility checked. You get a refugee protection claimant document, Interim Federal Health coverage and an immigration medical booking. Once your claim is eligible and the medical is done, you can apply for an open work permit. The hearing is far away: the board's average wait was about 18 months in early 2026. The visitor clock no longer matters. Your story does.",
+      "dialogue": "Eligibility checked. You get a refugee protection claimant document, Interim Federal Health coverage and an immigration medical booking. Then the question nobody prepared you for: where will you sleep tonight? In 2023 claimants slept on the pavement outside Toronto's shelter intake office until churches opened their halls. The hearing is far away: the board's average wait was well over a year in 2025–2026.",
       "choices": [
         {
           "text": "Find a lawyer through Legal Aid or a refugee clinic",
@@ -3427,14 +3754,15 @@
           "feedback": "He files nothing. You find out three months later."
         },
         {
-          "text": "Take a shelter bed and save every dollar",
+          "text": "A Nigerian church opens its hall: a cot, jollof on Sundays, and a pastor who knows a legal clinic",
           "label": "SHELTER",
           "nextSceneId": "KW_WAIT",
           "effects": {
-            "energy": -15,
-            "desperation": 8
+            "energy": -10,
+            "desperation": 2,
+            "kwEvidence": 5
           },
-          "feedback": "Forty cots, one microwave, and a woman from Ibadan who knows every bus route."
+          "feedback": "Black churches in Toronto housed hundreds of claimants in 2023, until donations ran out."
         }
       ]
     },
@@ -3459,6 +3787,14 @@
             "desperation": -10
           },
           "feedback": "Legal now. The first paycheque with your own name on it."
+        },
+        {
+          "text": "Take a cash warehouse job before the work permit arrives",
+          "label": "CASH_JOB",
+          "nextSceneId": "KW_CAUGHT",
+          "effects": {
+            "walletCad": 900
+          }
         },
         {
           "text": "Gather evidence: hospital records, police reports, affidavits from witnesses, news from your area",
@@ -3702,7 +4038,9 @@
         "title": "Protected person",
         "subtitle": "Your real story, told straight, with evidence. Permanent residence is next.",
         "lesson": "Refugee protection rests on a real fear of persecution or serious harm, told consistently and backed by evidence. Protected persons can apply for permanent residence, but returning to the home country or renewing its passport can cost them the protection."
-      }
+      },
+      "unlocksRoute": "FIRST_YEAR",
+      "unlockStartSceneId": "FY_HOUSING"
     },
     "KW_FAKE_EXPOSED": {
       "id": "KW_FAKE_EXPOSED",
@@ -3880,6 +4218,732 @@
         "title": "PGWP refused",
         "subtitle": "No language test, no PGWP. A three-week study plan would have saved two years.",
         "lesson": "Since November 1, 2024 a PGWP needs a language test: CLB 7 for university graduates, CLB 5 for college graduates. Book it before your final term ends."
+      }
+    },
+    "FY_LANDING": {
+      "id": "FY_LANDING",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "Landing day.",
+      "location": "Toronto Pearson, Terminal 3",
+      "stage": "pearson-arrivals",
+      "transitIn": "plane",
+      "speaker": "Toronto Pearson, Terminal 3",
+      "dialogue": "Welcome to Canada. You have savings, two suitcases and a list of things everyone forgot to tell you: SIN, bank, phone, health card, a place to live, a coat. {RelName} is calling from {relCity}. What do you do first?",
+      "choices": [
+        {
+          "text": "Get your SIN at the airport Service Canada desk, then open a newcomer bank account this week",
+          "label": "ADMIN_FIRST",
+          "nextSceneId": "FY_HOUSING",
+          "effects": {
+            "careerScore": 6,
+            "energy": -8
+          },
+          "feedback": "Your Social Insurance Number lets you work and get paid. Order matters: SIN, bank, phone, then a lease."
+        },
+        {
+          "text": "Buy the best phone plan in the mall so you can call home properly",
+          "label": "BIG_PLAN",
+          "nextSceneId": "FY_HOUSING",
+          "effects": {
+            "walletCad": -400,
+            "desperation": -5
+          },
+          "feedback": "Video calls home, CAD 95 a month, a two-year contract. Your landlord will still ask for credit history."
+        },
+        {
+          "text": "Winter coat and boots first; everything else can wait a day",
+          "label": "COAT_FIRST",
+          "nextSceneId": "FY_HOUSING",
+          "effects": {
+            "walletCad": -350,
+            "energy": 10
+          },
+          "feedback": "Warm feet change everything. A coat drive or thrift store would have halved the bill."
+        }
+      ]
+    },
+    "FY_HOUSING": {
+      "id": "FY_HOUSING",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "Six months upfront.",
+      "location": "Brampton",
+      "stage": "basement",
+      "transitIn": "streetcar",
+      "speaker": "Brampton",
+      "dialogue": "You have no Canadian credit history. The first landlord wants six months' rent in advance. The second listing is a shared basement bed for CAD 375. A Facebook 'landlord' who is 'out of the country' wants a deposit before a viewing.",
+      "choices": [
+        {
+          "text": "Offer a bank letter, a job-search plan and a guarantor from church",
+          "label": "GUARANTOR",
+          "nextSceneId": "FY_JOBS",
+          "effects": {
+            "walletCad": -2000,
+            "community": 12,
+            "desperation": -4
+          },
+          "feedback": "First and last month, a reference from someone with Canadian credit. In Ontario, a landlord can't demand more than first-and-last as a deposit."
+        },
+        {
+          "text": "Take the CAD 375 basement bed: three people, one bathroom, no lease",
+          "label": "BUNK_BED",
+          "nextSceneId": "FY_JOBS",
+          "effects": {
+            "walletCad": -375,
+            "energy": -12,
+            "desperation": 8
+          },
+          "feedback": "Cheap, crowded and often illegal. Cities crack down on overcrowded basements, and you would be the one moving."
+        },
+        {
+          "text": "Send the Facebook 'landlord' a CAD 1,500 deposit so nobody else gets it",
+          "label": "RENTAL_SCAM",
+          "nextSceneId": "FY_JOBS",
+          "effects": {
+            "walletCad": -1500,
+            "desperation": 15
+          },
+          "feedback": "There was no landlord. Never pay before a viewing, and check that the person owns the property."
+        }
+      ]
+    },
+    "FY_JOBS": {
+      "id": "FY_JOBS",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "No Canadian experience.",
+      "location": "Brampton Public Library",
+      "stage": "library",
+      "transitIn": "none",
+      "speaker": "Brampton Public Library",
+      "dialogue": "Application number forty. The rejection says what the last thirty-nine meant: 'We are looking for candidates with Canadian experience.' Back home you were {occupation}. Here, you are a file with no references.",
+      "choices": [
+        {
+          "text": "Take a warehouse survival job, nights, and keep applying by day",
+          "label": "SURVIVAL_JOB",
+          "nextSceneId": "FY_CREDENTIALS",
+          "effects": {
+            "walletCad": 2600,
+            "energy": -20,
+            "careerScore": -3
+          },
+          "feedback": "Rent paid. Most newcomers start in a survival job; the risk is staying there by default."
+        },
+        {
+          "text": "Volunteer two days a week and go to every newcomer meetup and church career night",
+          "label": "NETWORKING",
+          "nextSceneId": "FY_CREDENTIALS",
+          "effects": {
+            "walletCad": -300,
+            "community": 15,
+            "careerScore": 12,
+            "energy": -10
+          },
+          "feedback": "Most jobs are filled by referral. Volunteering gives you a Canadian reference."
+        },
+        {
+          "text": "Only apply for jobs at your old level, and wait",
+          "label": "HOLDING_OUT",
+          "nextSceneId": "FY_CREDENTIALS",
+          "effects": {
+            "walletCad": -1200,
+            "desperation": 12
+          },
+          "feedback": "Savings drain faster than callbacks arrive. Overqualified newcomers are common; underemployed ones are more common."
+        }
+      ]
+    },
+    "FY_CREDENTIALS": {
+      "id": "FY_CREDENTIALS",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "The credential wall.",
+      "location": "Settlement agency, Mississauga",
+      "stage": "service-canada",
+      "transitIn": "none",
+      "speaker": "Settlement agency, Mississauga",
+      "dialogue": "Your counsellor explains: regulated jobs (nursing, medicine, engineering, teaching, law) need a Canadian licence. That can mean assessments, exams and a bridging program, often a year or two. Unregulated jobs need a Canadian-style resume and a referral.",
+      "choices": [
+        {
+          "text": "Enrol in a bridging program for internationally trained professionals, with a loan",
+          "label": "BRIDGING",
+          "nextSceneId": "FY_BLACK_TAX",
+          "effects": {
+            "walletCad": -1800,
+            "careerScore": 25,
+            "energy": -12
+          },
+          "feedback": "Slow and expensive, and the fastest legal way back to your profession."
+        },
+        {
+          "text": "Take a PSW or assistant job in your field and study for the exams at night",
+          "label": "BRIDGE_JOB",
+          "nextSceneId": "FY_BLACK_TAX",
+          "effects": {
+            "walletCad": 1800,
+            "careerScore": 12,
+            "energy": -18
+          },
+          "feedback": "Paid, close to your field, exhausting. Many nurses spend their first years as PSWs."
+        },
+        {
+          "text": "Drive Uber full-time and park the career for now",
+          "label": "PARKED_CAREER",
+          "nextSceneId": "FY_BLACK_TAX",
+          "effects": {
+            "walletCad": 3000,
+            "careerScore": -8,
+            "desperation": 6
+          },
+          "feedback": "Good money this month. Credentials that sit unused get harder to restart."
+        }
+      ]
+    },
+    "FY_BLACK_TAX": {
+      "id": "FY_BLACK_TAX",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "Mummy is calling.",
+      "location": "Your room, Brampton",
+      "stage": "basement",
+      "transitIn": "call",
+      "speaker": "Your room, Brampton",
+      "dialogue": "School fees for your sister, and Uncle's hospital bill: ₦1.2 million. The family sold land to send you; you know it, they know it, and nobody says it.",
+      "choices": [
+        {
+          "text": "Send all of it this week",
+          "label": "SENT_EVERYTHING",
+          "nextSceneId": "FY_WINTER",
+          "effects": {
+            "walletCad": -900,
+            "desperation": 6,
+            "community": 4
+          },
+          "feedback": "Family happy, rent at risk. Black tax with no budget eats every pay cheque."
+        },
+        {
+          "text": "Send a fixed share, about 15% of what you earn, every month, and explain the plan",
+          "label": "FIXED_SHARE",
+          "nextSceneId": "FY_WINTER",
+          "effects": {
+            "walletCad": -350,
+            "desperation": -4
+          },
+          "feedback": "A set amount the family can rely on and you can afford. Many people keep a separate 'family account'."
+        },
+        {
+          "text": "Say no this time; you are not stable yet",
+          "label": "SAID_NO",
+          "nextSceneId": "FY_WINTER",
+          "effects": {
+            "desperation": 12
+          },
+          "feedback": "Rent is safe. The guilt arrives by voice note."
+        }
+      ]
+    },
+    "FY_WINTER": {
+      "id": "FY_WINTER",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "January.",
+      "location": "Brampton",
+      "stage": "toronto-street",
+      "transitIn": "snow-walk",
+      "speaker": "Brampton",
+      "dialogue": "−28°C with the wind. Dark at 4:45 p.m. You have not spoken to anyone in person in three days. Somebody in the group chat says 'Canada is not for the weak' with a laughing emoji. You are not laughing.",
+      "choices": [
+        {
+          "text": "Stay inside and scroll until spring",
+          "label": "HIBERNATED",
+          "nextSceneId": "FY_WORK_EVENT",
+          "effects": {
+            "desperation": 15,
+            "energy": -5
+          },
+          "feedback": "Seasonal low mood is common among newcomers, and isolation makes it worse."
+        },
+        {
+          "text": "Join the Nigerian association's winter games night and the church choir",
+          "label": "FOUND_PEOPLE",
+          "nextSceneId": "FY_WORK_EVENT",
+          "effects": {
+            "community": 15,
+            "desperation": -12,
+            "walletCad": -60
+          },
+          "feedback": "Community is the thing every newcomer says they underestimated."
+        },
+        {
+          "text": "Book a family doctor or walk-in visit about your mood (covered by your health card)",
+          "label": "GOT_HELP",
+          "nextSceneId": "FY_WORK_EVENT",
+          "effects": {
+            "desperation": -15,
+            "energy": 8
+          },
+          "feedback": "Talking to a doctor about low mood is routine here. Many provinces also run free counselling lines."
+        }
+      ]
+    },
+    "FY_WORK_EVENT": {
+      "id": "FY_WORK_EVENT",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "Month nine.",
+      "location": "Mississauga",
+      "stage": "warehouse",
+      "transitIn": "none",
+      "speaker": "Mississauga",
+      "dialogue": "The contract you finally got ends early: 'restructuring'. The job market has been rough for newcomers since 2024. Your team lead says you were good. Good is not the same as kept.",
+      "choices": [
+        {
+          "text": "Apply for Employment Insurance and use the weeks to retrain",
+          "label": "EI_AND_RETRAIN",
+          "nextSceneId": "FY_DECEMBER",
+          "effects": {
+            "walletCad": 1600,
+            "careerScore": 8,
+            "desperation": -4
+          },
+          "feedback": "If you worked enough insurable hours, EI is yours. It exists for exactly this."
+        },
+        {
+          "text": "Move to a cheaper province where your field is short of workers",
+          "label": "MOVED_PROVINCE",
+          "nextSceneId": "FY_DECEMBER",
+          "effects": {
+            "walletCad": 800,
+            "careerScore": 10,
+            "community": -10
+          },
+          "feedback": "Cheaper rent and a real job offer, far from everyone you know. {RelName} in {relCity} offers a couch."
+        },
+        {
+          "text": "Take any shift on any app this week",
+          "label": "ANY_SHIFT",
+          "nextSceneId": "FY_DECEMBER",
+          "effects": {
+            "walletCad": 1200,
+            "energy": -15,
+            "careerScore": -4
+          },
+          "feedback": "Rent paid. The resume gap grows."
+        }
+      ]
+    },
+    "FY_DECEMBER": {
+      "id": "FY_DECEMBER",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "Detty December is calling.",
+      "location": "Brampton",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "Brampton",
+      "dialogue": "Flights to {airportCode} are CAD 2,400. Your friends are posting countdowns. The IJGB ('I Just Got Back') season starts in two weeks. Someone asks if you are 'coming home for good'.",
+      "choices": [
+        {
+          "text": "Stay. Save for next year and keep building",
+          "label": "STAYED",
+          "nextSceneId": "FY_RESULT",
+          "effects": {
+            "walletCad": 500,
+            "desperation": 6
+          },
+          "feedback": "One quiet December, one step closer. Most first years end like this."
+        },
+        {
+          "text": "Go home for December as an IJGB and spend big",
+          "label": "IJGB",
+          "nextSceneId": "FY_RESULT",
+          "effects": {
+            "walletCad": -3200,
+            "desperation": -20,
+            "community": 6
+          },
+          "feedback": "Jollof, owambe, your mother's face. And January's rent."
+        },
+        {
+          "text": "Go home for good",
+          "label": "WENT_HOME",
+          "nextSceneId": "FY_JAPADA",
+          "effects": {}
+        }
+      ]
+    },
+    "FY_RESULT": {
+      "id": "FY_RESULT",
+      "route": "FIRST_YEAR",
+      "layoutType": "RESOLUTION",
+      "branch": [
+        {
+          "when": {
+            "careerScore": [
+              ">=",
+              50
+            ]
+          },
+          "nextSceneId": "FY_FIELD"
+        },
+        {
+          "when": {
+            "walletCad": [
+              ">=",
+              1500
+            ]
+          },
+          "nextSceneId": "FY_SURVIVING"
+        },
+        {
+          "nextSceneId": "FY_JAPADA"
+        }
+      ]
+    },
+    "FY_FIELD": {
+      "id": "FY_FIELD",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "Back in your field.",
+      "location": "Downtown Toronto",
+      "stage": "toronto-street",
+      "transitIn": "streetcar",
+      "speaker": "Downtown Toronto",
+      "dialogue": "A referral from someone you met at a potluck, a Canadian reference from your volunteering, a licence exam passed. The offer letter has your real job title on it.",
+      "outcome": {
+        "result": "win",
+        "reason": "BACK_IN_FIELD",
+        "title": "Back in your field",
+        "subtitle": "Year One done. Your career is moving again.",
+        "lesson": "Credential recognition and the 'Canadian experience' gap take most skilled newcomers a year or more. Bridging programs, volunteering and referrals are what shorten it."
+      }
+    },
+    "FY_SURVIVING": {
+      "id": "FY_SURVIVING",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "Surviving.",
+      "location": "Brampton",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "Brampton",
+      "dialogue": "Rent paid, family helped, savings small but alive. Your career is on pause, not over. Year two is when people either climb or settle.",
+      "outcome": {
+        "result": "neutral",
+        "reason": "SURVIVING",
+        "title": "Surviving, not thriving",
+        "subtitle": "You made it through Year One. Now plan the climb.",
+        "lesson": "Statistics Canada finds immigrants with foreign degrees are about twice as likely to be overqualified for their jobs. Most climb out by planning it: licensing, bridging, networking."
+      }
+    },
+    "FY_JAPADA": {
+      "id": "FY_JAPADA",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "Japada.",
+      "location": "{airport}",
+      "stage": "airport",
+      "transitIn": "plane",
+      "speaker": "{airport}",
+      "dialogue": "You land at {airportCode}. The heat hits like a hug. The group chat says 'reverse japa' like it's a scandal. Your mother says nothing and cooks.",
+      "outcome": {
+        "result": "neutral",
+        "reason": "REVERSE_JAPA",
+        "title": "Reverse japa",
+        "subtitle": "You went home. It is allowed.",
+        "lesson": "About one in five immigrants leaves Canada within 25 years (Conference Board, 2025). Permanent residents must live in Canada two of every five years to keep PR; citizenship keeps both doors open."
+      }
+    },
+    "FY_BURNOUT": {
+      "id": "FY_BURNOUT",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "Out of everything.",
+      "location": "Brampton",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "Brampton",
+      "dialogue": "Money, sleep, patience: all gone at once. You call {relName}, who says the thing nobody said before you came: 'Everybody's first year is like this. Nobody posts it.'",
+      "outcome": {
+        "result": "fail",
+        "reason": "BURNOUT",
+        "title": "Year One won",
+        "subtitle": "Rest, then try again with help.",
+        "lesson": "Newcomers in their first five years have had far higher unemployment than people born in Canada. Settlement agencies, food banks, EI and free counselling exist for the hard months; using them is not failure."
+      }
+    },
+    "ST_REFUSED_AGAIN": {
+      "id": "ST_REFUSED_AGAIN",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Refused again.",
+      "location": "Your inbox",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "Your inbox",
+      "dialogue": "Same file, same officer reasoning, same two lines. Another application fee gone.",
+      "outcome": {
+        "result": "fail",
+        "reason": "STUDY_PERMIT_REFUSED",
+        "title": "Refused twice",
+        "subtitle": "A refusal tells you what to fix. Fix it first.",
+        "lesson": "Insufficient funds and 'not satisfied you will leave' are the most common reasons Nigerian study permits are refused. GCMS notes show the officer's actual reasoning; read them before you pay another fee."
+      }
+    },
+    "ST_AGENT_SCAM": {
+      "id": "ST_AGENT_SCAM",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "The agent's phone is off.",
+      "location": "{area}, {city}",
+      "stage": "agent",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "The office is now a phone repair shop. The 'guaranteed visa' was a PDF. You are one of about forty people outside with the same receipt.",
+      "outcome": {
+        "result": "fail",
+        "reason": "MISREPRESENTATION",
+        "title": "Scammed by a 'guaranteed visa'",
+        "subtitle": "Nobody can guarantee a Canadian visa.",
+        "lesson": "IRCC and the Nigeria Police warn that anyone promising a guaranteed visa is a scammer. Only lawyers and licensed consultants (check the CICC register) may charge for immigration advice."
+      }
+    },
+    "ST_HOUSING": {
+      "id": "ST_HOUSING",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Where will you sleep?",
+      "location": "Brampton",
+      "stage": "basement",
+      "transitIn": "streetcar",
+      "speaker": "Brampton",
+      "dialogue": "Your residence application was waitlisted. A listing offers a bunk bed in a shared basement for CAD 375 with three post-dated cheques and no lease. A Nigerian church's student fellowship offers two weeks with a host family while you search.",
+      "choices": [
+        {
+          "text": "Two weeks with the church host family, then a proper room near campus",
+          "label": "HOST_FAMILY",
+          "nextSceneId": "ST_TERM",
+          "effects": {
+            "walletCad": -800,
+            "desperation": -8,
+            "energy": 10
+          },
+          "feedback": "Jollof on day one, a lease on day twelve. Community networks meet students at the airport for a reason."
+        },
+        {
+          "text": "Take the CAD 375 bunk bed: you are here to save money",
+          "label": "BUNK_BED",
+          "nextSceneId": "ST_TERM",
+          "effects": {
+            "walletCad": -375,
+            "energy": -15,
+            "desperation": 6
+          },
+          "feedback": "Six people, one bathroom, one fire exit. Overcrowded basements are a known risk for international students."
+        },
+        {
+          "text": "Pay a CAD 1,500 deposit to a Facebook landlord you haven't met",
+          "label": "RENTAL_SCAM",
+          "nextSceneId": "ST_TERM",
+          "effects": {
+            "walletCad": -1500,
+            "desperation": 15
+          },
+          "feedback": "He blocked you after the e-transfer. Never pay before a viewing."
+        }
+      ]
+    },
+    "EE_REFERENCE": {
+      "id": "EE_REFERENCE",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Write it yourself.",
+      "location": "Your old office, {city}",
+      "stage": "agent",
+      "transitIn": "none",
+      "speaker": "Your old office, {city}",
+      "dialogue": "Every job you claim needs a reference letter: dates, hours, salary and your actual duties, on letterhead, signed. Your former boss says, 'You know what you did. Just write it and I'll sign.'",
+      "choices": [
+        {
+          "text": "Write your real duties in your own words; your boss signs on company letterhead",
+          "label": "REAL_DUTIES",
+          "nextSceneId": "EE_DOCS",
+          "effects": {
+            "energy": -5
+          },
+          "feedback": "Duties that match the NOC in substance, written about your actual job. That is what officers want to see."
+        },
+        {
+          "text": "Copy the NOC duties word for word so it matches perfectly",
+          "label": "COPIED_NOC",
+          "nextSceneId": "EE_DOCS",
+          "effects": {},
+          "feedback": "Officers know the NOC text by heart. A letter that reads exactly like it invites questions.",
+          "set": {
+            "pflRisk": 1
+          }
+        },
+        {
+          "text": "Leave that job out to save time",
+          "label": "DROPPED_A_JOB",
+          "nextSceneId": "EE_DOCS",
+          "effects": {
+            "foreignWorkYears": -1,
+            "desperation": 4
+          },
+          "feedback": "Fewer points, and an employment history that doesn't match your earlier visa files."
+        }
+      ]
+    },
+    "EE_REVIEW": {
+      "id": "EE_REVIEW",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "RESOLUTION",
+      "branch": [
+        {
+          "when": {
+            "pflRisk": [
+              ">=",
+              1
+            ]
+          },
+          "nextSceneId": "EE_PFL"
+        },
+        {
+          "nextSceneId": "EE_COPR"
+        }
+      ]
+    },
+    "EE_PFL": {
+      "id": "EE_PFL",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Procedural fairness letter.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "'We have concerns that the duties described in your reference letter were copied from the National Occupational Classification. You have 30 days to respond.' A PFL is not a refusal yet. It is a chance.",
+      "choices": [
+        {
+          "text": "Hire a licensed consultant or lawyer and send pay slips, tax records and a corrected letter in your own words",
+          "label": "ANSWERED_PFL",
+          "nextSceneId": "EE_COPR",
+          "effects": {
+            "walletCad": -1800,
+            "desperation": 8,
+            "energy": -10
+          },
+          "feedback": "Evidence that the job was real answered the concern."
+        },
+        {
+          "text": "Ignore it and hope it goes away",
+          "label": "IGNORED_PFL",
+          "nextSceneId": "EE_PFL_REFUSED",
+          "effects": {}
+        },
+        {
+          "text": "Ask a 'connect' for a backdated 'clarification letter'",
+          "label": "FRAUD",
+          "nextSceneId": "EE_FRAUD_DOCS",
+          "effects": {}
+        }
+      ]
+    },
+    "EE_PFL_REFUSED": {
+      "id": "EE_PFL_REFUSED",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Refused.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "Thirty days passed. The officer decided on the file as it was: refused. The invitation is gone; the pool is waiting again.",
+      "outcome": {
+        "result": "fail",
+        "reason": "PFL_IGNORED",
+        "title": "Refused after a PFL",
+        "subtitle": "A procedural fairness letter is the officer asking for your side.",
+        "lesson": "A PFL gives you a deadline (often 30 days) to answer a concern before a decision. Answering with real evidence often saves the file; silence almost never does."
+      }
+    },
+    "TR_LMIA_SELLER": {
+      "id": "TR_LMIA_SELLER",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "'Positive LMIA, CAD 25k only.'",
+      "location": "WhatsApp, cousin's couch",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "WhatsApp, cousin's couch",
+      "dialogue": "He sends a PDF on old letterhead and a voice note: 'Calgary warehouse, approved LMIA, half now, half when you land the work permit.' Wey Sabi says his cousin did it.",
+      "choices": [
+        {
+          "text": "Pay the first CAD 12,500 before someone else takes it",
+          "label": "PAID_FOR_LMIA",
+          "nextSceneId": "TR_LMIA_PAID",
+          "effects": {
+            "walletCad": -1500
+          }
+        },
+        {
+          "text": "Ask for the employer's legal name and the LMIA number, then check the company yourself",
+          "label": "VERIFIED",
+          "nextSceneId": "TOURIST_HUB",
+          "effects": {
+            "desperation": 4,
+            "networkScore": 3
+          },
+          "feedback": "He stopped replying after the second question. Workers never pay for an LMIA; the employer applies and pays the fee."
+        },
+        {
+          "text": "Report the ad to the Canadian Anti-Fraud Centre and warn the family group chat",
+          "label": "REPORTED",
+          "nextSceneId": "TOURIST_HUB",
+          "effects": {
+            "streetCred": 5,
+            "desperation": -2
+          },
+          "feedback": "Two cousins thank you. One forwards it anyway."
+        }
+      ]
+    },
+    "TR_LMIA_PAID": {
+      "id": "TR_LMIA_PAID",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "The LMIA was never real.",
+      "location": "WhatsApp",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "WhatsApp",
+      "dialogue": "The 'LMIA' number belongs to a bakery in Halifax. The agent's WhatsApp picture is now a sunset. Your savings went with it.",
+      "outcome": {
+        "result": "fail",
+        "reason": "LMIA_SCAM",
+        "title": "Paid for an LMIA",
+        "subtitle": "Workers never pay for an LMIA.",
+        "lesson": "Charging a worker for an LMIA or a job offer is illegal in Canada; the employer applies to ESDC and pays the CAD 1,000 fee. Since March 2025 a job offer adds no Express Entry points either."
+      }
+    },
+    "KW_CAUGHT": {
+      "id": "KW_CAUGHT",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "A tip to CBSA.",
+      "location": "Warehouse, Etobicoke",
+      "stage": "warehouse",
+      "transitIn": "none",
+      "speaker": "Warehouse, Etobicoke",
+      "dialogue": "A co-worker you argued with makes a call. Working without a permit while your claim is pending gets you a removal order and a very difficult conversation with your lawyer.",
+      "outcome": {
+        "result": "fail",
+        "reason": "UNAUTHORIZED_WORK",
+        "title": "Caught working without a permit",
+        "subtitle": "Wait for the permit. It usually comes.",
+        "lesson": "Refugee claimants can get an open work permit once the claim is eligible and the medical is done. Working before that is unauthorized work, and enforcement often starts with a tip."
       }
     }
   },

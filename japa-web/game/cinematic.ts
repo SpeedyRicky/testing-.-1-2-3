@@ -45,6 +45,8 @@ const LABELS: Partial<Record<StatKey, string>> = {
   employerLeads: "Employer leads",
   kwCredibility: "Credibility",
   kwEvidence: "Evidence",
+  careerScore: "Career",
+  community: "Community",
   canadianWorkYears: "Canadian work (yrs)",
   ageYears: "Age",
 };
@@ -53,7 +55,7 @@ const LABELS: Partial<Record<StatKey, string>> = {
 const HIDDEN: ReadonlySet<string> = new Set([
   "programType", "scholarshipTried", "familyAsked", "landSold", "crowdfunded", "ecaComplete", "pnpNomination",
   "educationLevel", "canadianEducation", "foreignWorkYears", "siblingInCanada", "loanTaken", "hasDegree",
-  "conflictRegion", "kwBasis", "kwAtAirport", "eeCategory",
+  "conflictRegion", "kwBasis", "kwAtAirport", "eeCategory", "pflRisk",
 ]);
 
 /** Stats where a rise is bad news. Age is only bad for the CRS, which already shows its own change. */

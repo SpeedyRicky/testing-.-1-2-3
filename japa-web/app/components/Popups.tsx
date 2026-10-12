@@ -18,7 +18,7 @@ const RANK_VIBE: Record<string, string> = {
 
 const RANK_EMOJI: Record<string, string> = {
   vanier: "🎓🔥", pearson: "🇨🇦✈️🇳🇬", village: "👻", flagged: "🚫", hustle: "🚌", pr: "🇨🇦🍁", pgwp: "🎓🍁",
-  protected: "🇨🇦🛡️", interview: "💼🇨🇦", ifa: "🧭🇳🇬", refused: "📄❌", abandoned: "🎉✈️", expired: "⏳", couch: "🛋️",
+  protected: "🇨🇦🛡️", interview: "💼🇨🇦", field: "💼🍁", surviving: "🧾🍁", japada: "✈️🇳🇬", lmiascam: "📄💸", caught: "🚨", ifa: "🧭🇳🇬", refused: "📄❌", abandoned: "🎉✈️", expired: "⏳", couch: "🛋️",
 };
 
 /** Ranks that celebrate a win; the rest are game overs. */
@@ -106,9 +106,11 @@ export function PopupModal({ popup, onDismiss }: { popup: Popup; onDismiss: () =
 }
 
 export function GameOverModal({
-  rank, interference, routeName, next, onReset, lesson,
+  rank, interference, routeName, next, onReset, lesson, won,
 }: {
   rank: Rank;
+  /** The run ended in a win (otherwise the rank decides). */
+  won?: boolean;
   /** "Reality check" for this ending. */
   lesson?: string;
   interference: number;
@@ -120,7 +122,7 @@ export function GameOverModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md" role="dialog" aria-modal="true">
       <div className={`animate-scene-in relative w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/15 bg-gradient-to-br p-7 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)] ${RANK_VIBE[rank.id] ?? RANK_VIBE.hustle}`}>
-        <p className="text-center text-[11px] font-bold uppercase tracking-[0.28em] text-amber-200">{WIN_RANKS.has(rank.id) ? "You made it" : "Game Over"} · {routeName}</p>
+        <p className="text-center text-[11px] font-bold uppercase tracking-[0.28em] text-amber-200">{won ?? WIN_RANKS.has(rank.id) ? "You made it" : "Game Over"} · {routeName}</p>
         <div className="mt-5"><RankGlyph id={rank.id} /></div>
         <h3 className="mt-4 text-center text-3xl font-black tracking-tight text-white">{rank.title}</h3>
         <p className="mt-3 text-center text-sm leading-7 text-zinc-200">{rank.blurb}</p>

@@ -234,6 +234,10 @@ export function routePatches(p: PlayerProfile): Partial<Record<RouteId, Partial<
       walletCad: clamp(g.savingsCad, 1000, 40000),
       routeStats: { academicStanding: g.academicStanding, hasDegree: g.hasDegree ? 1 : 0 },
     },
+    FIRST_YEAR: {
+      walletCad: clamp(g.savingsCad, 6000, 15000),
+      routeStats: { careerScore: g.hasDegree ? 15 : 8, community: 10 },
+    },
     TOURIST_GAMBLE: {
       walletCad: clamp(g.savingsCad, 1500, 6000),
       routeStats: { conflictRegion: CONFLICT_STATES.has(p.stateCode) ? 1 : 0 },

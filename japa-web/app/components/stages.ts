@@ -171,6 +171,14 @@ export const STAGES = {
       { kind: "desk2", x: 60, w: 160 }, { kind: "laptop2", x: 60 }],
     people: [{ who: "you", x: 60, pose: "sit", caption: "You", moods: { win: "cheer", fail: "slump", talk: "talk" } }],
   },
+  "service-canada": {
+    wall: "#e2e8f0", panel: true, ground: "tiles",
+    props: [{ kind: "banner", x: 50, label: "Service Canada · Newcomer services", tone: "blue" }, { kind: "counter", x: 30, w: 180 },
+      { kind: "queue-rope", x: 70, w: 120 }, { kind: "flag-ca", x: 88 }],
+    people: [{ who: "clerk", x: 24, pose: "talk", caption: "Counsellor" },
+      { who: "you", x: 46, pose: "queue", caption: "You", wear: SCARF, moods: { win: "cheer", fail: "slump" } },
+      { who: "npc", x: 64, pose: "queue" }, { who: "student", x: 78, pose: "phone" }],
+  },
   // --- Kawosoke (asylum claim) ---
   "cbsa-secondary": {
     wall: "#cbd5e1", panel: true, ground: "tiles",

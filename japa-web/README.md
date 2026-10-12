@@ -10,7 +10,7 @@ Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · lucide-react.
 ```bash
 npm install
 npm run dev          # open http://localhost:3000 once the terminal says "Ready"
-npm test             # 104 engine tests
+npm test             # 115 engine tests
 npm run lint
 npm run build
 ```
@@ -49,6 +49,16 @@ Their name matches your heritage (`game/family.ts`):
   grain elevator (Manitoba, Saskatchewan) or a harbour of coloured houses (Atlantic), with snow.
 - A sister or brother in Canada sets `siblingInCanada`, worth 15 CRS points in Express Entry (an aunty is not).
 
+## Endings cabinet and Reality checks
+Every ending (46 so far) ends with a **Reality check**: one plain rule from the real process (`outcome.lesson` on the
+scene, or `routes.<ROUTE>.lessons` by reason). The **Endings** chip in the header counts the endings you've found on
+this device (`localStorage` key `japa.endings.v1`) and opens a cabinet grouped by route. A test fails if any ending
+has no lesson.
+
+Scenes added from community stories (see `docs/community-voices.html`): the study refusal with GCMS notes, student
+housing and rental scams, the Express Entry reference letter and procedural fairness letter, the "Positive LMIA, CAD 25k"
+WhatsApp seller, the claimant shelter crisis and cash-job trap, and random events from Nigeria to Year One.
+
 ## Choice cutscenes
 After every choice (and every Tourist Gamble action) a ~3 second cutscene plays in the scene where you chose:
 1. **Say:** the camera pushes in, a big "You" steps in and the line appears word by word in a speech bubble.
@@ -69,6 +79,7 @@ Tap, Escape or Skip ends it early; the header switch toggles **Full** (3 s) and 
 | **Startup Pitch** | `ZOOM_GRID` | 2x2 Zoom call with Ms. Vance, Mr. Chen, Mr. Ross, ending on the Letter of Support resolution. |
 | **Tourist Gamble** | `STORY_STAGE` + `DASHBOARD` | Starts at CBSA primary inspection at Pearson. Then 180 days on a visitor record: daily actions, coffee with Mentor Wey Sabi, toasts, CAD/₦ wallet. 3 employer leads unlock the boardroom. Or **Kawosoke** (see below). |
 | **LMIA Interview** | `CORPORATE_OFFICE` | The Mr. Kovacs dialogue tree. |
+| **Year One** | `STORY_STAGE` | Life after landing: SIN and bank, renting with no credit, "no Canadian experience", the credential wall, black tax, the first winter, a layoff, Detty December. Ends back in your field, surviving, or reverse japa. Unlocked by permanent residence or refugee protection, or play it directly. |
 | Trades, PNP Rural | | Coming soon: add scenes and set `status` to `playable`. |
 
 ## Kawosoke: the asylum branch of the Tourist Gamble
@@ -102,6 +113,9 @@ game/profile.ts                      profile types, options, profile -> game sta
 game/nigeria.ts                      36 states + FCT: city, area, market, transport, visa centre, airport
 game/family.ts                       the relative in Canada: heritage from the name, name pools, provinces
 docs/pathways-deep-dive.html         research: 2025-2026 rules per route, replay levers, scenario backlog
+docs/community-voices.html           research: what Nigerians report about each route, and the scene each became
+game/endings.ts                      every ending, its key and its Reality check lesson
+app/components/Endings.tsx           Endings chip, cabinet, new-ending badge, Reality check box
 game/cinematic.ts                    pure rules: which stats changed, good or bad, which effects to play
 app/components/Game.tsx              header, route tabs, Reset run
 app/components/LayoutContainer.tsx   reads the current scene, picks layout + background by route, draws stat bars

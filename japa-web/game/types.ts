@@ -9,6 +9,7 @@ export type RouteId =
   | "CAREGIVER_LMIA"
   | "TARGETED_TRADE"
   | "TOURIST_GAMBLE"
+  | "FIRST_YEAR"
   | "PNP_RURAL";
 
 export type LayoutType = "STORY_STAGE" | "ZOOM_GRID" | "CORPORATE_OFFICE" | "DASHBOARD" | "RESOLUTION";
@@ -22,7 +23,7 @@ export type KitStageKind =
   | "ielts-centre" | "bank-hall" | "university-registry" | "french-class" | "ircc-portal"
   | "pearson-arrivals" | "toronto-street" | "campus" | "lecture-hall" | "tim-hortons" | "basement"
   | "job-fair" | "library" | "warehouse" | "boardroom" | "graduation" | "pr-landing" | "pitch-room"
-  | "cbsa-secondary" | "irb-hearing" | "legal-clinic" | "shelter";
+  | "cbsa-secondary" | "irb-hearing" | "legal-clinic" | "shelter" | "service-canada";
 export type StageKind = LagosStageKind | KitStageKind;
 /** How the player travels into a scene (drawn by TravelRibbon). */
 export type Transit = "none" | "trek" | "danfo" | "okada" | "call" | "plane" | "streetcar" | "snow-walk";
@@ -76,6 +77,11 @@ export interface RouteStats {
   kwEvidence?: number;
   // Express Entry 2026 categories, from the profile: 0 none, 1 healthcare, 2 STEM, 3 trades, 4 education
   eeCategory?: number;
+  /** 1 if a reference letter copied the NOC duties word for word (invites a procedural fairness letter). */
+  pflRisk?: number;
+  // Year One in Canada:
+  careerScore?: number;
+  community?: number;
 }
 
 export interface GameState {
