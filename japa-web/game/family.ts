@@ -182,3 +182,53 @@ export function relativeVars(r: Relative): Record<string, string> {
   for (const k of ["relName", "relTitle", "relWho", "relSubj", "relPoss"]) vars[`R${k.slice(1)}`] = cap(vars[k]);
   return vars;
 }
+
+// --- Home life: faith community and the parent who calls ---------------------------
+
+export type Faith = "church" | "masjid";
+
+/** Church or masjid, by heritage: Hausa players pray at a masjid, Yoruba families split, others mostly church. */
+export function faithFor(heritage: Heritage, rand: () => number): Faith {
+  if (heritage === "hausa") return "masjid";
+  if (heritage === "yoruba") return rand() < 0.45 ? "masjid" : "church";
+  if (heritage === "other") return rand() < 0.3 ? "masjid" : "church";
+  return "church";
+}
+
+const PARENT: Record<Heritage, string> = { hausa: "Umma", yoruba: "Mummy", igbo: "Mama", other: "Mummy" };
+
+/** Words for home life: {faithHub}, {faithGroup}, {faithDay}, {parent}. */
+export function homeVars(heritage: Heritage, faith: Faith): Record<string, string> {
+  const masjid = faith === "masjid";
+  return {
+    faithHub: masjid ? "masjid" : "church",
+    FaithHub: masjid ? "Masjid" : "Church",
+    faithGroup: masjid ? "masjid youth circle" : "church choir",
+    faithDay: masjid ? "Jumu'ah" : "Sunday service",
+    faithLeader: masjid ? "the imam" : "the pastor",
+    parent: PARENT[heritage],
+  };
+}
+
+// --- The Kawosoke backstory: what actually happened at home ------------------------
+
+/** 0 nothing (came for work), 1 outed as LGBTQ, 2 partner violence, 3 targeted by armed groups. */
+export type KwTruth = 0 | 1 | 2 | 3;
+
+/**
+ * Each character has one true story, fixed by their profile, so an asylum claim is either theirs or invented.
+ * Most visitors are not fleeing anything; people from conflict states often are.
+ */
+export function kwTruthFor(conflictState: boolean, rand: () => number): KwTruth {
+  const r = rand();
+  if (conflictState) return r < 0.6 ? 3 : r < 0.7 ? 1 : r < 0.8 ? 2 : 0;
+  return r < 0.15 ? 1 : r < 0.3 ? 2 : 0;
+}
+
+const KW_STORY: Record<KwTruth, string> = {
+  0: "Nobody at home wants to harm you. You came for work, and you know it.",
+  1: "Last year you were outed in {area}. Your photo still circulates in a vigilante WhatsApp group.",
+  2: "Your ex-partner's threats followed you to three addresses. The police said 'settle it at home'.",
+  3: "Gunmen attacked your community in {state} last year. They know your family's name.",
+};
+export const kwStory = (t: KwTruth) => KW_STORY[t];

@@ -6,18 +6,19 @@ import {
 import { STAGES } from "../app/components/stages";
 import { describeChoice, diffStats } from "./cinematic";
 import {
-  deriveGameProfile, familyFor, fillText, profileProblem, profileVars, usernameProblem, DEFAULT_AVATAR,
+  deriveGameProfile, familyFor, homeFor, kwTruthOf, fillText, profileProblem, profileVars, usernameProblem, DEFAULT_AVATAR,
   type PlayerProfile,
 } from "./profile";
 import { STATES, placeFor, placeVars, vacCityFor } from "./nigeria";
 import {
-  PROVINCES, RELATIVE_NAMES, detectHeritage, makeRelative, provinceFor, relativeVars, seededRandom,
+  PROVINCES, RELATIVE_NAMES, faithFor, kwTruthFor, detectHeritage, makeRelative, provinceFor, relativeVars, seededRandom,
   type Heritage, type Relation, type Relative,
 } from "./family";
 import { initialState, makeReducer } from "./machine";
 import { allEndings, endingKey, lessonFor } from "./endings";
 import { levelIndexOf, levelProgress, levelsFor, starsFor } from "./levels";
-import { blessingChance, gambleOdds } from "./engine";
+import { blessingChance, dangerStats, gambleOdds } from "./engine";
+import { faceFor } from "./face";
 import { GROOVES, moodFor } from "./music";
 import { makeSave, readSave } from "./save";
 import { PLAYABLE_ROUTES, simulate } from "./simulate";
@@ -115,7 +116,7 @@ describe("scenarios.json integrity", () => {
       "papers", "ageYears", "educationLevel", "ecaComplete", "clbFirst", "nclcFrench", "foreignWorkYears",
       "canadianWorkYears", "canadianEducation", "pnpNomination", "siblingInCanada", "crsScore", "programType",
       "academicStanding", "officerConfidence", "scholarshipTried", "familyAsked", "landSold", "crowdfunded",
-      "loanTaken", "hasDegree", "careerScore", "community", "pflRisk", "conflictRegion", "kwBasis", "kwAtAirport", "kwCredibility", "kwEvidence", "eeCategory",
+      "loanTaken", "hasDegree", "careerScore", "community", "pflRisk", "conflictRegion", "kwBasis", "kwAtAirport", "kwCredibility", "kwEvidence", "eeCategory", "kwTruth", "officeJob", "saidNoHome", "nursePath",
     ]);
     const bad: string[] = [];
     for (const s of Object.values(DB.scenes)) {
@@ -147,43 +148,43 @@ describe("Startup Visa pitch (same paths as the Godot tests)", () => {
   });
 
   it("best pitch earns the Letter of Support", () => {
-    const s = play("STARTUP_VISA", ["interoperable bridge", "Four paying pilots", "event-driven", "pre-recorded walkthrough",
-      "key-person clause", "Eighteen months of runway"]);
+    const s = play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven", "pre-recorded walkthrough",
+      "Key-person clause", "Twelve months of runway", "FINTRAC"]);
     expect(s.outcome).toMatchObject({ result: "win", reason: "SUV_LOS_ISSUED", decidedBy: "SUV_PITCH_RESOLVE" });
     expect(s.energy).toBe(90);
   });
 
   it("one weak answer is survivable if the rest is strong", () => {
-    expect(play("STARTUP_VISA", ["interoperable bridge", "Four paying pilots", "event-driven", "pre-recorded walkthrough",
-      "best friends", "Eighteen months of runway"]).outcome?.result).toBe("win");
+    expect(play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven", "pre-recorded walkthrough",
+      "best friends", "Twelve months of runway", "FINTRAC"]).outcome?.result).toBe("win");
   });
 
   it("a vague technical answer and a fake demo sink it, and the resolution explains why", () => {
-    const s = play("STARTUP_VISA", ["interoperable bridge", "Four paying pilots", "advanced cloud", "Figma prototype",
-      "key-person clause", "Eighteen months of runway"]);
+    const s = play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "advanced cloud", "Figma prototype",
+      "Key-person clause", "Twelve months of runway", "FINTRAC"]);
     expect(s.outcome).toMatchObject({ result: "fail", reason: "SUV_REJECTED" });
-    expect(s.walletNgn).toBe(4000000);
+    expect(s.walletNgn).toBe(29500000);
     const crit = explainResolution(DB, "SUV_PITCH_RESOLVE", s);
     expect(crit.find((c) => c.key === "technicalCredibility")?.passed).toBe(false);
   });
 
   it("the arrogance trap plus inflated numbers fail the pitch", () => {
     const s = play("STARTUP_VISA", ["simply superior", "Ten thousand", "event-driven", "pre-recorded walkthrough",
-      "key-person clause", "Eighteen months of runway"]);
+      "Key-person clause", "Twelve months of runway", "FINTRAC"]);
     expect(s.outcome?.result).toBe("fail");
     expect(s.desperation).toBe(30 + 15 + 10 + 20);
   });
 
   it("a live demo is a gamble; offering to buy the letter is the end", () => {
-    const at = play("STARTUP_VISA", ["interoperable bridge", "Four paying pilots", "event-driven"]);
+    const at = play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven"]);
     const live = presentChoices(DB, at).find((c) => c.label === "LIVE_DEMO")!;
     expect(live.odds).toBeGreaterThan(0.5);
-    expect(play("STARTUP_VISA", ["interoperable bridge", "Four paying pilots", "event-driven", "pre-recorded walkthrough",
-      "key-person clause", "10% equity"]).outcome?.reason).toBe("PAY_TO_PLAY");
+    expect(play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven", "pre-recorded walkthrough",
+      "Key-person clause", "CAD 50,000 'fee'"]).outcome?.reason).toBe("PAY_TO_PLAY");
   });
 
   it("bars get their pass marks from the content", () => {
-    expect(thresholdsFor(DB, "STARTUP_VISA")).toEqual({ investorInterest: 75, technicalCredibility: 65, scalabilityScore: 50 });
+    expect(thresholdsFor(DB, "STARTUP_VISA")).toEqual({ investorInterest: 70, technicalCredibility: 65, scalabilityScore: 50 });
     expect(thresholdsFor(DB, "CAREGIVER_LMIA")).toEqual({ lmiaProbability: 70, employerTrust: 40 });
   });
 
@@ -196,20 +197,20 @@ describe("Startup Visa pitch (same paths as the Godot tests)", () => {
 
 describe("LMIA interview", () => {
   it("prevailing wage, compliant advertising and knowing who pays win sponsorship", () => {
-    expect(play("CAREGIVER_LMIA", ["I understand the hesitation", "Job Bank median", "follow the advertising rules", "employers can't recover"]).outcome)
+    expect(play("CAREGIVER_LMIA", ["Give me two weeks on your backlog", "Job Bank median", "follow the advertising rules", "employers can't recover"]).outcome)
       .toMatchObject({ result: "win", reason: "LMIA_SPONSORSHIP_STARTED" });
   });
   it("suggesting a fake posting ends the interview", () => {
-    expect(play("CAREGIVER_LMIA", ["I understand the hesitation", "Job Bank median", "fake job listing"]).outcome?.reason)
+    expect(play("CAREGIVER_LMIA", ["Give me two weeks on your backlog", "Job Bank median", "fake job listing"]).outcome?.reason)
       .toBe("BLATANT_MISREPRESENTATION");
   });
   it("desperation and a lowball wage are declined", () => {
-    const s = play("CAREGIVER_LMIA", ["Please sir", "Anything you can pay", "West African corridors", "employers can't recover"]);
+    const s = play("CAREGIVER_LMIA", ["cousin's company got an LMIA", "a dollar below the median", "West African corridors", "employers can't recover"]);
     expect(s.outcome?.reason).toBe("NO_SPONSORSHIP");
     expect(s.history.find((h) => h.sceneId === "LMIA_INTERVIEW_KOVACS")?.label).toBe("CRITICAL LEAK");
   });
   it("paying for your own LMIA or asking for cash both end it", () => {
-    const base = ["I understand the hesitation", "Job Bank median", "follow the advertising rules"];
+    const base = ["Give me two weeks on your backlog", "Job Bank median", "follow the advertising rules"];
     expect(play("CAREGIVER_LMIA", [...base, "Pay it"]).outcome?.reason).toBe("WORKER_PAID_LMIA");
     expect(play("CAREGIVER_LMIA", [...base, "pay you cash"]).outcome?.reason).toBe("UNAUTHORIZED_WORK");
   });
@@ -243,10 +244,22 @@ describe("Tourist Gamble dashboard", () => {
     expect(act(s, "rest").state.energy).toBe(50);
   });
 
-  it("the cash job is an instant fail", () => {
+  it("the cash shift is a temptation: usually nobody asks, sometimes the inspector does", () => {
     const { state } = act(landed(), "cash_job");
-    expect(state.outcome).toMatchObject({ result: "fail", reason: "UNAUTHORIZED_WORK" });
-    expect(act(state, "rest").toast).toBeNull();
+    expect(state.currentSceneId).toBe("TR_CASH_SHIFT");
+    const shift = choiceIndex(state, (c) => c.label === "CASH_SHIFT");
+    const paid = dismissPopup(choose(DB, state, shift, [1, 0, 0, 1]));
+    expect(paid.currentSceneId).toBe("TOURIST_HUB");
+    expect(paid.walletCad).toBe(state.walletCad + 120);
+    const caught = choose(DB, state, shift, [1, 0, 0.99, 1]);
+    expect(caught.outcome).toMatchObject({ result: "fail", reason: "CASH_WORK_CAUGHT" });
+    expect(act(caught, "rest").toast).toBeNull();
+  });
+
+  it("going home with a clean record only opens in the last weeks", () => {
+    expect(act(landed(), "go_home").toast).toBeNull();
+    const late = act({ ...landed(), timeRemainingDays: 40 }, "go_home").state;
+    expect(late.outcome).toMatchObject({ result: "win", reason: "HONEST_RETURN" });
   });
 
   it("running out the clock loses", () => {
@@ -307,8 +320,8 @@ describe("state machine", () => {
 });
 
 describe("Lagos Life (merged from the Cursor build)", () => {
-  const HONEST = ["about the visa story", "Leave the call", "Book the appointment", "Answer every question",
-    "call, then wait", "Open the email"];
+  const HONEST = ["about the visa story", "Leave the call", "Book the appointment", "Check every upload",
+    "call, then wait", "Open the portal"];
 
   it("starts in the player's area with interference 36 and energy 85 (rebalanced from 72 after simulation)", () => {
     const s = newRun(DB, "NIGERIA_LIFE");
@@ -319,7 +332,7 @@ describe("Lagos Life (merged from the Cursor build)", () => {
 
   it("the remote-job path wins when the interview goes well, and loops back when NEPA strikes", () => {
     const s = play("NIGERIA_LIFE", ["hunt remote jobs", "Rewrite the CV", "Take the interview",
-      "Use the offer as the spine", "Answer every question", "call, then wait", "Open the email"]);
+      "Take the offer", "Check every upload", "call, then wait", "Open the portal"]);
     expect(s.outcome?.result).toBe("win");
     const nepa = playR("NIGERIA_LIFE", ["hunt remote jobs", "Rewrite the CV", ["Take the interview", 0.99]]);
     expect(nepa.currentSceneId).toBe("LAGOS_YABA_DUSK");
@@ -338,15 +351,15 @@ describe("Lagos Life (merged from the Cursor build)", () => {
   });
 
   it("over-explaining at the embassy still loses on papers", () => {
-    const s = play("NIGERIA_LIFE", ["hunt remote jobs", "visa consultant blasting", "Pay 'facilitation'",
-      "Over-explain", "call, then wait", "Open the email"]);
+    const s = play("NIGERIA_LIFE", ["hunt remote jobs", "'visa consultant' whose status", "licensed consultant",
+      "Upload everything", "call, then wait", "Open the portal"]);
     expect(s.outcome?.result).toBe("fail");
     expect(s.currentSceneId).toBe("LAGOS_ENDING_STAY");
     expect(["pearson", "village", "hustle"]).toContain(rankFor(DB, s)?.id);
   });
 
   it("paying the consultant floats -$1,500 CAD", () => {
-    const s = play("NIGERIA_LIFE", ["hunt remote jobs", "visa consultant blasting"]);
+    const s = play("NIGERIA_LIFE", ["hunt remote jobs", "'visa consultant' whose status"]);
     expect(s.cadFloat).toEqual({ amount: 1500, tick: 1 });
   });
 
@@ -492,7 +505,7 @@ describe("Student pathway", () => {
   const FUND_ALL = ["entrance scholarship", "Family sponsorship", "Sell the plot", "Crowdfund"];
   it("master's: fund it, write a specific plan, graduate with a PGWP", () => {
     const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", ...FUND_ALL,
-      "funds are ready", "specific plan", "Wait for the decision", "Board the flight", "proper boots",
+      "funds are ready", "specific plan", "Wait for the decision", "Start packing", "close family only", "New parka and boots",
       "host family", "Agree to wait", "Campus cafe", "Library every night", "Book IELTS"]);
     expect(s.outcome).toMatchObject({ result: "win", reason: "PGWP_ISSUED" });
     expect(rankFor(DB, s)?.id).toBe("pgwp");
@@ -524,15 +537,15 @@ describe("Student pathway", () => {
 
   it("private career college graduates get no PGWP", () => {
     const s = play("STUDY_PERMIT", ["private career college", "Work out the money", "Family sponsorship",
-      "funds are ready", "specific plan", "Wait for the decision", "Board the flight", "proper boots",
+      "funds are ready", "specific plan", "Wait for the decision", "Start packing", "close family only", "New parka and boots",
       "host family", "Agree to wait", "Campus cafe", "Library every night", "Book IELTS"]);
     expect(s.outcome?.reason).toBe("NOT_PGWP_ELIGIBLE");
   });
 
   it("working 40 cash hours a week breaches study permit conditions", () => {
     const s = play("STUDY_PERMIT", ["Two-year Supply Chain", "Work out the money", "entrance scholarship",
-      "Family sponsorship", "funds are ready", "specific plan", "Wait for the decision", "Board the flight",
-      "proper boots", "host family", "Agree to wait", "Cash shifts"]);
+      "Family sponsorship", "funds are ready", "specific plan", "Wait for the decision", "Start packing", "close family only",
+      "New parka and boots", "host family", "Agree to wait", "Cash shifts"]);
     expect(s.outcome?.reason).toBe("STATUS_BREACH");
   });
 
@@ -545,7 +558,7 @@ describe("Student pathway", () => {
   it("a PGWP carries the graduate into Express Entry with Canadian education", () => {
     let app = reducer(initialState(), { type: "SELECT_ROUTE", route: "STUDY_PERMIT" });
     const picks = ["Master's in Engineering", "Work out the money", ...FUND_ALL, "funds are ready", "specific plan",
-      "Wait for the decision", "Board the flight", "proper boots", "host family", "Agree to wait", "Campus cafe", "Library every night", "Book IELTS"];
+      "Wait for the decision", "Start packing", "close family only", "New parka and boots", "host family", "Agree to wait", "Campus cafe", "Library every night", "Book IELTS"];
     for (const p of picks) {
       const idx = choiceIndex(app.runs.STUDY_PERMIT!, (c) => c.text.includes(p));
       app = reducer(app, { type: "CHOOSE", index: idx, rolls: [1, 0] });
@@ -577,7 +590,7 @@ describe("choice cutscenes", () => {
   };
 
   it("a strong pitch answer is a good moment with green chips", () => {
-    const c = pickAndDescribe("STARTUP_VISA", [], "interoperable bridge");
+    const c = pickAndDescribe("STARTUP_VISA", [], "We don't compete with banks");
     expect(c.tone).toBe("good");
     expect(c.label).toBe("HIGH VALUE MATCH");
     expect(c.deltas.map((d) => [d.label, d.value, d.good])).toEqual([
@@ -596,7 +609,7 @@ describe("choice cutscenes", () => {
 
   it("the final winning move is a triumph", () => {
     const c = pickAndDescribe("NIGERIA_LIFE", ["about the visa story", "Leave the call", "Book the appointment",
-      "Answer every question", "call, then wait"], "Open the email");
+      "Check every upload", "call, then wait"], "Open the portal");
     expect(c.tone).toBe("triumph");
   });
 
@@ -680,7 +693,7 @@ describe("player profiles", () => {
     let app = reducer(initialState(DB, fresher), { type: "SELECT_ROUTE", route: "STUDY_PERMIT" });
     const picks = ["Four-year bachelor's", "Work out the money", "entrance scholarship", "Family sponsorship",
       "Sell the plot", "Crowdfund", "Education loan", "funds are ready", "specific plan", "Wait for the decision",
-      "Board the flight", "proper boots", "host family", "Agree to wait", "Campus cafe", "Library every night", "Book IELTS"];
+      "Start packing", "close family only", "New parka and boots", "host family", "Agree to wait", "Campus cafe", "Library every night", "Book IELTS"];
     for (const p of picks) {
       const idx = choiceIndex(app.runs.STUDY_PERMIT!, (c) => c.text.includes(p));
       expect(idx, p).toBeGreaterThanOrEqual(0);
@@ -752,6 +765,8 @@ describe("Kawosoke (asylum claims inside the Tourist Gamble)", () => {
   const borno = { version: 1, username: "Hauwa", avatar: DEFAULT_AVATAR, role: "worker", age: 27, stateCode: "BO",
     worker: { occupation: "teacher", years: 3, qualification: "bachelors", salary: "150k-400k" } } as PlayerProfile;
   const tourist = (profile: PlayerProfile | null = null) => initialState(DB, profile).runs.TOURIST_GAMBLE!;
+  /** A tourist whose true story at home is `t` (1 outed, 2 partner violence, 3 armed groups). */
+  const truth = (t: number) => { const s = tourist(); return { ...s, routeStats: { ...s.routeStats, kwTruth: t } }; };
   function walk(s: GameState, picks: string[]): GameState {
     for (const pick of picks) {
       const idx = choiceIndex(s, (c) => fillText(c.text, profileVars(null)).includes(pick) || c.text.includes(pick));
@@ -777,21 +792,21 @@ describe("Kawosoke (asylum claims inside the Tourist Gamble)", () => {
   });
 
   it("a real story, told straight with evidence, ends in protection", () => {
-    const s = walk(tourist(), ["Kawosoke at the counter", "you were outed", ...STRONG]);
+    const s = walk(truth(1), ["Kawosoke at the counter", "you were outed", ...STRONG]);
     expect(s.routeStats.kwAtAirport).toBe(1);
     expect(s.outcome).toMatchObject({ result: "win", reason: "PROTECTED_PERSON" });
   });
 
   it("a real gender-based claim without enough evidence loses on internal flight alternative", () => {
-    const thin = walk(tourist(), ["Kawosoke at the counter", "beatings from your husband", "Legal Aid", "Work legally",
+    const thin = walk(truth(2), ["Kawosoke at the counter", "violence from your ex-partner", "Legal Aid", "Wait for the open work permit",
       "line by line", "say 'I don't remember'", "Explain, with your evidence"]);
     expect(thin.outcome?.reason).toBe("IFA_FOUND");
-    const strong = walk(tourist(), ["Kawosoke at the counter", "beatings from your husband", ...STRONG]);
+    const strong = walk(truth(2), ["Kawosoke at the counter", "violence from your ex-partner", ...STRONG]);
     expect(strong.outcome?.reason).toBe("PROTECTED_PERSON");
   });
 
   it("embellishing and posting on TikTok sink a real claim on credibility", () => {
-    const s = walk(tourist(), ["Kawosoke at the counter", "you were outed", "Legal Aid", "TikTok", "Memorize",
+    const s = walk(truth(1), ["Kawosoke at the counter", "you were outed", "Legal Aid", "TikTok", "Memorize",
       "Add a new detail"]);
     expect(s.outcome?.reason).toBe("CLAIM_REFUSED");
   });
@@ -809,7 +824,7 @@ describe("Kawosoke (asylum claims inside the Tourist Gamble)", () => {
 
   it("village people are not a Convention ground; flying home ends the claim", () => {
     expect(walk(tourist(), ["Kawosoke at the counter", "Village people", ...STRONG.slice(0, 4)]).outcome?.reason).toBe("NO_NEXUS");
-    expect(walk(tourist(), ["Kawosoke at the counter", "you were outed", "Legal Aid", "Fly home"]).outcome?.reason).toBe("CLAIM_ABANDONED");
+    expect(walk(truth(1), ["Kawosoke at the counter", "you were outed", "Legal Aid", "fly home for Mummy"]).outcome?.reason).toBe("CLAIM_ABANDONED");
   });
 
   it("the conflict claim is only open to players from affected states", () => {
@@ -822,7 +837,7 @@ describe("Kawosoke (asylum claims inside the Tourist Gamble)", () => {
   it("claim-only events never strike before a claim is filed", () => {
     const s = choose(DB, tourist(), 0, [0, 0]);
     expect(s.popup).toBeNull();
-    const filed = choose(DB, walk(tourist(), ["Kawosoke at the counter", "you were outed"]), 0, [0, 0]);
+    const filed = choose(DB, walk(truth(1), ["Kawosoke at the counter", "you were outed"]), 0, [0, 0]);
     expect(filed.popup?.kind).toBe("trap");
   });
 
@@ -856,7 +871,7 @@ describe("2026 rules in Express Entry and the Student pathway", () => {
   it("no language test, no PGWP", () => {
     const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "entrance scholarship", "Family sponsorship",
       "Sell the plot", "Crowdfund", "Education loan", "funds are ready", "specific plan", "Wait for the decision",
-      "Board the flight", "proper boots", "host family", "Agree to wait", "Campus cafe", "Library every night", "Skip it"]);
+      "Start packing", "close family only", "New parka and boots", "host family", "Agree to wait", "Campus cafe", "Library every night", "Skip it"]);
     expect(s.outcome).toMatchObject({ result: "fail", reason: "NOT_PGWP_ELIGIBLE" });
   });
 });
@@ -935,33 +950,44 @@ describe("family in Canada", () => {
   });
 });
 
+/** A profile whose true story at home is `t` (found by trying usernames: the backstory is seeded per profile). */
+function profileWithTruth(t: number): PlayerProfile {
+  for (let i = 0; i < 500; i++) {
+    const p = { version: 1, username: `Tobi${i}`, avatar: DEFAULT_AVATAR, role: "worker", age: 30, stateCode: "LA",
+      worker: { occupation: "logistics", years: 4, qualification: "bachelors", salary: "150k-400k" } } as PlayerProfile;
+    if (kwTruthOf(p) === t) return p;
+  }
+  throw new Error("no profile with that backstory");
+}
+
 describe("Year One in Canada and community-story scenes", () => {
   const year = (picks: string[]) => play("FIRST_YEAR", picks);
 
   it("networking, bridging and help in winter get you back in your field", () => {
-    const s = year(["SIN at the airport", "guarantor from church", "Volunteer two days", "bridging program", "fixed share",
-      "Nigerian association", "crisp written summary", "Employment Insurance", "Stay. Save"]);
+    const s = year(["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days", "bridging program", "fixed share",
+      "Nigerian association", "crisp written summary", "Employment Insurance", "volunteer tax clinic", "Stay. Save"]);
     expect(s.routeStats.careerScore).toBeGreaterThanOrEqual(50);
     expect(s.outcome).toMatchObject({ result: "win", reason: "BACK_IN_FIELD" });
   });
 
   it("a parked career with savings is 'surviving'; going home is 'reverse japa'", () => {
-    const parked = year(["SIN at the airport", "guarantor from church", "warehouse survival job", "Drive Uber", "fixed share",
-      "Nigerian association", "crisp written summary", "any shift", "Stay. Save"]);
+    const parked = year(["SIN at the airport", "Declare everything", "guarantor from", "warehouse survival job", "Drive Uber", "fixed share",
+      "Nigerian association", "Keep driving", "any shift", "volunteer tax clinic", "Stay. Save"]);
     expect(parked.outcome?.reason).toBe("SURVIVING");
-    const home = year(["SIN at the airport", "guarantor from church", "warehouse survival job", "Drive Uber", "fixed share",
-      "Nigerian association", "crisp written summary", "any shift", "Go home for good"]);
+    const home = year(["SIN at the airport", "Declare everything", "guarantor from", "warehouse survival job", "Drive Uber", "fixed share",
+      "Nigerian association", "Keep driving", "any shift", "volunteer tax clinic", "Go home for good"]);
     expect(home.outcome).toMatchObject({ result: "neutral", reason: "REVERSE_JAPA" });
   });
 
   it("a rental scam and an empty account end the year early", () => {
-    const s = playR("FIRST_YEAR", ["best phone plan", "Facebook 'landlord'", ["Only apply for jobs at your old level", 0.99],
-      "bridging program", "Send all of it", "Stay inside", "crisp written summary", "cheaper province", "Go home for December as an IJGB"]);
+    const s = playR("FIRST_YEAR", ["best phone plan", "Declare everything", "Facebook 'landlord'", ["Only apply for jobs at your old level", 0.99],
+      "bridging program", "Send all of it", "Stay inside", "crisp written summary", "Move to Calgary", "volunteer tax clinic", "Go home for December as an IJGB"]);
     expect(s.outcome?.reason).toBe("BURNOUT");
   });
 
   it("permanent residence and refugee protection both lead into Year One", () => {
-    let app = reducer(initialState(), { type: "SELECT_ROUTE", route: "TOURIST_GAMBLE" });
+    let app = reducer(initialState(), { type: "SET_PROFILE", profile: profileWithTruth(1) });
+    app = reducer(app, { type: "SELECT_ROUTE", route: "TOURIST_GAMBLE" });
     for (const pick of ["Kawosoke at the counter", "you were outed", "Legal Aid", "Gather evidence", "line by line",
       "say 'I don't remember'", "Explain, with your evidence"]) {
       const idx = choiceIndex(app.runs.TOURIST_GAMBLE!, (c) => c.text.includes(pick));
@@ -994,12 +1020,13 @@ describe("Year One in Canada and community-story scenes", () => {
   it("paying for an LMIA is a scam; checking it costs nothing", () => {
     const seller = takeAction(DB, landed(), "lmia_whatsapp", [0.99, 0]).state;
     expect(seller.currentSceneId).toBe("TR_LMIA_SELLER");
-    expect(play2(seller, ["Pay the first"]).outcome?.reason).toBe("LMIA_SCAM");
+    expect(play2(seller, ["processing deposit"]).outcome?.reason).toBe("LMIA_SCAM");
     expect(play2(seller, ["Ask for the employer's legal name"]).currentSceneId).toBe("TOURIST_HUB");
   });
 
   it("a claimant who works cash before the permit is caught", () => {
-    const s = play2(newRun(DB, "TOURIST_GAMBLE"), ["Kawosoke at the counter", "you were outed", "Legal Aid", "cash warehouse job"]);
+    const run = newRun(DB, "TOURIST_GAMBLE");
+    const s = play2({ ...run, routeStats: { ...run.routeStats, kwTruth: 1 } }, ["Kawosoke at the counter", "you were outed", "Legal Aid", "cash warehouse"]);
     expect(s.outcome?.reason).toBe("UNAUTHORIZED_WORK");
   });
 });
@@ -1199,7 +1226,7 @@ describe("achievements", () => {
     ({ run, meta: NEW_META, endingsFound: 1, threeStarLevels: 0, today: "2026-10-12", ...extra });
 
   it("a clean win earns Clean hands; a shady move anywhere in the run doesn't", () => {
-    const clean = play("CAREGIVER_LMIA", ["I understand the hesitation", "Job Bank median", "follow the advertising rules", "employers can't recover"]);
+    const clean = play("CAREGIVER_LMIA", ["Give me two weeks on your backlog", "Job Bank median", "follow the advertising rules", "employers can't recover"]);
     const ids = newAchievements(ctx(clean)).map((a) => a.id);
     expect(ids).toEqual(expect.arrayContaining(["first-run", "clean-hands", "kovacs"]));
     const shady = play("EXPRESS_ENTRY", ["leaked"]);
@@ -1266,8 +1293,8 @@ describe("music", () => {
 describe("v0.15 scenes: spouse, caregiver scam, the accent conversation", () => {
   it("only a master's (16+ months) lets a spouse come on an open work permit", () => {
     const to = (program: string) => play("STUDY_PERMIT", [program, "Work out the money", "entrance scholarship", "Family sponsorship",
-      "Sell the plot", "Crowdfund", "Education loan", "funds are ready", "specific plan", "Wait for the decision", "Board the flight",
-      "proper boots", "host family"]);
+      "Sell the plot", "Crowdfund", "Education loan", "funds are ready", "specific plan", "Wait for the decision", "Start packing", "close family only",
+      "New parka and boots", "host family"]);
     const owp = (s: GameState) => presentChoices(DB, s).find((c) => c.label === "SPOUSAL_OWP")!;
     expect(owp(to("Master's in Engineering")).enabled).toBe(true);
     expect(owp(to("Two-year Supply Chain")).enabled).toBe(false);
@@ -1281,7 +1308,7 @@ describe("v0.15 scenes: spouse, caregiver scam, the accent conversation", () => 
   });
 
   it("naming the accent comment is a gamble that community makes likelier", () => {
-    const at = play("FIRST_YEAR", ["SIN at the airport", "guarantor from church", "Volunteer two days", "bridging program",
+    const at = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days", "bridging program",
       "fixed share", "Nigerian association"]);
     expect(at.currentSceneId).toBe("FY_ACCENT");
     const named = presentChoices(DB, at).find((c) => c.label === "NAMED_IT")!;
@@ -1329,5 +1356,101 @@ describe("helpers", () => {
   it("stat keys type-check", () => {
     const k: StatKey = "employerLeads";
     expect(k).toBe("employerLeads");
+  });
+});
+
+describe("v0.16: playtest fixes", () => {
+  const prof = (username: string, stateCode: string, occupation = "logistics") => ({ version: 1, username, avatar: DEFAULT_AVATAR,
+    role: "worker", age: 29, stateCode, worker: { occupation, years: 4, qualification: "bachelors", salary: "150k-400k" } }) as PlayerProfile;
+
+  it("faith and the parent's name follow heritage: Hausa players pray at a masjid and call Umma", () => {
+    expect(faithFor("hausa", () => 0.9)).toBe("masjid");
+    expect(faithFor("igbo", () => 0.1)).toBe("church");
+    const aisha = profileVars(prof("Aisha", "KD"));
+    expect(homeFor(prof("Aisha", "KD")).heritage).toBe("hausa");
+    expect(aisha.faithHub).toBe("masjid");
+    expect(aisha.parent).toBe("Umma");
+    expect(profileVars(prof("Chiamaka", "EN")).parent).toBe("Mama");
+    expect(fillText(DB.scenes.FY_BLACK_TAX.title!, aisha)).toBe("Umma is calling.");
+  });
+
+  it("every Kawosoke character has one true story; claims that aren't it stay locked", () => {
+    expect(kwTruthFor(true, () => 0.1)).toBe(3);
+    expect(kwTruthFor(false, () => 0.9)).toBe(0);
+    const story = profileVars(prof("Tolu", "LA")).kwStory;
+    expect(story).not.toMatch(/\{/);
+    const run = { ...landed(), routeStats: { ...landed().routeStats, kwTruth: 0 } };
+    const inland = takeAction(DB, run, "kawosoke", [0.99, 0]).state;
+    const shown = presentChoices(DB, inland);
+    for (const label of ["SOGIESC_CLAIM", "GENDER_BASED_CLAIM", "CONFLICT_CLAIM"]) {
+      expect(shown.find((c) => c.label === label)?.enabled, label).toBe(false);
+    }
+    expect(shown.find((c) => c.label === "HONEST_EXIT")?.enabled).toBe(true);
+    const outed = presentChoices(DB, { ...inland, routeStats: { ...inland.routeStats, kwTruth: 1 } });
+    expect(outed.find((c) => c.label === "SOGIESC_CLAIM")?.enabled).toBe(true);
+    expect(outed.find((c) => c.label === "GENDER_BASED_CLAIM")?.enabled).toBe(false);
+  });
+
+  it("the visa centre takes fingerprints, not passports, and the 'we know people' agent is a scam", () => {
+    expect(DB.scenes.ST_VFS.dialogue).toMatch(/passport back in your bag/);
+    expect(DB.scenes.LAGOS_DECISION_GATE.title).toMatch(/keep your passport/);
+    expect(play("NIGERIA_LIFE", ["hunt remote jobs", "'visa consultant' whose status", "facilitation"]).outcome?.reason).toBe("AGENT_SCAM");
+  });
+
+  it("nurses meet Matron and the UK-or-Canada question; the council tout is a scam", () => {
+    const nurse = initialState(DB, prof("Chiamaka", "LA", "nurse")).runs.EXPRESS_ENTRY!;
+    const at = play2(nurse, ["three months first", "official express transcript"]);
+    expect(at.currentSceneId).toBe("NURSE_VERIFY");
+    expect(play2(at, ["man at the council"]).outcome?.reason).toBe("NURSE_TOUT");
+    expect(play2(at, ["Apply quietly"]).currentSceneId).toBe("NURSE_UK_OR_CANADA");
+    expect(play2(at, ["Apply quietly", "Go UK first"]).outcome).toMatchObject({ result: "win", reason: "UK_FIRST" });
+    const tech = initialState(DB, prof("Tunde", "OY", "software")).runs.EXPRESS_ENTRY!;
+    expect(play2(tech, ["three months first", "official express transcript"]).currentSceneId).toBe("EE_PROFILE");
+  });
+
+  it("Year One: drivers get the gig scene, not the office one; saying no to family comes back in December", () => {
+    const start = ["SIN at the airport", "Declare everything", "guarantor from", "warehouse survival job", "Drive Uber"];
+    const gig = play("FIRST_YEAR", [...start, "Say no this time", "Nigerian association"]);
+    expect(gig.currentSceneId).toBe("FY_GIG_LIFE");
+    const dec = play2(gig, ["Keep driving", "any shift", "volunteer tax clinic"]);
+    expect(dec.currentSceneId).toBe("FY_SILENCE");
+    const office = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days",
+      "Unregulated field", "fixed share", "Nigerian association"]);
+    expect(office.currentSceneId).toBe("FY_ACCENT");
+  });
+
+  it("the group-chat tax guy is fraud; undeclared stockfish is a gamble with a fine", () => {
+    const taxes = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "warehouse survival job",
+      "Drive Uber", "fixed share", "Nigerian association", "Keep driving", "any shift"]);
+    expect(taxes.currentSceneId).toBe("FY_TAXES");
+    expect(play2(taxes, ["expenses you don't have"]).outcome?.reason).toBe("TAX_FRAUD");
+    const customs = play("FIRST_YEAR", ["SIN at the airport"]);
+    const tick = choiceIndex(customs, (c) => c.label === "UNDECLARED");
+    expect(dismissPopup(choose(DB, customs, tick, [1, 0, 0.99, 1])).walletCad).toBe(customs.walletCad - 800);
+  });
+
+  it("the Startup pitch ends on regulation, and a Lagos angel's money doesn't count", () => {
+    const at = play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven", "pre-recorded walkthrough",
+      "Key-person clause", "Twelve months of runway"]);
+    expect(at.currentSceneId).toBe("SUV_COMPLIANCE");
+    const angel = DB.scenes.SUV_ROSS_MONEY.choices!.find((c) => c.text.includes("Lagos angel"))!;
+    expect(angel.feedback).toMatch(/designated Canadian angel group/);
+    expect(DB.routes.STARTUP_VISA.initialState!.walletNgn).toBeGreaterThanOrEqual(20000000);
+  });
+
+  it("stats near a collapse line are flagged as danger", () => {
+    const ee = newRun(DB, "EXPRESS_ENTRY");
+    expect(dangerStats(DB, ee).size).toBe(0);
+    expect([...dangerStats(DB, { ...ee, energy: 12, desperation: 90 })].sort()).toEqual(["desperation", "energy"]);
+    expect(dangerStats(DB, { ...ee, energy: 0, outcome: { result: "fail", reason: "X", title: "" } }).size).toBe(0);
+  });
+
+  it("the player's face follows the run", () => {
+    const s = newRun(DB, "NIGERIA_LIFE");
+    expect(faceFor(null)).toBe("smile");
+    expect(faceFor({ ...s, energy: 10 })).toBe("tired");
+    expect(faceFor({ ...s, energy: 80, desperation: 85 })).toBe("worried");
+    expect(faceFor({ ...s, outcome: { result: "win", reason: "X", title: "" } })).toBe("grin");
+    expect(faceFor({ ...s, outcome: { result: "fail", reason: "X", title: "" } })).toBe("sad");
   });
 });

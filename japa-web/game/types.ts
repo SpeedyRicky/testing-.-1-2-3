@@ -72,6 +72,14 @@ export interface RouteStats {
   // Kawosoke (asylum claim) inside the Tourist Gamble:
   /** 0 none, 1 sexual orientation, 2 gender-based violence, 3 conflict in the North, 4 bought story, 5 village people */
   kwBasis?: number;
+  /** The character's true story at home (see family.ts): 0 none, 1 outed, 2 partner violence, 3 armed groups. */
+  kwTruth?: number;
+  /** Has an office job in Year One (gates the workplace scenes). */
+  officeJob?: number;
+  /** Said no to family money in Year One; it comes back in December. */
+  saidNoHome?: number;
+  /** Nurse licensing progress (Express Entry, healthcare). */
+  nursePath?: number;
   kwAtAirport?: number;
   kwCredibility?: number;
   kwEvidence?: number;
@@ -209,6 +217,9 @@ export interface DashboardAction {
   fatal?: string;
   /** Leaves the dashboard for a story scene (e.g. the Kawosoke claim). */
   goToSceneId?: string;
+  /** Only available when these hold (e.g. the last weeks of a visit). */
+  requires?: Conditions;
+  lockedHint?: string;
   consequences: string[];
   leadConsequences?: string[];
 }

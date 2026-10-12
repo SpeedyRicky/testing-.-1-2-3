@@ -52,15 +52,31 @@ export class AudioEngine {
     if (this.ctx.state !== "running") void this.ctx.resume();
   }
 
-  setMusicOn(on: boolean) {
-    const now = this.ctx.currentTime;
-    this.musicBus.gain.cancelScheduledValues(now);
-    this.musicBus.gain.setTargetAtTime(on ? 0.32 : 0, now, 0.25);
-    if (this.track) this.track.volume = on ? 0.5 : 0;
+  private musicOn = true;
+  private sfxOn = true;
+  private musicVol = 1;
+  private sfxVol = 1;
+  private musicLevel() { return this.musicOn ? 0.32 * this.musicVol : 0; }
+
+  setMusicOn(on: boolean) { this.musicOn = on; this.applyMusic(); }
+  setSfxOn(on: boolean) { this.sfxOn = on; this.applySfx(); }
+  /** Volume sliders, 0–1. */
+  setVolumes(music: number, sfx: number) {
+    this.musicVol = Math.max(0, Math.min(1, music));
+    this.sfxVol = Math.max(0, Math.min(1, sfx));
+    this.applyMusic();
+    this.applySfx();
   }
 
-  setSfxOn(on: boolean) {
-    this.sfxBus.gain.setTargetAtTime(on ? 0.6 : 0, this.ctx.currentTime, 0.05);
+  private applyMusic() {
+    const now = this.ctx.currentTime;
+    this.musicBus.gain.cancelScheduledValues(now);
+    this.musicBus.gain.setTargetAtTime(this.musicLevel(), now, 0.25);
+    if (this.track) this.track.volume = this.musicOn ? 0.5 * this.musicVol : 0;
+  }
+
+  private applySfx() {
+    this.sfxBus.gain.setTargetAtTime(this.sfxOn ? 0.6 * this.sfxVol : 0, this.ctx.currentTime, 0.05);
   }
 
   /** Switches the groove with a short fade, keeping time. */
@@ -73,14 +89,14 @@ export class AudioEngine {
       this.groove = null;
       const a = new Audio(`music/${file}`);
       a.loop = true;
-      a.volume = this.musicBus.gain.value > 0 ? 0.5 : 0;
+      a.volume = this.musicOn ? 0.5 * this.musicVol : 0;
       void a.play().catch(() => {});
       this.track = a;
       return;
     }
     const now = this.ctx.currentTime;
     const g = this.musicBus.gain;
-    const level = g.value;
+    const level = this.musicLevel();
     g.cancelScheduledValues(now);
     g.setValueAtTime(level, now);
     g.linearRampToValueAtTime(level * 0.2, now + 0.35);

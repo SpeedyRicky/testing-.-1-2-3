@@ -1,7 +1,7 @@
 "use client";
 
 import type { Dispatch } from "react";
-import { DB, currentScene, thresholdsFor } from "@/game/engine";
+import { DB, currentScene, dangerStats, thresholdsFor } from "@/game/engine";
 import type { AppEvent } from "@/game/machine";
 import type { BarSpec, GameState, LayoutType, RouteId, Toast } from "@/game/types";
 import { StatBar, type Tone } from "./StatBar";
@@ -64,6 +64,7 @@ export function LayoutContainer({ run, dispatch, toast }: Omit<LayoutProps, "bar
   const route = scene?.route ?? run.activeRoute;
   const cfg = DB.routes[route];
   const thresholds = thresholdsFor(DB, route);
+  const danger = dangerStats(DB, run);
 
   const bars = (
     <div className="space-y-4">
@@ -77,6 +78,7 @@ export function LayoutContainer({ run, dispatch, toast }: Omit<LayoutProps, "bar
           invert={b.invert}
           threshold={thresholds[b.key]}
           tone={barTone(b, i, run, route)}
+          danger={danger.has(b.key)}
         />
       ))}
     </div>

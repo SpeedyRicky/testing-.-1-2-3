@@ -10,7 +10,7 @@ Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · lucide-react.
 ```bash
 npm install
 npm run dev          # open http://localhost:3000 once the terminal says "Ready"
-npm test             # 150 engine tests, including seeded balance checks
+npm test             # 160 engine tests, including seeded balance checks
 npm run simulate     # balance report: thousands of simulated playthroughs per route
 npm run lint
 npm run build
@@ -49,6 +49,9 @@ Their name matches your heritage (`game/family.ts`):
 - The call screen shows their province: city towers (Ontario, Quebec), the Rockies (Alberta, BC), prairie with a
   grain elevator (Manitoba, Saskatchewan) or a harbour of coloured houses (Atlantic), with snow.
 - A sister or brother in Canada sets `siblingInCanada`, worth 15 CRS points in Express Entry (an aunty is not).
+- Home life follows heritage too: `{faithHub}` (church or masjid; Hausa players pray at a masjid, Yoruba families
+  split), `{faithGroup}`, `{faithDay}` and `{parent}` (Mama, Mummy or Umma) appear in Year One, the Tourist hub and
+  the Student pathway.
 
 ## Risky choices
 Some choices are gambles: the button shows the chance of success (a 🎲 chip, green when likely, red when a long shot),
@@ -123,8 +126,8 @@ Original Naija-style music, composed live in the browser with Web Audio (no audi
 
 Sound effects play on taps, each cutscene (by tone, plus coins in or out), danfo horns, okada engines, phone rings,
 planes, wind, random events ("wahala?" on the talking drum), level-ups, and the ending fanfare or "dun dun DUN".
-Browsers only allow sound after a tap, so the music starts on your first click. The header chip cycles **Music on →
-Effects only → Muted** and is remembered. Grooves are data in `game/music.ts`; the synth is `app/audio/engine.ts`.
+Browsers only allow sound after a tap, so the music starts on your first click. The header chip opens a small
+mixer: **Music on / Effects only / Muted**, plus music and effects volume sliders, all remembered. Grooves are data in `game/music.ts`; the synth is `app/audio/engine.ts`.
 To use licensed recordings for a mood, see `public/music/README.md`.
 
 ## Endings cabinet and Reality checks
@@ -160,13 +163,30 @@ Tap, Escape or Skip ends it early; the header switch toggles **Full** (3 s) and 
 | **Year One** | `STORY_STAGE` | Life after landing: SIN and bank, renting with no credit, "no Canadian experience", the credential wall, black tax, the first winter, a layoff, Detty December. Ends back in your field, surviving, or reverse japa. Unlocked by permanent residence or refugee protection, or play it directly. |
 | Trades, PNP Rural | | Coming soon: add scenes and set `status` to `playable`. |
 
+## Playtest fixes (v0.16)
+Three persona playtests (a Lagos nurse, an Ibadan ex-visitor, a Calgary newcomer from Kaduna) read every route.
+What changed:
+- **Facts:** you keep your passport at the visa centre (it's requested after a yes: "PPR"), and nobody there interviews
+  you; spouse open work permits need a 16-month master's; CLB 6 is below the Express Entry floor; PTE Core counts;
+  category draws need 6 months of experience; a job offer needs a work permit; Startup Visa money must come from a
+  designated Canadian angel group or VC fund; only licensed (CICC) consultants may charge; Ontario own-use evictions
+  don't cover a nephew; EI needs insurable hours; uncertain dates were softened.
+- **New scenes:** the nurse thread (Matron, council verification, "UK first?"), japa in silence, Ghana Must Go at
+  customs, first tax season (the group-chat tax guy is fraud), the gig-driver year, a December callback if you said
+  no to family, the cash shift (a gamble, not a free CAD 150), the couch getting tight, an honest flight home with a
+  clean record, and a regulation question in the Startup pitch.
+- **Feel:** characters have faces (brows, blinking, a mouth that follows your stats), stat bars flash and pop on
+  change and pulse **Danger** near a collapse line, and the sound chip is a mixer.
+
 ## Kawosoke: the asylum branch of the Tourist Gamble
 "Kawosoke" is the slang for claiming asylum, and Mentor Wey Sabi recommends it to everyone. Claim at the Pearson counter
 on arrival, or later from the dashboard card **Kawosoke: Claim Asylum Inside Canada** (the IRCC portal). Then:
+- **Your own story:** every character has one true backstory, fixed by their profile (`kwTruthFor` in
+  `game/family.ts`): nothing (most visitors), outed as LGBTQ, partner violence, or targeted by armed groups (likely for
+  players from Borno, Yobe, Adamawa, Zamfara, Katsina, Kaduna, Sokoto, Niger, Benue or Plateau). The claim screen shows
+  it, and only that "It really happened" option is open; the others say "That isn't your story".
 - **What you fear:** "nothing, I came for work" (honest exit, back to the dashboard); a bought story from Wey Sabi's
-  unlicensed "paralegal" (CAD 1,500); a real sexual-orientation story; real gender-based violence; real conflict in the
-  North (only for players from Borno, Yobe, Adamawa, Zamfara, Katsina, Kaduna, Sokoto, Niger, Benue or Plateau); or
-  village people.
+  unlicensed "paralegal" (CAD 1,500); your own true story; or village people.
 - **The wait and the hearing** move two meters, **Credibility** and **Evidence** (`kwCredibility`, `kwEvidence`).
 - **Endings:** protected person; internal flight alternative ("try Port Harcourt"); refused on credibility; no nexus
   (village people); claim abandoned (flew home for the owambe); misrepresentation (a bought story always fails).

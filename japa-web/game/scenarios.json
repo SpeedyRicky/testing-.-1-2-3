@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.15.0",
+    "version": "0.16.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -8,7 +8,7 @@
       "title": "Nigeria",
       "short": "Nigeria",
       "status": "playable",
-      "tagline": "Trek, {bus}, call {relName}.",
+      "tagline": "Waka, {bus}, call {relName}.",
       "startSceneId": "LAGOS_YABA_DAWN",
       "initialState": {
         "currentLocation": "{area}, {city}",
@@ -520,7 +520,8 @@
             "ST_SOP",
             "ST_VFS",
             "ST_REFUSED",
-            "ST_APPROVED"
+            "ST_APPROVED",
+            "ST_SILENCE"
           ],
           "stars": [
             {
@@ -833,7 +834,9 @@
           "goal": "Get CLB 9 and your ECA without paying for shortcuts.",
           "scenes": [
             "EE_START",
-            "EE_ECA"
+            "EE_ECA",
+            "NURSE_VERIFY",
+            "NURSE_UK_OR_CANADA"
           ],
           "stars": [
             {
@@ -995,7 +998,7 @@
       "initialState": {
         "currentLocation": "Home office, Lekki (Zoom)",
         "energy": 100,
-        "walletNgn": 4500000,
+        "walletNgn": 30000000,
         "desperation": 30,
         "routeStats": {
           "investorInterest": 40,
@@ -1082,7 +1085,8 @@
           "goal": "Show the money: market, revenue, a plan to scale.",
           "scenes": [
             "SUV_PITCH_ROSS",
-            "SUV_ROSS_MONEY"
+            "SUV_ROSS_MONEY",
+            "SUV_COMPLIANCE"
           ],
           "stars": [
             {
@@ -1181,6 +1185,18 @@
           "reason": "INTERVIEW_SECURED",
           "title": "Boardroom bound",
           "blurb": "Three leads in 180 days without working a single illegal shift. Mr. Kovacs is waiting."
+        },
+        {
+          "id": "cleanrecord",
+          "reason": "HONEST_RETURN",
+          "title": "Clean record",
+          "blurb": "Went home on time. Came back stronger."
+        },
+        {
+          "id": "cashcaught",
+          "reason": "CASH_WORK_CAUGHT",
+          "title": "One shift too many",
+          "blurb": "CAD 120 and a removal order."
         },
         {
           "id": "flagged",
@@ -1335,7 +1351,9 @@
           "scenes": [
             "TOURIST_HUB",
             "TR_LMIA_SELLER",
-            "TR_CAREGIVER_AD"
+            "TR_CAREGIVER_AD",
+            "TR_CASH_SHIFT",
+            "TR_COUCH_TIGHT"
           ],
           "stars": [
             {
@@ -1707,12 +1725,11 @@
           {
             "id": "nephew",
             "kicker": "Housing",
-            "title": "The landlord's nephew needs the unit",
-            "body": "Suddenly there is a nephew. Moving again costs a weekend, a truck and another first-and-last.",
+            "title": "The landlord 'needs the unit' for his nephew",
+            "body": "In Ontario, a nephew isn't on the own-use list, and own-use needs proper notice and a month's compensation. You stay, and you learn your rights, but the hallway is frosty.",
             "effects": {
-              "walletCad": -900,
-              "energy": -12,
-              "desperation": 10
+              "energy": -6,
+              "desperation": 6
             }
           },
           {
@@ -1728,7 +1745,7 @@
           {
             "id": "potluck",
             "kicker": "Community",
-            "title": "Church potluck jollof, and a lead",
+            "title": "{FaithHub} potluck jollof, and a lead",
             "body": "Someone's aunty tastes your jollof, approves, and mentions her company is hiring. Referrals: the hidden job market.",
             "effects": {
               "community": 10,
@@ -1784,6 +1801,7 @@
           "goal": "SIN, bank, a coat, and a room you can actually keep.",
           "scenes": [
             "FY_LANDING",
+            "FY_CUSTOMS",
             "FY_HOUSING"
           ],
           "stars": [
@@ -1843,7 +1861,8 @@
           "scenes": [
             "FY_BLACK_TAX",
             "FY_WINTER",
-            "FY_ACCENT"
+            "FY_ACCENT",
+            "FY_GIG_LIFE"
           ],
           "stars": [
             {
@@ -1872,6 +1891,8 @@
           "goal": "A layoff, Detty December, and the big question: stay or japada?",
           "scenes": [
             "FY_WORK_EVENT",
+            "FY_TAXES",
+            "FY_SILENCE",
             "FY_DECEMBER"
           ],
           "stars": [
@@ -1956,7 +1977,7 @@
       "stage": "yaba-dawn",
       "transitIn": "none",
       "speaker": "{area}, {city}",
-      "dialogue": "NEPA has packed up. Your roommate is already in a Europe group chat. Downstairs, {area} is waking. {RelWho} in {relCity} sent three missed calls. Japa this year, or watch another circle leave.",
+      "dialogue": "NEPA has packed up. Your roommate is already in a Europe group chat. Downstairs, {area} is waking. {RelWho} in {relCity} sent three missed calls. Everybody don japa. This year na your turn, or another send-forth you go attend.",
       "choices": [
         {
           "text": "{Bus} to {techHub} and hunt remote jobs",
@@ -1978,7 +1999,7 @@
           }
         },
         {
-          "text": "Sleep. Trek the street when dusk is cheaper.",
+          "text": "Sleep. Waka the street when dusk is cheaper.",
           "label": "",
           "nextSceneId": "LAGOS_YABA_DUSK",
           "effects": {
@@ -2000,7 +2021,7 @@
       "dialogue": "The cyber cafe hums like a generator. A Toronto listing wants three years of React and right to work in Canada. You have a bootcamp PDF, stubborn data, and {relName} typing 'have you left the house??' from {relCity}.",
       "choices": [
         {
-          "text": "Rewrite the CV like you already live in Zone 2",
+          "text": "Rewrite the CV the Canadian way: two pages, no photo, no date of birth",
           "label": "",
           "nextSceneId": "LAGOS_CV_NIGHT",
           "effects": {
@@ -2010,7 +2031,7 @@
           }
         },
         {
-          "text": "{Bus} to the visa consultant blasting your status",
+          "text": "{Bus} to the 'visa consultant' whose status is all approval screenshots",
           "label": "",
           "nextSceneId": "LAGOS_AGENT_OFFICE",
           "effects": {
@@ -2021,7 +2042,7 @@
           "floatCad": 1500
         },
         {
-          "text": "Trek back to {area} and rethink the whole plan",
+          "text": "Go back to {area} and rethink the whole plan",
           "label": "",
           "nextSceneId": "LAGOS_YABA_DUSK",
           "effects": {
@@ -2148,7 +2169,7 @@
           "gamble": {
             "odds": 0.4,
             "success": {
-              "feedback": "They loved the race-condition story. 'Can you start in Toronto?' The offer letter arrives at 2 a.m.",
+              "feedback": "They loved the race-condition story. 'Can you start in Toronto?' The offer letter arrives at 10 p.m.",
               "label": "GOT_THE_OFFER"
             },
             "fail": {
@@ -2189,27 +2210,37 @@
       "stage": "agent",
       "transitIn": "danfo",
       "speaker": "Agent's office, {city}",
-      "dialogue": "He talks fast: Schengen, Canada express, 'we know people'. {RelName} would shout if {relSubj} saw this receipt. Your folder is heavier. Your stomach is not.",
+      "dialogue": "He talks fast: Schengen, Canada express, 'we know people at the High Commission'. There is no licence on the wall. {RelName} would shout if {relSubj} saw this receipt.",
       "choices": [
         {
-          "text": "Pay 'facilitation' then {bus} to the visa centre",
-          "label": "",
-          "nextSceneId": "LAGOS_EMBASSY_QUEUE",
+          "text": "Pay his 'facilitation' fee so your file 'moves faster'",
+          "label": "PAID_FACILITATION",
+          "nextSceneId": "LAGOS_AGENT_SCAM",
           "effects": {
             "walletNgn": -90000,
-            "papers": 10,
-            "desperation": 12
-          },
-          "floatCad": 1500
+            "desperation": 6
+          }
         },
         {
-          "text": "Walk out. Trek the annex with a clean file",
-          "label": "",
+          "text": "Walk out and pay a CICC-licensed consultant's ₦150k deposit instead (check the public register first)",
+          "label": "LICENSED_RCIC",
+          "nextSceneId": "LAGOS_EMBASSY_QUEUE",
+          "effects": {
+            "walletNgn": -150000,
+            "papers": 12,
+            "desperation": -4
+          },
+          "feedback": "Expensive, but the licence number is real and checkable. Paid representatives must be licensed by the CICC (or be lawyers)."
+        },
+        {
+          "text": "Walk out and do it yourself: IRCC's own checklist and {relName} on video",
+          "label": "DIY",
           "nextSceneId": "LAGOS_DOCUMENT_GRIND",
           "effects": {
             "desperation": -6,
             "energy": -6
-          }
+          },
+          "feedback": "Free, slower, and every mistake is yours. Plenty of people do it this way."
         }
       ]
     },
@@ -2300,7 +2331,7 @@
           }
         },
         {
-          "text": "Trek home and spend some on a better portfolio",
+          "text": "Go home and spend some on a better portfolio",
           "label": "",
           "nextSceneId": "LAGOS_CV_NIGHT",
           "effects": {
@@ -2326,22 +2357,23 @@
       "id": "LAGOS_BERLIN_CALL",
       "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
-      "title": "7:03 a.m. The call connects.",
+      "title": "3:05 p.m. The call connects.",
       "location": "{area}, on borrowed light",
       "stage": "video-job",
       "transitIn": "call",
       "speaker": "{area}, on borrowed light",
-      "dialogue": "Toronto asks about a race condition you actually fixed. Then they ask if you can fly. {RelName} is on speaker from a {relCity} bus: 'Say yes. I will be waiting at Pearson.'",
+      "dialogue": "Toronto asks about a race condition you actually fixed. Then: 'If we offer, we'd start the LMIA. That takes months.' {RelName} is on speaker from a {relCity} bus: 'Say yes. I will be waiting at Pearson.'",
       "choices": [
         {
-          "text": "Use the offer as the spine. {Bus} to the visa centre",
+          "text": "Take the offer. Apply for the work permit once their LMIA comes through",
           "label": "",
           "nextSceneId": "LAGOS_EMBASSY_QUEUE",
           "effects": {
             "papers": 22,
             "desperation": -18,
             "energy": -10
-          }
+          },
+          "feedback": "A job offer needs a work permit, not a visitor visa. Working on a visitor visa is unauthorized work."
         },
         {
           "text": "Panic. Go back to the street and call {relName} later",
@@ -2358,32 +2390,34 @@
       "id": "LAGOS_EMBASSY_QUEUE",
       "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
-      "title": "The queue is a weather system.",
+      "title": "Token number 47.",
       "location": "Visa Application Centre, {vacCity}",
       "stage": "embassy",
       "transitIn": "danfo",
       "speaker": "Visa Application Centre, {vacCity}",
-      "dialogue": "Plastic chairs. Names like a lottery. A man in front is whispering to his brother in Houston. You hold {relName}'s letter like it can stand in the line for you.",
+      "dialogue": "Plastic chairs. Token numbers. Fingers on glass, one photo, done in ten minutes. Nobody here decides anything: the real decision happens in an office you'll never see, on what you uploaded.",
       "choices": [
         {
-          "text": "Answer every question like the form already knows you",
-          "label": "",
+          "text": "Check every upload with {relName} on video first: names, dates, stamps, all matching",
+          "label": "CLEAN_FILE",
           "nextSceneId": "LAGOS_DECISION_GATE",
           "effects": {
             "desperation": -8,
             "energy": -8,
             "papers": 6
-          }
+          },
+          "feedback": "Officers want relevant and organized. Yours reads like one person's life."
         },
         {
-          "text": "Over-explain. Fill silences. Offer extra papers.",
-          "label": "",
+          "text": "Upload everything you own, just in case: 90 pages",
+          "label": "KITCHEN_SINK",
           "nextSceneId": "LAGOS_DECISION_GATE",
           "effects": {
             "desperation": 6,
             "energy": -10,
             "papers": -4
-          }
+          },
+          "feedback": "Officers want relevant and organized, not a 90-page PDF."
         }
       ]
     },
@@ -2391,12 +2425,12 @@
       "id": "LAGOS_DECISION_GATE",
       "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
-      "title": "They take the passport. You take the wait.",
+      "title": "They take your fingerprints. You keep your passport.",
       "location": "Outside the centre, VI sun",
       "stage": "outside",
       "transitIn": "trek",
       "speaker": "Outside the centre, VI sun",
-      "dialogue": "You step into the heat. {RelName} is already ringing. Tracking sites lie. WhatsApp groups lie louder. You go home and live inside a status page.",
+      "dialogue": "You step into the heat. {RelName} is already ringing. Tracking sites lie. WhatsApp groups lie louder. Canada only asks for the passport after a yes: the famous PPR. You go home and live inside a status page.",
       "choices": [
         {
           "text": "Pick {relName}'s call, then wait with the phone on loud",
@@ -2418,10 +2452,10 @@
       "stage": "phone-text",
       "transitIn": "none",
       "speaker": "{area} mattress, phone glowing",
-      "dialogue": "{RelName} is typing. The embassy mail is sitting unopened. If the file and the spirit held, the country lets you leave. If not, you are still here — which is not the same as finished.",
+      "dialogue": "{RelName} is typing. The IRCC portal says 'New message'. PPR don land, or a refusal letter? If not, you are still here, which is not the same as finished.",
       "choices": [
         {
-          "text": "Open the email. Call {relName} either way.",
+          "text": "Open the portal. Call {relName} either way.",
           "label": "",
           "nextSceneId": "LAGOS_RESOLVE",
           "effects": {}
@@ -2454,7 +2488,7 @@
       "stage": "stay",
       "transitIn": "none",
       "speaker": "{area}, same generator, new month",
-      "dialogue": "{RelName} does not drop the call. 'We try again. I am not going anywhere.' Rice that tastes like delay. Tomorrow you can trek another corridor. People do.",
+      "dialogue": "{RelName} does not drop the call. 'We try again. I am not going anywhere.' Rice that tastes like delay. Tomorrow you can try another corridor. People do.",
       "outcome": {
         "result": "fail",
         "reason": "STAYED_IN_LAGOS",
@@ -2508,7 +2542,7 @@
           "feedback": "That dismissed the panel's knowledge of their own market."
         },
         {
-          "text": "We aren't competing with Canadian banks. Our software is an interoperable bridge that lets Canadian exporters settle invoices with West African suppliers in real time, removing 48-hour delays.",
+          "text": "We don't compete with banks. Canadian exporters settle West African invoices in minutes, not 48 hours.",
           "label": "HIGH VALUE MATCH",
           "nextSceneId": "SUV_VANCE_TRACTION",
           "effects": {
@@ -2516,8 +2550,20 @@
             "scalabilityScore": 20
           },
           "feedback": "You framed it as direct economic value for Canada."
+        },
+        {
+          "text": "We already have 40 Nigerian customers; Canada is just a new market for us",
+          "label": "WRONG_MARKET",
+          "nextSceneId": "SUV_VANCE_TRACTION",
+          "effects": {
+            "investorInterest": 5,
+            "scalabilityScore": -10
+          },
+          "feedback": "Real traction, but they want to hear what you'll build in Canada."
         }
-      ]
+      ],
+      "title": "The pitch.",
+      "location": "Zoom, Lekki"
     },
     "SUV_PITCH_CHEN": {
       "id": "SUV_PITCH_CHEN",
@@ -2536,7 +2582,7 @@
           "feedback": "You did not answer the architecture question."
         },
         {
-          "text": "We use an asynchronous, event-driven design with message queues and a local encrypted buffer. If connectivity drops in Nigeria, transactions wait in the queue and settle through verified handshakes when the link returns.",
+          "text": "Queued, event-driven settlement. If the link drops, transactions wait, then settle and reconcile.",
           "label": "CRITICAL CRUISE",
           "nextSceneId": "SUV_CHEN_DEMO",
           "effects": {
@@ -2545,8 +2591,20 @@
             "energy": -10
           },
           "feedback": "A precise answer. It also took real effort to deliver."
+        },
+        {
+          "text": "Honestly, we've never had a serious outage. Our uptime speaks for itself",
+          "label": "UNTESTED",
+          "nextSceneId": "SUV_CHEN_DEMO",
+          "effects": {
+            "technicalCredibility": 12,
+            "investorInterest": -8
+          },
+          "feedback": "True, and it's not an answer. Dr. Chen writes something down."
         }
-      ]
+      ],
+      "title": "The architecture question.",
+      "location": "Zoom, Lekki"
     },
     "SUV_PITCH_ROSS": {
       "id": "SUV_PITCH_ROSS",
@@ -2566,7 +2624,7 @@
           "feedback": "Investors back contingency plans, not friendships."
         },
         {
-          "text": "We've already planned for that. Our code and documentation follow strict conventions, and our legal agreement has a key-person clause so a vetted proxy developer in Ontario can step into oversight if a founder is delayed.",
+          "text": "Key-person clause, documented code, and a vetted backup developer already in Canada.",
           "label": "OPERATIONAL FAILSAFE",
           "nextSceneId": "SUV_ROSS_MONEY",
           "effects": {
@@ -2574,8 +2632,20 @@
             "investorInterest": 20
           },
           "feedback": "That showed institutional maturity."
+        },
+        {
+          "text": "Our lead dev will stay in Lagos and work remotely; that's cheaper",
+          "label": "REMOTE_DEV",
+          "nextSceneId": "SUV_ROSS_MONEY",
+          "effects": {
+            "scalabilityScore": 10,
+            "investorInterest": -10
+          },
+          "feedback": "Cheaper, but the program wants the business run from Canada."
         }
-      ]
+      ],
+      "title": "The team question.",
+      "location": "Zoom, Lekki"
     },
     "SUV_PITCH_RESOLVE": {
       "id": "SUV_PITCH_RESOLVE",
@@ -2586,7 +2656,7 @@
           "when": {
             "investorInterest": [
               ">=",
-              75
+              70
             ],
             "technicalCredibility": [
               ">=",
@@ -2635,8 +2705,9 @@
       "outcome": {
         "result": "fail",
         "reason": "SUV_REJECTED",
-        "title": "Suv Rejected",
-        "lesson": "Designated organizations choose businesses they believe in; nobody can legitimately sell you a Letter of Support. Ads promising one for a fee are a common scam."
+        "title": "Committee passes",
+        "lesson": "Designated organizations choose businesses they believe in; nobody can legitimately sell you a Letter of Support. Ads promising one for a fee are a common scam.",
+        "subtitle": "The pitch wasn't ready. The scam ads will say otherwise."
       }
     },
     "LMIA_INTERVIEW_KOVACS": {
@@ -2644,10 +2715,10 @@
       "route": "CAREGIVER_LMIA",
       "layoutType": "CORPORATE_OFFICE",
       "speaker": "Mr. Kovacs (Operations Director)",
-      "dialogue": "Your operational background in {city} is honestly fantastic. You've managed larger fleets than we have here. But I see you're on a visitor record, and we need someone who can start full-time immediately. Why should I spend our legal budget waiting on an LMIA for you?",
+      "dialogue": "You've run bigger fleets than ours. That's rare. But you're on a visitor record and I need someone Monday. This is a supervisor role above the provincial median wage, so it's the high-wage stream. Why should I pay a lawyer and wait months for you?",
       "choices": [
         {
-          "text": "Please sir, my visa is running out and I don't want to go back to Nigeria. If you sponsor me, I'll work harder than anyone and never complain.",
+          "text": "Tell him your cousin's company got an LMIA in three weeks, so it's easy",
           "label": "CRITICAL LEAK",
           "nextSceneId": "LMIA_WAGE",
           "effects": {
@@ -2655,10 +2726,10 @@
             "lmiaProbability": -50,
             "desperation": 20
           },
-          "feedback": "Managers read desperation as a compliance and liability risk."
+          "feedback": "Overconfident, and he's done this before. Employers know the LMIA is slow and expensive."
         },
         {
-          "text": "I understand the hesitation. My background matches your logistics tracking software, so I won't need the usual three-month onboarding. I can clear your inventory backlog and save you more than the LMIA processing fee costs.",
+          "text": "Give me two weeks on your backlog and you'll see the LMIA fee pay for itself",
           "label": "HIGH ROI MATCH",
           "nextSceneId": "LMIA_WAGE",
           "effects": {
@@ -2674,7 +2745,7 @@
       "route": "CAREGIVER_LMIA",
       "layoutType": "CORPORATE_OFFICE",
       "speaker": "Mr. Kovacs (Operations Director)",
-      "dialogue": "The numbers make sense. But Service Canada requires me to show I advertised this job to Canadians and permanent residents and couldn't find a qualified person, and since April 2026 low-wage jobs need eight weeks of ads. How do we get past that?",
+      "dialogue": "The numbers make sense. But Service Canada requires me to show I advertised this job to Canadians and permanent residents, for at least four weeks, and couldn't find a qualified person. Wey Sabi says everybody just posts a fake ad. How do we do this?",
       "choices": [
         {
           "text": "We can post a fake job listing with impossible requirements so no Canadian qualifies and the government has to approve my file.",
@@ -2710,7 +2781,7 @@
       "route": "CAREGIVER_LMIA",
       "layoutType": "CORPORATE_OFFICE",
       "speaker": "Mr. Kovacs",
-      "dialogue": "Mr. Kovacs stands up. 'This interview is over.' Misrepresentation in an immigration application can lead to a five-year inadmissibility period.",
+      "dialogue": "Mr. Kovacs stands up. 'This interview is over.' Had that posting been filed, it would have been misrepresentation, with a possible five-year ban.",
       "onEnter": {
         "desperation": 25,
         "streetCred": -10
@@ -2933,6 +3004,21 @@
             "transit": "none"
           },
           {
+            "id": "couch_tight",
+            "label": "Talk to Your Cousin About the Couch",
+            "blurb": "Month three. His wife has stopped greeting you",
+            "effects": {
+              "timeRemainingDays": -1
+            },
+            "location": "Cousin's flat, Brampton",
+            "consequences": [
+              "The parlour feels smaller every week."
+            ],
+            "stage": "basement",
+            "transit": "none",
+            "goToSceneId": "TR_COUCH_TIGHT"
+          },
+          {
             "id": "kawosoke",
             "label": "Kawosoke: Claim Asylum Inside Canada",
             "blurb": "Wey Sabi's favourite advice. The IRCC portal, from the couch",
@@ -2952,19 +3038,37 @@
           {
             "id": "cash_job",
             "label": "Take a Cash Warehouse Shift (Under the Table)",
-            "blurb": "CAD 150, no questions asked",
+            "blurb": "CAD 15 an hour, cash, 'no SIN, no wahala'",
             "effects": {
-              "timeRemainingDays": -1,
-              "energy": -40,
-              "walletCad": 150
+              "timeRemainingDays": -1
             },
-            "location": "Unmarked warehouse, Etobicoke",
-            "fatal": "Working without authorization on visitor status can lead to removal and a ban on returning. Game over.",
+            "location": "Warehouse lot, Bolton",
             "consequences": [
-              "The 'no questions asked' part lasted until the inspection."
+              "The agency man counts the van seats twice."
             ],
             "stage": "warehouse",
-            "transit": "streetcar"
+            "transit": "streetcar",
+            "goToSceneId": "TR_CASH_SHIFT"
+          },
+          {
+            "id": "go_home",
+            "label": "Book the Flight Home, Record Clean",
+            "blurb": "No LMIA, no lies, no overstay",
+            "effects": {},
+            "location": "Toronto Pearson, Departures",
+            "consequences": [
+              "Your cousin drives you to Pearson in silence."
+            ],
+            "stage": "pearson-arrivals",
+            "transit": "plane",
+            "goToSceneId": "TR_GO_HOME",
+            "requires": {
+              "timeRemainingDays": [
+                "<=",
+                45
+              ]
+            },
+            "lockedHint": "Opens in your last 45 days"
           }
         ]
       },
@@ -2981,7 +3085,7 @@
         "reason": "INTERVIEW_SECURED",
         "title": "You got the meeting",
         "subtitle": "The Hidden LMIA Interview is unlocked. Your desperation walks in with you.",
-        "lesson": "Visitors may look for work and attend interviews, but may not start working. The job only becomes real after a work permit is approved."
+        "lesson": "Visitors may look for work and attend interviews, but may not start working. If an employer gets an LMIA, the work permit is normally applied for from outside Canada, so the honest win often means flying home to wait."
       },
       "unlocksRoute": "CAREGIVER_LMIA"
     },
@@ -2990,11 +3094,11 @@
       "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "The statement wasn't yours.",
-      "location": "Visa Application Centre, {vacCity}",
+      "location": "IRCC portal, {area}",
       "stage": "embassy",
       "transitIn": "danfo",
       "speaker": "Visa Application Centre, {vacCity}",
-      "dialogue": "The officer compares the account name with your passport, then slides the statement back. A borrowed bank statement is misrepresentation, and that can bar you from applying for five years.",
+      "dialogue": "Weeks later, a letter. The officer compared the account name with your passport and asked where the money came from. A borrowed bank statement is misrepresentation, and that can bar you from applying for five years.",
       "outcome": {
         "result": "fail",
         "reason": "MISREPRESENTATION",
@@ -3064,11 +3168,30 @@
               "label": "EXAM_PERSON"
             },
             "fail": {
-              "feedback": "The writing task was about 'a community garden'. CLB 6: below the CLB 7 Federal Skilled Worker minimum, so the pool scores you low.",
+              "feedback": "The writing task was about 'a community garden'. CLB 6: below the CLB 7 Federal Skilled Worker minimum. You can't enter the pool on that yet.",
               "set": {
                 "clbFirst": 6
               },
               "label": "CLB_6"
+            }
+          }
+        },
+        {
+          "text": "Book PTE Core instead: computer-based, results in days",
+          "label": "PTE_CORE",
+          "nextSceneId": "EE_ECA",
+          "effects": {
+            "walletCad": -330,
+            "energy": -12
+          },
+          "feedback": "PTE Core has counted for Express Entry since 2024. Half the group chat writes it now.",
+          "gamble": {
+            "odds": 0.5,
+            "success": {
+              "feedback": "PTE Core: CLB 9. Results in two days, screenshot in the group chat in two minutes."
+            },
+            "fail": {
+              "feedback": "CLB 7. Enough for the pool, not enough to be competitive."
             }
           }
         },
@@ -3096,7 +3219,7 @@
         {
           "text": "Pay the official express transcript fee and courier",
           "label": "PAID_THE_PROPER_FEE",
-          "nextSceneId": "EE_PROFILE",
+          "nextSceneId": "EE_HEALTH_CHECK",
           "effects": {
             "walletCad": -260,
             "desperation": 4
@@ -3109,7 +3232,7 @@
         {
           "text": "Go back every week and follow up in person",
           "label": "PERSISTENCE",
-          "nextSceneId": "EE_PROFILE",
+          "nextSceneId": "EE_HEALTH_CHECK",
           "effects": {
             "energy": -25,
             "desperation": 10
@@ -3259,7 +3382,7 @@
       "stage": "ircc-portal",
       "transitIn": "none",
       "speaker": "IRCC portal",
-      "dialogue": "This round: Canadian Experience Class, 2,000 invitations, cutoff 518. Last month's French-language draw went down to the 380s, but only for NCLC 7 in French. Healthcare draws sat around 470 and trades around 476, if your job is on those lists and you have a year of recent experience in it. Your score is on the meter. What now?",
+      "dialogue": "This round: Canadian Experience Class, cutoff 518. French draws went down to the 380s for NCLC 7. Healthcare sat around 470 and trades around 476, if you have 6 months of continuous experience in a listed job in the last 3 years. What now?",
       "choices": [
         {
           "text": "Enrol at the French institute: nine months to NCLC 7 (TEF Canada)",
@@ -3372,7 +3495,7 @@
               "label": "NOMINATED"
             },
             "fail": {
-              "feedback": "Not selected this intake. Provinces received half their 2025 allocation and filled it fast.",
+              "feedback": "Not selected this intake. Provincial streams fill fast, and most now favour people already working there.",
               "label": "NOT_THIS_INTAKE"
             },
             "bonus": [
@@ -3784,7 +3907,7 @@
       "dialogue": "The most common route to Canada starts with a classroom. Your inbox has offers. Choose carefully: the program decides your tuition, your funds and whether you get a post-graduation work permit (PGWP).",
       "choices": [
         {
-          "text": "Master's in Engineering Management, public university (1 year, CAD 32,000)",
+          "text": "Master's in Engineering Management, public university (16 months, CAD 32,000 for year one)",
           "label": "MASTERS",
           "nextSceneId": "ST_LOA",
           "effects": {
@@ -3872,7 +3995,7 @@
       "stage": "bank-hall",
       "transitIn": "danfo",
       "speaker": "Bank, {city}",
-      "dialogue": "You need first-year tuition, CAD 23,448 for living costs (applications from September 1, 2026) and money for travel. Since July 2026 officers also ask where the money came from. Bachelor's: about CAD 60,500. Master's: about CAD 57,500. College: about CAD 43,500. Private certificate: about CAD 34,500.",
+      "dialogue": "You need first-year tuition, CAD 23,448 for living costs (applications from September 1, 2026) and money for travel. Officers also check where the money came from, so big recent deposits need a paper trail. Bachelor's: about CAD 60,500. Master's: about CAD 57,500. College: about CAD 43,500. Private certificate: about CAD 34,500.",
       "choices": [
         {
           "text": "Apply for the entrance scholarship (write the essay tonight)",
@@ -4248,7 +4371,7 @@
       "stage": "embassy",
       "transitIn": "danfo",
       "speaker": "Visa Application Centre, {vacCity}",
-      "dialogue": "Fingerprints, a photo, a passport left behind the counter. The officer's decision depends mostly on your study plan and funds; the odds on the button show where you stand.",
+      "dialogue": "Fingerprints, a photo, and your passport back in your bag. Canada asks for it only after a yes. The decision depends mostly on your study plan and funds; the odds on the button show where you stand.",
       "choices": [
         {
           "text": "Wait for the decision",
@@ -4268,7 +4391,7 @@
             "min": 0.1,
             "max": 0.9,
             "success": {
-              "feedback": "The email subject line says 'Request for passport'. That means yes.",
+              "feedback": "The portal says 'Passport request'. PPR don land. That means yes.",
               "nextSceneId": "ST_APPROVED",
               "label": "APPROVED"
             },
@@ -4312,9 +4435,9 @@
       "dialogue": "The port of entry letter lands in your inbox. {RelName} screams on the phone from {relCity}. Pack for winter.",
       "choices": [
         {
-          "text": "Board the flight to Toronto",
+          "text": "Start packing",
           "label": "",
-          "nextSceneId": "ST_ARRIVAL",
+          "nextSceneId": "ST_SILENCE",
           "effects": {
             "desperation": -15
           }
@@ -4374,8 +4497,8 @@
       "dialogue": "The officer checks your letter and issues the study permit. Outside it is -18°C and your {city} 'jacket' is a hoodie.",
       "choices": [
         {
-          "text": "Buy proper boots and a parka before anything else (CAD 350)",
-          "label": "WINTER_READY",
+          "text": "New parka and boots from the mall (CAD 350; rent is tight)",
+          "label": "BOUGHT_PARKA",
           "nextSceneId": "ST_HOUSING",
           "effects": {
             "walletCad": -350,
@@ -4384,8 +4507,34 @@
           "feedback": "Warm, and slightly poorer."
         },
         {
+          "text": "Value Village thrift run: CAD 60 for a parka with a suspicious zip",
+          "label": "THRIFTED",
+          "nextSceneId": "ST_HOUSING",
+          "effects": {
+            "walletCad": -60
+          },
+          "gamble": {
+            "odds": 0.55,
+            "success": {
+              "feedback": "The zip holds. Someone's old Canada Goose, CAD 60. You tell everyone.",
+              "effects": {
+                "desperation": -6
+              },
+              "label": "THRIFT_WIN"
+            },
+            "fail": {
+              "feedback": "The zip dies at the bus stop in week two. You hold it shut with one hand all winter.",
+              "effects": {
+                "energy": -10,
+                "desperation": 5
+              },
+              "label": "ZIP_DIED"
+            }
+          }
+        },
+        {
           "text": "The hoodie will do",
-          "label": "HOODIE_GAMBLE",
+          "label": "HOODIE",
           "nextSceneId": "ST_HOUSING",
           "effects": {
             "energy": -20,
@@ -4398,16 +4547,14 @@
               "effects": {
                 "energy": 15,
                 "desperation": -8
-              },
-              "label": "MILD_DAY"
+              }
             },
             "fail": {
               "feedback": "−24°C with the wind at the streetcar stop. You can't feel your toes.",
               "effects": {
                 "desperation": 6,
                 "energy": -5
-              },
-              "label": "FROSTBITE_ADJACENT"
+              }
             }
           }
         }
@@ -4769,7 +4916,7 @@
       "stage": "pearson-arrivals",
       "transitIn": "plane",
       "speaker": "Toronto Pearson, Terminal 3",
-      "dialogue": "Eleven hours from {airportCode}. The CBSA officer flips through your passport: 'Purpose of your visit?' Mentor Wey Sabi's last voice note is still playing in your head: 'As you land, Kawosoke at the airport. No dull yourself.' Your visitor visa allows a stay of up to six months. It does not allow work.",
+      "dialogue": "Nineteen hours and one connection from {airportCode}. The CBSA officer flips through your passport: 'Purpose of your visit?' Wey Sabi's last voice note is still playing in your head: 'As you land, Kawosoke at the airport. No dull yourself.'",
       "choices": [
         {
           "text": "Tell the truth: a visit, return ticket in hand, savings to show",
@@ -4799,7 +4946,8 @@
               }
             ],
             "max": 0.92
-          }
+          },
+          "feedback": "A visitor can stay up to six months, look for work and attend interviews, but cannot work."
         },
         {
           "text": "Kawosoke at the counter: tell the officer you want to claim refugee protection",
@@ -4849,7 +4997,7 @@
       "stage": "cbsa-secondary",
       "transitIn": "none",
       "speaker": "Toronto Pearson, CBSA",
-      "dialogue": "The officer walks you to a side room. Fingerprints, a photo, and a long interview about who you are and how you travelled. A claim made at the airport is usually checked for eligibility the same day; if it is eligible it goes to the Immigration and Refugee Board, with a short deadline to file your Basis of Claim form. Whatever the form or the officer, the question is the same: 'What do you fear will happen to you if you return to Nigeria?' Wey Sabi's voice note says: 'Just pick a story. LGBTQ, abusive husband, village people, Boko Haram. Pick one.'",
+      "dialogue": "The officer walks you to a side room. Fingerprints, a photo, a long interview. Then the question: 'What do you fear if you return to Nigeria?' Your own story: {kwStory} Wey Sabi's voice note: 'Just pick one.'",
       "choices": [
         {
           "text": "The truth: nothing will happen to me. I came to find work.",
@@ -4858,7 +5006,7 @@
           "effects": {
             "desperation": 6
           },
-          "feedback": "Refugee protection is for people facing persecution or serious harm at home. Saying so out loud costs you nothing."
+          "feedback": "Refugee protection is for people facing persecution or serious harm at home. Saying so costs you nothing."
         },
         {
           "text": "Buy a ready-made story from Wey Sabi's 'paralegal' (CAD 1,500): LGBTQ, abusive husband or village people, pick from the menu",
@@ -4887,15 +5035,22 @@
           "effects": {
             "desperation": 4
           },
-          "feedback": "Same-sex relationships are criminalized across Nigeria (up to 14 years under the 2014 Act). The board has a guideline for these claims.",
+          "feedback": "Same-sex relationships are criminalized across Nigeria, with penalties of up to 14 years. The board has a guideline for these claims.",
           "set": {
             "kwBasis": 1,
             "kwCredibility": 55,
             "kwEvidence": 10
-          }
+          },
+          "requires": {
+            "kwTruth": [
+              "==",
+              1
+            ]
+          },
+          "lockedHint": "That isn't your story. A claim has to be your own"
         },
         {
-          "text": "It really happened: years of beatings from your husband, two police reports that went nowhere, and threats from his family",
+          "text": "It really happened: years of violence from your ex-partner, two police reports that went nowhere, threats from their family",
           "label": "GENDER_BASED_CLAIM",
           "nextSceneId": "KW_FILED",
           "effects": {
@@ -4906,7 +5061,14 @@
             "kwBasis": 2,
             "kwCredibility": 55,
             "kwEvidence": 10
-          }
+          },
+          "requires": {
+            "kwTruth": [
+              "==",
+              2
+            ]
+          },
+          "lockedHint": "That isn't your story. A claim has to be your own"
         },
         {
           "text": "It really happened: gunmen attacked your community and you know their names, and they know yours",
@@ -4917,12 +5079,12 @@
           },
           "feedback": "Insurgency and banditry are real. The board will ask whether the risk is personal to you, not just general violence.",
           "requires": {
-            "conflictRegion": [
-              ">=",
-              1
+            "kwTruth": [
+              "==",
+              3
             ]
           },
-          "lockedHint": "Your profile says you live in {city}. A claim has to be your own story",
+          "lockedHint": "That isn't your story. A claim has to be your own",
           "set": {
             "kwBasis": 3,
             "kwCredibility": 55,
@@ -4954,7 +5116,7 @@
       "stage": "ircc-portal",
       "transitIn": "none",
       "speaker": "IRCC portal, cousin's couch",
-      "dialogue": "You can claim from inside Canada online. The form wants everything: every address since you were 18, every trip, every job, and your Basis of Claim, the story in your own words. Under Bill C-12, law since March 2026, a claim made more than a year after you first entered Canada cannot go to the refugee board at all, only to a paper risk assessment. You are still inside your first year. Whatever the form or the officer, the question is the same: 'What do you fear will happen to you if you return to Nigeria?' Wey Sabi's voice note says: 'Just pick a story. LGBTQ, abusive husband, village people, Boko Haram. Pick one.'",
+      "dialogue": "The portal wants every address since 18, every trip, every job. Then one box: 'What do you fear if you return to Nigeria?' Your own story: {kwStory} Wey Sabi's voice note: 'Just pick one.'",
       "choices": [
         {
           "text": "The truth: nothing will happen to me. I came to find work.",
@@ -4963,7 +5125,7 @@
           "effects": {
             "desperation": 6
           },
-          "feedback": "Refugee protection is for people facing persecution or serious harm at home. Saying so out loud costs you nothing."
+          "feedback": "Saying so costs you nothing. Note the new rule under Bill C-12: a claim made more than a year after you first entered Canada goes to a paper risk assessment, not the refugee board."
         },
         {
           "text": "Buy a ready-made story from Wey Sabi's 'paralegal' (CAD 1,500): LGBTQ, abusive husband or village people, pick from the menu",
@@ -4992,15 +5154,22 @@
           "effects": {
             "desperation": 4
           },
-          "feedback": "Same-sex relationships are criminalized across Nigeria (up to 14 years under the 2014 Act). The board has a guideline for these claims.",
+          "feedback": "Same-sex relationships are criminalized across Nigeria, with penalties of up to 14 years. The board has a guideline for these claims.",
           "set": {
             "kwBasis": 1,
             "kwCredibility": 55,
             "kwEvidence": 10
-          }
+          },
+          "requires": {
+            "kwTruth": [
+              "==",
+              1
+            ]
+          },
+          "lockedHint": "That isn't your story. A claim has to be your own"
         },
         {
-          "text": "It really happened: years of beatings from your husband, two police reports that went nowhere, and threats from his family",
+          "text": "It really happened: years of violence from your ex-partner, two police reports that went nowhere, threats from their family",
           "label": "GENDER_BASED_CLAIM",
           "nextSceneId": "KW_FILED",
           "effects": {
@@ -5011,7 +5180,14 @@
             "kwBasis": 2,
             "kwCredibility": 55,
             "kwEvidence": 10
-          }
+          },
+          "requires": {
+            "kwTruth": [
+              "==",
+              2
+            ]
+          },
+          "lockedHint": "That isn't your story. A claim has to be your own"
         },
         {
           "text": "It really happened: gunmen attacked your community and you know their names, and they know yours",
@@ -5022,12 +5198,12 @@
           },
           "feedback": "Insurgency and banditry are real. The board will ask whether the risk is personal to you, not just general violence.",
           "requires": {
-            "conflictRegion": [
-              ">=",
-              1
+            "kwTruth": [
+              "==",
+              3
             ]
           },
-          "lockedHint": "Your profile says you live in {city}. A claim has to be your own story",
+          "lockedHint": "That isn't your story. A claim has to be your own",
           "set": {
             "kwBasis": 3,
             "kwCredibility": 55,
@@ -5168,15 +5344,15 @@
       "id": "KW_WAIT",
       "route": "TOURIST_GAMBLE",
       "layoutType": "STORY_STAGE",
-      "title": "Month 6 of the wait.",
+      "title": "Month 3 of the wait.",
       "location": "Downtown Toronto",
       "stage": "shelter",
       "transitIn": "none",
       "speaker": "Downtown Toronto",
-      "dialogue": "Your work permit arrived. So did the winter. Your Basis of Claim form is in a file somewhere at the board, and the hearing date is still a rumour. How do you spend the wait?",
+      "dialogue": "The work permit is still 'in processing'. So is the winter. Your Basis of Claim form is in a file somewhere at the board, and the hearing date is a rumour. How do you spend the wait?",
       "choices": [
         {
-          "text": "Work legally on the open work permit: warehouse nights, PSW course on weekends",
+          "text": "Wait for the open work permit (it comes in month 5), then warehouse nights and a PSW course",
           "label": "WORKING_LEGALLY",
           "nextSceneId": "KW_PREP",
           "effects": {
@@ -5187,7 +5363,7 @@
           "feedback": "Legal now. The first paycheque with your own name on it."
         },
         {
-          "text": "Take a cash warehouse job before the work permit arrives",
+          "text": "Take cash warehouse shifts now, before the work permit arrives",
           "label": "CASH_JOB",
           "nextSceneId": "KW_CAUGHT",
           "effects": {
@@ -5216,7 +5392,7 @@
           "feedback": "Twelve thousand likes. The board can read TikTok too, and the video does not match your form."
         },
         {
-          "text": "Fly home for your mother's 60th birthday",
+          "text": "Ask for your passport back and fly home for Mummy's 60th. The aso-ebi is already sewn",
           "label": "WENT_HOME",
           "nextSceneId": "KW_ABANDONED",
           "effects": {}
@@ -5544,13 +5720,13 @@
       "stage": "airport",
       "transitIn": "plane",
       "speaker": "{airport}",
-      "dialogue": "You flew back to the country you told Canada you feared. Leaving ends your claim, and the photos of you dancing at the owambe end your story.",
+      "dialogue": "You flew back to the country you told Canada you feared. The photos of you dancing at the owambe end your story.",
       "outcome": {
         "result": "fail",
         "reason": "CLAIM_ABANDONED",
         "title": "Claim over",
         "subtitle": "Going home to the place you fear tells everyone you don't fear it.",
-        "lesson": "Leaving Canada ends a pending refugee claim. Travelling back to the country you fear is strong evidence that you don't fear it."
+        "lesson": "Claimants usually hand their passport to the authorities. Travelling back to the country you fear is strong evidence that you don't fear it, and it can end your claim."
       }
     },
     "EE_ITA_HEALTH": {
@@ -5562,7 +5738,7 @@
       "stage": "ircc-portal",
       "transitIn": "none",
       "speaker": "IRCC portal",
-      "dialogue": "Healthcare and social services draw. The cutoff landed around 470, far below the general rounds, because Canada needs nurses more than it needs another logistics analyst. 60 days to submit.",
+      "dialogue": "Healthcare and social services draw. The cutoff landed around 470, far below the general rounds, because Canada needs nurses. 60 days to submit. In the group chat, someone types 'ITA don land!!!' with nine crying emojis.",
       "choices": [
         {
           "text": "Start the application",
@@ -5655,7 +5831,7 @@
         {
           "text": "Get your SIN at the airport Service Canada desk, then open a newcomer bank account this week",
           "label": "ADMIN_FIRST",
-          "nextSceneId": "FY_HOUSING",
+          "nextSceneId": "FY_CUSTOMS",
           "effects": {
             "careerScore": 6,
             "energy": -8
@@ -5665,7 +5841,7 @@
         {
           "text": "Buy the best phone plan in the mall so you can call home properly",
           "label": "BIG_PLAN",
-          "nextSceneId": "FY_HOUSING",
+          "nextSceneId": "FY_CUSTOMS",
           "effects": {
             "walletCad": -400,
             "desperation": -5
@@ -5675,7 +5851,7 @@
         {
           "text": "Winter coat and boots first; everything else can wait a day",
           "label": "COAT_FIRST",
-          "nextSceneId": "FY_HOUSING",
+          "nextSceneId": "FY_CUSTOMS",
           "effects": {
             "walletCad": -350,
             "energy": 10
@@ -5767,7 +5943,7 @@
           "feedback": "Rent paid. Most newcomers start in a survival job; the risk is staying there by default."
         },
         {
-          "text": "Volunteer two days a week and go to every newcomer meetup and church career night",
+          "text": "Volunteer two days a week and go to every newcomer meetup and {faithHub} career night",
           "label": "NETWORKING",
           "nextSceneId": "FY_CREDENTIALS",
           "effects": {
@@ -5825,7 +6001,7 @@
       "stage": "service-canada",
       "transitIn": "none",
       "speaker": "Settlement agency, Mississauga",
-      "dialogue": "Your counsellor explains: regulated jobs (nursing, medicine, engineering, teaching, law) need a Canadian licence. That can mean assessments, exams and a bridging program, often a year or two. Unregulated jobs need a Canadian-style resume and a referral.",
+      "dialogue": "Your counsellor explains: regulated jobs (nursing, medicine, engineering, teaching, law) need a Canadian licence, often a year or two of assessments and exams. Unregulated jobs need a Canadian-style resume and a referral. Back home you were {occupation}.",
       "choices": [
         {
           "text": "Enrol in a bridging program for internationally trained professionals, with a loan",
@@ -5836,7 +6012,10 @@
             "careerScore": 25,
             "energy": -12
           },
-          "feedback": "Slow and expensive, and the fastest legal way back to your profession."
+          "feedback": "Slow and expensive, and the fastest legal way back to your profession.",
+          "set": {
+            "officeJob": 1
+          }
         },
         {
           "text": "Take a PSW or assistant job in your field and study for the exams at night",
@@ -5847,7 +6026,24 @@
             "careerScore": 12,
             "energy": -18
           },
-          "feedback": "Paid, close to your field, exhausting. Many nurses spend their first years as PSWs."
+          "feedback": "Paid, close to your field, exhausting. Many nurses spend their first years as PSWs.",
+          "set": {
+            "officeJob": 1
+          }
+        },
+        {
+          "text": "Unregulated field: rewrite your CV the Canadian way and get a cloud certification on weekends",
+          "label": "CERT_AND_CV",
+          "nextSceneId": "FY_BLACK_TAX",
+          "effects": {
+            "walletCad": -400,
+            "careerScore": 10,
+            "energy": -8
+          },
+          "feedback": "Two pages, no photo, no date of birth, no state of origin. The certificate gets you past the robots.",
+          "set": {
+            "officeJob": 1
+          }
         },
         {
           "text": "Drive Uber full-time and park the career for now",
@@ -5858,7 +6054,10 @@
             "careerScore": -8,
             "desperation": 6
           },
-          "feedback": "Good money this month. Credentials that sit unused get harder to restart."
+          "feedback": "Good money this month. Credentials that sit unused get harder to restart.",
+          "set": {
+            "officeJob": 0
+          }
         }
       ]
     },
@@ -5866,7 +6065,7 @@
       "id": "FY_BLACK_TAX",
       "route": "FIRST_YEAR",
       "layoutType": "STORY_STAGE",
-      "title": "Mummy is calling.",
+      "title": "{parent} is calling.",
       "location": "Your room, Brampton",
       "stage": "basement",
       "transitIn": "call",
@@ -5890,9 +6089,10 @@
           "nextSceneId": "FY_WINTER",
           "effects": {
             "walletCad": -350,
-            "desperation": -4
+            "desperation": -4,
+            "community": -3
           },
-          "feedback": "A set amount the family can rely on and you can afford. Many people keep a separate 'family account'."
+          "feedback": "Uncle's bill is still open. He'll mention it at the next family gathering. The plan holds anyway."
         },
         {
           "text": "Say no this time; you are not stable yet",
@@ -5901,7 +6101,10 @@
           "effects": {
             "desperation": 12
           },
-          "feedback": "Rent is safe. The guilt arrives by voice note."
+          "feedback": "Silence on the family group for a week. You can feel it from here.",
+          "set": {
+            "saidNoHome": 1
+          }
         }
       ]
     },
@@ -5919,7 +6122,7 @@
         {
           "text": "Stay inside and scroll until spring",
           "label": "HIBERNATED",
-          "nextSceneId": "FY_ACCENT",
+          "nextSceneId": "FY_WORK_CHECK",
           "effects": {
             "desperation": 15,
             "energy": -5
@@ -5927,9 +6130,9 @@
           "feedback": "Seasonal low mood is common among newcomers, and isolation makes it worse."
         },
         {
-          "text": "Join the Nigerian association's winter games night and the church choir",
+          "text": "Join the Nigerian association's winter games night and the {faithGroup}",
           "label": "FOUND_PEOPLE",
-          "nextSceneId": "FY_ACCENT",
+          "nextSceneId": "FY_WORK_CHECK",
           "effects": {
             "community": 15,
             "desperation": -12,
@@ -5938,14 +6141,14 @@
           "feedback": "Community is the thing every newcomer says they underestimated."
         },
         {
-          "text": "Book a family doctor or walk-in visit about your mood (covered by your health card)",
+          "text": "Visit a walk-in clinic or call 811 about your mood (covered by your health card)",
           "label": "GOT_HELP",
-          "nextSceneId": "FY_ACCENT",
+          "nextSceneId": "FY_WORK_CHECK",
           "effects": {
             "desperation": -15,
             "energy": 8
           },
-          "feedback": "Talking to a doctor about low mood is routine here. Many provinces also run free counselling lines."
+          "feedback": "Family doctors have waitlists. Walk-in clinics and 811 are how most newcomers start."
         }
       ]
     },
@@ -5958,23 +6161,23 @@
       "stage": "warehouse",
       "transitIn": "none",
       "speaker": "Mississauga",
-      "dialogue": "The contract you finally got ends early: 'restructuring'. The job market has been rough for newcomers since 2024. Your team lead says you were good. Good is not the same as kept.",
+      "dialogue": "Month nine. Work dries up: the contract ends early, or the app cuts your rate. 'Restructuring.' The job market has been rough for newcomers since 2024.",
       "choices": [
         {
-          "text": "Apply for Employment Insurance and use the weeks to retrain",
+          "text": "Apply for Employment Insurance if you have the hours, and retrain",
           "label": "EI_AND_RETRAIN",
-          "nextSceneId": "FY_DECEMBER",
+          "nextSceneId": "FY_TAXES",
           "effects": {
             "walletCad": 1600,
             "careerScore": 8,
             "desperation": -4
           },
-          "feedback": "If you worked enough insurable hours, EI is yours. It exists for exactly this."
+          "feedback": "EI needs enough insurable hours from a real employer. App gig work usually doesn't count. If you qualify, use the weeks well."
         },
         {
-          "text": "Move to a cheaper province where your field is short of workers",
+          "text": "Move to Calgary: cheaper rent, no provincial sales tax, and your field is hiring",
           "label": "MOVED_PROVINCE",
-          "nextSceneId": "FY_DECEMBER",
+          "nextSceneId": "FY_TAXES",
           "effects": {
             "walletCad": 800,
             "careerScore": 10,
@@ -5985,7 +6188,7 @@
         {
           "text": "Take any shift on any app this week",
           "label": "ANY_SHIFT",
-          "nextSceneId": "FY_DECEMBER",
+          "nextSceneId": "FY_TAXES",
           "effects": {
             "walletCad": 1200,
             "energy": -15,
@@ -6343,7 +6546,7 @@
       "dialogue": "He sends a PDF on old letterhead and a voice note: 'Calgary warehouse, approved LMIA, half now, half when you land the work permit.' Wey Sabi says his cousin did it.",
       "choices": [
         {
-          "text": "Pay the first CAD 12,500 before someone else takes it",
+          "text": "Send the CAD 1,500 'processing deposit' now; the rest when the permit lands",
           "label": "PAID_FOR_LMIA",
           "nextSceneId": "TR_LMIA_PAID",
           "effects": {
@@ -6468,7 +6671,9 @@
             }
           }
         }
-      ]
+      ],
+      "title": "'Show me traction.'",
+      "location": "Zoom, Lekki"
     },
     "SUV_CHEN_DEMO": {
       "id": "SUV_CHEN_DEMO",
@@ -6485,7 +6690,7 @@
             "energy": -10
           },
           "gamble": {
-            "odds": 0.25,
+            "odds": 0.4,
             "bonus": [
               {
                 "key": "technicalCredibility",
@@ -6530,7 +6735,9 @@
           },
           "feedback": "Mr. Chen asks you to change one field. Figma doesn't do that."
         }
-      ]
+      ],
+      "title": "Live demo?",
+      "location": "Zoom, Lekki"
     },
     "SUV_ROSS_MONEY": {
       "id": "SUV_ROSS_MONEY",
@@ -6540,20 +6747,22 @@
       "dialogue": "Last question. How long can you survive in Toronto before revenue, and who is putting money in besides you?",
       "choices": [
         {
-          "text": "Eighteen months of runway, shown in naira and dollars, with a plan for when the naira slips again",
+          "text": "Twelve months of runway plus the settlement funds IRCC wants, shown in naira and dollars",
           "label": "REAL_RUNWAY",
-          "nextSceneId": "SUV_PITCH_RESOLVE",
+          "nextSceneId": "SUV_COMPLIANCE",
           "effects": {
             "scalabilityScore": 15,
             "investorInterest": 10
           },
-          "feedback": "Founders also need personal settlement funds for the visa itself. Ross likes that you know."
+          "feedback": "Founders must show settlement funds of their own as well. You've planned for the naira slipping again."
         },
         {
-          "text": "A Lagos angel will put in CAD 75,000 if you get the Letter of Support",
+          "text": "A Lagos angel will put in CAD 75,000 if you get the Letter",
           "label": "ANGEL_PROMISE",
-          "nextSceneId": "SUV_PITCH_RESOLVE",
-          "effects": {},
+          "nextSceneId": "SUV_COMPLIANCE",
+          "effects": {
+            "investorInterest": -10
+          },
           "gamble": {
             "odds": 0.4,
             "bonus": [
@@ -6578,17 +6787,20 @@
               },
               "label": "VAPOUR_MONEY"
             }
-          }
+          },
+          "feedback": "Only a designated Canadian angel group (CAD 75k+) or VC fund (CAD 200k+) counts. Your uncle's friend doesn't."
         },
         {
-          "text": "Offer the incubator 10% equity and a CAD 50,000 'program fee' for the Letter of Support",
+          "text": "Pay the incubator a CAD 50,000 'fee' to guarantee the Letter",
           "label": "PAY_TO_PLAY",
           "nextSceneId": "SUV_PAY_TO_PLAY",
           "effects": {
             "walletNgn": -1000000
           }
         }
-      ]
+      ],
+      "title": "Show me the money.",
+      "location": "Zoom, Lekki"
     },
     "SUV_PAY_TO_PLAY": {
       "id": "SUV_PAY_TO_PLAY",
@@ -6601,7 +6813,7 @@
         "reason": "PAY_TO_PLAY",
         "title": "Tried to buy a Letter of Support",
         "subtitle": "Designated organizations invest in businesses; they don't sell visas.",
-        "lesson": "Startup Visa 'pay-to-play' schemes were a major reason the program was paused in January 2026. A Letter of Support bought instead of earned can be found non-genuine, and that is misrepresentation."
+        "lesson": "Pay-to-play schemes were one of the integrity concerns around the Startup Visa program. Designated organizations invest; they don't sell Letters of Support, and a bought letter can be found non-genuine, which is misrepresentation."
       },
       "onEnter": {
         "desperation": 20
@@ -6625,7 +6837,7 @@
           "feedback": "An LMIA must offer at least the prevailing wage. You just did his homework."
         },
         {
-          "text": "'Anything you can pay, sir. I just need the papers.'",
+          "text": "Accept a dollar below the median if he signs this week",
           "label": "LOWBALL",
           "nextSceneId": "LMIA_ADVERTISING",
           "effects": {
@@ -6633,17 +6845,17 @@
             "employerTrust": -10,
             "desperation": 10
           },
-          "feedback": "Below the prevailing wage, ESDC refuses the LMIA. It also tells Kovacs you'd accept anything."
+          "feedback": "It sounds smart. Service Canada refuses offers below the prevailing wage, and it looks desperate."
         },
         {
-          "text": "Twenty percent above market: you're worth it",
+          "text": "Ask for well above the median: you're worth it",
           "label": "HIGH_ASK",
           "nextSceneId": "LMIA_ADVERTISING",
           "effects": {
             "employerTrust": -5,
             "lmiaProbability": 5
           },
-          "feedback": "Above median puts the job in the high-wage stream: fewer caps, more paperwork for him."
+          "feedback": "The prevailing wage is the floor, not the target. Overshooting makes him rethink the whole thing."
         }
       ]
     },
@@ -6726,7 +6938,7 @@
       "dialogue": "Your partner back home asks the question every week. Since January 2025, a spouse gets an open work permit only if you're in a master's of 16 months or more, a PhD, or certain professional programs. Your program decides what's possible.",
       "choices": [
         {
-          "text": "Apply for your spouse's open work permit: your master's qualifies",
+          "text": "Apply for your spouse's open work permit: your 16-month master's qualifies",
           "label": "SPOUSAL_OWP",
           "nextSceneId": "ST_TERM",
           "effects": {
@@ -6812,7 +7024,7 @@
           "effects": {
             "desperation": 3
           },
-          "feedback": "The pilots filled their caps on day one in 2025 and aren't taking new applications until 2030. The ad is selling a closed door."
+          "feedback": "The home care worker pilots filled their caps on day one in 2025 and aren't open to new applications right now. The ad is selling a closed door."
         },
         {
           "text": "Report the page and warn the family group chat",
@@ -6840,7 +7052,7 @@
         "reason": "CAREGIVER_SCAM",
         "title": "Paid for a closed door",
         "subtitle": "The caregiver pilots aren't open, and no family sells sponsorship.",
-        "lesson": "Canada's home care worker pilots reached their caps on day one in March 2025 and won't take new applications from March 2026 to March 2030. Check a program is open on canada.ca before paying anyone."
+        "lesson": "Canada's home care worker pilots reached their caps on day one in March 2025 and are not taking new applications. Check that a program is open on canada.ca before paying anyone."
       }
     },
     "FY_ACCENT": {
@@ -6907,7 +7119,642 @@
             "careerScore": 5,
             "energy": -5
           },
-          "feedback": "A senior director from Enugu takes you to lunch. 'I heard the same thing in 2009. Here's what I did.'"
+          "feedback": "A senior director from home takes you to lunch. 'I heard the same thing in 2009. Here's what I did.'"
+        }
+      ]
+    },
+    "LAGOS_AGENT_SCAM": {
+      "id": "LAGOS_AGENT_SCAM",
+      "route": "NIGERIA_LIFE",
+      "layoutType": "STORY_STAGE",
+      "title": "'Your file is moving.'",
+      "location": "Agent's office, {city}",
+      "stage": "agent",
+      "transitIn": "none",
+      "speaker": "Agent's office, {city}",
+      "dialogue": "Two weeks later the office has a new signboard and his number is switched off. Nobody 'knows people'. Nobody can make an IRCC file move faster.",
+      "outcome": {
+        "result": "fail",
+        "reason": "AGENT_SCAM",
+        "title": "Facilitation fee, gone",
+        "subtitle": "There is no fast lane for sale.",
+        "lesson": "Only CICC-licensed consultants, lawyers and Quebec notaries may charge to help with an application. Check the public register. Nobody can pay IRCC to speed up a file."
+      }
+    },
+    "EE_HEALTH_CHECK": {
+      "id": "EE_HEALTH_CHECK",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "eeCategory": [
+              "==",
+              1
+            ]
+          },
+          "nextSceneId": "NURSE_VERIFY"
+        },
+        {
+          "nextSceneId": "EE_PROFILE"
+        }
+      ]
+    },
+    "NURSE_VERIFY": {
+      "id": "NURSE_VERIFY",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Matron knows.",
+      "location": "Nurses' station, {area}, 2 a.m.",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "Nurses' station, {area}, 2 a.m.",
+      "dialogue": "Matron drops the roster. 'Three of you resigned this month. If you request council verification, I go know say you dey go.' Your colleague's letter took four months.",
+      "choices": [
+        {
+          "text": "Apply quietly to the nursing council and keep doing nights",
+          "label": "QUIET_VERIFY",
+          "nextSceneId": "NURSE_UK_OR_CANADA",
+          "effects": {
+            "walletCad": -60,
+            "energy": -12,
+            "desperation": 4
+          },
+          "feedback": "Verification goes from the council straight to the Canadian assessor. Slow, but clean.",
+          "set": {
+            "nursePath": 1
+          }
+        },
+        {
+          "text": "Tell Matron and ask for a reference letter",
+          "label": "TOLD_MATRON",
+          "nextSceneId": "NURSE_UK_OR_CANADA",
+          "effects": {
+            "desperation": 8
+          },
+          "gamble": {
+            "odds": 0.65,
+            "success": {
+              "feedback": "She's hurt. She still signs: 'the best I've trained'. You'll need that letter.",
+              "effects": {
+                "desperation": -6
+              },
+              "set": {
+                "nursePath": 2
+              },
+              "label": "MATRON_SIGNED"
+            },
+            "fail": {
+              "feedback": "She signs, slowly, and moves you to permanent nights 'since you're leaving anyway'.",
+              "effects": {
+                "energy": -15
+              },
+              "set": {
+                "nursePath": 1
+              },
+              "label": "PERMANENT_NIGHTS"
+            }
+          }
+        },
+        {
+          "text": "Pay a 'man at the council' ₦300k to fast-track it",
+          "label": "COUNCIL_TOUT",
+          "nextSceneId": "NURSE_TOUT",
+          "effects": {
+            "walletCad": -280
+          }
+        }
+      ]
+    },
+    "NURSE_TOUT": {
+      "id": "NURSE_TOUT",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "The fast lane was a man with a POS.",
+      "location": "Outside the council office",
+      "stage": "agent",
+      "transitIn": "none",
+      "speaker": "Outside the council office",
+      "dialogue": "He collected cash, sent a 'tracking number', and blocked you. Your real verification request never left the building.",
+      "outcome": {
+        "result": "fail",
+        "reason": "NURSE_TOUT",
+        "title": "Paid the 'man at the council'",
+        "subtitle": "There is no fast lane for sale.",
+        "lesson": "Nursing verification goes from the council to the Canadian assessor (NNAS, then the provincial college). Nobody sells a shortcut; touts sell receipts."
+      }
+    },
+    "NURSE_UK_OR_CANADA": {
+      "id": "NURSE_UK_OR_CANADA",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "'Come UK first, babe.'",
+      "location": "WhatsApp, after your night shift",
+      "stage": "whatsapp",
+      "transitIn": "none",
+      "speaker": "WhatsApp, after your night shift",
+      "dialogue": "Your set mate Ngozi voice-notes from Manchester: 'CBT, OSCE, I land in eight months. Come UK first, Canada later.' Your Canadian credential file has been 'in review' for a year. Canada pays more. UK is faster.",
+      "choices": [
+        {
+          "text": "Stay the Canada course: book the NCLEX-RN while the assessment runs",
+          "label": "NCLEX",
+          "nextSceneId": "EE_PROFILE",
+          "effects": {
+            "walletCad": -500,
+            "energy": -15,
+            "desperation": 6
+          },
+          "feedback": "Assessment, then the NCLEX, then the provincial college. Express Entry PR alone doesn't make you an RN in Canada; the licence does.",
+          "set": {
+            "nursePath": 3
+          }
+        },
+        {
+          "text": "Enter the Express Entry pool now and sort the licence after you land",
+          "label": "POOL_FIRST",
+          "nextSceneId": "EE_PROFILE",
+          "effects": {
+            "desperation": -4
+          },
+          "feedback": "Legal and common. Just budget for months of PSW or assistant work while the college processes you."
+        },
+        {
+          "text": "Go UK first; Canada can wait",
+          "label": "UK_FIRST",
+          "nextSceneId": "NURSE_UK",
+          "effects": {
+            "desperation": -10
+          }
+        }
+      ]
+    },
+    "NURSE_UK": {
+      "id": "NURSE_UK",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Manchester, eight months later.",
+      "location": "Manchester Airport",
+      "stage": "airport",
+      "transitIn": "none",
+      "speaker": "Manchester Airport",
+      "dialogue": "You japa'd, just not to Canada. Ngozi meets you at arrivals with a Greggs sausage roll. The Canada file sleeps in your Drive.",
+      "outcome": {
+        "result": "win",
+        "reason": "UK_FIRST",
+        "title": "Japa'd to the UK",
+        "subtitle": "Not Canada, but out. Many nurses do UK first.",
+        "lesson": "Many Nigerian nurses go UK first. Moving on to Canada later means another licensing process (NNAS, the NCLEX-RN and a provincial college), so keep your documents."
+      }
+    },
+    "TR_CASH_SHIFT": {
+      "id": "TR_CASH_SHIFT",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Shift starts 6, cash at 2.",
+      "location": "Warehouse lot, Bolton",
+      "stage": "warehouse",
+      "transitIn": "none",
+      "speaker": "Warehouse lot, Bolton",
+      "dialogue": "Agency man: 'No SIN, no wahala. CAD 15 an hour, cash.' Your wallet says what it says. Rent for the couch is Friday.",
+      "choices": [
+        {
+          "text": "Do the shift. Just one.",
+          "label": "CASH_SHIFT",
+          "nextSceneId": "TOURIST_HUB",
+          "effects": {
+            "energy": -30
+          },
+          "gamble": {
+            "odds": 0.6,
+            "success": {
+              "feedback": "CAD 120 in an envelope. Nobody asked. This time.",
+              "effects": {
+                "walletCad": 120,
+                "desperation": 5
+              },
+              "label": "NOBODY_ASKED"
+            },
+            "fail": {
+              "feedback": "Inspection day. The supervisor points at the van.",
+              "nextSceneId": "TR_CASH_CAUGHT",
+              "label": "INSPECTION"
+            }
+          }
+        },
+        {
+          "text": "Decline, and take the free resume clinic at the library instead",
+          "label": "DECLINED_CASH",
+          "nextSceneId": "TOURIST_HUB",
+          "effects": {
+            "desperation": 6,
+            "resumeScore": 8,
+            "energy": -5
+          },
+          "feedback": "Slower money. Zero risk to your record."
+        },
+        {
+          "text": "Help at the {faithHub} for a plate of food and some contacts",
+          "label": "VOLUNTEERED",
+          "nextSceneId": "TOURIST_HUB",
+          "effects": {
+            "energy": -10,
+            "networkScore": 6,
+            "desperation": -3
+          },
+          "feedback": "Volunteering is allowed. The aunty serving rice knows a hiring manager."
+        }
+      ]
+    },
+    "TR_CASH_CAUGHT": {
+      "id": "TR_CASH_CAUGHT",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "The van, the inspector, your name.",
+      "location": "Warehouse lot, Bolton",
+      "stage": "warehouse",
+      "transitIn": "none",
+      "speaker": "Warehouse lot, Bolton",
+      "dialogue": "The inspector is polite. The questions are not. A visitor working without a permit is reported to CBSA.",
+      "outcome": {
+        "result": "fail",
+        "reason": "CASH_WORK_CAUGHT",
+        "title": "Caught working on a visitor record",
+        "subtitle": "One shift, one inspection.",
+        "lesson": "Visitors can look for work and attend interviews but cannot work. Unauthorized work can lead to a removal order and makes every future visa harder."
+      }
+    },
+    "TR_COUCH_TIGHT": {
+      "id": "TR_COUCH_TIGHT",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "The couch gets small.",
+      "location": "Cousin's flat, Brampton",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "Cousin's flat, Brampton",
+      "dialogue": "Month three. Your cousin's wife doesn't greet again. 'Ẹ̀gbọ́n, the kids need the parlour for homework.' Your cousin stares at his phone.",
+      "choices": [
+        {
+          "text": "Offer CAD 300 a month 'for light'",
+          "label": "PAID_FOR_LIGHT",
+          "nextSceneId": "TOURIST_HUB",
+          "effects": {
+            "walletCad": -300,
+            "desperation": -6
+          },
+          "feedback": "She greets you the next morning. Money talks, even in Brampton."
+        },
+        {
+          "text": "Move to a {faithHub} member's basement",
+          "label": "MOVED_OUT",
+          "nextSceneId": "TOURIST_HUB",
+          "effects": {
+            "energy": -10,
+            "networkScore": 5,
+            "walletCad": -150
+          },
+          "feedback": "Smaller room, bigger network. Your cousin helps carry the box, relieved."
+        },
+        {
+          "text": "Pretend not to notice",
+          "label": "IGNORED_IT",
+          "nextSceneId": "TOURIST_HUB",
+          "effects": {
+            "desperation": 10,
+            "streetCred": -3
+          },
+          "feedback": "Yoruba people don't shout. They go cold."
+        }
+      ]
+    },
+    "TR_GO_HOME": {
+      "id": "TR_GO_HOME",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Return ticket.",
+      "location": "Toronto Pearson, Departures",
+      "stage": "pearson-arrivals",
+      "transitIn": "none",
+      "speaker": "Toronto Pearson, Departures",
+      "dialogue": "No LMIA, no lies, no overstay. Your cousin hugs you and pushes CAD 100 into your pocket. 'Come back the right way.'",
+      "outcome": {
+        "result": "win",
+        "reason": "HONEST_RETURN",
+        "title": "Clean record, next time stronger",
+        "subtitle": "You leave on time. That counts for more than people think.",
+        "lesson": "Leaving before your visitor status ends keeps your travel history clean. A Canadian network, savings and a compliant record make your next application stronger."
+      }
+    },
+    "SUV_COMPLIANCE": {
+      "id": "SUV_COMPLIANCE",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "title": "One more thing.",
+      "location": "Zoom, Lekki",
+      "speaker": "Ms. Vance (Committee Chair)",
+      "dialogue": "You move money across borders. Who regulates you in Canada?",
+      "choices": [
+        {
+          "text": "We register with FINTRAC as a money services business and budget for a compliance officer",
+          "label": "FINTRAC",
+          "nextSceneId": "SUV_PITCH_RESOLVE",
+          "effects": {
+            "investorInterest": 10,
+            "technicalCredibility": 8
+          },
+          "feedback": "The right answer, and an expensive one. Payments in Canada are regulated."
+        },
+        {
+          "text": "Our Nigerian licence covers us",
+          "label": "WRONG_LICENCE",
+          "nextSceneId": "SUV_PITCH_RESOLVE",
+          "effects": {
+            "investorInterest": -12,
+            "desperation": 6
+          },
+          "feedback": "Licences don't cross borders."
+        },
+        {
+          "text": "We'll sort regulation after we scale",
+          "label": "LATER",
+          "nextSceneId": "SUV_PITCH_RESOLVE",
+          "effects": {
+            "investorInterest": -18
+          },
+          "feedback": "Every investor on this call has seen a fintech die of 'later'."
+        }
+      ]
+    },
+    "FY_WORK_CHECK": {
+      "id": "FY_WORK_CHECK",
+      "route": "FIRST_YEAR",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "officeJob": [
+              ">=",
+              1
+            ]
+          },
+          "nextSceneId": "FY_ACCENT"
+        },
+        {
+          "nextSceneId": "FY_GIG_LIFE"
+        }
+      ]
+    },
+    "FY_GIG_LIFE": {
+      "id": "FY_GIG_LIFE",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "4.71 stars.",
+      "location": "Driver's seat, Mississauga",
+      "stage": "toronto-street",
+      "transitIn": "none",
+      "speaker": "Driver's seat, Mississauga",
+      "dialogue": "The app dropped your rating after a passenger complained you 'talked too much'. Below 4.7 you get deactivated. Gas is up. The car payment is not going anywhere.",
+      "choices": [
+        {
+          "text": "Keep driving, keep quiet, chase the airport runs",
+          "label": "KEEP_DRIVING",
+          "nextSceneId": "FY_WORK_EVENT",
+          "effects": {
+            "walletCad": 900,
+            "energy": -15,
+            "desperation": 6
+          },
+          "feedback": "The money is real. The career is still parked."
+        },
+        {
+          "text": "Drive mornings only, and use evenings for a certificate",
+          "label": "SPLIT_TIME",
+          "nextSceneId": "FY_WORK_EVENT",
+          "effects": {
+            "walletCad": 300,
+            "careerScore": 10,
+            "energy": -10
+          },
+          "feedback": "Less money, a way out.",
+          "set": {
+            "officeJob": 1
+          }
+        },
+        {
+          "text": "Ask the Naija drivers' WhatsApp group how they stay above 4.8",
+          "label": "ASKED_DRIVERS",
+          "nextSceneId": "FY_WORK_EVENT",
+          "effects": {
+            "community": 8,
+            "walletCad": 500
+          },
+          "feedback": "Phone charger, water bottles, no politics. And Calgary drivers say the rent there is half."
+        }
+      ]
+    },
+    "FY_TAXES": {
+      "id": "FY_TAXES",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "First tax season.",
+      "location": "Volunteer tax clinic",
+      "stage": "service-canada",
+      "transitIn": "none",
+      "speaker": "Volunteer tax clinic",
+      "dialogue": "April. A coworker asks if you've filed. Filed what? A friend of a cousin in the group chat 'does taxes': he promises a CAD 4,000 refund and charges 20% of it.",
+      "choices": [
+        {
+          "text": "Use a free community volunteer tax clinic",
+          "label": "TAX_CLINIC",
+          "nextSceneId": "FY_DECEMBER_CHECK",
+          "effects": {
+            "walletCad": 450,
+            "desperation": -4,
+            "energy": -4
+          },
+          "feedback": "Filing, even on small income, unlocks the GST/HST credit and other benefits newcomers miss."
+        },
+        {
+          "text": "Let the group-chat guy claim expenses you don't have",
+          "label": "FAKE_EXPENSES",
+          "nextSceneId": "FY_TAX_FAIL",
+          "effects": {
+            "walletCad": 800
+          }
+        },
+        {
+          "text": "Skip it: you barely earned anything",
+          "label": "SKIPPED_TAXES",
+          "nextSceneId": "FY_DECEMBER_CHECK",
+          "effects": {
+            "desperation": 4
+          },
+          "feedback": "Not filing means missing credits you're owed, and it can slow down your PR or citizenship paperwork later."
+        }
+      ]
+    },
+    "FY_TAX_FAIL": {
+      "id": "FY_TAX_FAIL",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "The CRA letter.",
+      "location": "Your mailbox",
+      "stage": "service-canada",
+      "transitIn": "none",
+      "speaker": "Your mailbox",
+      "dialogue": "Eight months later: a reassessment. The expenses were invented, the refund is clawed back with interest and a penalty, and the 'tax guy' has changed his number.",
+      "outcome": {
+        "result": "fail",
+        "reason": "TAX_FRAUD",
+        "title": "Refund today, CRA tomorrow",
+        "subtitle": "The group-chat tax guy has a new number.",
+        "lesson": "False claims on a tax return are fraud: the CRA reassesses, charges penalties and interest, and you are responsible for what your preparer files. Free volunteer clinics exist for low-income newcomers."
+      }
+    },
+    "FY_DECEMBER_CHECK": {
+      "id": "FY_DECEMBER_CHECK",
+      "route": "FIRST_YEAR",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "saidNoHome": [
+              ">=",
+              1
+            ]
+          },
+          "nextSceneId": "FY_SILENCE"
+        },
+        {
+          "nextSceneId": "FY_DECEMBER"
+        }
+      ]
+    },
+    "FY_SILENCE": {
+      "id": "FY_SILENCE",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "{parent} hasn't called in three weeks.",
+      "location": "WhatsApp, Sunday night",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "WhatsApp, Sunday night",
+      "dialogue": "You said no in the spring. Uncle's bill got paid by your cousin in Houston, and everyone knows it. {parent}'s last message is a forwarded prayer with no greeting.",
+      "choices": [
+        {
+          "text": "Call first. Explain the year honestly, and send something small",
+          "label": "MADE_PEACE",
+          "nextSceneId": "FY_DECEMBER",
+          "effects": {
+            "walletCad": -200,
+            "desperation": -10,
+            "community": 4
+          },
+          "feedback": "'Ọmọ mi / my child, why didn't you tell me it was this hard?'"
+        },
+        {
+          "text": "Wait for them to call you",
+          "label": "WAITED",
+          "nextSceneId": "FY_DECEMBER",
+          "effects": {
+            "desperation": 8
+          },
+          "feedback": "Pride on both sides. December is going to be awkward."
+        }
+      ]
+    },
+    "FY_CUSTOMS": {
+      "id": "FY_CUSTOMS",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "Ghana Must Go.",
+      "location": "Toronto Pearson, customs",
+      "stage": "pearson-arrivals",
+      "transitIn": "none",
+      "speaker": "Toronto Pearson, customs",
+      "dialogue": "{parent} packed ogbono, crayfish, stockfish and pepper. The kiosk asks: 'Bringing food?' The man behind you whispers, 'Tick No. Dem no dey check.'",
+      "choices": [
+        {
+          "text": "Declare everything",
+          "label": "DECLARED",
+          "nextSceneId": "FY_HOUSING",
+          "effects": {
+            "energy": -5,
+            "desperation": -4
+          },
+          "feedback": "The officer took the meat and waved the rest through. Declaring is how you avoid a fine."
+        },
+        {
+          "text": "Tick No and walk",
+          "label": "UNDECLARED",
+          "nextSceneId": "FY_HOUSING",
+          "effects": {},
+          "gamble": {
+            "odds": 0.35,
+            "success": {
+              "feedback": "Nobody stopped you. Your heart rate takes an hour to come down.",
+              "effects": {
+                "desperation": 4
+              },
+              "label": "WALKED_THROUGH"
+            },
+            "fail": {
+              "feedback": "The beagle found the stockfish. Undeclared food means a fine and a note on your record.",
+              "effects": {
+                "walletCad": -800,
+                "desperation": 12
+              },
+              "label": "BEAGLE"
+            }
+          }
+        }
+      ]
+    },
+    "ST_SILENCE": {
+      "id": "ST_SILENCE",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "PPR don land. Who do you tell?",
+      "location": "Family WhatsApp group",
+      "stage": "whatsapp",
+      "transitIn": "none",
+      "speaker": "Family WhatsApp group",
+      "dialogue": "Your thumb hovers over the family group. {parent} says, 'Tell only God and me.' Your bestie wants to post your farewell with a photo of your boarding pass.",
+      "choices": [
+        {
+          "text": "Tell close family only, and japa in silence",
+          "label": "QUIET_JAPA",
+          "nextSceneId": "ST_ARRIVAL",
+          "effects": {
+            "desperation": -12
+          },
+          "feedback": "Quiet japa: a Naija tradition. Nobody's village people get the memo."
+        },
+        {
+          "text": "Announce it in the family group",
+          "label": "ANNOUNCED",
+          "nextSceneId": "ST_ARRIVAL",
+          "effects": {
+            "walletCad": 150,
+            "desperation": -4
+          },
+          "feedback": "Contributions came in. So did fourteen shopping lists and an aunty who wants you to carry a 23 kg bag of garri."
+        },
+        {
+          "text": "Let her post the boarding pass",
+          "label": "POSTED_PASS",
+          "nextSceneId": "ST_ARRIVAL",
+          "effects": {
+            "desperation": -6,
+            "streetCred": 6
+          },
+          "feedback": "Two hundred likes. Never post a boarding pass or visa page: the barcode and numbers are personal data scammers love."
         }
       ]
     }

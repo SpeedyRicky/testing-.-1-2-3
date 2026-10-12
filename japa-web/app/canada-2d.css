@@ -455,3 +455,33 @@
   z-index: 9;
   pointer-events: none;
 }
+
+/* --- Faces: brows, blinking eyes and a mouth that follows the mood --------- */
+.p-eye { animation: blink 4.2s infinite; transform-origin: center; }
+@keyframes blink { 0%, 95%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.1); } }
+.p-brow {
+  position: absolute; top: 5px; width: 5px; height: 1.5px; border-radius: 2px;
+  background: rgba(10, 10, 10, 0.85); transition: transform 0.3s;
+}
+.p-brow.b1 { left: 3px; }
+.p-brow.b2 { right: 3px; }
+.p-mouth {
+  position: absolute; left: 6px; top: 13.5px; width: 8px; height: 2px;
+  border-radius: 2px; background: rgba(40, 8, 8, 0.85); transition: all 0.25s;
+}
+.face-smile .p-mouth { height: 3.5px; top: 12.5px; background: transparent; border-bottom: 2px solid rgba(40, 8, 8, 0.9); border-radius: 0 0 6px 6px; }
+.face-grin .p-mouth { height: 4.5px; top: 12.5px; background: #3b0a0a; border-top: 1.5px solid #fff; border-radius: 1px 1px 6px 6px; }
+.face-grin .p-eye { height: 2px; top: 8.5px; border-radius: 3px 3px 0 0; }
+.face-worried .p-mouth,
+.face-sad .p-mouth { height: 3px; top: 14px; background: transparent; border-top: 2px solid rgba(40, 8, 8, 0.9); border-radius: 6px 6px 0 0; }
+.face-worried .p-brow.b1, .face-sad .p-brow.b1 { transform: rotate(-22deg) translateY(-0.5px); }
+.face-worried .p-brow.b2, .face-sad .p-brow.b2 { transform: rotate(22deg) translateY(-0.5px); }
+.face-sad .p-eye { height: 2px; top: 9px; }
+.face-tired .p-eye { height: 1.5px; top: 9px; animation: none; }
+.face-tired .p-mouth { width: 5px; left: 7.5px; }
+.face-tired .p-brow { transform: translateY(1.5px); }
+.face-shock .p-mouth { width: 4px; height: 5px; left: 8px; top: 12.5px; border-radius: 50%; background: #3b0a0a; }
+.face-shock .p-brow { transform: translateY(-1.5px); }
+.face-talk .p-mouth { animation: talk-mouth 0.28s steps(2) infinite alternate; }
+@keyframes talk-mouth { from { height: 2px; } to { height: 4px; border-radius: 1px 1px 5px 5px; background: #3b0a0a; } }
+@media (prefers-reduced-motion: reduce) { .p-eye, .face-talk .p-mouth { animation: none; } }

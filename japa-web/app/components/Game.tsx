@@ -7,7 +7,8 @@ import { activeRun, initialState, reducer } from "@/game/machine";
 import type { RouteId } from "@/game/types";
 import { LayoutContainer } from "./LayoutContainer";
 import { LagosBackdrop } from "./layouts/LagosStageLayout";
-import { Person } from "./Person";
+import { Person, YouFaceProvider } from "./Person";
+import { faceFor } from "@/game/face";
 import { CinematicProvider, SpeedToggle, useCinematic } from "./Cinematic";
 import { EndingsButton, RealityCheck } from "./Endings";
 import { AwardToast, MetaChip, RunModsChip, useRunRewards } from "./Meta";
@@ -154,6 +155,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
   const profile = state.profile;
 
   return (
+    <YouFaceProvider value={faceFor(run)}>
     <div className="relative min-h-screen w-full">
       {/* Route backdrop sits behind everything, outside main's stacking context. */}
       {run && DB.scenes[run.currentSceneId]?.layoutType === "STORY_STAGE" && <LagosBackdrop route={state.activeRoute} />}
@@ -242,5 +244,6 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
         cutoffs change often, so check IRCC (canada.ca) before you act.
       </footer>
     </div>
+    </YouFaceProvider>
   );
 }

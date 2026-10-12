@@ -23,10 +23,12 @@ interface Props {
   suffix?: string;
   /** When true, a rise is bad news (e.g. desperation), so deltas flip colour. */
   invert?: boolean;
+  /** Close to ending the run: the label pulses red. */
+  danger?: boolean;
 }
 
 /** A labelled meter that animates to its new value and briefly shows the change. */
-export function StatBar({ label, value, max = 100, tone = "emerald", threshold, suffix = "", invert = false }: Props) {
+export function StatBar({ label, value, max = 100, tone = "emerald", threshold, suffix = "", invert = false, danger = false }: Props) {
   const prev = useRef(value);
   const [delta, setDelta] = useState<{ n: number; key: number } | null>(null);
 
@@ -45,10 +47,12 @@ export function StatBar({ label, value, max = 100, tone = "emerald", threshold, 
   return (
     <div>
       <div className="mb-1.5 flex items-baseline justify-between gap-2 text-xs">
-        <span className="font-medium text-zinc-400">{label}</span>
+        <span className={`font-medium ${danger ? "animate-pulse text-rose-300" : "text-zinc-400"}`}>
+          {label}{danger ? <span className="ml-1.5 rounded bg-rose-500/20 px-1 py-px text-[9px] font-bold uppercase tracking-wider text-rose-200">Danger</span> : null}
+        </span>
         <span className="flex items-baseline gap-2">
           {delta && (
-            <span key={delta.key} className={`animate-fade-in font-mono text-[11px] ${good ? "text-emerald-400" : "text-rose-400"}`}>
+            <span key={delta.key} className={`stat-pop font-mono text-xs font-bold ${good ? "text-emerald-400" : "text-rose-400"}`}>
               {delta.n > 0 ? "+" : ""}
               {delta.n}
             </span>
@@ -59,7 +63,8 @@ export function StatBar({ label, value, max = 100, tone = "emerald", threshold, 
           </span>
         </span>
       </div>
-      <div className="relative h-2 overflow-hidden rounded-full bg-white/[0.06]">
+      <div className={`relative h-2 overflow-hidden rounded-full bg-white/[0.06] ${danger ? "ring-1 ring-rose-400/60" : ""}`}>
+        {delta && <span key={delta.key} aria-hidden className={`absolute inset-0 z-10 rounded-full ${good ? "bar-flash-good" : "bar-flash-bad"}`} />}
         <div
           className={`h-full rounded-full ${FILL[tone]} transition-[width] duration-700 ease-out`}
           style={{ width: `${pct}%` }}

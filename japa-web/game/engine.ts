@@ -339,6 +339,22 @@ export function thresholdsFor(db: ScenarioDatabase, route: RouteId): Partial<Rec
   return out;
 }
 
+/** Stats close to ending the run: within 15% of a collapse line, or energy ≤ 20 / desperation ≥ 80. */
+export function dangerStats(db: ScenarioDatabase, state: GameState): Set<StatKey> {
+  const out = new Set<StatKey>();
+  if (state.outcome) return out;
+  const route = db.routes[currentScene(db, state)?.route ?? state.activeRoute];
+  const maxOf = (key: StatKey) => route.bars.find((b) => b.key === key)?.max ?? 100;
+  for (const [key, [op, line]] of Object.entries(route.collapse?.any ?? {}) as [StatKey, [Op, number]][]) {
+    const v = getStat(state, key);
+    const margin = maxOf(key) * 0.15;
+    if ((op === "<=" && v <= line + margin) || (op === ">=" && v >= line - margin)) out.add(key);
+  }
+  if (route.bars.some((b) => b.key === "energy") && state.energy <= 20) out.add("energy");
+  if (route.bars.some((b) => b.key === "desperation") && state.desperation >= 80) out.add("desperation");
+  return out;
+}
+
 // --- Dashboard (Tourist Gamble) -------------------------------------------------
 
 export function dashboardOf(db: ScenarioDatabase, state: GameState) {
@@ -354,6 +370,7 @@ export function leadChance(state: GameState, action: DashboardAction): number {
 
 export function canTake(state: GameState, action: DashboardAction): boolean {
   if (state.outcome) return false;
+  if (action.requires && !evaluate(state, action.requires)) return false;
   for (const key of ["energy", "walletCad", "walletNgn"] as const) {
     const d = action.effects[key] ?? 0;
     if (d < 0 && state[key] + d < 0) return false;

@@ -2,7 +2,17 @@
 
 import { familyFor, type Avatar } from "@/game/profile";
 import type { Relative } from "@/game/family";
+import { createContext, useContext } from "react";
+import type { Face } from "@/game/face";
 import { usePlayer } from "./Player";
+
+/** The player's expression, set once per screen from the run's stats. */
+const YouFace = createContext<Face>("smile");
+export const YouFaceProvider = YouFace.Provider;
+
+const POSE_FACE: Partial<Record<PersonPose, Face>> = { cheer: "grin", slump: "sad", talk: "talk", phone: "worried" };
+/** Friendly faces by default; officials keep a straight face. */
+const NPC_FACE: Partial<Record<PersonWho, Face>> = { relative: "smile", mentor: "smile", roommate: "smile", member: "neutral" };
 
 export type PersonPose = "idle" | "walk" | "phone" | "sit" | "wave" | "queue" | "talk" | "cheer" | "slump";
 export type PersonWho =
@@ -91,6 +101,7 @@ export function Person({
   caption,
   wear = [],
   avatar,
+  face,
 }: {
   who: PersonWho;
   pose?: PersonPose;
@@ -104,8 +115,12 @@ export function Person({
   wear?: Accessory[];
   /** Explicit look (the sign-up preview); otherwise "you" uses the signed-in player's avatar. */
   avatar?: Avatar;
+  /** Expression; otherwise taken from the pose, then (for "you") from the run's stats. */
+  face?: Face;
 }) {
   const { profile } = usePlayer();
+  const youFace = useContext(YouFace);
+  const expr: Face = face ?? POSE_FACE[pose] ?? (who === "you" ? youFace : NPC_FACE[who] ?? "neutral");
   const base = LOOK[who];
   const av = who === "you" ? avatar ?? profile?.avatar : who === "relative" ? relativeAvatar(familyFor(profile)) : undefined;
   const extras = new Set<Accessory>([...(base.extra ?? []), ...wear]);
@@ -146,9 +161,12 @@ export function Person({
         {headwear === "headwrap" ? <span className="p-headwrap" style={{ background: av!.headwearColor }} /> : null}
         {headwear === "beanie" ? <span className="p-beanie" style={{ background: av!.headwearColor }} /> : null}
         {extras.has("cap") ? <span className="p-cap" /> : null}
-        <span className="p-head" style={{ background: skin }}>
-          <i className="p-eye e1" />
-          <i className="p-eye e2" />
+        <span className={`p-head face-${expr}`} style={{ background: skin }}>
+          <i className="p-brow b1" />
+          <i className="p-brow b2" />
+          <i className="p-eye e1" style={{ animationDelay: delay }} />
+          <i className="p-eye e2" style={{ animationDelay: delay }} />
+          <i className="p-mouth" />
           {extras.has("glasses") ? <i className="p-glasses" /> : null}
         </span>
         <span className={`p-torso ${ankaraTop ? "ankara" : ""}`} style={{ backgroundColor: top }} />

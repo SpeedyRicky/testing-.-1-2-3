@@ -7,15 +7,22 @@ import type { AudioEngine } from "../audio/engine";
 
 export type SoundMode = "all" | "sfx" | "off";
 const STORAGE_KEY = "japa.sound.v1";
+const VOLUME_KEY = "japa.volume.v1";
+export interface Volumes { music: number; sfx: number }
+const DEFAULT_VOLUMES: Volumes = { music: 0.8, sfx: 0.9 };
 
 interface SoundCtx {
   mode: SoundMode;
   setMode: (m: SoundMode) => void;
   play: (s: Sfx) => void;
   setMood: (m: Mood) => void;
+  volumes: Volumes;
+  setVolumes: (v: Volumes) => void;
 }
 
-const SoundContext = createContext<SoundCtx>({ mode: "off", setMode: () => {}, play: () => {}, setMood: () => {} });
+const SoundContext = createContext<SoundCtx>({
+  mode: "off", setMode: () => {}, play: () => {}, setMood: () => {}, volumes: DEFAULT_VOLUMES, setVolumes: () => {},
+});
 export const useSound = () => useContext(SoundContext);
 
 /**
@@ -27,18 +34,26 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   const engine = useRef<AudioEngine | null>(null);
   const mood = useRef<Mood>("lagos");
   const modeRef = useRef<SoundMode>("all");
+  const [volumes, setVolumesState] = useState<Volumes>(DEFAULT_VOLUMES);
+  const volRef = useRef<Volumes>(DEFAULT_VOLUMES);
 
   useEffect(() => {
     const t = window.setTimeout(() => {
       try {
         const saved = window.localStorage.getItem(STORAGE_KEY);
         if (saved === "all" || saved === "sfx" || saved === "off") { modeRef.current = saved; setModeState(saved); }
+        const v = JSON.parse(window.localStorage.getItem(VOLUME_KEY) ?? "null") as Partial<Volumes> | null;
+        if (v && typeof v.music === "number" && typeof v.sfx === "number") {
+          volRef.current = { music: v.music, sfx: v.sfx };
+          setVolumesState(volRef.current);
+        }
       } catch { /* storage blocked: keep the default */ }
     }, 0);
     return () => window.clearTimeout(t);
   }, []);
 
   const apply = useCallback((e: AudioEngine, m: SoundMode) => {
+    e.setVolumes(volRef.current.music, volRef.current.sfx);
     e.setMusicOn(m === "all");
     e.setSfxOn(m !== "off");
   }, []);
@@ -91,27 +106,78 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     engine.current?.setMood(m);
   }, []);
 
-  const value = useMemo(() => ({ mode, setMode, play, setMood }), [mode, setMode, play, setMood]);
+  const setVolumes = useCallback((v: Volumes) => {
+    volRef.current = v;
+    setVolumesState(v);
+    try { window.localStorage.setItem(VOLUME_KEY, JSON.stringify(v)); } catch { /* ignore */ }
+    engine.current?.setVolumes(v.music, v.sfx);
+  }, []);
+
+  const value = useMemo(() => ({ mode, setMode, play, setMood, volumes, setVolumes }),
+    [mode, setMode, play, setMood, volumes, setVolumes]);
   return <SoundContext.Provider value={value}>{children}</SoundContext.Provider>;
 }
 
-const NEXT: Record<SoundMode, SoundMode> = { all: "sfx", sfx: "off", off: "all" };
 const LABEL: Record<SoundMode, string> = { all: "Music on", sfx: "Effects only", off: "Muted" };
+const MODES: SoundMode[] = ["all", "sfx", "off"];
 
-/** Header chip: music and effects, effects only, or muted. */
+/** Header chip: opens a small mixer with the sound mode and music/effects volume. */
 export function SoundToggle() {
-  const { mode, setMode } = useSound();
+  const { mode, setMode, volumes, setVolumes, play } = useSound();
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: Event) => {
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !box.current?.contains(e.target as Node)) setOpen(false);
+    };
+    window.addEventListener("pointerdown", close);
+    window.addEventListener("keydown", close);
+    return () => { window.removeEventListener("pointerdown", close); window.removeEventListener("keydown", close); };
+  }, [open]);
   const Icon = mode === "all" ? Music : mode === "sfx" ? Volume2 : VolumeX;
   return (
-    <button
-      type="button"
-      onClick={() => setMode(NEXT[mode])}
-      aria-label={`Sound: ${LABEL[mode]}. Switch to ${LABEL[NEXT[mode]]}`}
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition hover:border-amber-300/60 hover:text-white ${
-        mode === "all" ? "border-emerald-300/40 bg-emerald-300/10 text-emerald-100" : "border-white/15 bg-white/5 text-zinc-300"}`}
-    >
-      <Icon className="h-3.5 w-3.5" /> {LABEL[mode]}
-    </button>
+    <div ref={box} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-label={`Sound: ${LABEL[mode]}. Open the mixer`}
+        className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition hover:border-amber-300/60 hover:text-white ${
+          mode === "all" ? "border-emerald-300/40 bg-emerald-300/10 text-emerald-100" : "border-white/15 bg-white/5 text-zinc-300"}`}
+      >
+        <Icon className="h-3.5 w-3.5" /> {LABEL[mode]}
+      </button>
+      {open ? (
+        <div role="dialog" aria-label="Sound mixer"
+          className="animate-scene-in absolute right-0 top-full z-30 mt-2 w-64 rounded-2xl border border-white/15 bg-zinc-950/95 p-4 shadow-2xl backdrop-blur-xl">
+          <div className="grid grid-cols-3 gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1" role="radiogroup" aria-label="Sound mode">
+            {MODES.map((m) => (
+              <button key={m} type="button" role="radio" aria-checked={mode === m} onClick={() => setMode(m)}
+                className={`rounded-lg px-1.5 py-1.5 text-[11px] font-semibold ${mode === m ? "bg-white/10 text-white" : "text-zinc-400 hover:text-zinc-200"}`}>
+                {LABEL[m]}
+              </button>
+            ))}
+          </div>
+          <Slider label="Music" value={volumes.music} disabled={mode !== "all"} onChange={(music) => setVolumes({ ...volumes, music })} />
+          <Slider label="Effects" value={volumes.sfx} disabled={mode === "off"} onChange={(sfx) => setVolumes({ ...volumes, sfx })}
+            onRelease={() => play("good")} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function Slider({ label, value, disabled, onChange, onRelease }: {
+  label: string; value: number; disabled: boolean; onChange: (v: number) => void; onRelease?: () => void;
+}) {
+  return (
+    <label className={`mt-3 block text-xs ${disabled ? "opacity-40" : ""}`}>
+      <span className="flex justify-between font-medium text-zinc-300"><span>{label}</span><span className="font-mono text-zinc-500">{Math.round(value * 100)}%</span></span>
+      <input type="range" min={0} max={100} step={5} value={Math.round(value * 100)} disabled={disabled}
+        onChange={(e) => onChange(Number(e.target.value) / 100)} onPointerUp={onRelease} onKeyUp={onRelease}
+        className="mt-1.5 w-full accent-amber-300" aria-label={`${label} volume`} />
+    </label>
   );
 }
 

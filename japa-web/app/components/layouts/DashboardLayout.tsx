@@ -139,6 +139,7 @@ export function DashboardLayout({ run, dispatch, bars, toast }: LayoutProps) {
                 <div className="mt-3 font-mono text-[11px] text-zinc-400">{costLine(a)}</div>
                 {chance > 0 && <div className="mt-1 font-mono text-[11px] text-emerald-400/80">Lead chance {Math.round(chance * 100)}%</div>}
                 {a.fatal && <div className="mt-1 text-[11px] text-rose-400/80">Looks tempting.</div>}
+                {!ok && a.lockedHint ? <div className="mt-1 text-[11px] text-amber-200/80">{a.lockedHint}</div> : null}
               </button>
             );
           })}

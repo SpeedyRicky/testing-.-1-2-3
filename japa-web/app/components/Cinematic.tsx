@@ -125,10 +125,10 @@ function CinematicView({ req, beat, ms, seed, onSkip }: {
           <div className="cine-scene"><SceneStage stage={req.stage} mood={reacting ? (tone === "bad" || tone === "danger" ? "fail" : tone === "neutral" ? "calm" : "win") : "calm"} /></div>
           <div className="cine-flash" />
           <div className="cine-actor enter-left">
-            <Person who="you" x={20} scale={2.1} pose={reacting ? ACTOR_POSE[tone] : "talk"} caption="You" wear={req.stage.match(/toronto|pearson|campus|graduation/) ? ["scarf"] : []} />
+            <Person who="you" x={20} scale={2.1} pose={reacting ? ACTOR_POSE[tone] : "talk"} face={reacting && tone === "danger" ? "shock" : undefined} caption="You" wear={req.stage.match(/toronto|pearson|campus|graduation/) ? ["scarf"] : []} />
           </div>
           <div className="cine-actor enter-right">
-            <Person who={reactor} x={80} scale={1.8} flip pose={reacting ? REACTOR_POSE[tone] : "idle"} />
+            <Person who={reactor} x={80} scale={1.8} flip pose={reacting ? REACTOR_POSE[tone] : "idle"} face={reacting ? (tone === "good" || tone === "triumph" ? "grin" : tone === "neutral" ? undefined : "shock") : undefined} />
           </div>
           {req.transit && TRANSIT_LABEL[req.transit] ? (
             <span className="cine-transit">{TRANSIT_LABEL[req.transit]} · {req.location}</span>

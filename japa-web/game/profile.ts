@@ -2,7 +2,7 @@
 // Pure functions turn it into starting stats for each route and words for each scene.
 import type { GameState, RouteId } from "./types";
 import { placeFor, placeVars } from "./nigeria";
-import { detectHeritage, isSibling, makeRelative, relativeVars, seededRandom, type Relative } from "./family";
+import { detectHeritage, faithFor, homeVars, isSibling, kwStory, kwTruthFor, makeRelative, relativeVars, seededRandom, type Relative } from "./family";
 
 export type BodySize = "slim" | "average" | "plus";
 export type HairStyle = "low-cut" | "afro" | "braids" | "bun" | "bald";
@@ -198,6 +198,19 @@ export function familyFor(p: Pick<PlayerProfile, "username" | "stateCode" | "fam
   return makeRelative(heritage, seededRandom(`${username.toLowerCase()}|${stateCode}`), undefined, username);
 }
 
+/** Church or masjid, and the parent's name, for this player. */
+export function homeFor(p: Pick<PlayerProfile, "username" | "stateCode" | "family"> | null) {
+  const heritage = familyFor(p).heritage;
+  const faith = faithFor(heritage, seededRandom(`${(p?.username ?? "Tolu").toLowerCase()}|${p?.stateCode ?? "LA"}|faith`));
+  return { heritage, faith };
+}
+
+/** What really happened at home: fixed per profile, so an asylum claim is either the character's own or invented. */
+export function kwTruthOf(p: Pick<PlayerProfile, "username" | "stateCode"> | null) {
+  const code = p?.stateCode ?? "LA";
+  return kwTruthFor(CONFLICT_STATES.has(code), seededRandom(`${(p?.username ?? "Tolu").toLowerCase()}|${code}|kw`));
+}
+
 /** States with insurgency, banditry or herder-farmer violence: an asylum claim from here can be the player's own story. */
 export const CONFLICT_STATES: ReadonlySet<string> = new Set(["BO", "YO", "AD", "ZA", "KT", "KD", "SO", "NI", "BE", "PL"]);
 
@@ -240,14 +253,19 @@ export function routePatches(p: PlayerProfile): Partial<Record<RouteId, Partial<
     },
     TOURIST_GAMBLE: {
       walletCad: clamp(g.savingsCad, 1500, 6000),
-      routeStats: { conflictRegion: CONFLICT_STATES.has(p.stateCode) ? 1 : 0 },
+      routeStats: { conflictRegion: CONFLICT_STATES.has(p.stateCode) ? 1 : 0, kwTruth: kwTruthOf(p) },
     },
   };
 }
 
 /** All words a scene can fill in: place, person and profile. */
 export function profileVars(p: PlayerProfile | null): Record<string, string> {
-  const place = { ...placeVars(placeFor(p?.stateCode ?? "LA")), ...relativeVars(familyFor(p)) };
+  const home = homeFor(p);
+  const where = placeVars(placeFor(p?.stateCode ?? "LA"));
+  const place = {
+    ...where, ...relativeVars(familyFor(p)), ...homeVars(home.heritage, home.faith),
+    kwStory: fillText(kwStory(kwTruthOf(p)), where),
+  };
   if (!p) {
     return { ...place, name: "Tolu", age: "29", educationPhrase: "a B.Sc.", experiencePhrase: "three years as a logistics analyst", occupation: "a logistics analyst" };
   }
