@@ -1,5 +1,6 @@
 import { LagosStage } from "./LagosStage";
 import { Person } from "./Person";
+import { usePlayer } from "./Player";
 import { STAGES, type Mood, type StageSpec } from "./stages";
 import type { StageKind } from "@/game/types";
 
@@ -58,8 +59,9 @@ function Prop({ p }: { p: NonNullable<StageSpec["props"]>[number] }) {
   );
 }
 
-/** Draws a named stage. Lagos Life's own stages go to LagosStage; everything else uses the spec kit. */
+/** Draws a named stage. Nigeria's own stages go to LagosStage; everything else uses the spec kit. */
 export function SceneStage({ stage, mood = "calm", compact = false }: { stage: StageKind; mood?: Mood; compact?: boolean }) {
+  const { t } = usePlayer();
   if (LAGOS_KINDS.has(stage)) {
     return <LagosStage scene={stage as Parameters<typeof LagosStage>[0]["scene"]} />;
   }
@@ -86,7 +88,7 @@ export function SceneStage({ stage, mood = "calm", compact = false }: { stage: S
           who={person.who}
           x={person.x}
           pose={person.moods?.[mood] ?? person.pose ?? "idle"}
-          caption={person.caption}
+          caption={person.caption ? t(person.caption) : undefined}
           scale={person.scale ?? (compact ? 0.85 : 1)}
           flip={person.flip}
           delay={person.delay}

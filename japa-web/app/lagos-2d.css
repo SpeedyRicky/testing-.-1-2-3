@@ -195,22 +195,54 @@
 .call-pane.lagos {
   background: linear-gradient(#1e1b4b, #365314);
 }
-.call-pane.peckham {
-  background: linear-gradient(#94a3b8, #334155);
+.call-pane.canada {
+  background: linear-gradient(#94a3b8, #e2e8f0 70%);
 }
-.uk-brick {
+/* The relative's Canada, by province: city towers, Rockies, prairie, or an Atlantic harbour. */
+.ca-scenery {
   position: absolute;
-  top: 30%;
+  left: 0;
+  right: 0;
+  bottom: 18%;
+  height: 52%;
+  z-index: 0;
+}
+.ca-scenery.city {
+  background: repeating-linear-gradient(90deg, #475569 0 14px, #64748b 14px 16px);
+  clip-path: polygon(0 100%, 0 45%, 12% 45%, 12% 20%, 24% 20%, 24% 55%, 36% 55%, 36% 8%, 46% 8%, 46% 40%, 60% 40%, 60% 25%, 72% 25%, 72% 60%, 86% 60%, 86% 30%, 100% 30%, 100% 100%);
+}
+.ca-scenery.mountains {
+  background: linear-gradient(#f8fafc 0 28%, #64748b 28%);
+  clip-path: polygon(0 100%, 0 70%, 18% 25%, 32% 60%, 52% 0, 70% 55%, 84% 30%, 100% 65%, 100% 100%);
+}
+.ca-scenery.prairie {
+  height: 34%;
+  background: linear-gradient(90deg, transparent 0 62%, #b91c1c 62% 72%, transparent 72%);
+  clip-path: polygon(0 100%, 0 92%, 62% 92%, 62% 20%, 67% 0, 72% 20%, 72% 92%, 100% 92%, 100% 100%);
+}
+.ca-scenery.harbour {
+  height: 40%;
+  background:
+    linear-gradient(transparent 70%, #1e40af 70%),
+    linear-gradient(90deg, #dc2626 0 18%, #facc15 18% 36%, #2563eb 36% 54%, #16a34a 54% 72%, #db2777 72% 90%, transparent 90%);
+  clip-path: polygon(0 100%, 0 30%, 9% 10%, 18% 30%, 27% 10%, 36% 30%, 45% 10%, 54% 30%, 63% 10%, 72% 30%, 81% 10%, 90% 30%, 90% 70%, 100% 70%, 100% 100%);
+}
+.ca-snowbank {
+  position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  background: repeating-linear-gradient(#9f1239, #9f1239 12px, #881337 12px, #881337 14px);
+  height: 20%;
+  background: #f1f5f9;
+  border-radius: 40% 60% 0 0 / 12px 12px 0 0;
+  z-index: 1;
 }
+.call-pane.canada p { color: #0f172a; }
 .call-pulse {
   background: repeating-linear-gradient(180deg, transparent, #4ade80 8px, transparent 16px);
   animation: twinkle 0.6s linear infinite;
 }
-.ada-inset {
+.relative-inset {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -219,12 +251,12 @@
   border: 2px solid #fde68a;
   border-radius: 12px;
   overflow: hidden;
-  background: linear-gradient(#94a3b8, #1e293b);
+  background: linear-gradient(#94a3b8, #e2e8f0 70%);
   z-index: 6;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   animation: stamp 0.6s cubic-bezier(0.2, 1.4, 0.3, 1) both;
 }
-.ada-inset p {
+.relative-inset p {
   position: relative;
   z-index: 2;
   margin: 4px;
@@ -232,7 +264,7 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #fde68a;
+  color: #0f172a;
 }
 .rain {
   position: absolute;
@@ -338,6 +370,14 @@
 .travel-stage.travel-snow {
   background: linear-gradient(#94a3b8 40%, #e2e8f0 40%, #cbd5e1 78%);
 }
+/* A call: generator-lit Nigeria on the left, snowy Canada on the right. */
+.travel-stage.travel-call {
+  background:
+    linear-gradient(90deg, transparent 50%, #e2e8f0 50%) bottom / 100% 60% no-repeat,
+    linear-gradient(90deg, #1e1b4b 50%, #94a3b8 50%) top / 100% 40% no-repeat,
+    linear-gradient(#1e1b4b 40%, #365314 40%, #1c1917 78%);
+}
+.travel-call .snowfall { left: 50%; }
 .travel-stage {
   position: relative;
   width: 90%;

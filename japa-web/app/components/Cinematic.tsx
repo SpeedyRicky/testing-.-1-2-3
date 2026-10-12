@@ -34,8 +34,8 @@ export const useCinematic = () => useContext(CinematicContext);
 
 // --- who reacts -------------------------------------------------------------------
 const LAGOS_REACTOR: Record<string, PersonWho> = {
-  "call-sister": "ada", whatsapp: "ada", "video-job": "ada", embassy: "clerk", annex: "clerk", airport: "clerk",
-  agent: "agent", "yaba-street": "preacher", cafe: "clerk", gig: "npc", "phone-text": "ada", outside: "npc",
+  "call-sister": "relative", whatsapp: "relative", "video-job": "relative", embassy: "clerk", annex: "clerk", airport: "clerk",
+  agent: "agent", "yaba-street": "preacher", cafe: "clerk", gig: "npc", "phone-text": "relative", outside: "npc",
   "room-night": "roommate", "yaba-dawn": "roommate", stay: "roommate",
 };
 function reactorFor(stage: StageKind): PersonWho {

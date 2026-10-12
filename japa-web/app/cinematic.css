@@ -96,8 +96,8 @@
   animation: cine-word 0.18s var(--delay) ease-out forwards;
 }
 @keyframes cine-word { to { opacity: 1; transform: none; } }
-/* Lagos stages carry an "Ada" inset; the cutscene has its own actors. */
-.cine-scene .ada-inset { display: none; }
+/* Nigeria stages carry the relative-in-Canada inset; the cutscene has its own actors. */
+.cine-scene .relative-inset { display: none; }
 @keyframes cine-bubble { from { transform: scale(0.6) translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
 
 /* The stamp slams down on the react beat. */

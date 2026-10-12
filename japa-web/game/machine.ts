@@ -2,7 +2,8 @@
 // so switching modes never loses progress.
 import { DB, applyMarketShock, choose, dismissPopup, newRun, takeAction } from "./engine";
 import type { GameState, RouteId, ScenarioDatabase, Toast } from "./types";
-import { deriveGameProfile, routePatches, type PlayerProfile } from "./profile";
+import { deriveGameProfile, familyFor, routePatches, type PlayerProfile } from "./profile";
+import { isSibling } from "./family";
 
 export interface AppState {
   profile: PlayerProfile | null;
@@ -106,6 +107,7 @@ function carriedStats(carry: { routeStats?: GameState["routeStats"]; ageOffset?:
     ageYears: profile.age + (carry.ageOffset ?? 0),
     foreignWorkYears: g.foreignWorkYears,
     educationLevel: combinedEducation(carry.routeStats.educationLevel ?? 0, g.hasDegree),
+    ...("siblingInCanada" in carry.routeStats ? { siblingInCanada: isSibling(familyFor(profile)) ? 1 : 0 } : {}),
   };
 }
 

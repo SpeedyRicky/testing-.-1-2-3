@@ -15,7 +15,7 @@ const COPY: Record<Exclude<Transit, "none">, string> = {
   trek: "Trekking… go-slow of the feet",
   danfo: "Yellow bus. One more passenger!",
   okada: "Okada weaving the potholes",
-  call: "Calling Ada in Peckham…",
+  call: "Calling {relName} in {relCity}…",
   plane: "Airside. The country lets go, maybe.",
   streetcar: "501 Queen streetcar. Mind the gap.",
   "snow-walk": "Walking. -18°C with the wind.",
@@ -28,14 +28,14 @@ export function TravelRibbon({
   mode: Transit;
   destination: string;
 }) {
-  const { transport } = usePlayer();
+  const { transport, t } = usePlayer();
   if (mode === "none") return null;
 
   return (
     <div className="travel-ribbon" role="status">
-      <p className="travel-kicker">{mode === "danfo" ? LOCAL_COPY[transport] : COPY[mode]}</p>
+      <p className="travel-kicker">{mode === "danfo" ? LOCAL_COPY[transport] : t(COPY[mode])}</p>
       <p className="travel-dest">{destination}</p>
-      <div className={`travel-stage ${mode === "streetcar" || mode === "snow-walk" ? "travel-snow" : ""}`}>
+      <div className={`travel-stage ${mode === "streetcar" || mode === "snow-walk" ? "travel-snow" : mode === "call" ? "travel-call" : ""}`}>
         {mode === "danfo" ? (
           <div className="local-ride-rig">
             <LocalRide>
@@ -60,9 +60,10 @@ export function TravelRibbon({
         ) : null}
         {mode === "call" ? (
           <>
-            <Person who="you" pose="phone" x={28} scale={1} caption="Tolu" />
+            <Person who="you" pose="phone" x={28} scale={1} caption="You" />
             <span className="call-dots">···</span>
-            <Person who="ada" pose="phone" x={72} scale={1} caption="Ada · Peckham" />
+            <Person who="relative" pose="phone" x={72} scale={1} caption={t("{relName} · {relCity}")} />
+            <span className="snowfall" />
           </>
         ) : null}
         {mode === "streetcar" ? (

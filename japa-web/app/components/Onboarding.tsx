@@ -1,15 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Briefcase, Check, GraduationCap, Plane, Shuffle, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Briefcase, Check, GraduationCap, Phone, Plane, Shuffle, Sparkles } from "lucide-react";
 import { DB, computeCrs } from "@/game/engine";
 import { STATES, placeFor, placeVars, transportFor } from "@/game/nigeria";
 import {
   BODY_SIZES, CGPAS, COURSES, DEFAULT_AVATAR, HAIRSTYLES, HAIR_COLORS, HEADWEAR, LEVELS, OCCUPATIONS, OUTFITS,
-  OUTFIT_COLORS, QUALIFICATIONS, SALARY_BANDS, SKIN_TONES, deriveGameProfile, profileProblem, usernameProblem,
+  OUTFIT_COLORS, QUALIFICATIONS, SALARY_BANDS, SKIN_TONES, deriveGameProfile, familyFor, profileProblem, usernameProblem,
   type Avatar, type PlayerProfile, type StudentDetails, type WorkerDetails,
 } from "@/game/profile";
-import { pickFrom } from "@/game/rng";
+import {
+  HERITAGES, RELATIONS, detectHeritage, isSibling, makeRelative, provinceFor, relativeVars,
+  type Heritage, type Relation, type Relative,
+} from "@/game/family";
+import { pickFrom, random } from "@/game/rng";
 import { LagosStage } from "./LagosStage";
 import { Person } from "./Person";
 import { PlayerProvider } from "./Player";
@@ -94,11 +98,14 @@ export function Onboarding({ initial, onDone, onCancel }: {
   const [worker, setWorker] = useState<WorkerDetails>(initial?.worker ?? DEFAULT_WORKER);
   const [stateCode, setStateCode] = useState(initial?.stateCode ?? "LA");
   const [touched, setTouched] = useState(false);
+  // null = follow the username and state; set once the player picks or shuffles.
+  const [family, setFamily] = useState<Relative | null>(initial?.family ?? null);
+  const relative = family ?? familyFor({ username: username.trim() || "Tolu", stateCode });
 
   const draft: PlayerProfile = useMemo(() => ({
-    version: 1, username: username.trim(), avatar, role, age, stateCode,
+    version: 1, username: username.trim(), avatar, role, age, stateCode, family: relative,
     ...(role === "student" ? { student } : { worker }),
-  }), [username, avatar, role, age, stateCode, student, worker]);
+  }), [username, avatar, role, age, stateCode, student, worker, relative]);
 
   const nameError = usernameProblem(username);
   const ageError = !age || age < 16 || age > 60 ? "Enter an age between 16 and 60." : null;
@@ -121,11 +128,23 @@ export function Onboarding({ initial, onDone, onCancel }: {
     });
   }
 
+  /** New name (and with a shuffle, a new province) for the relative; keeps the choices the player made. */
+  function reroll(change: { heritage?: Heritage; relation?: Relation; move?: boolean }) {
+    const next = makeRelative(change.heritage ?? relative.heritage, random, change.relation ?? relative.relation, username);
+    setFamily(change.move ? next : { ...next, provinceCode: relative.provinceCode, city: relative.city });
+  }
+
   const game = deriveGameProfile(draft);
+  const rv = relativeVars(relative);
+  const guessed = detectHeritage(username, placeFor(stateCode).region);
   const place = placeVars(placeFor(stateCode));
-  const startCrs = DB.crs ? computeCrs(DB.crs, { ageYears: age, educationLevel: game.educationLevel, foreignWorkYears: game.foreignWorkYears }).total : 0;
+  const sibling = isSibling(relative) ? 1 : 0;
+  const startCrs = DB.crs ? computeCrs(DB.crs, {
+    ageYears: age, educationLevel: game.educationLevel, foreignWorkYears: game.foreignWorkYears, siblingInCanada: sibling,
+  }).total : 0;
   const potentialCrs = DB.crs ? computeCrs(DB.crs, {
     ageYears: age, educationLevel: game.educationLevel, ecaComplete: 1, clbFirst: 9, foreignWorkYears: game.foreignWorkYears,
+    siblingInCanada: sibling,
   }).total : 0;
   const suggested = role === "student" && !game.hasDegree ? "Student pathway"
     : game.foreignWorkYears >= 1 && game.educationLevel >= 3 ? "Express Entry" : "Student pathway";
@@ -275,6 +294,32 @@ export function Onboarding({ initial, onDone, onCancel }: {
                   </div>
                 ))}
               </dl>
+              <section aria-labelledby="family-title" className="rounded-2xl border border-sky-300/20 bg-sky-300/5 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 id="family-title" className="flex items-center gap-2 text-sm font-black text-white">
+                      <Phone className="h-4 w-4 text-sky-300" /> Family in Canada
+                    </h3>
+                    <p className="mt-1 text-sm text-zinc-300">
+                      <b className="text-white">{rv.RelWho}</b> lives in <b className="text-white">{rv.relPlace}</b>, {rv.relGap} you.
+                      {isSibling(relative) ? " A sibling who is a permanent resident or citizen adds 15 CRS points in Express Entry." : ""}
+                    </p>
+                  </div>
+                  <button type="button" onClick={() => reroll({ move: true })}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-white/15 px-3 py-2 text-xs font-semibold text-zinc-200 hover:border-white/30">
+                    <Shuffle className="h-3.5 w-3.5" /> New name &amp; province
+                  </button>
+                </div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <Field label="Family background" hint={relative.heritage === guessed ? "Matched to your name" : undefined}>
+                    <Chips name="Family background" options={HERITAGES} value={relative.heritage} onChange={(h) => reroll({ heritage: h })} />
+                  </Field>
+                  <Field label="Who you call">
+                    <Chips name="Who you call" options={RELATIONS} value={relative.relation} onChange={(r) => reroll({ relation: r })} />
+                  </Field>
+                </div>
+                <div className="relative mt-3"><LagosStage scene="call-sister" /></div>
+              </section>
             </div>
           )}
 
@@ -297,6 +342,7 @@ export function Onboarding({ initial, onDone, onCancel }: {
                     ["Savings", `${naira(game.savingsNgn)} ≈ CAD $${game.savingsCad.toLocaleString("en-CA")}`],
                     ["CRS today", `${startCrs}`],
                     ["CRS with IELTS CLB 9 + ECA", `${potentialCrs}`],
+                    ["Family in Canada", `${rv.RelName}, ${relative.city} (${provinceFor(relative.provinceCode).code})`],
                   ].map(([k, v]) => (
                     <div key={k} className="rounded-xl border border-white/10 bg-black/30 px-3 py-2.5">
                       <dt className="text-[11px] uppercase tracking-wider text-zinc-500">{k}</dt>

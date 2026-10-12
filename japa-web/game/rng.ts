@@ -11,3 +11,8 @@ export function chance(p: number): boolean {
 export function pickFrom<T>(items: readonly T[]): T {
   return items[Math.floor(Math.random() * items.length)];
 }
+
+/** A number in [0, 1) on each call, for helpers that take a random source. */
+export function random(): number {
+  return Math.random();
+}

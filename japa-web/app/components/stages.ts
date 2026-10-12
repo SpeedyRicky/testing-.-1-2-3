@@ -162,7 +162,7 @@ export const STAGES = {
     wall: "#e2e8f0", panel: true, ground: "tiles",
     props: [{ kind: "flag-ca", x: 50 }, { kind: "banner", x: 50, label: "Welcome to Canada · Permanent residents", tone: "blue" }, { kind: "window", x: 84, w: 90, window: "snow" }],
     people: [{ who: "officer", x: 26, pose: "wave", caption: "Officer" },
-      { who: "you", x: 50, pose: "cheer", caption: "You", wear: SCARF, moods: { fail: "slump" } }, { who: "ada", x: 72, pose: "wave", caption: "Ada (video)", scale: 0.8 }],
+      { who: "you", x: 50, pose: "cheer", caption: "You", wear: SCARF, moods: { fail: "slump" } }, { who: "relative", x: 72, pose: "wave", caption: "{relName} (video)", scale: 0.8 }],
   },
   "pitch-room": {
     wall: "#14532d", ground: "carpet",

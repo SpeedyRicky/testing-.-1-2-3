@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.8.0",
+    "version": "0.9.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -8,7 +8,7 @@
       "title": "Nigeria",
       "short": "Nigeria",
       "status": "playable",
-      "tagline": "Trek, {bus}, call Ada.",
+      "tagline": "Trek, {bus}, call {relName}.",
       "startSceneId": "LAGOS_YABA_DAWN",
       "initialState": {
         "currentLocation": "{area}, {city}",
@@ -110,7 +110,7 @@
           "id": "vanier",
           "sceneId": "LAGOS_ENDING_WIN",
           "title": "Vanier Scholar",
-          "blurb": "The committee saw the file. The fire stayed lit. Ada is already buying you a winter coat that is too optimistic."
+          "blurb": "The committee saw the file. The fire stayed lit. {RelName} in {relCity} is already buying you a winter coat that is too optimistic."
         },
         {
           "id": "pearson",
@@ -459,7 +459,7 @@
       "stage": "yaba-dawn",
       "transitIn": "none",
       "speaker": "{area}, {city}",
-      "dialogue": "NEPA has packed up. Your roommate is already in a Europe group chat. Downstairs, {area} is waking. Your sister Ada in Peckham sent three missed calls. Japa this year, or watch another circle leave.",
+      "dialogue": "NEPA has packed up. Your roommate is already in a Europe group chat. Downstairs, {area} is waking. {RelWho} in {relCity} sent three missed calls. Japa this year, or watch another circle leave.",
       "choices": [
         {
           "text": "{Bus} to {techHub} and hunt remote jobs",
@@ -471,7 +471,7 @@
           }
         },
         {
-          "text": "Call Sister Ada in Peckham about the visa story",
+          "text": "Call {relTitle} in {relCity} about the visa story",
           "label": "",
           "nextSceneId": "LAGOS_AUNTY_CALL",
           "effects": {
@@ -500,7 +500,7 @@
       "stage": "cafe",
       "transitIn": "danfo",
       "speaker": "{techHub}",
-      "dialogue": "The cyber cafe hums like a generator. A Toronto listing wants three years of React and right to work in Canada. You have a bootcamp PDF, stubborn data, and Ada typing 'have you left the house??' from Peckham.",
+      "dialogue": "The cyber cafe hums like a generator. A Toronto listing wants three years of React and right to work in Canada. You have a bootcamp PDF, stubborn data, and {relName} typing 'have you left the house??' from {relCity}.",
       "choices": [
         {
           "text": "Rewrite the CV like you already live in Zone 2",
@@ -538,12 +538,12 @@
       "id": "LAGOS_AUNTY_CALL",
       "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
-      "title": "Ada does not sugarcoat.",
-      "location": "Peckham × {area} FaceTime",
+      "title": "{RelName} does not sugarcoat.",
+      "location": "{relCity} × {area} FaceTime",
       "stage": "call-sister",
       "transitIn": "call",
-      "speaker": "Peckham × {area} FaceTime",
-      "dialogue": "Her kitchen is grey London morning. Yours is generator light. She will write an invitation letter. She will not lie on a bank statement. 'Bring your own proof, Tolu, or don't come and disgrace me at Heathrow.'",
+      "speaker": "{relCity} × {area} FaceTime",
+      "dialogue": "{RelPoss} window in {relCity} shows {relWeather}; {relSubj} is {relGap}. Yours is generator light. {RelSubj} will write an invitation letter. {RelSubj} will not lie on a bank statement. 'Bring your own proof, {name}, or don't come and disgrace me at Pearson.'",
       "choices": [
         {
           "text": "Leave the call. Trek the annex and start a real paper trail",
@@ -575,7 +575,7 @@
       "stage": "yaba-street",
       "transitIn": "trek",
       "speaker": "{market}, at the edge",
-      "dialogue": "Pepper soup steam, {bus} horns, a preacher on a megaphone. People are going somewhere: work, church, the park, abroad in their heads. Ada's last voice note is still unplayed.",
+      "dialogue": "Pepper soup steam, {bus} horns, a preacher on a megaphone. People are going somewhere: work, church, the park, abroad in their heads. {RelName}'s last voice note is still unplayed.",
       "choices": [
         {
           "text": "Catch another {bus} to the job hunt",
@@ -587,7 +587,7 @@
           }
         },
         {
-          "text": "Step aside and call Ada properly",
+          "text": "Step aside and call {relName} properly",
           "label": "",
           "nextSceneId": "LAGOS_AUNTY_CALL",
           "effects": {
@@ -616,7 +616,7 @@
       "stage": "room-night",
       "transitIn": "trek",
       "speaker": "{area} room, 3 a.m.",
-      "dialogue": "You quantify the internships. You hide the generator. A recruiter in Berlin replies. Ada is asleep in Peckham; her status still says 'call me when light comes.'",
+      "dialogue": "You quantify the internships. You hide the generator. A recruiter in Toronto replies. {RelName} is on a night shift in {relCity}; {relPoss} status still says 'call me when light comes.'",
       "choices": [
         {
           "text": "Take the interview. Buy data. Set two alarms.",
@@ -648,7 +648,7 @@
       "stage": "agent",
       "transitIn": "danfo",
       "speaker": "Agent's office, {city}",
-      "dialogue": "He talks fast: Schengen, Canada express, 'we know people'. Ada would shout if she saw this receipt. Your folder is heavier. Your stomach is not.",
+      "dialogue": "He talks fast: Schengen, Canada express, 'we know people'. {RelName} would shout if {relSubj} saw this receipt. Your folder is heavier. Your stomach is not.",
       "choices": [
         {
           "text": "Pay 'facilitation' then {bus} to the visa centre",
@@ -681,7 +681,7 @@
       "stage": "annex",
       "transitIn": "danfo",
       "speaker": "Immigration annex, Alausa",
-      "dialogue": "Bodies in a line that does not move and also never ends. A clerk calls names like a {bus} conductor. Ada texts a photo of the invitation letter, steam from a kettle behind her.",
+      "dialogue": "Bodies in a line that does not move and also never ends. A clerk calls names like a {bus} conductor. {RelName} texts a photo of the invitation letter, snow on the window behind {relObj}.",
       "choices": [
         {
           "text": "Book the appointment. {Bus} to the visa centre",
@@ -709,11 +709,11 @@
       "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "Love, with conditions.",
-      "location": "WhatsApp: Ada & the family group",
+      "location": "WhatsApp: {relName} & the family group",
       "stage": "whatsapp",
       "transitIn": "call",
-      "speaker": "WhatsApp: Ada & the family group",
-      "dialogue": "Ada will send a statement snapshot, not a transfer. 'If they ask whose money, tell the truth.' Uncle in Abuja laughs from the group chat: Canada is for people with uncles in Canada.",
+      "speaker": "WhatsApp: {relName} & the family group",
+      "dialogue": "{RelName} will send a statement snapshot, not a transfer. 'If they ask whose money, tell the truth.' Uncle in Abuja laughs from the group chat: Canada is for people with uncles in Canada.",
       "choices": [
         {
           "text": "Hang up. Build an honest file at the annex",
@@ -747,7 +747,7 @@
       "stage": "gig",
       "transitIn": "okada",
       "speaker": "Rain in {gigArea}, then the okada home",
-      "dialogue": "You fix a POS network, then two Bolt trips in the rain. The envelope thickens. A woman under a shop awning is shouting into her phone the same way you shout to Ada: 'I am coming. Traffic.'",
+      "dialogue": "You fix a POS network, then two Bolt trips in the rain. The envelope thickens. A woman under a shop awning is shouting into her phone the same way you shout to {relName}: 'I am coming. Traffic.'",
       "choices": [
         {
           "text": "Bank it. {Bus} to the paperwork",
@@ -790,7 +790,7 @@
       "stage": "video-job",
       "transitIn": "call",
       "speaker": "{area}, on borrowed light",
-      "dialogue": "Berlin asks about a race condition you actually fixed. Then they ask if you can fly. Ada is on speaker from the bus to work: 'Say yes. We will figure Heathrow.'",
+      "dialogue": "Toronto asks about a race condition you actually fixed. Then they ask if you can fly. {RelName} is on speaker from a {relCity} bus: 'Say yes. I will be waiting at Pearson.'",
       "choices": [
         {
           "text": "Use the offer as the spine. {Bus} to the visa centre",
@@ -803,7 +803,7 @@
           }
         },
         {
-          "text": "Panic. Go back to the street and call Ada later",
+          "text": "Panic. Go back to the street and call {relName} later",
           "label": "",
           "nextSceneId": "LAGOS_YABA_DUSK",
           "effects": {
@@ -822,7 +822,7 @@
       "stage": "embassy",
       "transitIn": "danfo",
       "speaker": "Visa Application Centre, {vacCity}",
-      "dialogue": "Plastic chairs. Names like a lottery. A man in front is whispering to his brother in Houston. You hold Ada's letter like it can stand in the line for you.",
+      "dialogue": "Plastic chairs. Names like a lottery. A man in front is whispering to his brother in Houston. You hold {relName}'s letter like it can stand in the line for you.",
       "choices": [
         {
           "text": "Answer every question like the form already knows you",
@@ -855,10 +855,10 @@
       "stage": "outside",
       "transitIn": "trek",
       "speaker": "Outside the centre, VI sun",
-      "dialogue": "You step into the heat. Ada is already ringing. Tracking sites lie. WhatsApp groups lie louder. You go home and live inside a status page.",
+      "dialogue": "You step into the heat. {RelName} is already ringing. Tracking sites lie. WhatsApp groups lie louder. You go home and live inside a status page.",
       "choices": [
         {
-          "text": "Pick Ada's call, then wait with the phone on loud",
+          "text": "Pick {relName}'s call, then wait with the phone on loud",
           "label": "",
           "nextSceneId": "LAGOS_OUTCOME",
           "effects": {
@@ -877,10 +877,10 @@
       "stage": "phone-text",
       "transitIn": "none",
       "speaker": "{area} mattress, phone glowing",
-      "dialogue": "Ada is typing. The embassy mail is sitting unopened. If the file and the spirit held, the country lets you leave. If not, you are still here — which is not the same as finished.",
+      "dialogue": "{RelName} is typing. The embassy mail is sitting unopened. If the file and the spirit held, the country lets you leave. If not, you are still here — which is not the same as finished.",
       "choices": [
         {
-          "text": "Open the email. Call Ada either way.",
+          "text": "Open the email. Call {relName} either way.",
           "label": "",
           "nextSceneId": "LAGOS_RESOLVE",
           "effects": {}
@@ -896,7 +896,7 @@
       "stage": "airport",
       "transitIn": "plane",
       "speaker": "Airside, {airportCode} → the glass",
-      "dialogue": "Plastic tray. Stamped page. Ada is on FaceTime from arrivals in a future you have not reached yet, and also from Peckham right now, crying and laughing. You go. That is the deal.",
+      "dialogue": "Plastic tray. Stamped page. {RelName} is on FaceTime from Pearson arrivals in a future you have not reached yet, and also from {relCity} right now, crying and laughing. You go. That is the deal.",
       "outcome": {
         "result": "win",
         "reason": "JAPA_APPROVED",
@@ -912,7 +912,7 @@
       "stage": "stay",
       "transitIn": "none",
       "speaker": "{area}, same generator, new month",
-      "dialogue": "Ada does not drop the call. 'We try again. I am not going anywhere.' Rice that tastes like delay. Tomorrow you can trek another corridor. People do.",
+      "dialogue": "{RelName} does not drop the call. 'We try again. I am not going anywhere.' Rice that tastes like delay. Tomorrow you can trek another corridor. People do.",
       "outcome": {
         "result": "fail",
         "reason": "STAYED_IN_LAGOS",
@@ -2378,7 +2378,7 @@
       "stage": "airport",
       "transitIn": "call",
       "speaker": "{airport}",
-      "dialogue": "The port of entry letter lands in your inbox. Ada screams on the phone. Pack for winter.",
+      "dialogue": "The port of entry letter lands in your inbox. {RelName} screams on the phone from {relCity}. Pack for winter.",
       "choices": [
         {
           "text": "Board the flight to Toronto",

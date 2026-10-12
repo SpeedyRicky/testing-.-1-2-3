@@ -1,6 +1,8 @@
 "use client";
 
 import type { StageKind as SceneKind } from "@/game/types";
+import { familyFor } from "@/game/profile";
+import { provinceFor } from "@/game/family";
 import { Person } from "./Person";
 import { usePlayer } from "./Player";
 
@@ -61,11 +63,26 @@ function Shop({ label, x }: { label: string; x: number }) {
   );
 }
 
-function AdaInset() {
+/** A Canadian backdrop for the relative's side of a call: city, mountains, prairie or harbour, with snow. */
+function CanadaView() {
+  const { profile } = usePlayer();
+  const scenery = provinceFor(familyFor(profile).provinceCode).scenery;
   return (
-    <div className="ada-inset">
-      <p>Ada · Peckham</p>
-      <Person who="ada" pose="phone" x={50} scale={0.85} />
+    <>
+      <div className={`ca-scenery ${scenery}`} />
+      <div className="ca-snowbank" />
+      <span className="snowfall" />
+    </>
+  );
+}
+
+function RelativeInset() {
+  const { t } = usePlayer();
+  return (
+    <div className="relative-inset">
+      <p>{t("{relName} · {relCity}")}</p>
+      <CanadaView />
+      <Person who="relative" pose="phone" x={50} scale={0.85} />
     </div>
   );
 }
@@ -85,7 +102,7 @@ export function LagosStage({ scene }: { scene: SceneKind }) {
           <Person who="roommate" pose="sit" x={22} caption="Roommate" />
           <Person who="you" pose="phone" x={48} caption="Tolu" />
           <Person who="npc" pose="walk" x={78} delay="0.3s" />
-          <AdaInset />
+          <RelativeInset />
         </>
       ) : null}
 
@@ -120,7 +137,7 @@ export function LagosStage({ scene }: { scene: SceneKind }) {
           <Person who="you" pose="sit" x={40} caption="Tolu" />
           <Person who="npc" pose="walk" x={72} />
           <Person who="clerk" pose="idle" x={18} caption="Cafe guy" />
-          <AdaInset />
+          <RelativeInset />
         </>
       ) : null}
 
@@ -133,10 +150,10 @@ export function LagosStage({ scene }: { scene: SceneKind }) {
               <Person who="you" pose="phone" x={50} scale={1.15} caption="Tolu" />
             </div>
             <div className="call-pulse" />
-            <div className="call-pane peckham">
-              <p>Peckham · grey morning</p>
-              <div className="uk-brick" />
-              <Person who="ada" pose="phone" x={50} scale={1.15} caption="Ada" />
+            <div className="call-pane canada">
+              <p>{t("{relCity} · {relWeather}")}</p>
+              <CanadaView />
+              <Person who="relative" pose="phone" x={50} scale={1.15} caption={t("{relName}")} />
             </div>
           </div>
         </>
@@ -151,7 +168,7 @@ export function LagosStage({ scene }: { scene: SceneKind }) {
           </div>
           <Person who="you" pose="sit" x={46} caption="Tolu" />
           <Person who="roommate" pose="idle" x={78} scale={0.8} />
-          <AdaInset />
+          <RelativeInset />
         </>
       ) : null}
 
@@ -186,9 +203,10 @@ export function LagosStage({ scene }: { scene: SceneKind }) {
               <p>Family group</p>
               <Person who="you" pose="phone" x={50} caption="Tolu" />
             </div>
-            <div className="call-pane peckham">
-              <p>Ada sent a photo</p>
-              <Person who="ada" pose="wave" x={50} caption="Ada" />
+            <div className="call-pane canada">
+              <p>{t("{relName} sent a photo")}</p>
+              <CanadaView />
+              <Person who="relative" pose="wave" x={50} caption={t("{relName}")} />
             </div>
           </div>
         </>
@@ -217,7 +235,7 @@ export function LagosStage({ scene }: { scene: SceneKind }) {
             <span className="laptop glow" />
           </div>
           <Person who="you" pose="sit" x={36} caption="Tolu" />
-          <Person who="ada" pose="phone" x={72} caption="Ada on speaker" />
+          <Person who="relative" pose="phone" x={72} caption={t("{relName} on speaker")} />
         </>
       ) : null}
 
@@ -240,7 +258,7 @@ export function LagosStage({ scene }: { scene: SceneKind }) {
           <Road />
           <Person who="you" pose="phone" x={46} caption="Tolu" />
           <Person who="npc" pose="walk" x={70} />
-          <AdaInset />
+          <RelativeInset />
         </>
       ) : null}
 
@@ -249,7 +267,7 @@ export function LagosStage({ scene }: { scene: SceneKind }) {
           <Sky night />
           <div className="room-wall" />
           <Person who="you" pose="phone" x={42} caption="Tolu" />
-          <AdaInset />
+          <RelativeInset />
         </>
       ) : null}
 
@@ -262,7 +280,7 @@ export function LagosStage({ scene }: { scene: SceneKind }) {
           <Person who="you" pose="wave" x={38} caption="Tolu" />
           <Person who="clerk" pose="idle" x={18} caption="Scanner" />
           <Person who="npc" pose="walk" x={62} />
-          <AdaInset />
+          <RelativeInset />
         </>
       ) : null}
 
@@ -274,7 +292,7 @@ export function LagosStage({ scene }: { scene: SceneKind }) {
           <Road />
           <Person who="you" pose="phone" x={44} caption="Tolu" />
           <Person who="roommate" pose="idle" x={68} />
-          <AdaInset />
+          <RelativeInset />
         </>
       ) : null}
     </div>

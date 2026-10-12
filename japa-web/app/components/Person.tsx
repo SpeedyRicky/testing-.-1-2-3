@@ -1,12 +1,13 @@
 "use client";
 
-import type { Avatar } from "@/game/profile";
+import { familyFor, type Avatar } from "@/game/profile";
+import type { Relative } from "@/game/family";
 import { usePlayer } from "./Player";
 
 export type PersonPose = "idle" | "walk" | "phone" | "sit" | "wave" | "queue" | "talk" | "cheer" | "slump";
 export type PersonWho =
   | "you"
-  | "ada"
+  | "relative"
   | "roommate"
   | "npc"
   | "agent"
@@ -25,7 +26,7 @@ export type Accessory = "scarf" | "tie" | "cap" | "headwrap" | "glasses";
 
 const LOOK: Record<PersonWho, { skin: string; shirt: string; pants: string; hair: string; extra?: Accessory[]; tint?: string }> = {
   you: { skin: "#8d4a24", shirt: "#16a34a", pants: "#1e293b", hair: "#1a120c" },
-  ada: { skin: "#6d3416", shirt: "#9f1239", pants: "#334155", hair: "#111827" },
+  relative: { skin: "#6d3416", shirt: "#9f1239", pants: "#334155", hair: "#111827" },
   roommate: { skin: "#a16207", shirt: "#2563eb", pants: "#0f172a", hair: "#292524" },
   npc: { skin: "#7c3a12", shirt: "#f59e0b", pants: "#365314", hair: "#1c1917" },
   agent: { skin: "#92400e", shirt: "#e2e8f0", pants: "#1e3a8a", hair: "#0f172a" },
@@ -53,6 +54,18 @@ const POSE_CLASS: Record<PersonPose, string> = {
   cheer: "person-cheer",
   slump: "person-slump",
 };
+
+/** How the relative in Canada looks: a sister, a brother or an aunty, dressed for indoors in winter. */
+function relativeAvatar(r: Relative): Avatar {
+  const base = { skin: "#6d3416", hairColor: "#111827", headwearColor: "#0d9488", glasses: false } as const;
+  if (r.relation === "brother") {
+    return { ...base, skin: "#5b3410", body: "average", hair: "low-cut", outfit: "hoodie", outfitColor: "#0f766e", headwear: "none" };
+  }
+  if (r.relation === "aunty") {
+    return { ...base, body: "plus", hair: "bun", outfit: "buba-iro", outfitColor: "#7c3aed", headwear: "headwrap", headwearColor: "#f59e0b", glasses: true };
+  }
+  return { ...base, body: "slim", hair: "braids", outfit: "tee-jeans", outfitColor: "#9f1239", headwear: r.heritage === "hausa" ? "headwrap" : "none" };
+}
 
 const DRESSED_LEGS = new Set(["ankara-dress", "buba-iro"]);
 
@@ -90,7 +103,7 @@ export function Person({
 }) {
   const { profile } = usePlayer();
   const base = LOOK[who];
-  const av = who === "you" ? avatar ?? profile?.avatar : undefined;
+  const av = who === "you" ? avatar ?? profile?.avatar : who === "relative" ? relativeAvatar(familyFor(profile)) : undefined;
   const extras = new Set<Accessory>([...(base.extra ?? []), ...wear]);
   if (av?.glasses) extras.add("glasses");
   const tint = base.tint ?? "#dc2626";

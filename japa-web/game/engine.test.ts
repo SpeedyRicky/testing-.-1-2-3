@@ -6,10 +6,14 @@ import {
 import { STAGES } from "../app/components/stages";
 import { describeChoice, diffStats } from "./cinematic";
 import {
-  deriveGameProfile, fillText, profileProblem, profileVars, usernameProblem, DEFAULT_AVATAR,
+  deriveGameProfile, familyFor, fillText, profileProblem, profileVars, usernameProblem, DEFAULT_AVATAR,
   type PlayerProfile,
 } from "./profile";
 import { STATES, placeFor, placeVars, vacCityFor } from "./nigeria";
+import {
+  PROVINCES, RELATIVE_NAMES, detectHeritage, makeRelative, provinceFor, relativeVars, seededRandom,
+  type Heritage, type Relation, type Relative,
+} from "./family";
 import { initialState, makeReducer } from "./machine";
 import type { GameState, RouteId, StatKey } from "./types";
 
@@ -233,8 +237,8 @@ describe("state machine", () => {
 });
 
 describe("Lagos Life (merged from the Cursor build)", () => {
-  const HONEST = ["Call Sister Ada", "Leave the call", "Book the appointment", "Answer every question",
-    "Pick Ada's call", "Open the email"];
+  const HONEST = ["about the visa story", "Leave the call", "Book the appointment", "Answer every question",
+    "call, then wait", "Open the email"];
 
   it("starts in Yaba with the original meters (hope 64 = interference 36)", () => {
     const s = newRun(DB, "NIGERIA_LIFE");
@@ -245,13 +249,13 @@ describe("Lagos Life (merged from the Cursor build)", () => {
 
   it("the remote-job path runs out of energy (original balance, kept on purpose)", () => {
     const s = play("NIGERIA_LIFE", ["hunt remote jobs", "Rewrite the CV", "Take the interview",
-      "Use the offer as the spine", "Answer every question", "Pick Ada's call", "Open the email"]);
+      "Use the offer as the spine", "Answer every question", "call, then wait", "Open the email"]);
     expect(s.outcome?.result).toBe("fail");
     expect(s.energy).toBeLessThanOrEqual(12);
   });
 
   it("a borrowed bank statement is an instant fail", () => {
-    const s = play("NIGERIA_LIFE", ["Call Sister Ada", "Ask her to lend", "friend's statement"]);
+    const s = play("NIGERIA_LIFE", ["about the visa story", "Ask her to lend", "friend's statement"]);
     expect(s.outcome).toMatchObject({ result: "fail", reason: "MISREPRESENTATION" });
     expect(rankFor(DB, s)?.id).toBe("flagged");
   });
@@ -264,7 +268,7 @@ describe("Lagos Life (merged from the Cursor build)", () => {
 
   it("over-explaining at the embassy still loses on papers", () => {
     const s = play("NIGERIA_LIFE", ["hunt remote jobs", "visa consultant blasting", "Pay 'facilitation'",
-      "Over-explain", "Pick Ada's call", "Open the email"]);
+      "Over-explain", "call, then wait", "Open the email"]);
     expect(s.outcome?.result).toBe("fail");
     expect(s.currentSceneId).toBe("LAGOS_ENDING_STAY");
     expect(["pearson", "village", "hustle"]).toContain(rankFor(DB, s)?.id);
@@ -301,7 +305,7 @@ describe("Lagos Life (merged from the Cursor build)", () => {
 
   it("any meter running out collapses the run", () => {
     const broke = { ...newRun(DB, "NIGERIA_LIFE"), walletNgn: 1000 };
-    const s = choose(DB, broke, 1); // call Ada costs N2,000
+    const s = choose(DB, broke, 1); // calling the relative in Canada costs N2,000
     expect(s.currentSceneId).toBe("LAGOS_ENDING_STAY");
     expect(s.outcome?.result).toBe("fail");
   });
@@ -511,8 +515,8 @@ describe("choice cutscenes", () => {
   });
 
   it("the final winning move is a triumph", () => {
-    const c = pickAndDescribe("NIGERIA_LIFE", ["Call Sister Ada", "Leave the call", "Book the appointment",
-      "Answer every question", "Pick Ada's call"], "Open the email");
+    const c = pickAndDescribe("NIGERIA_LIFE", ["about the visa story", "Leave the call", "Book the appointment",
+      "Answer every question", "call, then wait"], "Open the email");
     expect(c.tone).toBe("triumph");
   });
 
@@ -548,10 +552,12 @@ describe("choice cutscenes", () => {
 describe("player profiles", () => {
   const nurse: PlayerProfile = {
     version: 1, username: "Chioma", avatar: DEFAULT_AVATAR, role: "worker", age: 28, stateCode: "EN",
+    family: { heritage: "igbo", relation: "aunty", name: "Nkiru", provinceCode: "AB", city: "Calgary" },
     worker: { occupation: "nurse", years: 5, qualification: "bachelors", salary: "150k-400k" },
   };
   const fresher: PlayerProfile = {
     version: 1, username: "Musa", avatar: DEFAULT_AVATAR, role: "student", age: 19, stateCode: "KN",
+    family: { heritage: "hausa", relation: "aunty", name: "Lami", provinceCode: "MB", city: "Winnipeg" },
     student: { institution: "university", course: "Computer Science", level: "200", cgpa: "2-1" },
   };
 
@@ -659,6 +665,80 @@ describe("Nigeria localisation", () => {
     expect(placeVars(placeFor("FC"))).toMatchObject({ city: "Abuja", bus: "bus", vacCity: "Abuja" });
     expect(vacCityFor(placeFor("RI"))).toBe("Lagos");
     expect(fillText("{Bus} to {techHub}", placeVars(placeFor("EN")))).toBe("Keke to the phone and laptop market in Enugu");
+  });
+});
+
+describe("family in Canada", () => {
+  const sister: Relative = { heritage: "yoruba", relation: "sister", name: "Folake", provinceCode: "NS", city: "Halifax" };
+
+  it("guesses heritage from the username, then from the state", () => {
+    for (const n of ["Chidike", "Chidike_01", "Chioma", "Oluchi", "Nnamdi", "Obiora", "Ugochi", "Chukwuemeka"]) expect(detectHeritage(n), n).toBe("igbo");
+    for (const n of ["Tolu", "Adebayo", "Olawale", "Funmilayo", "Oluwaseun", "Ayomide", "Ifeoluwa"]) expect(detectHeritage(n), n).toBe("yoruba");
+    for (const n of ["Musa", "Abdullahi", "Aisha", "Muhammadu", "Adamu"]) expect(detectHeritage(n), n).toBe("hausa");
+    expect(detectHeritage("Daniel", "SE")).toBe("igbo");
+    expect(detectHeritage("Daniel", "SW")).toBe("yoruba");
+    expect(detectHeritage("Daniel", "NW")).toBe("hausa");
+    expect(detectHeritage("Daniel", "SS")).toBe("other");
+  });
+
+  it("an Igbo player calls an Igbo relative, a Yoruba player a Yoruba one, wherever they live", () => {
+    for (const st of STATES) {
+      const igbo = familyFor({ username: "Chidike", stateCode: st.code });
+      expect(igbo.heritage).toBe("igbo");
+      expect(RELATIVE_NAMES.igbo[igbo.relation]).toContain(igbo.name);
+      const yoruba = familyFor({ username: "Adebayo", stateCode: st.code });
+      expect(yoruba.heritage).toBe("yoruba");
+      expect(RELATIVE_NAMES.yoruba[yoruba.relation]).toContain(yoruba.name);
+    }
+  });
+
+  it("relatives come from the right name pool, live in a real province and never share the player's name", () => {
+    for (const h of Object.keys(RELATIVE_NAMES) as Heritage[]) {
+      for (const rel of ["sister", "brother", "aunty"] as Relation[]) {
+        for (let i = 0; i < 40; i++) {
+          const r = makeRelative(h, seededRandom(`${h}${rel}${i}`), rel, "Ngozi");
+          expect(RELATIVE_NAMES[h][rel]).toContain(r.name);
+          expect(r.name).not.toBe("Ngozi");
+          expect(provinceFor(r.provinceCode).cities).toContain(r.city);
+        }
+      }
+    }
+  });
+
+  it("provinces are picked at random across Canada, and the same profile keeps the same relative", () => {
+    const seen = new Set(Array.from({ length: 300 }, (_, i) => familyFor({ username: `Player${i}`, stateCode: "LA" }).provinceCode));
+    expect(seen.size).toBeGreaterThanOrEqual(8);
+    expect(familyFor({ username: "Chidike", stateCode: "AN" })).toEqual(familyFor({ username: "Chidike", stateCode: "AN" }));
+    expect(PROVINCES.flatMap((p) => p.cities)).not.toContain("London");
+  });
+
+  it("fills names, places and pronouns", () => {
+    const v = relativeVars(sister);
+    expect(v).toMatchObject({ relName: "Folake", relTitle: "Sister Folake", RelWho: "Your sister Folake", relPlace: "Halifax, Nova Scotia", relSubj: "she", relGap: "five hours behind" });
+    expect(relativeVars({ ...sister, relation: "brother", name: "Tunde" })).toMatchObject({ relTitle: "Brother Tunde", relObj: "him", RelPoss: "His" });
+    expect(relativeVars({ ...sister, relation: "aunty", name: "Bisi" })).toMatchObject({ relName: "Aunty Bisi", RelWho: "Your Aunty Bisi" });
+    expect(relativeVars({ ...sister, provinceCode: "NL", city: "St. John's" }).relGap).toBe("four and a half hours behind");
+  });
+
+  it("the story calls Canada, flies to Pearson and has no London left", () => {
+    const blob = JSON.stringify(DB);
+    for (const w of ["Ada", "Peckham", "Heathrow", "London", "Berlin", "Tolu"]) expect(blob, w).not.toMatch(new RegExp(`\\b${w}\\b`));
+    expect(blob).toContain("Pearson");
+    const dawn = DB.scenes.LAGOS_YABA_DAWN;
+    const chidike = { version: 1, username: "Chidike", avatar: DEFAULT_AVATAR, role: "worker", age: 30, stateCode: "AN", family: { ...sister, heritage: "igbo", name: "Adaeze", provinceCode: "AB", city: "Calgary" },
+      worker: { occupation: "engineer", years: 4, qualification: "bachelors", salary: "400k-1m" } } as PlayerProfile;
+    expect(fillText(dawn.dialogue ?? "", profileVars(chidike))).toContain("Your sister Adaeze in Calgary sent three missed calls");
+    expect(fillText(DB.scenes.LAGOS_AUNTY_CALL.dialogue ?? "", profileVars(chidike))).toContain("Bring your own proof, Chidike, or don't come and disgrace me at Pearson.");
+  });
+
+  it("a sister or brother in Canada adds 15 CRS points; an aunty does not", () => {
+    const base = { version: 1, username: "Kemi", avatar: DEFAULT_AVATAR, role: "worker", age: 28, stateCode: "OY",
+      worker: { occupation: "nurse", years: 5, qualification: "bachelors", salary: "150k-400k" } } as PlayerProfile;
+    const withSister = initialState(DB, { ...base, family: sister }).runs.EXPRESS_ENTRY!.routeStats;
+    const withAunty = initialState(DB, { ...base, family: { ...sister, relation: "aunty", name: "Bisi" } }).runs.EXPRESS_ENTRY!.routeStats;
+    expect(withSister.siblingInCanada).toBe(1);
+    expect(withAunty.siblingInCanada).toBe(0);
+    expect(withSister.crsScore! - withAunty.crsScore!).toBe(15);
   });
 });
 

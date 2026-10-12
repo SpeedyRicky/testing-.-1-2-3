@@ -2,6 +2,7 @@
 // Pure functions turn it into starting stats for each route and words for each scene.
 import type { GameState, RouteId } from "./types";
 import { placeFor, placeVars } from "./nigeria";
+import { detectHeritage, isSibling, makeRelative, relativeVars, seededRandom, type Relative } from "./family";
 
 export type BodySize = "slim" | "average" | "plus";
 export type HairStyle = "low-cut" | "afro" | "braids" | "bun" | "bald";
@@ -38,6 +39,8 @@ export interface PlayerProfile {
   stateCode: string;
   student?: StudentDetails;
   worker?: WorkerDetails;
+  /** The relative in Canada; profiles saved before it existed get one from their username. */
+  family?: Relative;
 }
 
 // --- Options shown in the sign-up flow -----------------------------------------------
@@ -186,6 +189,15 @@ export function deriveGameProfile(p: PlayerProfile): GameProfile {
   };
 }
 
+/** The player's relative in Canada: the saved one, or a steady pick from the username and state. */
+export function familyFor(p: Pick<PlayerProfile, "username" | "stateCode" | "family"> | null): Relative {
+  if (p?.family) return p.family;
+  const username = p?.username ?? "Tolu";
+  const stateCode = p?.stateCode ?? "LA";
+  const heritage = detectHeritage(username, placeFor(stateCode).region);
+  return makeRelative(heritage, seededRandom(`${username.toLowerCase()}|${stateCode}`), undefined, username);
+}
+
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 /** Starting-state overrides per route, layered over each route's defaults. */
@@ -205,7 +217,7 @@ export function routePatches(p: PlayerProfile): Partial<Record<RouteId, Partial<
       routeStats: {
         ageYears: p.age, educationLevel: g.educationLevel, foreignWorkYears: g.foreignWorkYears,
         ecaComplete: 0, clbFirst: 0, nclcFrench: 0, canadianWorkYears: 0, canadianEducation: 0,
-        pnpNomination: 0, siblingInCanada: 0,
+        pnpNomination: 0, siblingInCanada: isSibling(familyFor(p)) ? 1 : 0,
       },
     },
     STUDY_PERMIT: {
@@ -219,7 +231,7 @@ export function routePatches(p: PlayerProfile): Partial<Record<RouteId, Partial<
 
 /** All words a scene can fill in: place, person and profile. */
 export function profileVars(p: PlayerProfile | null): Record<string, string> {
-  const place = placeVars(placeFor(p?.stateCode ?? "LA"));
+  const place = { ...placeVars(placeFor(p?.stateCode ?? "LA")), ...relativeVars(familyFor(p)) };
   if (!p) {
     return { ...place, name: "Tolu", age: "29", educationPhrase: "a B.Sc.", experiencePhrase: "three years as a logistics analyst", occupation: "a logistics analyst" };
   }
