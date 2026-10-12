@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.16.0",
+    "version": "0.17.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -1831,7 +1831,8 @@
           "goal": "Break the 'Canadian experience' wall without losing your profession.",
           "scenes": [
             "FY_JOBS",
-            "FY_CREDENTIALS"
+            "FY_CREDENTIALS",
+            "FY_FAITH"
           ],
           "stars": [
             {
@@ -4338,9 +4339,21 @@
           "nextSceneId": "ST_VFS",
           "effects": {
             "officerConfidence": 45,
-            "energy": -10
+            "energy": -25,
+            "desperation": 6
           },
-          "feedback": "Concrete, consistent with your history, easy to believe."
+          "feedback": "Concrete, consistent with your history, easy to believe. It cost you a week of 2 a.m. nights and a missed shift."
+        },
+        {
+          "text": "Pay an editor in the group chat to polish your draft (CAD 120)",
+          "label": "EDITOR",
+          "nextSceneId": "ST_VFS",
+          "effects": {
+            "walletCad": -120,
+            "officerConfidence": 25,
+            "energy": -5
+          },
+          "feedback": "Polished and clean. It also stopped sounding like you."
         },
         {
           "text": "Download a template and change the names",
@@ -4461,10 +4474,21 @@
           "nextSceneId": "ST_SOP",
           "effects": {
             "walletCad": -150,
-            "desperation": 6,
+            "desperation": 10,
             "energy": -8
           },
-          "feedback": "The notes showed the officer's real concern: the study plan didn't connect to your background. Now you can fix it."
+          "feedback": "The notes took 30 days, so you missed the January intake. They showed the real concern: the study plan didn't connect to your background. Now you can fix it."
+        },
+        {
+          "text": "Pay a licensed consultant to read the refusal and rework the file (CAD 600)",
+          "label": "RCIC_REVIEW",
+          "nextSceneId": "ST_SOP",
+          "effects": {
+            "walletCad": -600,
+            "officerConfidence": 10,
+            "desperation": 2
+          },
+          "feedback": "Faster than waiting for notes, and the licence number checks out. Expensive help is still help."
         },
         {
           "text": "Reapply next week with the same file",
@@ -5416,9 +5440,10 @@
           "nextSceneId": "KW_HEARING",
           "effects": {
             "kwCredibility": 15,
-            "energy": -10
+            "energy": -25,
+            "desperation": 6
           },
-          "feedback": "Correcting the form before the hearing is allowed and looks honest. Surprises at the hearing do not."
+          "feedback": "Correcting the form before the hearing looks honest. Reliving every date costs you a week of sleep."
         },
         {
           "text": "Memorize it word for word, like a WAEC answer",
@@ -5426,7 +5451,7 @@
           "nextSceneId": "KW_HEARING",
           "effects": {
             "kwCredibility": -5,
-            "energy": -10
+            "energy": -5
           },
           "feedback": "Board members can tell a memory from a script."
         },
@@ -6006,7 +6031,7 @@
         {
           "text": "Enrol in a bridging program for internationally trained professionals, with a loan",
           "label": "BRIDGING",
-          "nextSceneId": "FY_BLACK_TAX",
+          "nextSceneId": "FY_FAITH",
           "effects": {
             "walletCad": -1800,
             "careerScore": 25,
@@ -6020,7 +6045,7 @@
         {
           "text": "Take a PSW or assistant job in your field and study for the exams at night",
           "label": "BRIDGE_JOB",
-          "nextSceneId": "FY_BLACK_TAX",
+          "nextSceneId": "FY_FAITH",
           "effects": {
             "walletCad": 1800,
             "careerScore": 12,
@@ -6034,7 +6059,7 @@
         {
           "text": "Unregulated field: rewrite your CV the Canadian way and get a cloud certification on weekends",
           "label": "CERT_AND_CV",
-          "nextSceneId": "FY_BLACK_TAX",
+          "nextSceneId": "FY_FAITH",
           "effects": {
             "walletCad": -400,
             "careerScore": 10,
@@ -6048,7 +6073,7 @@
         {
           "text": "Drive Uber full-time and park the career for now",
           "label": "PARKED_CAREER",
-          "nextSceneId": "FY_BLACK_TAX",
+          "nextSceneId": "FY_FAITH",
           "effects": {
             "walletCad": 3000,
             "careerScore": -8,
@@ -6428,16 +6453,39 @@
       "stage": "agent",
       "transitIn": "none",
       "speaker": "Your old office, {city}",
-      "dialogue": "Every job you claim needs a reference letter: dates, hours, salary and your actual duties, on letterhead, signed. Your former boss says, 'You know what you did. Just write it and I'll sign.'",
+      "dialogue": "Every job you claim needs a reference letter: dates, hours, salary and your real duties, on letterhead, signed. Your old company has shut down and your boss has relocated to Dubai. On WhatsApp he says: 'You know what you did. Write it and I'll sign.'",
       "choices": [
         {
-          "text": "Write your real duties in your own words; your boss signs on company letterhead",
+          "text": "Write your real duties in your own words and chase his signature from Dubai",
           "label": "REAL_DUTIES",
           "nextSceneId": "EE_DOCS",
           "effects": {
-            "energy": -5
+            "energy": -10,
+            "walletCad": -60
           },
-          "feedback": "Duties that match the NOC in substance, written about your actual job. That is what officers want to see."
+          "gamble": {
+            "odds": 0.65,
+            "bonus": [
+              {
+                "key": "networkScore",
+                "per": 0.004
+              }
+            ],
+            "max": 0.9,
+            "success": {
+              "feedback": "Signed and scanned from Dubai in four days. Your duties, your words.",
+              "label": "SIGNED"
+            },
+            "fail": {
+              "feedback": "He's 'travelling'. You send payslips, tax records and a sworn statement instead: slower, DHL fees, still honest.",
+              "effects": {
+                "walletCad": -250,
+                "desperation": 8,
+                "energy": -8
+              },
+              "label": "SWORN_STATEMENT"
+            }
+          }
         },
         {
           "text": "Copy the NOC duties word for word so it matches perfectly",
@@ -7755,6 +7803,71 @@
             "streetCred": 6
           },
           "feedback": "Two hundred likes. Never post a boarding pass or visa page: the barcode and numbers are personal data scammers love."
+        }
+      ]
+    },
+    "FY_FAITH": {
+      "id": "FY_FAITH",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "Every {faithDay}.",
+      "location": "Your new schedule",
+      "stage": "warehouse",
+      "transitIn": "none",
+      "speaker": "Your new schedule",
+      "dialogue": "The schedule for your new job or program arrives. You're down for every {faithDay}, all month. {parent} asked on the phone last night if you've found a {faithHub} yet.",
+      "choices": [
+        {
+          "text": "Ask your supervisor, in writing, for a schedule change for religious reasons",
+          "label": "ASKED_ACCOMMODATION",
+          "nextSceneId": "FY_BLACK_TAX",
+          "effects": {},
+          "gamble": {
+            "odds": 0.6,
+            "bonus": [
+              {
+                "key": "community",
+                "per": 0.006
+              }
+            ],
+            "max": 0.9,
+            "success": {
+              "feedback": "Done in a day. Employers must accommodate religious practice up to undue hardship, and most do it quietly.",
+              "effects": {
+                "community": 8,
+                "desperation": -6
+              },
+              "label": "ACCOMMODATED"
+            },
+            "fail": {
+              "feedback": "'We'll see.' Nothing changes for three weeks, then HR fixes it after you follow up. Stressful, but on record.",
+              "effects": {
+                "desperation": 8,
+                "community": 3
+              },
+              "label": "SLOW_HR"
+            }
+          }
+        },
+        {
+          "text": "Swap shifts with a coworker who wants your weekday",
+          "label": "SWAPPED",
+          "nextSceneId": "FY_BLACK_TAX",
+          "effects": {
+            "community": 5,
+            "energy": -4
+          },
+          "feedback": "Informal, fast, and now you owe Priya a favour."
+        },
+        {
+          "text": "Say nothing and skip {faithDay} for now",
+          "label": "SKIPPED_FAITH",
+          "nextSceneId": "FY_BLACK_TAX",
+          "effects": {
+            "careerScore": 3,
+            "desperation": 8
+          },
+          "feedback": "Your record is spotless. Your weeks feel longer."
         }
       ]
     }

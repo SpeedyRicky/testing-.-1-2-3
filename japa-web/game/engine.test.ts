@@ -964,24 +964,24 @@ describe("Year One in Canada and community-story scenes", () => {
   const year = (picks: string[]) => play("FIRST_YEAR", picks);
 
   it("networking, bridging and help in winter get you back in your field", () => {
-    const s = year(["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days", "bridging program", "fixed share",
+    const s = year(["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days", "bridging program", "Swap shifts", "fixed share",
       "Nigerian association", "crisp written summary", "Employment Insurance", "volunteer tax clinic", "Stay. Save"]);
     expect(s.routeStats.careerScore).toBeGreaterThanOrEqual(50);
     expect(s.outcome).toMatchObject({ result: "win", reason: "BACK_IN_FIELD" });
   });
 
   it("a parked career with savings is 'surviving'; going home is 'reverse japa'", () => {
-    const parked = year(["SIN at the airport", "Declare everything", "guarantor from", "warehouse survival job", "Drive Uber", "fixed share",
+    const parked = year(["SIN at the airport", "Declare everything", "guarantor from", "warehouse survival job", "Drive Uber", "Swap shifts", "fixed share",
       "Nigerian association", "Keep driving", "any shift", "volunteer tax clinic", "Stay. Save"]);
     expect(parked.outcome?.reason).toBe("SURVIVING");
-    const home = year(["SIN at the airport", "Declare everything", "guarantor from", "warehouse survival job", "Drive Uber", "fixed share",
+    const home = year(["SIN at the airport", "Declare everything", "guarantor from", "warehouse survival job", "Drive Uber", "Swap shifts", "fixed share",
       "Nigerian association", "Keep driving", "any shift", "volunteer tax clinic", "Go home for good"]);
     expect(home.outcome).toMatchObject({ result: "neutral", reason: "REVERSE_JAPA" });
   });
 
   it("a rental scam and an empty account end the year early", () => {
     const s = playR("FIRST_YEAR", ["best phone plan", "Declare everything", "Facebook 'landlord'", ["Only apply for jobs at your old level", 0.99],
-      "bridging program", "Send all of it", "Stay inside", "crisp written summary", "Move to Calgary", "volunteer tax clinic", "Go home for December as an IJGB"]);
+      "bridging program", "Swap shifts", "Send all of it", "Stay inside", "crisp written summary", "Move to Calgary", "volunteer tax clinic", "Go home for December as an IJGB"]);
     expect(s.outcome?.reason).toBe("BURNOUT");
   });
 
@@ -1309,7 +1309,7 @@ describe("v0.15 scenes: spouse, caregiver scam, the accent conversation", () => 
 
   it("naming the accent comment is a gamble that community makes likelier", () => {
     const at = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days", "bridging program",
-      "fixed share", "Nigerian association"]);
+      "Swap shifts", "fixed share", "Nigerian association"]);
     expect(at.currentSceneId).toBe("FY_ACCENT");
     const named = presentChoices(DB, at).find((c) => c.label === "NAMED_IT")!;
     expect(named.odds).toBeGreaterThan(0.5);
@@ -1410,18 +1410,18 @@ describe("v0.16: playtest fixes", () => {
 
   it("Year One: drivers get the gig scene, not the office one; saying no to family comes back in December", () => {
     const start = ["SIN at the airport", "Declare everything", "guarantor from", "warehouse survival job", "Drive Uber"];
-    const gig = play("FIRST_YEAR", [...start, "Say no this time", "Nigerian association"]);
+    const gig = play("FIRST_YEAR", [...start, "Swap shifts", "Say no this time", "Nigerian association"]);
     expect(gig.currentSceneId).toBe("FY_GIG_LIFE");
     const dec = play2(gig, ["Keep driving", "any shift", "volunteer tax clinic"]);
     expect(dec.currentSceneId).toBe("FY_SILENCE");
     const office = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days",
-      "Unregulated field", "fixed share", "Nigerian association"]);
+      "Unregulated field", "Swap shifts", "fixed share", "Nigerian association"]);
     expect(office.currentSceneId).toBe("FY_ACCENT");
   });
 
   it("the group-chat tax guy is fraud; undeclared stockfish is a gamble with a fine", () => {
     const taxes = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "warehouse survival job",
-      "Drive Uber", "fixed share", "Nigerian association", "Keep driving", "any shift"]);
+      "Drive Uber", "Swap shifts", "fixed share", "Nigerian association", "Keep driving", "any shift"]);
     expect(taxes.currentSceneId).toBe("FY_TAXES");
     expect(play2(taxes, ["expenses you don't have"]).outcome?.reason).toBe("TAX_FRAUD");
     const customs = play("FIRST_YEAR", ["SIN at the airport"]);
@@ -1452,5 +1452,27 @@ describe("v0.16: playtest fixes", () => {
     expect(faceFor({ ...s, energy: 80, desperation: 85 })).toBe("worried");
     expect(faceFor({ ...s, outcome: { result: "win", reason: "X", title: "" } })).toBe("grin");
     expect(faceFor({ ...s, outcome: { result: "fail", reason: "X", title: "" } })).toBe("sad");
+  });
+});
+
+describe("v0.17: right answers cost something", () => {
+  it("the honest study plan costs nights; an editor is a real middle option", () => {
+    const sop = DB.scenes.ST_SOP.choices!;
+    expect(sop[0].effects!.energy).toBeLessThanOrEqual(-20);
+    expect(sop.some((c) => c.label === "EDITOR")).toBe(true);
+  });
+
+  it("the honest reference letter is a gamble when the boss is in Dubai, and failing it is still honest", () => {
+    const c = DB.scenes.EE_REFERENCE.choices![0];
+    expect(c.gamble?.fail.nextSceneId).toBeUndefined();
+    expect(c.nextSceneId).toBe("EE_DOCS");
+  });
+
+  it("Year One asks about faith at work in the player's own words", () => {
+    const masjid = { version: 1, username: "Aisha", avatar: DEFAULT_AVATAR, role: "worker", age: 29, stateCode: "KD",
+      worker: { occupation: "data", years: 4, qualification: "bachelors", salary: "150k-400k" } } as PlayerProfile;
+    expect(fillText(DB.scenes.FY_FAITH.title!, profileVars(masjid))).toBe("Every Jumu'ah.");
+    const at = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days", "bridging program"]);
+    expect(at.currentSceneId).toBe("FY_FAITH");
   });
 });
