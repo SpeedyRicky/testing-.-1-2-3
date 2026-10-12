@@ -21,7 +21,9 @@ export type PersonWho =
   | "mentor"
   | "prof"
   | "student"
-  | "tutor";
+  | "tutor"
+  | "member"
+  | "counsel";
 export type Accessory = "scarf" | "tie" | "cap" | "headwrap" | "glasses";
 
 const LOOK: Record<PersonWho, { skin: string; shirt: string; pants: string; hair: string; extra?: Accessory[]; tint?: string }> = {
@@ -41,6 +43,8 @@ const LOOK: Record<PersonWho, { skin: string; shirt: string; pants: string; hair
   prof: { skin: "#b07850", shirt: "#57534e", pants: "#1e293b", hair: "#d6d3d1", extra: ["glasses"] },
   student: { skin: "#a0613a", shirt: "#7c3aed", pants: "#1e3a8a", hair: "#111827" },
   tutor: { skin: "#f0c8a4", shirt: "#1d4ed8", pants: "#334155", hair: "#3f2a14", extra: ["scarf"], tint: "#dc2626" },
+  member: { skin: "#c68863", shirt: "#334155", pants: "#111827", hair: "#57534e", extra: ["glasses"] },
+  counsel: { skin: "#5b3410", shirt: "#1e293b", pants: "#111827", hair: "#111827", extra: ["tie"], tint: "#7c3aed" },
 };
 
 const POSE_CLASS: Record<PersonPose, string> = {

@@ -21,7 +21,8 @@ export type LagosStageKind =
 export type KitStageKind =
   | "ielts-centre" | "bank-hall" | "university-registry" | "french-class" | "ircc-portal"
   | "pearson-arrivals" | "toronto-street" | "campus" | "lecture-hall" | "tim-hortons" | "basement"
-  | "job-fair" | "library" | "warehouse" | "boardroom" | "graduation" | "pr-landing" | "pitch-room";
+  | "job-fair" | "library" | "warehouse" | "boardroom" | "graduation" | "pr-landing" | "pitch-room"
+  | "cbsa-secondary" | "irb-hearing" | "legal-clinic" | "shelter";
 export type StageKind = LagosStageKind | KitStageKind;
 /** How the player travels into a scene (drawn by TravelRibbon). */
 export type Transit = "none" | "trek" | "danfo" | "okada" | "call" | "plane" | "streetcar" | "snow-walk";
@@ -65,6 +66,16 @@ export interface RouteStats {
   networkScore?: number;
   resumeScore?: number;
   employerLeads?: number;
+  /** 1 if the player's state has insurgency, banditry or herder-farmer violence (from the profile). */
+  conflictRegion?: number;
+  // Kawosoke (asylum claim) inside the Tourist Gamble:
+  /** 0 none, 1 sexual orientation, 2 gender-based violence, 3 conflict in the North, 4 bought story, 5 village people */
+  kwBasis?: number;
+  kwAtAirport?: number;
+  kwCredibility?: number;
+  kwEvidence?: number;
+  // Express Entry 2026 categories, from the profile: 0 none, 1 healthcare, 2 STEM, 3 trades, 4 education
+  eeCategory?: number;
 }
 
 export interface GameState {
@@ -151,6 +162,8 @@ export interface DashboardAction {
   transit?: Transit;
   /** Ends the run on the spot: things a visitor must never do. */
   fatal?: string;
+  /** Leaves the dashboard for a story scene (e.g. the Kawosoke claim). */
+  goToSceneId?: string;
   consequences: string[];
   leadConsequences?: string[];
 }
@@ -203,7 +216,8 @@ export interface TrapConfig {
   base: number;
   scale: number;
   exponent: number;
-  items: { id: string; kicker: string; title: string; body: string; effects: Effects }[];
+  /** `when`: the event can only strike while these conditions hold (e.g. after an asylum claim is filed). */
+  items: { id: string; kicker: string; title: string; body: string; effects: Effects; when?: Conditions }[];
 }
 
 export interface MarketShockConfig {

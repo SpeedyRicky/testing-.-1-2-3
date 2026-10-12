@@ -10,7 +10,7 @@ Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · lucide-react.
 ```bash
 npm install
 npm run dev          # open http://localhost:3000 once the terminal says "Ready"
-npm test             # 91 engine tests
+npm test             # 104 engine tests
 npm run lint
 npm run build
 ```
@@ -67,9 +67,25 @@ Tap, Escape or Skip ends it early; the header switch toggles **Full** (3 s) and 
 | **Student** | `STORY_STAGE` | The most common route: choose a program (master's, public college diploma, or a private-college trap), fund it (scholarship, family sponsor, land sale, crowdfunding), write the study plan, survive January at Pearson, work within the 24-hour rule, graduate. A PGWP carries you into Express Entry. |
 | **Express Entry** | `STORY_STAGE` | IELTS, ECA, then a live CRS calculator with a breakdown. Draw nights decide: Canadian Experience Class (~518), French-language (~400), provincial nominee (+600). Proof of funds, police certificate, medical, PR. |
 | **Startup Pitch** | `ZOOM_GRID` | 2x2 Zoom call with Ms. Vance, Mr. Chen, Mr. Ross, ending on the Letter of Support resolution. |
-| **Tourist Gamble** | `DASHBOARD` | 180 days on a visitor record: daily actions, toasts, CAD/₦ wallet. 3 employer leads unlock the boardroom. |
+| **Tourist Gamble** | `STORY_STAGE` + `DASHBOARD` | Starts at CBSA primary inspection at Pearson. Then 180 days on a visitor record: daily actions, coffee with Mentor Wey Sabi, toasts, CAD/₦ wallet. 3 employer leads unlock the boardroom. Or **Kawosoke** (see below). |
 | **LMIA Interview** | `CORPORATE_OFFICE` | The Mr. Kovacs dialogue tree. |
 | Trades, PNP Rural | | Coming soon: add scenes and set `status` to `playable`. |
+
+## Kawosoke: the asylum branch of the Tourist Gamble
+"Kawosoke" is the slang for claiming asylum, and Mentor Wey Sabi recommends it to everyone. Claim at the Pearson counter
+on arrival, or later from the dashboard card **Kawosoke: Claim Asylum Inside Canada** (the IRCC portal). Then:
+- **What you fear:** "nothing, I came for work" (honest exit, back to the dashboard); a bought story from Wey Sabi's
+  unlicensed "paralegal" (CAD 1,500); a real sexual-orientation story; real gender-based violence; real conflict in the
+  North (only for players from Borno, Yobe, Adamawa, Zamfara, Katsina, Kaduna, Sokoto, Niger, Benue or Plateau); or
+  village people.
+- **The wait and the hearing** move two meters, **Credibility** and **Evidence** (`kwCredibility`, `kwEvidence`).
+- **Endings:** protected person; internal flight alternative ("try Port Harcourt"); refused on credibility; no nexus
+  (village people); claim abandoned (flew home for the owambe); misrepresentation (a bought story always fails).
+- Random events that only strike once a claim is filed (trap `when` conditions).
+
+Real persecution is written straight and can win; the jokes are aimed at Wey Sabi and the people selling shortcuts.
+The research behind this and every other route, with sources and a scenario backlog, is in
+`docs/pathways-deep-dive.html`.
 
 ## How it fits together
 ```
@@ -85,6 +101,7 @@ app/avatar.css                       avatar body sizes, hair, outfits and headwe
 game/profile.ts                      profile types, options, profile -> game stats, text filling, validation
 game/nigeria.ts                      36 states + FCT: city, area, market, transport, visa centre, airport
 game/family.ts                       the relative in Canada: heritage from the name, name pools, provinces
+docs/pathways-deep-dive.html         research: 2025-2026 rules per route, replay levers, scenario backlog
 game/cinematic.ts                    pure rules: which stats changed, good or bad, which effects to play
 app/components/Game.tsx              header, route tabs, Reset run
 app/components/LayoutContainer.tsx   reads the current scene, picks layout + background by route, draws stat bars
@@ -104,7 +121,9 @@ Everything a player sees comes from `game/scenarios.json`.
 - **A locked choice:** `requires` + `lockedHint`, e.g. `{ "streetCred": [">=", 20] }`.
 - **An automatic decision:** a `RESOLUTION` scene with `branch: [{ "when": {...}, "nextSceneId": "WIN" }, { "nextSceneId": "FAIL" }]`.
 - **An ending:** a scene with `outcome` (`win` / `fail`). Lagos ranks are listed under `routes.LAGOS_LIFE.ranks`.
-- **Traps, market shock, collapse rule:** tune the numbers under `routes.LAGOS_LIFE`.
+- **Random events (traps), market shock, collapse rule:** tune the numbers under `routes.<ROUTE>`. Any route can have
+  `traps`; an item with `when` (e.g. `{ "kwBasis": [">=", 1] }`) only strikes while that holds.
+- **A dashboard card that opens a story scene:** give the action `goToSceneId`.
 - **A 2D scene:** set `stage` on a scene (or a dashboard action) to any key in `app/components/stages.ts`, and
   `transitIn` to `danfo`, `okada`, `trek`, `call`, `plane`, `streetcar` or `snow-walk`. New locations are a few
   lines of data in `stages.ts`.
@@ -119,6 +138,11 @@ Everything a player sees comes from `game/scenarios.json`.
 | CRS tables (single applicant) | `crs` in `game/scenarios.json` | Long-standing IRCC grid; canada.ca was unreachable from the build environment, so re-check |
 | Arranged employment points | 0 | Removed March 25, 2025 |
 | Sibling in Canada (citizen or PR, 18+) | +15 CRS | Long-standing IRCC grid; re-check |
+| Express Entry category draws 2026 | Healthcare ~470, trades ~476 | Third-party draw trackers |
+| PGWP language test | CLB 7 university, CLB 5 college | Since Nov 2024 (secondary sources) |
+| Asylum: one-year bar (Bill C-12) | Claims 1+ year after first entry go to PRRA only | Royal assent March 26, 2026 |
+| Asylum: wait for an IRB decision | ~18 months | IRCC committee notes, Feb 2026 |
+| Nigerian claims decided in 2025 | ~69% accepted | IRB data via news reports; verify |
 | Express Entry proof of funds, 1 person | CAD 15,263 | July 2025 figure, still cited in Oct 2026 |
 | Study permit living costs, 1 person | CAD 23,448 | Applications from Sept 1, 2026 (secondary sources) |
 | Off-campus work during classes | 24 h/week | Since Nov 2024 |

@@ -198,6 +198,14 @@ export function familyFor(p: Pick<PlayerProfile, "username" | "stateCode" | "fam
   return makeRelative(heritage, seededRandom(`${username.toLowerCase()}|${stateCode}`), undefined, username);
 }
 
+/** States with insurgency, banditry or herder-farmer violence: an asylum claim from here can be the player's own story. */
+export const CONFLICT_STATES: ReadonlySet<string> = new Set(["BO", "YO", "AD", "ZA", "KT", "KD", "SO", "NI", "BE", "PL"]);
+
+/** Express Entry 2026 category for the player's job: 1 healthcare, 2 STEM, 3 trades, 4 education. */
+const EE_CATEGORY: Record<string, number> = {
+  nurse: 1, doctor: 1, pharmacist: 1, software: 2, data: 2, engineer: 2, electrician: 3, teacher: 4,
+};
+
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 /** Starting-state overrides per route, layered over each route's defaults. */
@@ -218,6 +226,7 @@ export function routePatches(p: PlayerProfile): Partial<Record<RouteId, Partial<
         ageYears: p.age, educationLevel: g.educationLevel, foreignWorkYears: g.foreignWorkYears,
         ecaComplete: 0, clbFirst: 0, nclcFrench: 0, canadianWorkYears: 0, canadianEducation: 0,
         pnpNomination: 0, siblingInCanada: isSibling(familyFor(p)) ? 1 : 0,
+        eeCategory: p.role === "worker" && p.worker && p.worker.years >= 1 ? EE_CATEGORY[p.worker.occupation] ?? 0 : 0,
       },
     },
     STUDY_PERMIT: {
@@ -225,7 +234,10 @@ export function routePatches(p: PlayerProfile): Partial<Record<RouteId, Partial<
       walletCad: clamp(g.savingsCad, 1000, 40000),
       routeStats: { academicStanding: g.academicStanding, hasDegree: g.hasDegree ? 1 : 0 },
     },
-    TOURIST_GAMBLE: { walletCad: clamp(g.savingsCad, 1500, 6000) },
+    TOURIST_GAMBLE: {
+      walletCad: clamp(g.savingsCad, 1500, 6000),
+      routeStats: { conflictRegion: CONFLICT_STATES.has(p.stateCode) ? 1 : 0 },
+    },
   };
 }
 

@@ -116,7 +116,7 @@ export const STAGES = {
     props: [{ kind: "menu-board", x: 26, label: "Double-double · Timbits" }, { kind: "counter", x: 26, w: 170 },
       { kind: "window", x: 80, w: 100, window: "snow" }, { kind: "table", x: 70, w: 110 }],
     people: [{ who: "clerk", x: 18, pose: "idle", caption: "Barista" },
-      { who: "mentor", x: 62, pose: "talk", caption: "Mentor" },
+      { who: "mentor", x: 62, pose: "talk", caption: "Wey Sabi" },
       { who: "you", x: 80, pose: "sit", caption: "You", flip: true, moods: { win: "cheer" } }],
   },
   basement: {
@@ -170,6 +170,38 @@ export const STAGES = {
       { kind: "screen", x: 60, w: 210, label: "Zoom · Maple Venture Incubator · 4 participants" },
       { kind: "desk2", x: 60, w: 160 }, { kind: "laptop2", x: 60 }],
     people: [{ who: "you", x: 60, pose: "sit", caption: "You", moods: { win: "cheer", fail: "slump", talk: "talk" } }],
+  },
+  // --- Kawosoke (asylum claim) ---
+  "cbsa-secondary": {
+    wall: "#cbd5e1", panel: true, ground: "tiles",
+    props: [{ kind: "banner", x: 50, label: "CBSA · Secondary inspection", tone: "blue" }, { kind: "counter", x: 28, w: 170 },
+      { kind: "flag-ca", x: 86 }],
+    people: [{ who: "officer", x: 24, pose: "talk", caption: "CBSA officer", moods: { calm: "idle" } },
+      { who: "you", x: 54, pose: "sit", caption: "You", wear: SCARF, moods: { win: "cheer", fail: "slump" } },
+      { who: "npc", x: 76, pose: "sit", scale: 0.85 }],
+  },
+  "irb-hearing": {
+    wall: "#1e293b", panel: true, ground: "carpet",
+    props: [{ kind: "banner", x: 50, label: "Refugee Protection Division", tone: "blue" },
+      { kind: "table", x: 28, w: 110 }, { kind: "table", x: 56, w: 90 }, { kind: "table", x: 74, w: 90 }, { kind: "flag-ca", x: 90 }],
+    people: [{ who: "member", x: 28, pose: "sit", caption: "Board member", moods: { talk: "talk", fail: "idle" } },
+      { who: "counsel", x: 56, pose: "sit", caption: "Counsel", flip: true },
+      { who: "you", x: 74, pose: "sit", caption: "You", flip: true, moods: { win: "cheer", fail: "slump" } }],
+  },
+  "legal-clinic": {
+    wall: "#334155", ground: "carpet",
+    props: [{ kind: "shelf", x: 16, w: 110 }, { kind: "board", x: 80, w: 120, label: "Basis of Claim · draft 3" },
+      { kind: "desk2", x: 48, w: 150 }, { kind: "laptop2", x: 48 }],
+    people: [{ who: "counsel", x: 36, pose: "talk", caption: "Counsel" },
+      { who: "you", x: 60, pose: "sit", caption: "You", flip: true, moods: { win: "cheer", fail: "slump" } }],
+  },
+  shelter: {
+    wall: "#57534e", ground: "concrete",
+    props: [{ kind: "banner", x: 50, label: "Welcome · Bienvenue · Ẹ kú àbọ̀ · Nnọọ", tone: "gold" },
+      { kind: "couch", x: 22, w: 120 }, { kind: "couch", x: 78, w: 120 }, { kind: "window", x: 50, w: 70, window: "snow" }],
+    people: [{ who: "npc", x: 22, pose: "sit", scale: 0.9 },
+      { who: "you", x: 50, pose: "phone", caption: "You", wear: SCARF, moods: { win: "cheer", fail: "slump" } },
+      { who: "student", x: 78, pose: "sit", scale: 0.9 }],
   },
 } satisfies Record<KitStageKind, StageSpec>;
 

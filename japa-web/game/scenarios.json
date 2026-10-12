@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.9.0",
+    "version": "0.10.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -239,7 +239,54 @@
       ],
       "nextRoutes": [
         "EXPRESS_ENTRY"
-      ]
+      ],
+      "traps": {
+        "base": 0.04,
+        "scale": 0.55,
+        "exponent": 1.6,
+        "items": [
+          {
+            "id": "kijiji",
+            "kicker": "Scam",
+            "title": "The basement room was never real",
+            "body": "CAD 1,200 deposit to a 'landlord' on Kijiji who was 'out of the country, will mail the keys'. The keys are still in the mail.",
+            "effects": {
+              "walletCad": -1200,
+              "desperation": 12
+            }
+          },
+          {
+            "id": "naira",
+            "kicker": "Naira",
+            "title": "Daddy's transfer arrived smaller",
+            "body": "Same naira, fewer dollars. Rent did not get the memo.",
+            "effects": {
+              "walletCad": -800,
+              "desperation": 8
+            }
+          },
+          {
+            "id": "hours",
+            "kicker": "Work",
+            "title": "Shifts cut",
+            "body": "The warehouse cut part-timers to 10 hours. Students are allowed 24 a week; nobody is guaranteed any.",
+            "effects": {
+              "walletCad": -500,
+              "desperation": 5
+            }
+          },
+          {
+            "id": "groupwork",
+            "kicker": "Campus",
+            "title": "Group project ghost",
+            "body": "Your group of four is a group of one. The deadline is Friday.",
+            "effects": {
+              "energy": -12,
+              "academicStanding": -5
+            }
+          }
+        ]
+      }
     },
     "EXPRESS_ENTRY": {
       "title": "Express Entry",
@@ -263,7 +310,8 @@
           "canadianEducation": 0,
           "pnpNomination": 0,
           "siblingInCanada": 0,
-          "familyAsked": 0
+          "familyAsked": 0,
+          "eeCategory": 0
         }
       },
       "bars": [
@@ -337,7 +385,54 @@
           "title": "Still in the pool",
           "blurb": "Not this round. The next draw is in two weeks."
         }
-      ]
+      ],
+      "traps": {
+        "base": 0.04,
+        "scale": 0.55,
+        "exponent": 1.6,
+        "items": [
+          {
+            "id": "naira",
+            "kicker": "Naira",
+            "title": "The naira slipped again",
+            "body": "Your savings are the same number of naira and fewer dollars. Proof of funds is counted in Canadian dollars.",
+            "effects": {
+              "walletCad": -900,
+              "desperation": 8
+            }
+          },
+          {
+            "id": "courier",
+            "kicker": "Village People",
+            "title": "Courier lost your transcript",
+            "body": "Tracking says 'delivered' to an address in Mississauga that is a car wash. The registry wants another fee and another month.",
+            "effects": {
+              "walletCad": -150,
+              "energy": -8,
+              "desperation": 6
+            }
+          },
+          {
+            "id": "pause",
+            "kicker": "IRCC",
+            "title": "No draw for six weeks",
+            "body": "The rounds page has not moved since the 3rd. Telegram groups say the system is 'under review'. Telegram groups say a lot of things.",
+            "effects": {
+              "desperation": 10
+            }
+          },
+          {
+            "id": "birthday",
+            "kicker": "Clock",
+            "title": "Happy birthday",
+            "body": "Cake, candles, and a quiet drop in your age points. Every year past 29 costs you on the calculator.",
+            "effects": {
+              "ageYears": 1,
+              "desperation": 4
+            }
+          }
+        ]
+      }
     },
     "STARTUP_VISA": {
       "title": "The Startup Visa Pitch Route",
@@ -374,7 +469,7 @@
       "title": "The 180-Day Tourist Gamble",
       "short": "Tourist Gamble",
       "status": "playable",
-      "startSceneId": "TOURIST_HUB",
+      "startSceneId": "TOURIST_ARRIVAL",
       "initialState": {
         "currentLocation": "Pearson Airport, Terminal 3",
         "timeRemainingDays": 180,
@@ -385,7 +480,12 @@
         "routeStats": {
           "networkScore": 0,
           "resumeScore": 0,
-          "employerLeads": 0
+          "employerLeads": 0,
+          "conflictRegion": 0,
+          "kwBasis": 0,
+          "kwAtAirport": 0,
+          "kwCredibility": 50,
+          "kwEvidence": 0
         }
       },
       "bars": [
@@ -404,7 +504,134 @@
           "label": "Desperation",
           "invert": true
         }
-      ]
+      ],
+      "tagline": "180 days. No work. Wey Sabi says Kawosoke.",
+      "ranks": [
+        {
+          "id": "protected",
+          "reason": "PROTECTED_PERSON",
+          "title": "Protected person",
+          "blurb": "Your real story, told straight, with evidence. Next stop: permanent residence. Don't renew that green passport."
+        },
+        {
+          "id": "interview",
+          "reason": "INTERVIEW_SECURED",
+          "title": "Boardroom bound",
+          "blurb": "Three leads in 180 days without working a single illegal shift. Mr. Kovacs is waiting."
+        },
+        {
+          "id": "flagged",
+          "reason": "MISREPRESENTATION",
+          "title": "Bought story, sold dream",
+          "blurb": "The paralegal sold the same page forty times. The board noticed. Five-year bar, removal, and the real ones get believed less."
+        },
+        {
+          "id": "village",
+          "reason": "NO_NEXUS",
+          "title": "Village People: not a Convention ground",
+          "blurb": "The board was very polite about the juju. Refused."
+        },
+        {
+          "id": "ifa",
+          "reason": "IFA_FOUND",
+          "title": "Believed, but 'try Port Harcourt'",
+          "blurb": "Internal flight alternative: the most Nigerian refusal there is."
+        },
+        {
+          "id": "refused",
+          "reason": "CLAIM_REFUSED",
+          "title": "Refused on credibility",
+          "blurb": "Three versions of one night. Appeal, Federal Court, PRRA, then a removal date."
+        },
+        {
+          "id": "abandoned",
+          "reason": "CLAIM_ABANDONED",
+          "title": "Went home for the party",
+          "blurb": "Flew back to the country you said you feared. The claim did not survive the owambe."
+        },
+        {
+          "id": "expired",
+          "reason": "STAY_EXPIRED",
+          "title": "Time's up",
+          "blurb": "180 days of LinkedIn. The return ticket wins."
+        },
+        {
+          "id": "couch",
+          "title": "Uncle Couch",
+          "blurb": "The kids still ask when you are coming back."
+        }
+      ],
+      "traps": {
+        "base": 0.04,
+        "scale": 0.6,
+        "exponent": 1.6,
+        "items": [
+          {
+            "id": "hotel",
+            "when": {
+              "kwBasis": [
+                ">=",
+                1
+              ]
+            },
+            "kicker": "Plot twist",
+            "title": "Moved to a hotel in Niagara Falls",
+            "body": "The shelter is full. A bus takes you two hours from the clinic that has your file. Tourists are taking selfies by the falls; you are taking the 6 a.m. GO bus.",
+            "effects": {
+              "energy": -12,
+              "desperation": 10
+            }
+          },
+          {
+            "id": "fee",
+            "when": {
+              "kwBasis": [
+                ">=",
+                1
+              ]
+            },
+            "kicker": "Village People",
+            "title": "Wey Sabi wants a 'consultation fee'",
+            "body": "Three coffee chats, apparently, were billable. CAD 300 by Friday or Wey Sabi tells the whole church you are 'ungrateful'.",
+            "effects": {
+              "walletCad": -300,
+              "desperation": 8
+            }
+          },
+          {
+            "id": "translator",
+            "when": {
+              "kwBasis": [
+                ">=",
+                1
+              ]
+            },
+            "kicker": "Plot twist",
+            "title": "Your story, as remembered by your cousin",
+            "body": "Your cousin told the family group your claim details 'for prayer'. Now four aunties have four versions, and one of them is on Facebook.",
+            "effects": {
+              "kwCredibility": -8,
+              "desperation": 6
+            }
+          },
+          {
+            "id": "snow",
+            "when": {
+              "kwBasis": [
+                ">=",
+                1
+              ]
+            },
+            "kicker": "Canada",
+            "title": "First real snowstorm",
+            "body": "You missed the clinic appointment because the bus did not come and your shoes are canvas. You rebook for three weeks later.",
+            "effects": {
+              "energy": -10,
+              "desperation": 5
+            }
+          }
+        ]
+      }
     },
     "CAREGIVER_LMIA": {
       "title": "The Hidden LMIA Interview",
@@ -1232,7 +1459,7 @@
       "route": "TOURIST_GAMBLE",
       "layoutType": "DASHBOARD",
       "speaker": "The 180-Day Tourist Gamble",
-      "dialogue": "You landed on a visitor record with savings, a cousin's couch and a plan: find an employer willing to start an LMIA before your time runs out. Visitors can network and interview. Visitors cannot work.",
+      "dialogue": "You landed on a visitor record with savings, a cousin's couch and a plan: find an employer willing to start an LMIA before your time runs out. Visitors can network and interview. Visitors cannot work. Mentor Wey Sabi keeps saying one word: Kawosoke.",
       "dashboard": {
         "dailyCostCad": 20,
         "ngnPerCad": 1150,
@@ -1288,8 +1515,8 @@
           },
           {
             "id": "mentor_coffee",
-            "label": "Coffee Chat with a Naija-Canadian Mentor",
-            "blurb": "Tim Hortons, double-double on you",
+            "label": "Coffee Chat with a Naija-Canadian Mentor Wey Sabi",
+            "blurb": "Tim Hortons, double-double on you. Wey Sabi knows everything (Wey Sabi says)",
             "effects": {
               "timeRemainingDays": -1,
               "energy": -10,
@@ -1301,11 +1528,12 @@
             "leadChance": 0.08,
             "location": "Tim Hortons, Square One",
             "consequences": [
-              "She has been here 11 years. Her first advice: 'Buy proper boots.' Her second: 'Stop saying sir.'",
-              "He spent 40 minutes on Canadian work culture and 20 on why Jollof here is a scandal."
+              "Wey Sabi has been here 11 years. First advice: 'Buy proper boots.' Second: 'Stop saying sir.' Third, in a whisper: 'Kawosoke. Everybody dey do am.'",
+              "Wey Sabi spent 40 minutes on Canadian work culture, 20 on why Jollof here is a scandal, and 5 on a 'paralegal' who sells asylum stories. You did not ask.",
+              "Wey Sabi says: 'This LinkedIn thing is slow. Raise your hands, Kawosoke, collect work permit.' Wey Sabi has never read the Immigration and Refugee Protection Act."
             ],
             "leadConsequences": [
-              "Your mentor forwarded your CV to her old manager. 'He owes me a favour.'"
+              "Wey Sabi forwarded your CV to an old manager. 'He owes me a favour.' For once, Wey Sabi actually sabi."
             ],
             "stage": "tim-hortons",
             "transit": "snow-walk"
@@ -1345,6 +1573,23 @@
             ],
             "stage": "basement",
             "transit": "none"
+          },
+          {
+            "id": "kawosoke",
+            "label": "Kawosoke: Claim Asylum Inside Canada",
+            "blurb": "Wey Sabi's favourite advice. The IRCC portal, from the couch",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": -10,
+              "desperation": 4
+            },
+            "location": "IRCC portal, cousin's couch",
+            "consequences": [
+              "You open the IRCC portal. The form wants every address you have had since you were 18."
+            ],
+            "stage": "ircc-portal",
+            "transit": "none",
+            "goToSceneId": "KW_INLAND"
           },
           {
             "id": "cash_job",
@@ -1568,6 +1813,32 @@
           "nextSceneId": "EE_ITA_FRENCH"
         },
         {
+          "when": {
+            "eeCategory": [
+              "==",
+              1
+            ],
+            "crsScore": [
+              ">=",
+              470
+            ]
+          },
+          "nextSceneId": "EE_ITA_HEALTH"
+        },
+        {
+          "when": {
+            "eeCategory": [
+              "==",
+              3
+            ],
+            "crsScore": [
+              ">=",
+              476
+            ]
+          },
+          "nextSceneId": "EE_ITA_TRADES"
+        },
+        {
           "nextSceneId": "EE_BELOW"
         }
       ]
@@ -1581,7 +1852,7 @@
       "stage": "ircc-portal",
       "transitIn": "none",
       "speaker": "IRCC portal",
-      "dialogue": "This round: Canadian Experience Class, 2,000 invitations, cutoff 518. You need Canadian work experience for that one. Last month's French-language draw went down to 399, but only for NCLC 7 in French. Your score is on the meter. What now?",
+      "dialogue": "This round: Canadian Experience Class, 2,000 invitations, cutoff 518. Last month's French-language draw went down to the 380s, but only for NCLC 7 in French. Healthcare draws sat around 470 and trades around 476, if your job is on those lists and you have six months of recent experience in it. Your score is on the meter. What now?",
       "choices": [
         {
           "text": "Enrol at the French institute: nine months to NCLC 7 (TEF Canada)",
@@ -2020,7 +2291,7 @@
           "set": {
             "programType": 2
           },
-          "feedback": "Master's graduates are exempt from the PGWP field-of-study list.",
+          "feedback": "Since January 1, 2026, master's and PhD students at public institutions don't need a provincial attestation letter, and the master's PGWP isn't tied to a field-of-study list.",
           "requires": {
             "hasDegree": [
               ">=",
@@ -2495,7 +2766,7 @@
         {
           "text": "Library every night until the last exam",
           "label": "LOCKED_IN",
-          "nextSceneId": "ST_GRAD",
+          "nextSceneId": "ST_PGWP_LANG",
           "effects": {
             "academicStanding": 20,
             "energy": -20
@@ -2504,7 +2775,7 @@
         {
           "text": "Pick up extra shifts instead",
           "label": "SPLIT_FOCUS",
-          "nextSceneId": "ST_GRAD",
+          "nextSceneId": "ST_PGWP_LANG",
           "effects": {
             "academicStanding": -10,
             "walletCad": 1200
@@ -2751,6 +3022,824 @@
           "educationLevel": 4
         },
         "ageOffset": 5
+      }
+    },
+    "TOURIST_ARRIVAL": {
+      "id": "TOURIST_ARRIVAL",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Primary inspection.",
+      "location": "Toronto Pearson, Terminal 3",
+      "stage": "pearson-arrivals",
+      "transitIn": "plane",
+      "speaker": "Toronto Pearson, Terminal 3",
+      "dialogue": "Eleven hours from {airportCode}. The CBSA officer flips through your passport: 'Purpose of your visit?' Mentor Wey Sabi's last voice note is still playing in your head: 'As you land, Kawosoke at the airport. No dull yourself.' Your visitor visa allows a stay of up to six months. It does not allow work.",
+      "choices": [
+        {
+          "text": "Tell the truth: a visit, return ticket in hand, savings to show",
+          "label": "ADMITTED",
+          "nextSceneId": "TOURIST_HUB",
+          "effects": {
+            "desperation": -3
+          },
+          "feedback": "Admitted as a visitor. The clock starts now: you may network and interview, but not work."
+        },
+        {
+          "text": "Kawosoke at the counter: tell the officer you want to claim refugee protection",
+          "label": "KAWOSOKE_AT_PEARSON",
+          "nextSceneId": "KW_POE",
+          "effects": {
+            "energy": -10,
+            "desperation": 6
+          },
+          "feedback": "You can claim at a port of entry. Now the officer has questions, and so will the board.",
+          "set": {
+            "kwAtAirport": 1
+          }
+        },
+        {
+          "text": "Say you are here for a tech conference you never registered for",
+          "label": "FRAUD",
+          "nextSceneId": "TOURIST_REFUSED_ENTRY",
+          "effects": {}
+        }
+      ]
+    },
+    "TOURIST_REFUSED_ENTRY": {
+      "id": "TOURIST_REFUSED_ENTRY",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "There is no conference.",
+      "location": "Toronto Pearson, secondary inspection",
+      "stage": "cbsa-secondary",
+      "transitIn": "none",
+      "speaker": "Toronto Pearson, secondary inspection",
+      "dialogue": "The officer searches the conference name. Then your phone. Then your suitcase, which contains eleven printed CVs. Lying to a border officer is misrepresentation: refused entry, and a five-year bar on coming back.",
+      "outcome": {
+        "result": "fail",
+        "reason": "MISREPRESENTATION",
+        "title": "Refused at the border",
+        "subtitle": "Misrepresentation carries a five-year inadmissibility. The next flight to {airportCode} has a seat for you."
+      }
+    },
+    "KW_POE": {
+      "id": "KW_POE",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Secondary inspection.",
+      "location": "Toronto Pearson, CBSA",
+      "stage": "cbsa-secondary",
+      "transitIn": "none",
+      "speaker": "Toronto Pearson, CBSA",
+      "dialogue": "The officer walks you to a side room. Fingerprints, a photo, and a long interview about who you are and how you travelled. A claim made at the airport is usually checked for eligibility the same day; if it is eligible it goes to the Immigration and Refugee Board, with a short deadline to file your Basis of Claim form. Whatever the form or the officer, the question is the same: 'What do you fear will happen to you if you return to Nigeria?' Wey Sabi's voice note says: 'Just pick a story. LGBTQ, abusive husband, village people, Boko Haram. Pick one.'",
+      "choices": [
+        {
+          "text": "The truth: nothing will happen to me. I came to find work.",
+          "label": "HONEST_EXIT",
+          "nextSceneId": "KW_NO_CLAIM",
+          "effects": {
+            "desperation": 6
+          },
+          "feedback": "Refugee protection is for people facing persecution or serious harm at home. Saying so out loud costs you nothing."
+        },
+        {
+          "text": "Buy a ready-made story from Wey Sabi's 'paralegal' (CAD 1,500): LGBTQ, abusive husband or village people, pick from the menu",
+          "label": "BOUGHT_A_STORY",
+          "nextSceneId": "KW_FAKE_STORY",
+          "effects": {
+            "walletCad": -1500,
+            "desperation": -5
+          },
+          "requires": {
+            "walletCad": [
+              ">=",
+              1500
+            ]
+          },
+          "lockedHint": "He wants CAD 1,500 upfront",
+          "set": {
+            "kwBasis": 4,
+            "kwCredibility": 20
+          }
+        },
+        {
+          "text": "It really happened: you were outed in {area}, beaten, and your photo is in a vigilante WhatsApp group",
+          "label": "SOGIESC_CLAIM",
+          "nextSceneId": "KW_FILED",
+          "effects": {
+            "desperation": 4
+          },
+          "feedback": "Same-sex relationships are criminalized across Nigeria (up to 14 years under the 2014 Act). The board has a guideline for these claims.",
+          "set": {
+            "kwBasis": 1,
+            "kwCredibility": 55,
+            "kwEvidence": 10
+          }
+        },
+        {
+          "text": "It really happened: years of beatings from your husband, two police reports that went nowhere, and threats from his family",
+          "label": "GENDER_BASED_CLAIM",
+          "nextSceneId": "KW_FILED",
+          "effects": {
+            "desperation": 4
+          },
+          "feedback": "Gender-based violence can ground a claim. The fight will be about state protection and whether you could live safely elsewhere.",
+          "set": {
+            "kwBasis": 2,
+            "kwCredibility": 55,
+            "kwEvidence": 10
+          }
+        },
+        {
+          "text": "It really happened: gunmen attacked your community and you know their names, and they know yours",
+          "label": "CONFLICT_CLAIM",
+          "nextSceneId": "KW_FILED",
+          "effects": {
+            "desperation": 4
+          },
+          "feedback": "Insurgency and banditry are real. The board will ask whether the risk is personal to you, not just general violence.",
+          "requires": {
+            "conflictRegion": [
+              ">=",
+              1
+            ]
+          },
+          "lockedHint": "Your profile says you live in {city}. A claim has to be your own story",
+          "set": {
+            "kwBasis": 3,
+            "kwCredibility": 55,
+            "kwEvidence": 10
+          }
+        },
+        {
+          "text": "Village people: your uncle's juju is after you and the pastor confirmed it",
+          "label": "VILLAGE_PEOPLE_CLAIM",
+          "nextSceneId": "KW_FILED",
+          "effects": {
+            "desperation": 2
+          },
+          "feedback": "You believe it. The question is whether refugee law covers it.",
+          "set": {
+            "kwBasis": 5,
+            "kwCredibility": 45,
+            "kwEvidence": 0
+          }
+        }
+      ]
+    },
+    "KW_INLAND": {
+      "id": "KW_INLAND",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "The IRCC portal.",
+      "location": "IRCC portal, cousin's couch",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal, cousin's couch",
+      "dialogue": "You can claim from inside Canada online. The form wants everything: every address since you were 18, every trip, every job, and your Basis of Claim, the story in your own words. Under Bill C-12, law since March 2026, a claim made more than a year after you first entered Canada cannot go to the refugee board at all, only to a paper risk assessment. You are still inside your first year. Whatever the form or the officer, the question is the same: 'What do you fear will happen to you if you return to Nigeria?' Wey Sabi's voice note says: 'Just pick a story. LGBTQ, abusive husband, village people, Boko Haram. Pick one.'",
+      "choices": [
+        {
+          "text": "The truth: nothing will happen to me. I came to find work.",
+          "label": "HONEST_EXIT",
+          "nextSceneId": "KW_NO_CLAIM",
+          "effects": {
+            "desperation": 6
+          },
+          "feedback": "Refugee protection is for people facing persecution or serious harm at home. Saying so out loud costs you nothing."
+        },
+        {
+          "text": "Buy a ready-made story from Wey Sabi's 'paralegal' (CAD 1,500): LGBTQ, abusive husband or village people, pick from the menu",
+          "label": "BOUGHT_A_STORY",
+          "nextSceneId": "KW_FAKE_STORY",
+          "effects": {
+            "walletCad": -1500,
+            "desperation": -5
+          },
+          "requires": {
+            "walletCad": [
+              ">=",
+              1500
+            ]
+          },
+          "lockedHint": "He wants CAD 1,500 upfront",
+          "set": {
+            "kwBasis": 4,
+            "kwCredibility": 20
+          }
+        },
+        {
+          "text": "It really happened: you were outed in {area}, beaten, and your photo is in a vigilante WhatsApp group",
+          "label": "SOGIESC_CLAIM",
+          "nextSceneId": "KW_FILED",
+          "effects": {
+            "desperation": 4
+          },
+          "feedback": "Same-sex relationships are criminalized across Nigeria (up to 14 years under the 2014 Act). The board has a guideline for these claims.",
+          "set": {
+            "kwBasis": 1,
+            "kwCredibility": 55,
+            "kwEvidence": 10
+          }
+        },
+        {
+          "text": "It really happened: years of beatings from your husband, two police reports that went nowhere, and threats from his family",
+          "label": "GENDER_BASED_CLAIM",
+          "nextSceneId": "KW_FILED",
+          "effects": {
+            "desperation": 4
+          },
+          "feedback": "Gender-based violence can ground a claim. The fight will be about state protection and whether you could live safely elsewhere.",
+          "set": {
+            "kwBasis": 2,
+            "kwCredibility": 55,
+            "kwEvidence": 10
+          }
+        },
+        {
+          "text": "It really happened: gunmen attacked your community and you know their names, and they know yours",
+          "label": "CONFLICT_CLAIM",
+          "nextSceneId": "KW_FILED",
+          "effects": {
+            "desperation": 4
+          },
+          "feedback": "Insurgency and banditry are real. The board will ask whether the risk is personal to you, not just general violence.",
+          "requires": {
+            "conflictRegion": [
+              ">=",
+              1
+            ]
+          },
+          "lockedHint": "Your profile says you live in {city}. A claim has to be your own story",
+          "set": {
+            "kwBasis": 3,
+            "kwCredibility": 55,
+            "kwEvidence": 10
+          }
+        },
+        {
+          "text": "Village people: your uncle's juju is after you and the pastor confirmed it",
+          "label": "VILLAGE_PEOPLE_CLAIM",
+          "nextSceneId": "KW_FILED",
+          "effects": {
+            "desperation": 2
+          },
+          "feedback": "You believe it. The question is whether refugee law covers it.",
+          "set": {
+            "kwBasis": 5,
+            "kwCredibility": 45,
+            "kwEvidence": 0
+          }
+        }
+      ]
+    },
+    "KW_NO_CLAIM": {
+      "id": "KW_NO_CLAIM",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "No claim.",
+      "location": "Brampton",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "Brampton",
+      "dialogue": "You close the portal. Wey Sabi calls you 'too honest for this country'. Your cousin, quietly, is relieved. The clock is still running and the job fair is still on Thursday.",
+      "choices": [
+        {
+          "text": "Back to the job hunt",
+          "label": "",
+          "nextSceneId": "TOURIST_HUB",
+          "effects": {
+            "energy": 5
+          }
+        }
+      ]
+    },
+    "KW_FAKE_STORY": {
+      "id": "KW_FAKE_STORY",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "The 'paralegal' has a menu.",
+      "location": "A back office, Mississauga",
+      "stage": "legal-clinic",
+      "transitIn": "none",
+      "speaker": "A back office, Mississauga",
+      "dialogue": "He is not a lawyer or a licensed consultant, so nobody regulates what he sells. The story fits on one page. The same page, he admits, has been sold forty times this year; he only changes the names. 'Memorize am. No add, no remove.'",
+      "choices": [
+        {
+          "text": "File it anyway",
+          "label": "FILED_A_BOUGHT_STORY",
+          "nextSceneId": "KW_FILED",
+          "effects": {
+            "desperation": 5
+          },
+          "feedback": "Filed. Your name, someone else's life."
+        },
+        {
+          "text": "Walk out. The CAD 1,500 is gone, but so is the trap",
+          "label": "WALKED_AWAY",
+          "nextSceneId": "KW_NO_CLAIM",
+          "effects": {
+            "desperation": 8
+          },
+          "set": {
+            "kwBasis": 0
+          }
+        },
+        {
+          "text": "Report him to the College of Immigration and Citizenship Consultants",
+          "label": "REPORTED",
+          "nextSceneId": "KW_NO_CLAIM",
+          "effects": {
+            "streetCred": 5,
+            "desperation": 4
+          },
+          "feedback": "Only lawyers, Quebec notaries and licensed consultants may charge for immigration advice. He is none of those.",
+          "set": {
+            "kwBasis": 0
+          }
+        }
+      ]
+    },
+    "KW_FILED": {
+      "id": "KW_FILED",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Claim received.",
+      "location": "Downtown Toronto",
+      "stage": "shelter",
+      "transitIn": "streetcar",
+      "speaker": "Downtown Toronto",
+      "dialogue": "Eligibility checked. You get a refugee protection claimant document, Interim Federal Health coverage and an immigration medical booking. Once your claim is eligible and the medical is done, you can apply for an open work permit. The hearing is far away: the board's average wait was about 18 months in early 2026. The visitor clock no longer matters. Your story does.",
+      "choices": [
+        {
+          "text": "Find a lawyer through Legal Aid or a refugee clinic",
+          "label": "REAL_COUNSEL",
+          "nextSceneId": "KW_WAIT",
+          "effects": {
+            "energy": -10,
+            "desperation": -6,
+            "kwEvidence": 15,
+            "kwCredibility": 5
+          },
+          "feedback": "A real lawyer reads your form line by line and starts asking for documents."
+        },
+        {
+          "text": "Pay Wey Sabi's 'paralegal' to 'handle everything'",
+          "label": "PARALEGAL",
+          "nextSceneId": "KW_WAIT",
+          "effects": {
+            "walletCad": -800,
+            "kwCredibility": -10,
+            "desperation": 4
+          },
+          "feedback": "He files nothing. You find out three months later."
+        },
+        {
+          "text": "Take a shelter bed and save every dollar",
+          "label": "SHELTER",
+          "nextSceneId": "KW_WAIT",
+          "effects": {
+            "energy": -15,
+            "desperation": 8
+          },
+          "feedback": "Forty cots, one microwave, and a woman from Ibadan who knows every bus route."
+        }
+      ]
+    },
+    "KW_WAIT": {
+      "id": "KW_WAIT",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Month 6 of the wait.",
+      "location": "Downtown Toronto",
+      "stage": "shelter",
+      "transitIn": "none",
+      "speaker": "Downtown Toronto",
+      "dialogue": "Your work permit arrived. So did the winter. Your Basis of Claim form is in a file somewhere at the board, and the hearing date is still a rumour. How do you spend the wait?",
+      "choices": [
+        {
+          "text": "Work legally on the open work permit: warehouse nights, PSW course on weekends",
+          "label": "WORKING_LEGALLY",
+          "nextSceneId": "KW_PREP",
+          "effects": {
+            "walletCad": 4000,
+            "energy": -20,
+            "desperation": -10
+          },
+          "feedback": "Legal now. The first paycheque with your own name on it."
+        },
+        {
+          "text": "Gather evidence: hospital records, police reports, affidavits from witnesses, news from your area",
+          "label": "EVIDENCE",
+          "nextSceneId": "KW_PREP",
+          "effects": {
+            "kwEvidence": 25,
+            "walletCad": -180,
+            "energy": -10
+          },
+          "feedback": "Documents from home take months and DHL fees. Each one is a fact the board doesn't have to take on your word."
+        },
+        {
+          "text": "Post your whole claim story on TikTok for sympathy",
+          "label": "WENT_VIRAL",
+          "nextSceneId": "KW_PREP",
+          "effects": {
+            "kwCredibility": -15,
+            "desperation": -5
+          },
+          "feedback": "Twelve thousand likes. The board can read TikTok too, and the video does not match your form."
+        },
+        {
+          "text": "Fly home for your mother's 60th birthday",
+          "label": "WENT_HOME",
+          "nextSceneId": "KW_ABANDONED",
+          "effects": {}
+        }
+      ]
+    },
+    "KW_PREP": {
+      "id": "KW_PREP",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Hearing prep.",
+      "location": "Refugee clinic, Toronto",
+      "stage": "legal-clinic",
+      "transitIn": "none",
+      "speaker": "Refugee clinic, Toronto",
+      "dialogue": "The hearing notice came: four weeks. Your counsel puts your Basis of Claim form on the table. 'Read it again. Is every date right?'",
+      "choices": [
+        {
+          "text": "Go through it line by line and fix the mistakes before the hearing",
+          "label": "AMENDED",
+          "nextSceneId": "KW_HEARING",
+          "effects": {
+            "kwCredibility": 15,
+            "energy": -10
+          },
+          "feedback": "Correcting the form before the hearing is allowed and looks honest. Surprises at the hearing do not."
+        },
+        {
+          "text": "Memorize it word for word, like a WAEC answer",
+          "label": "MEMORIZED",
+          "nextSceneId": "KW_HEARING",
+          "effects": {
+            "kwCredibility": -5,
+            "energy": -10
+          },
+          "feedback": "Board members can tell a memory from a script."
+        },
+        {
+          "text": "Skip prep. You know your own life",
+          "label": "WINGED_IT",
+          "nextSceneId": "KW_HEARING",
+          "effects": {
+            "energy": 10
+          }
+        }
+      ]
+    },
+    "KW_HEARING": {
+      "id": "KW_HEARING",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Room 7.",
+      "location": "Immigration and Refugee Board, Toronto",
+      "stage": "irb-hearing",
+      "transitIn": "streetcar",
+      "speaker": "Immigration and Refugee Board, Toronto",
+      "dialogue": "A board member, your counsel, a recorder. The member asks about the night it happened, then asks the same question a different way twenty minutes later. Wey Sabi's advice, in your head: 'Cry small. Add pepper.'",
+      "choices": [
+        {
+          "text": "Answer what you remember, and say 'I don't remember' when you don't",
+          "label": "STRAIGHT_ANSWERS",
+          "nextSceneId": "KW_MERITS",
+          "effects": {
+            "kwCredibility": 15,
+            "energy": -15
+          },
+          "feedback": "Gaps you admit are human. Gaps you fill with new details are not."
+        },
+        {
+          "text": "Add a new detail to make it stronger",
+          "label": "EMBELLISHED",
+          "nextSceneId": "KW_MERITS",
+          "effects": {
+            "kwCredibility": -25,
+            "energy": -10
+          },
+          "feedback": "'Why is this not in your Basis of Claim form?' There is no good answer to that question."
+        },
+        {
+          "text": "Cry on cue, the way Wey Sabi coached",
+          "label": "PERFORMED",
+          "nextSceneId": "KW_MERITS",
+          "effects": {
+            "kwCredibility": -10,
+            "energy": -10
+          }
+        }
+      ]
+    },
+    "KW_MERITS": {
+      "id": "KW_MERITS",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "RESOLUTION",
+      "branch": [
+        {
+          "when": {
+            "kwBasis": [
+              "==",
+              4
+            ]
+          },
+          "nextSceneId": "KW_FAKE_EXPOSED"
+        },
+        {
+          "when": {
+            "kwBasis": [
+              "==",
+              5
+            ]
+          },
+          "nextSceneId": "KW_VILLAGE_REFUSED"
+        },
+        {
+          "when": {
+            "kwCredibility": [
+              "<",
+              50
+            ]
+          },
+          "nextSceneId": "KW_REFUSED"
+        },
+        {
+          "nextSceneId": "KW_IFA"
+        }
+      ]
+    },
+    "KW_IFA": {
+      "id": "KW_IFA",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "'Why not Port Harcourt?'",
+      "location": "Immigration and Refugee Board, Toronto",
+      "stage": "irb-hearing",
+      "transitIn": "none",
+      "speaker": "Immigration and Refugee Board, Toronto",
+      "dialogue": "The member believes what happened to you. Then the question that decides many Nigerian claims: internal flight alternative. 'Could you live safely somewhere else in Nigeria? Lagos? Abuja? Port Harcourt?'",
+      "choices": [
+        {
+          "text": "Explain, with your evidence, why they would find you anywhere, or why the law follows you everywhere",
+          "label": "ANSWERED_IFA",
+          "nextSceneId": "KW_DECISION",
+          "effects": {
+            "kwEvidence": 10,
+            "energy": -10
+          },
+          "feedback": "The board weighs who is after you, how far their reach goes, and whether moving would be reasonable for you."
+        },
+        {
+          "text": "Say Lagos is too expensive and the traffic is wicked",
+          "label": "TRAFFIC_DEFENCE",
+          "nextSceneId": "KW_DECISION",
+          "effects": {
+            "kwCredibility": -20
+          },
+          "feedback": "Expensive and annoying is not the same as unsafe or unreasonable."
+        }
+      ]
+    },
+    "KW_DECISION": {
+      "id": "KW_DECISION",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "RESOLUTION",
+      "branch": [
+        {
+          "when": {
+            "kwCredibility": [
+              "<",
+              50
+            ]
+          },
+          "nextSceneId": "KW_REFUSED"
+        },
+        {
+          "when": {
+            "kwBasis": [
+              "==",
+              1
+            ],
+            "kwEvidence": [
+              ">=",
+              30
+            ]
+          },
+          "nextSceneId": "KW_ACCEPTED"
+        },
+        {
+          "when": {
+            "kwBasis": [
+              ">=",
+              2
+            ],
+            "kwEvidence": [
+              ">=",
+              45
+            ]
+          },
+          "nextSceneId": "KW_ACCEPTED"
+        },
+        {
+          "nextSceneId": "KW_REFUSED_IFA"
+        }
+      ]
+    },
+    "KW_ACCEPTED": {
+      "id": "KW_ACCEPTED",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Protected person.",
+      "location": "Immigration and Refugee Board, Toronto",
+      "stage": "irb-hearing",
+      "transitIn": "none",
+      "speaker": "Immigration and Refugee Board, Toronto",
+      "dialogue": "The member gives the decision at the end of the hearing: you are a Convention refugee. Your counsel squeezes your hand. Next: apply for permanent residence as a protected person. One warning: do not renew your Nigerian passport and do not fly home for Christmas. Going back can cost you the protection. {RelName} is already crying on the phone from {relCity}.",
+      "outcome": {
+        "result": "win",
+        "reason": "PROTECTED_PERSON",
+        "title": "Protected person",
+        "subtitle": "Your real story, told straight, with evidence. Permanent residence is next."
+      }
+    },
+    "KW_FAKE_EXPOSED": {
+      "id": "KW_FAKE_EXPOSED",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Three versions of one night.",
+      "location": "Immigration and Refugee Board, Toronto",
+      "stage": "irb-hearing",
+      "transitIn": "none",
+      "speaker": "Immigration and Refugee Board, Toronto",
+      "dialogue": "The member asks the name of the street where it happened. You give the paralegal's version, then your own, then a third. The member has seen this page before, with other names on it. Refused, and found manifestly unfounded: no appeal to the Refugee Appeal Division, and a removal order. Every invented LGBTQ or abuse story makes it harder for real ones to be believed.",
+      "outcome": {
+        "result": "fail",
+        "reason": "MISREPRESENTATION",
+        "title": "Bought story, refused",
+        "subtitle": "Manifestly unfounded. No appeal, removal, and the paralegal has already sold your page to someone else."
+      }
+    },
+    "KW_VILLAGE_REFUSED": {
+      "id": "KW_VILLAGE_REFUSED",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "The board does not cover village people.",
+      "location": "Immigration and Refugee Board, Toronto",
+      "stage": "irb-hearing",
+      "transitIn": "none",
+      "speaker": "Immigration and Refugee Board, Toronto",
+      "dialogue": "The member is very polite. Refugee protection covers persecution for race, religion, nationality, political opinion or membership in a particular social group, or a personal risk to life the state can't protect you from. 'Your uncle's spiritual attacks are none of those.' Refused.",
+      "outcome": {
+        "result": "fail",
+        "reason": "NO_NEXUS",
+        "title": "Refused: no nexus",
+        "subtitle": "Village People Interference: 100%. Appeal options exist, but the juju is not a Convention ground."
+      }
+    },
+    "KW_REFUSED": {
+      "id": "KW_REFUSED",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Refused.",
+      "location": "Immigration and Refugee Board, Toronto",
+      "stage": "irb-hearing",
+      "transitIn": "none",
+      "speaker": "Immigration and Refugee Board, Toronto",
+      "dialogue": "The decision comes by mail: the member did not find your account credible. You can appeal to the Refugee Appeal Division, then ask the Federal Court to review it. If those fail, a pre-removal risk assessment, then a removal date. Years, spent on a story that did not hold together.",
+      "outcome": {
+        "result": "fail",
+        "reason": "CLAIM_REFUSED",
+        "title": "Refused on credibility",
+        "subtitle": "Inconsistencies, embellishments and a TikTok. The appeal clock starts now."
+      }
+    },
+    "KW_REFUSED_IFA": {
+      "id": "KW_REFUSED_IFA",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Believed, but refused.",
+      "location": "Immigration and Refugee Board, Toronto",
+      "stage": "irb-hearing",
+      "transitIn": "none",
+      "speaker": "Immigration and Refugee Board, Toronto",
+      "dialogue": "The member believes you were harmed. But without enough evidence that they could find you anywhere, the member finds you could live safely in another Nigerian city. Internal flight alternative. You can appeal, and your counsel thinks there are grounds.",
+      "outcome": {
+        "result": "fail",
+        "reason": "IFA_FOUND",
+        "title": "Internal flight alternative",
+        "subtitle": "Believed, refused. More evidence of who is looking for you might have changed it."
+      }
+    },
+    "KW_ABANDONED": {
+      "id": "KW_ABANDONED",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "The owambe was lovely.",
+      "location": "{airport}",
+      "stage": "airport",
+      "transitIn": "plane",
+      "speaker": "{airport}",
+      "dialogue": "You flew back to the country you told Canada you feared. Leaving ends your claim, and the photos of you dancing at the owambe end your story.",
+      "outcome": {
+        "result": "fail",
+        "reason": "CLAIM_ABANDONED",
+        "title": "Claim over",
+        "subtitle": "Going home to the place you fear tells everyone you don't fear it."
+      }
+    },
+    "EE_ITA_HEALTH": {
+      "id": "EE_ITA_HEALTH",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Invitation to apply!",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "Healthcare and social services draw. The cutoff landed around 470, far below the general rounds, because Canada needs nurses more than it needs another logistics analyst. 60 days to submit.",
+      "choices": [
+        {
+          "text": "Start the application",
+          "label": "",
+          "nextSceneId": "EE_FUNDS",
+          "effects": {}
+        }
+      ]
+    },
+    "EE_ITA_TRADES": {
+      "id": "EE_ITA_TRADES",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Invitation to apply!",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "Trades draw. Electricians, welders, plumbers: the cutoff sat around 476 this year. Your certificate finally outranks a master's degree. 60 days to submit.",
+      "choices": [
+        {
+          "text": "Start the application",
+          "label": "",
+          "nextSceneId": "EE_FUNDS",
+          "effects": {}
+        }
+      ]
+    },
+    "ST_PGWP_LANG": {
+      "id": "ST_PGWP_LANG",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "One more test.",
+      "location": "Test centre, Toronto",
+      "stage": "ielts-centre",
+      "transitIn": "streetcar",
+      "speaker": "Test centre, Toronto",
+      "dialogue": "Since November 2024 a post-graduation work permit needs a language test: CLB 7 for a university degree, CLB 5 for a college program. Your classmate says 'we studied in English, they will understand'. They will not.",
+      "choices": [
+        {
+          "text": "Book IELTS General Training and prepare for three weeks",
+          "label": "BOOKED_THE_TEST",
+          "nextSceneId": "ST_GRAD",
+          "effects": {
+            "walletCad": -320,
+            "energy": -10
+          },
+          "feedback": "CLB 9. It counts again later for Express Entry.",
+          "set": {
+            "clbFirst": 9
+          }
+        },
+        {
+          "text": "Skip it. Four years in English is proof enough",
+          "label": "SKIPPED_TEST",
+          "nextSceneId": "ST_NO_PGWP_LANG",
+          "effects": {}
+        }
+      ]
+    },
+    "ST_NO_PGWP_LANG": {
+      "id": "ST_NO_PGWP_LANG",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Missing language test.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "The PGWP application asks for a test result you do not have. Refused. Your study permit expires in weeks, and booking a test now means results after it does.",
+      "outcome": {
+        "result": "fail",
+        "reason": "NOT_PGWP_ELIGIBLE",
+        "title": "PGWP refused",
+        "subtitle": "No language test, no PGWP. A three-week study plan would have saved two years."
       }
     }
   },

@@ -13,7 +13,7 @@ const CORE: ReadonlySet<string> = new Set<CoreStat>([
 ]);
 const PERCENT: ReadonlySet<string> = new Set(["energy", "desperation"]);
 /** Route stats that are 0-100 meters rather than open-ended scores. */
-const PERCENT_ROUTE: ReadonlySet<string> = new Set(["papers"]);
+const PERCENT_ROUTE: ReadonlySet<string> = new Set(["papers", "kwCredibility", "kwEvidence"]);
 const MAX_HOPS = 16;
 
 export const isCore = (key: string): key is CoreStat => CORE.has(key);
@@ -223,8 +223,8 @@ export function choose(db: ScenarioDatabase, state: GameState, index: number, ro
   // Village People traps strike on ordinary moves, never on the move into an ending.
   const target = db.scenes[choice.nextSceneId];
   const endingMove = !target || !!target.branch || !!target.outcome;
-  if (route.traps && !endingMove && rolls[0] < trapChance(db, s)) {
-    const items = route.traps.items;
+  const items = route.traps?.items.filter((t) => !t.when || evaluate(s, t.when)) ?? [];
+  if (items.length && !endingMove && rolls[0] < trapChance(db, s)) {
     const trap = items[Math.floor(rolls[1] * items.length) % items.length];
     s = applyEffects(s, trap.effects);
     s = { ...s, popup: { kind: "trap", id: trap.id, kicker: trap.kicker, title: trap.title, body: trap.body } };
@@ -364,7 +364,9 @@ export function takeAction(
     history: [...s.history, { sceneId: state.currentSceneId, answer: action.label }],
   };
 
-  if ((s.routeStats.employerLeads ?? 0) >= dash.leadsToWin) {
+  if (action.goToSceneId) {
+    s = enterScene(db, s, action.goToSceneId);
+  } else if ((s.routeStats.employerLeads ?? 0) >= dash.leadsToWin) {
     s = enterScene(db, s, dash.winSceneId);
   } else if (s.walletCad <= 0) {
     s = { ...s, outcome: { result: "fail", reason: "OUT_OF_MONEY", title: "Out of money", subtitle: "You book the cheapest flight back to Lagos." } };

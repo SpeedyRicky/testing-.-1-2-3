@@ -19,6 +19,9 @@ import type { GameState, RouteId, StatKey } from "./types";
 
 const reducer = makeReducer();
 
+/** A Tourist Gamble run that has cleared the border and reached the dashboard. */
+const landed = () => newRun(DB, "TOURIST_GAMBLE", {}, "TOURIST_HUB");
+
 /** Plays by choice text. Rolls default to "no trap" so paths are deterministic. */
 function play(route: RouteId, picks: string[], rolls: [number, number] = [1, 0]): GameState {
   let s = newRun(DB, route);
@@ -73,14 +76,19 @@ describe("scenarios.json integrity", () => {
       "papers", "ageYears", "educationLevel", "ecaComplete", "clbFirst", "nclcFrench", "foreignWorkYears",
       "canadianWorkYears", "canadianEducation", "pnpNomination", "siblingInCanada", "crsScore", "programType",
       "academicStanding", "officerConfidence", "scholarshipTried", "familyAsked", "landSold", "crowdfunded",
-      "loanTaken", "hasDegree",
+      "loanTaken", "hasDegree", "conflictRegion", "kwBasis", "kwAtAirport", "kwCredibility", "kwEvidence", "eeCategory",
     ]);
     const bad: string[] = [];
     for (const s of Object.values(DB.scenes)) {
-      const maps = [s.onEnter, ...(s.choices ?? []).map((c) => c.effects), ...(s.dashboard?.actions ?? []).map((a) => a.effects)];
-      for (const c of s.choices ?? []) maps.push(c.set);
+      const maps: (object | undefined)[] = [s.onEnter, ...(s.choices ?? []).map((c) => c.effects), ...(s.dashboard?.actions ?? []).map((a) => a.effects)];
+      for (const c of s.choices ?? []) maps.push(c.set, c.requires);
       for (const m of maps) for (const k of Object.keys(m ?? {})) if (!known.has(k)) bad.push(`${s.id}: ${k}`);
       for (const b of s.branch ?? []) for (const k of Object.keys(b.when ?? {})) if (!known.has(k)) bad.push(`${s.id}: ${k}`);
+    }
+    for (const [id, route] of Object.entries(DB.routes)) {
+      for (const t of route.traps?.items ?? []) {
+        for (const k of [...Object.keys(t.effects), ...Object.keys(t.when ?? {})]) if (!known.has(k)) bad.push(`${id} trap ${t.id}: ${k}`);
+      }
     }
     expect(bad).toEqual([]);
   });
@@ -156,7 +164,7 @@ describe("Tourist Gamble dashboard", () => {
   });
 
   it("job fair costs a day, energy and money (plus daily cost) and returns a toast", () => {
-    const { state, toast } = act(newRun(DB, "TOURIST_GAMBLE"), "job_fair");
+    const { state, toast } = act(landed(), "job_fair");
     expect(state).toMatchObject({ timeRemainingDays: 179, energy: 70, walletCad: 2500 - 25 - 20, desperation: 22 });
     expect(state.routeStats.networkScore).toBe(8);
     expect(state.currentLocation).toContain("Convention Centre");
@@ -164,26 +172,26 @@ describe("Tourist Gamble dashboard", () => {
   });
 
   it("a lucky roll lands a lead and lowers desperation", () => {
-    const { state, toast } = act(newRun(DB, "TOURIST_GAMBLE"), "cold_message", 0);
+    const { state, toast } = act(landed(), "cold_message", 0);
     expect(state.routeStats.employerLeads).toBe(1);
     expect(state.desperation).toBe(25 + 2 - 10);
     expect(toast).toMatchObject({ title: "Employer lead!", tone: "good" });
   });
 
   it("actions you can't afford in energy do nothing", () => {
-    const s = { ...newRun(DB, "TOURIST_GAMBLE"), energy: 10 };
+    const s = { ...landed(), energy: 10 };
     expect(act(s, "job_fair").toast).toBeNull();
     expect(act(s, "rest").state.energy).toBe(50);
   });
 
   it("the cash job is an instant fail", () => {
-    const { state } = act(newRun(DB, "TOURIST_GAMBLE"), "cash_job");
+    const { state } = act(landed(), "cash_job");
     expect(state.outcome).toMatchObject({ result: "fail", reason: "UNAUTHORIZED_WORK" });
     expect(act(state, "rest").toast).toBeNull();
   });
 
   it("running out the clock loses", () => {
-    const s = { ...newRun(DB, "TOURIST_GAMBLE"), timeRemainingDays: 1 };
+    const s = { ...landed(), timeRemainingDays: 1 };
     expect(act(s, "rest").state.outcome?.reason).toBe("STAY_EXPIRED");
   });
 });
@@ -201,6 +209,7 @@ describe("state machine", () => {
     let app = reducer(initialState(), { type: "SELECT_ROUTE", route: "STARTUP_VISA" });
     app = reducer(app, { type: "CHOOSE", index: 1 });
     app = reducer(app, { type: "SELECT_ROUTE", route: "TOURIST_GAMBLE" });
+    app = reducer(app, { type: "CHOOSE", index: 0, rolls: [1, 0] }); // tell CBSA the truth
     app = reducer(app, { type: "TAKE_ACTION", actionId: "resume", rolls: [0.9, 0] });
     expect(app.toast?.id).toBe(1);
     app = reducer(app, { type: "SELECT_ROUTE", route: "STARTUP_VISA" });
@@ -211,6 +220,7 @@ describe("state machine", () => {
 
   it("winning the tourist gamble unlocks Kovacs and carries desperation over", () => {
     let app = reducer(initialState(), { type: "SELECT_ROUTE", route: "TOURIST_GAMBLE" });
+    app = reducer(app, { type: "CHOOSE", index: 0, rolls: [1, 0] }); // tell CBSA the truth
     expect(reducer(app, { type: "FOLLOW_UNLOCK" })).toBe(app);
     for (let i = 0; i < 3; i++) app = reducer(app, { type: "TAKE_ACTION", actionId: "cold_message", rolls: [0, 0] });
     const tourist = app.runs.TOURIST_GAMBLE!;
@@ -228,6 +238,7 @@ describe("state machine", () => {
     let app = reducer(initialState(), { type: "SELECT_ROUTE", route: "STARTUP_VISA" });
     app = reducer(app, { type: "CHOOSE", index: 1 });
     app = reducer(app, { type: "SELECT_ROUTE", route: "TOURIST_GAMBLE" });
+    app = reducer(app, { type: "CHOOSE", index: 0, rolls: [1, 0] }); // tell CBSA the truth
     app = reducer(app, { type: "TAKE_ACTION", actionId: "resume", rolls: [0.9, 0] });
     app = reducer(app, { type: "SELECT_ROUTE", route: "STARTUP_VISA" });
     app = reducer(app, { type: "RESTART" });
@@ -342,7 +353,7 @@ describe("2D stages", () => {
     expect(bare).toEqual([]);
   });
   it("dashboard actions move the 2D stage", () => {
-    const { state } = takeAction(DB, newRun(DB, "TOURIST_GAMBLE"), "mentor_coffee", [0.99, 0]);
+    const { state } = takeAction(DB, landed(), "mentor_coffee", [0.99, 0]);
     expect(state.currentStage).toBe("tim-hortons");
   });
 });
@@ -421,7 +432,7 @@ describe("Student pathway", () => {
   it("master's: fund it, write a specific plan, graduate with a PGWP", () => {
     const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", ...FUND_ALL,
       "funds are ready", "specific plan", "Wait for the decision", "Board the flight", "proper boots",
-      "Campus cafe", "Library every night"]);
+      "Campus cafe", "Library every night", "Book IELTS"]);
     expect(s.outcome).toMatchObject({ result: "win", reason: "PGWP_ISSUED" });
     expect(rankFor(DB, s)?.id).toBe("pgwp");
   });
@@ -445,7 +456,7 @@ describe("Student pathway", () => {
   it("private career college graduates get no PGWP", () => {
     const s = play("STUDY_PERMIT", ["private career college", "Work out the money", "Family sponsorship",
       "funds are ready", "specific plan", "Wait for the decision", "Board the flight", "proper boots",
-      "Campus cafe", "Library every night"]);
+      "Campus cafe", "Library every night", "Book IELTS"]);
     expect(s.outcome?.reason).toBe("NOT_PGWP_ELIGIBLE");
   });
 
@@ -465,7 +476,7 @@ describe("Student pathway", () => {
   it("a PGWP carries the graduate into Express Entry with Canadian education", () => {
     let app = reducer(initialState(), { type: "SELECT_ROUTE", route: "STUDY_PERMIT" });
     const picks = ["Master's in Engineering", "Work out the money", ...FUND_ALL, "funds are ready", "specific plan",
-      "Wait for the decision", "Board the flight", "proper boots", "Campus cafe", "Library every night"];
+      "Wait for the decision", "Board the flight", "proper boots", "Campus cafe", "Library every night", "Book IELTS"];
     for (const p of picks) {
       const idx = presentChoices(DB, app.runs.STUDY_PERMIT!).findIndex((c) => c.text.includes(p));
       app = reducer(app, { type: "CHOOSE", index: idx, rolls: [1, 0] });
@@ -542,7 +553,7 @@ describe("choice cutscenes", () => {
   });
 
   it("dashboard actions describe their result too", () => {
-    const before = newRun(DB, "TOURIST_GAMBLE");
+    const before = landed();
     const after = takeAction(DB, before, "job_fair", [0.99, 0]).state;
     const c = describeChoice(DB, before, after, "Attend In-Person Tech/Job Fair");
     expect(c.deltas.map((d) => d.key)).toEqual(expect.arrayContaining(["walletCad", "energy", "timeRemainingDays"]));
@@ -600,7 +611,7 @@ describe("player profiles", () => {
     let app = reducer(initialState(DB, fresher), { type: "SELECT_ROUTE", route: "STUDY_PERMIT" });
     const picks = ["Four-year bachelor's", "Work out the money", "entrance scholarship", "Family sponsorship",
       "Sell the plot", "Crowdfund", "Education loan", "funds are ready", "specific plan", "Wait for the decision",
-      "Board the flight", "proper boots", "Campus cafe", "Library every night"];
+      "Board the flight", "proper boots", "Campus cafe", "Library every night", "Book IELTS"];
     for (const p of picks) {
       const idx = presentChoices(DB, app.runs.STUDY_PERMIT!).findIndex((c) => c.text.includes(p));
       expect(idx, p).toBeGreaterThanOrEqual(0);
@@ -665,6 +676,119 @@ describe("Nigeria localisation", () => {
     expect(placeVars(placeFor("FC"))).toMatchObject({ city: "Abuja", bus: "bus", vacCity: "Abuja" });
     expect(vacCityFor(placeFor("RI"))).toBe("Lagos");
     expect(fillText("{Bus} to {techHub}", placeVars(placeFor("EN")))).toBe("Keke to the phone and laptop market in Enugu");
+  });
+});
+
+describe("Kawosoke (asylum claims inside the Tourist Gamble)", () => {
+  const borno = { version: 1, username: "Hauwa", avatar: DEFAULT_AVATAR, role: "worker", age: 27, stateCode: "BO",
+    worker: { occupation: "teacher", years: 3, qualification: "bachelors", salary: "150k-400k" } } as PlayerProfile;
+  const tourist = (profile: PlayerProfile | null = null) => initialState(DB, profile).runs.TOURIST_GAMBLE!;
+  function walk(s: GameState, picks: string[]): GameState {
+    for (const pick of picks) {
+      const idx = presentChoices(DB, s).findIndex((c) => fillText(c.text, profileVars(null)).includes(pick) || c.text.includes(pick));
+      expect(idx, `choice containing "${pick}" at ${s.currentSceneId}`).toBeGreaterThanOrEqual(0);
+      s = dismissPopup(choose(DB, s, idx, [1, 0]));
+    }
+    return s;
+  }
+  const STRONG = ["Legal Aid", "Gather evidence", "line by line", "say 'I don't remember'", "Explain, with your evidence"];
+
+  it("lands at Pearson: the truth leads to the dashboard, a fake conference is misrepresentation", () => {
+    expect(tourist().currentSceneId).toBe("TOURIST_ARRIVAL");
+    expect(walk(tourist(), ["Tell the truth"]).currentSceneId).toBe("TOURIST_HUB");
+    expect(walk(tourist(), ["conference you never registered"]).outcome?.reason).toBe("MISREPRESENTATION");
+  });
+
+  it("the mentor is Wey Sabi, and the dashboard can open an inland claim", () => {
+    const actions = DB.scenes.TOURIST_HUB.dashboard!.actions;
+    expect(actions.find((a) => a.id === "mentor_coffee")?.label).toBe("Coffee Chat with a Naija-Canadian Mentor Wey Sabi");
+    const { state } = takeAction(DB, landed(), "kawosoke", [0.99, 0]);
+    expect(state.currentSceneId).toBe("KW_INLAND");
+    expect(state.timeRemainingDays).toBe(179);
+  });
+
+  it("a real story, told straight with evidence, ends in protection", () => {
+    const s = walk(tourist(), ["Kawosoke at the counter", "you were outed", ...STRONG]);
+    expect(s.routeStats.kwAtAirport).toBe(1);
+    expect(s.outcome).toMatchObject({ result: "win", reason: "PROTECTED_PERSON" });
+  });
+
+  it("a real gender-based claim without enough evidence loses on internal flight alternative", () => {
+    const thin = walk(tourist(), ["Kawosoke at the counter", "beatings from your husband", "Legal Aid", "Work legally",
+      "line by line", "say 'I don't remember'", "Explain, with your evidence"]);
+    expect(thin.outcome?.reason).toBe("IFA_FOUND");
+    const strong = walk(tourist(), ["Kawosoke at the counter", "beatings from your husband", ...STRONG]);
+    expect(strong.outcome?.reason).toBe("PROTECTED_PERSON");
+  });
+
+  it("embellishing and posting on TikTok sink a real claim on credibility", () => {
+    const s = walk(tourist(), ["Kawosoke at the counter", "you were outed", "Legal Aid", "TikTok", "Memorize",
+      "Add a new detail"]);
+    expect(s.outcome?.reason).toBe("CLAIM_REFUSED");
+  });
+
+  it("a bought story is exposed even with perfect answers, and walking away keeps the run alive", () => {
+    const bought = walk(landed(), []);
+    const inland = takeAction(DB, bought, "kawosoke", [0.99, 0]).state;
+    const s = walk(inland, ["ready-made story", "File it anyway", ...STRONG.slice(0, 4)]);
+    expect(s.outcome).toMatchObject({ result: "fail", reason: "MISREPRESENTATION" });
+    const out = walk(takeAction(DB, landed(), "kawosoke", [0.99, 0]).state, ["ready-made story", "Walk out", "Back to the job hunt"]);
+    expect(out.currentSceneId).toBe("TOURIST_HUB");
+    expect(out.outcome).toBeFalsy();
+    expect(out.walletCad).toBe(landed().walletCad - 20 - 1500);
+  });
+
+  it("village people are not a Convention ground; flying home ends the claim", () => {
+    expect(walk(tourist(), ["Kawosoke at the counter", "Village people", ...STRONG.slice(0, 4)]).outcome?.reason).toBe("NO_NEXUS");
+    expect(walk(tourist(), ["Kawosoke at the counter", "you were outed", "Legal Aid", "Fly home"]).outcome?.reason).toBe("CLAIM_ABANDONED");
+  });
+
+  it("the conflict claim is only open to players from affected states", () => {
+    const pick = (s: GameState) => presentChoices(DB, walk(s, ["Kawosoke at the counter"])).find((c) => c.label === "CONFLICT_CLAIM")!;
+    expect(pick(tourist()).enabled).toBe(false);
+    expect(pick(tourist(borno)).enabled).toBe(true);
+    expect(walk(tourist(borno), ["Kawosoke at the counter", "gunmen attacked", ...STRONG]).outcome?.reason).toBe("PROTECTED_PERSON");
+  });
+
+  it("claim-only events never strike before a claim is filed", () => {
+    const s = choose(DB, tourist(), 0, [0, 0]);
+    expect(s.popup).toBeNull();
+    const filed = choose(DB, walk(tourist(), ["Kawosoke at the counter", "you were outed"]), 0, [0, 0]);
+    expect(filed.popup?.kind).toBe("trap");
+  });
+
+  it("every ending has a rank", () => {
+    const reasons = Object.values(DB.scenes).filter((s) => s.route === "TOURIST_GAMBLE" && s.outcome).map((s) => s.outcome!.reason);
+    for (const r of reasons) expect(DB.routes.TOURIST_GAMBLE.ranks!.some((k) => k.reason === r), r).toBe(true);
+  });
+});
+
+describe("2026 rules in Express Entry and the Student pathway", () => {
+  it("healthcare and trades workers can be invited in category draws below the general cutoff", () => {
+    // Master's, CLB 9, ECA, 3 years abroad, age 29: 469, or 484 with a sibling in Canada.
+    const base = newRun(DB, "EXPRESS_ENTRY");
+    const at = (eeCategory: number, siblingInCanada: number) => enterScene(DB, { ...base, routeStats: {
+      ...base.routeStats, ageYears: 29, educationLevel: 6, ecaComplete: 1, clbFirst: 9, foreignWorkYears: 3, siblingInCanada, eeCategory,
+    } }, "EE_DRAW");
+    expect(at(1, 1).routeStats.crsScore).toBe(484);
+    expect(at(1, 1).currentSceneId).toBe("EE_ITA_HEALTH");
+    expect(at(3, 1).currentSceneId).toBe("EE_ITA_TRADES");
+    expect(at(2, 1).currentSceneId).toBe("EE_BELOW");
+    expect(at(1, 0).currentSceneId).toBe("EE_BELOW"); // 469: one point short of the healthcare cutoff
+  });
+
+  it("the profile sets the category from the job", () => {
+    const nurse = { version: 1, username: "Chioma", avatar: DEFAULT_AVATAR, role: "worker", age: 28, stateCode: "EN",
+      worker: { occupation: "nurse", years: 5, qualification: "bachelors", salary: "150k-400k" } } as PlayerProfile;
+    expect(initialState(DB, nurse).runs.EXPRESS_ENTRY!.routeStats.eeCategory).toBe(1);
+    expect(initialState(DB, { ...nurse, worker: { ...nurse.worker!, occupation: "electrician" } }).runs.EXPRESS_ENTRY!.routeStats.eeCategory).toBe(3);
+  });
+
+  it("no language test, no PGWP", () => {
+    const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "entrance scholarship", "Family sponsorship",
+      "Sell the plot", "Crowdfund", "Education loan", "funds are ready", "specific plan", "Wait for the decision",
+      "Board the flight", "proper boots", "Campus cafe", "Library every night", "Skip it"]);
+    expect(s.outcome).toMatchObject({ result: "fail", reason: "NOT_PGWP_ELIGIBLE" });
   });
 });
 

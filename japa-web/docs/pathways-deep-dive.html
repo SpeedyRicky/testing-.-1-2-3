@@ -1,0 +1,274 @@
+<title>Japa Pathways Deep Dive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column; rule tables scroll sideways on phones; a sticky route index. */
+:root {
+  --paper: #f5f6f3;
+  --panel: #ffffff;
+  --ink: #15201b;
+  --muted: #5a6660;
+  --line: #d9ded9;
+  --green: #0b7a4b;
+  --green-soft: #e3f1ea;
+  --red: #b4142c;
+  --red-soft: #f8e6e8;
+  --amber: #8a5a00;
+  --amber-soft: #f6edd8;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1512; --panel: #151d19; --ink: #e7eee9; --muted: #9aa8a0; --line: #26322c;
+    --green: #4cc38a; --green-soft: #133224; --red: #f0788a; --red-soft: #35161c; --amber: #e2b45a; --amber-soft: #33270f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f1512; --panel: #151d19; --ink: #e7eee9; --muted: #9aa8a0; --line: #26322c;
+  --green: #4cc38a; --green-soft: #133224; --red: #f0788a; --red-soft: #35161c; --amber: #e2b45a; --amber-soft: #33270f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font: 16px/1.65 var(--body); }
+.wrap { max-width: 980px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: 1.7rem; font-weight: 800; margin-top: 56px; }
+h3 { font-size: 1.15rem; font-weight: 600; margin-top: 28px; }
+p { margin: 0; max-width: 68ch; }
+.stack { display: grid; gap: 14px; }
+.eyebrow { font: 500 12px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); }
+.lede { font-size: 1.12rem; color: var(--muted); }
+nav.index { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; background: var(--paper); border-bottom: 1px solid var(--line); margin-top: 28px; }
+nav.index ul { display: flex; flex-wrap: wrap; gap: 6px 18px; list-style: none; margin: 0; padding: 10px 0; }
+nav.index a { color: var(--ink); text-decoration: none; font-weight: 600; font-size: 14px; }
+nav.index a:hover, nav.index a:focus-visible { color: var(--green); text-decoration: underline; }
+a { color: var(--green); }
+a:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.callout { border-left: 3px solid var(--red); background: var(--red-soft); padding: 14px 16px; border-radius: 0 8px 8px 0; }
+.callout.green { border-color: var(--green); background: var(--green-soft); }
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14.5px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+th { font: 500 11.5px/1.3 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); background: var(--paper); }
+tr:last-child td { border-bottom: 0; }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill { display: inline-block; font: 500 11px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 7px; border-radius: 999px; white-space: nowrap; }
+.built { background: var(--green-soft); color: var(--green); }
+.next { background: var(--amber-soft); color: var(--amber); }
+.check { background: var(--red-soft); color: var(--red); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.lever { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 6px; min-width: 0; }
+.lever b { font-family: var(--display); font-size: 1.05rem; }
+.lever span { color: var(--muted); font-size: 14.5px; }
+ol.flow { margin: 0; padding-left: 22px; display: grid; gap: 8px; max-width: 72ch; }
+ul.plain { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 72ch; }
+.src { font-size: 13.5px; color: var(--muted); }
+.src li { overflow-wrap: anywhere; }
+footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13.5px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <header class="stack">
+    <p class="eyebrow">Japa: The Great Escape · content research · October 2026</p>
+    <h1>Pathways deep dive: Tourist Gamble, Kawosoke, Express Entry, Student</h1>
+    <p class="lede">The real 2025–2026 rules behind each route, the game levers that make players run it again, and a scenario backlog marked built or next. Game version 0.10 ships the items marked <span class="pill built">built</span>.</p>
+    <p class="callout">Entertainment research, not legal or immigration advice. Most figures come from IRCC committee notes, the IRB and law-firm or news summaries of them. Items marked <span class="pill check">verify</span> came from a single secondary source or from memory and should be checked on canada.ca or irb-cisr.gc.ca before release.</p>
+  </header>
+
+  <nav class="index" aria-label="Sections">
+    <ul>
+      <li><a href="#tourist">Tourist Gamble</a></li>
+      <li><a href="#kawosoke">Kawosoke</a></li>
+      <li><a href="#ee">Express Entry</a></li>
+      <li><a href="#student">Student</a></li>
+      <li><a href="#levers">Replay levers</a></li>
+      <li><a href="#backlog">Backlog</a></li>
+      <li><a href="#guardrails">Content guardrails</a></li>
+      <li><a href="#sources">Sources</a></li>
+    </ul>
+  </nav>
+
+  <section id="tourist" class="stack">
+    <h2>Tourist Gamble</h2>
+    <p>The visitor route is the one Nigerians reach for when study and Express Entry look out of range. In the game you land at Toronto Pearson with up to 180 days, savings and a cousin's couch, and you need three employer leads before the money or the clock runs out. Working is an instant fail.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Rule or number</th><th>Value</th><th>Status</th><th>How the game uses it</th></tr></thead>
+      <tbody>
+        <tr><td>Visitor visa refusal rate, all countries</td><td class="num">51% (2025)<br>54% (2024), 39% (2023)</td><td><span class="pill check">verify</span></td><td>Backlog: a VFS application scene before the flight, with refusal reasons on ties to home and purpose of visit.</td></tr>
+        <tr><td>Visitor visas issued to Nigerians</td><td class="num">79,275 → 45,460<br>(2023 → 2025, −43%)</td><td><span class="pill check">verify</span></td><td>Flavour for the arrival scene: fewer people get this far.</td></tr>
+        <tr><td>Per-country refusal rates</td><td>IRCC does not publish them; consultant estimates for Nigeria range from 30% to 50%+</td><td><span class="pill check">verify</span></td><td>Don't quote one number in-game.</td></tr>
+        <tr><td>Working as a visitor</td><td>Not allowed. The visitor-to-work-permit public policy ended in August 2024</td><td><span class="pill check">verify date</span></td><td>Cash warehouse shift = instant fail. <span class="pill built">built</span></td></tr>
+        <tr><td>Lying to CBSA about purpose of visit</td><td>Misrepresentation: refused entry, 5-year inadmissibility</td><td></td><td>"Tech conference you never registered for" at Pearson. <span class="pill built">built</span></td></tr>
+      </tbody>
+    </table></div>
+    <h3>What changed in v0.10</h3>
+    <ul class="plain">
+      <li>The run starts at <b>primary inspection at Pearson</b>: tell the truth (go to the dashboard), Kawosoke at the counter, or lie about a conference (fail).</li>
+      <li>The mentor is now <b>Coffee Chat with a Naija-Canadian Mentor Wey Sabi</b>. Wey Sabi's lines push Kawosoke and a "paralegal" who sells stories.</li>
+      <li>A new dashboard card, <b>Kawosoke: Claim Asylum Inside Canada</b>, opens the inland claim.</li>
+      <li>Nine end ranks with their own Post-on-X glyphs, from "Protected person" to "Went home for the party".</li>
+    </ul>
+  </section>
+
+  <section id="kawosoke" class="stack">
+    <h2>Kawosoke: the asylum sub-path</h2>
+    <p>"Kawosoke" (raise your hands) is the slang for claiming asylum. It is the advice tourists hear most from mentors like Wey Sabi. The game treats it as a real legal process: a true story with evidence can win; a bought story always fails.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Rule or number</th><th>Value</th><th>Status</th><th>How the game uses it</th></tr></thead>
+      <tbody>
+        <tr><td>Nigerian claims decided by the IRB, 2025</td><td class="num">6,765 filed<br>5,039 decided<br>3,463 accepted (≈69% of decided)<br>21,573 pending at year end</td><td><span class="pill check">verify on IRB data</span></td><td>Real claims win often when they are credible and documented. The win needs credibility ≥ 50 and enough evidence.</td></tr>
+        <tr><td>Nigeria acceptance, 2018 to Sept 2024 (decided on merit)</td><td class="num">46%</td><td></td><td>Earlier years were much harder: a good "then vs now" loading tip.</td></tr>
+        <tr><td>Bill C-12, Strengthening Canada's Immigration System and Borders Act</td><td>Royal assent March 26, 2026</td><td></td><td>The inland claim scene warns about it. <span class="pill built">built</span></td></tr>
+        <tr><td>One-year bar</td><td>A claim made more than one year after first entry (entries after June 24, 2020) cannot go to the IRB, only to a paper pre-removal risk assessment. Applies to claims made on or after June 3, 2025</td><td></td><td>Backlog: a late-claim branch for players who overstay or come back.</td></tr>
+        <tr><td>14-day rule</td><td>Claims made 14+ days after an irregular crossing from the US are ineligible</td><td></td><td>Backlog: the "Roxham Road" rumour from Wey Sabi.</td></tr>
+        <tr><td>Eligibility decision</td><td class="num">80% within 17 days (Feb 2026)</td><td></td><td>The airport claim is decided quickly; the inland one runs through the IRCC portal. <span class="pill built">built</span></td></tr>
+        <tr><td>Wait for an IRB decision</td><td class="num">18 months average (Feb 2026)<br>≈298,000 claims in inventory</td><td></td><td>"Month 6 of the wait": work, gather evidence, post on TikTok, or fly home. <span class="pill built">built</span></td></tr>
+        <tr><td>Airport claims</td><td class="num">−76% (Jan–Aug 2025 vs 2024)<br>inland −26%</td><td></td><td>Airport Kawosoke is rarer and more scrutinised now.</td></tr>
+        <tr><td>Work permit for claimants</td><td>After eligibility and the medical; IRCC quotes about 13 days to process. Draft rules (June 2026) would issue it earlier. A temporary policy (April 2026) keeps some C-12-ineligible claimants working</td><td></td><td>"Work legally on the open work permit" in the wait scene. <span class="pill built">built</span></td></tr>
+        <tr><td>Internal flight alternative (IFA)</td><td>Often the deciding issue in Nigerian claims: "could you live safely in Port Harcourt, Abuja or Lagos?"</td><td></td><td>A believed claim with thin evidence ends in "Internal flight alternative". <span class="pill built">built</span></td></tr>
+        <tr><td>Sexual orientation claims</td><td>Same-sex relationships are criminalised nationwide (Same Sex Marriage (Prohibition) Act 2014, up to 14 years), so panels often reject an IFA; credibility decides most cases</td><td></td><td>Lower evidence bar than other bases in the game. <span class="pill built">built</span></td></tr>
+        <tr><td>"Village people" / spiritual attacks</td><td>Not one of the Convention grounds, and rarely a personal risk the state can't protect against</td><td></td><td>Ends in "Refused: no nexus". <span class="pill built">built</span></td></tr>
+        <tr><td>Fabricated claims</td><td>Can be found manifestly unfounded: no appeal to the Refugee Appeal Division, plus misrepresentation consequences</td><td><span class="pill check">verify wording</span></td><td>The bought story always fails at the hearing, even with perfect answers. <span class="pill built">built</span></td></tr>
+        <tr><td>Who may charge for immigration advice</td><td>Lawyers, Quebec notaries and licensed consultants (CICC) only</td><td></td><td>"Report him to the College" choice. <span class="pill built">built</span></td></tr>
+      </tbody>
+    </table></div>
+    <h3>The flow as built</h3>
+    <ol class="flow">
+      <li><b>Where you claim:</b> at the Pearson counter on arrival (CBSA secondary inspection) or later from the dashboard through the IRCC portal.</li>
+      <li><b>What you fear:</b> "nothing, I came for work" (honest exit, back to the dashboard); a bought story from Wey Sabi's paralegal (CAD 1,500); a real sexual-orientation story; real gender-based violence; real conflict in the North (open only if the player's state is Borno, Yobe, Adamawa, Zamfara, Katsina, Kaduna, Sokoto, Niger, Benue or Plateau); or village people.</li>
+      <li><b>Who helps:</b> Legal Aid or a refugee clinic (+evidence, +credibility), the paralegal (−CAD 800, −credibility), or a shelter bed.</li>
+      <li><b>Month 6:</b> work legally, gather evidence, post the story on TikTok (−credibility), or fly home (claim over).</li>
+      <li><b>Hearing prep:</b> fix the form line by line, memorise it like a WAEC answer, or wing it.</li>
+      <li><b>Room 7:</b> answer straight, embellish (−25 credibility) or cry on Wey Sabi's cue.</li>
+      <li><b>Decision:</b> bought story → misrepresentation; village people → no nexus; credibility under 50 → refused; then the IFA question; enough evidence → protected person, otherwise internal flight alternative.</li>
+    </ol>
+    <p>Claim-only random events (moved to a hotel in Niagara Falls, Wey Sabi's "consultation fee", the family group retelling your story, the first snowstorm) can strike only after a claim is filed.</p>
+  </section>
+
+  <section id="ee" class="stack">
+    <h2>Express Entry</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>Rule or number</th><th>Value</th><th>Status</th><th>How the game uses it</th></tr></thead>
+      <tbody>
+        <tr><td>2026 categories</td><td>French, healthcare and social services, trades, education, STEM, transport, plus physicians, researchers and senior managers with Canadian experience, and Canadian Armed Forces recruits</td><td><span class="pill check">verify list</span></td><td>The profile maps jobs to healthcare (nurse, doctor, pharmacist), STEM, trades (electrician) or education (teacher).</td></tr>
+        <tr><td>Canadian Experience Class cutoffs, 2026</td><td class="num">507–523 (518 on Sept 29)</td><td><span class="pill check">trackers</span></td><td>CEC invitation at 518. <span class="pill built">built</span></td></tr>
+        <tr><td>French-language cutoffs, 2026</td><td class="num">382–420</td><td><span class="pill check">trackers</span></td><td>French draw at 400 with NCLC 7. <span class="pill built">built</span></td></tr>
+        <tr><td>Healthcare and social services, 2026</td><td class="num">≈467–475</td><td><span class="pill check">trackers</span></td><td>New healthcare invitation at 470. <span class="pill built">built</span></td></tr>
+        <tr><td>Trades, latest</td><td class="num">476 (Oct 1, 2026)</td><td><span class="pill check">trackers</span></td><td>New trades invitation at 476. <span class="pill built">built</span></td></tr>
+        <tr><td>Category eligibility</td><td>At least 6 months of continuous work in an eligible occupation in the last 3 years</td><td><span class="pill check">verify</span></td><td>The category is set only for workers with 1+ year in the job.</td></tr>
+        <tr><td>Proof of funds, 1 person</td><td class="num">CAD 15,263 (since July 7, 2025)</td><td><span class="pill check">verify for 2026</span></td><td>Bar maximum in Express Entry. Borrowed money does not count; not needed for CEC.</td></tr>
+        <tr><td>Arranged employment points</td><td>Removed March 25, 2025</td><td></td><td>The "buy a job offer" agent is fraud and adds nothing. <span class="pill built">built</span></td></tr>
+        <tr><td>Sibling in Canada (citizen or PR)</td><td class="num">+15 CRS</td><td></td><td>From the "Family in Canada" relative. A worked example: master's, CLB 9, ECA, 3 years abroad, age 29 scores 469 alone and 484 with a sibling, which is the difference between missing and making a 470 healthcare draw.</td></tr>
+      </tbody>
+    </table></div>
+    <p>New random events in v0.10: the naira slips (proof of funds shrinks), the courier loses your transcript, no draw for six weeks, and a birthday that quietly costs age points.</p>
+  </section>
+
+  <section id="student" class="stack">
+    <h2>Student pathway</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>Rule or number</th><th>Value</th><th>Status</th><th>How the game uses it</th></tr></thead>
+      <tbody>
+        <tr><td>2026 study permit cap</td><td class="num">408,000 permits<br>(155,000 new arrivals)</td><td><span class="pill check">sources differ</span></td><td>Loading-screen fact and refusal pressure.</td></tr>
+        <tr><td>Master's and PhD at public institutions</td><td>No provincial attestation letter needed from January 1, 2026</td><td></td><td>Shown when you pick the master's. <span class="pill built">built</span></td></tr>
+        <tr><td>Living-cost funds, 1 person</td><td class="num">CAD 22,895 (since Sept 1, 2025)</td><td><span class="pill check">conflict</span></td><td>The game currently uses CAD 23,448 from an earlier secondary source. Pick one after checking canada.ca.</td></tr>
+        <tr><td>Approval rate, all study permits</td><td class="num">57.9% (2021) → 44.9% (2024) → 35.7% (2025)</td><td><span class="pill check">single source</span></td><td>Justifies a harsh decision roll; no Nigeria-specific figure was found.</td></tr>
+        <tr><td>PGWP language test</td><td>CLB 7 for a university degree, CLB 5 for a college program (since November 2024)</td><td><span class="pill check">verify</span></td><td>New "One more test" scene: skip it and the PGWP is refused. <span class="pill built">built</span></td></tr>
+        <tr><td>Off-campus work in class</td><td class="num">24 h/week</td><td></td><td>Warehouse nights at the limit. <span class="pill built">built</span></td></tr>
+      </tbody>
+    </table></div>
+    <p>New random events in v0.10: a fake Kijiji basement room, a smaller transfer from Daddy, shifts cut to 10 hours, and a group project that is a group of one.</p>
+  </section>
+
+  <section id="levers" class="stack">
+    <h2>What makes players run it again</h2>
+    <div class="grid2">
+      <div class="lever"><b>A clock on everything</b><span>180 tourist days, age points that drop every birthday, the 60-day ITA window, the one-year asylum bar. Every route already has one; show it on screen.</span></div>
+      <div class="lever"><b>Near misses</b><span>"469: one point short of the healthcare cutoff." Showing the gap after a draw makes the next run feel winnable. Next step: print the gap in the draw-night result.</span></div>
+      <div class="lever"><b>Variable rewards</b><span>Lead rolls on the dashboard, draw nights, random events gated by state. Keep good surprises in the mix (a scholarship email, a Wey Sabi tip that works).</span></div>
+      <div class="lever"><b>Temptation with a price</b><span>Every route offers a shortcut (leaked IELTS, parked money, bought story). They always fail, loudly, with the real penalty. Players try them once for the ending.</span></div>
+      <div class="lever"><b>Collect the endings</b><span>Each ending is a rank with its own glyph and a Post-on-X line. Next step: a rank cabinet that shows which endings you have found.</span></div>
+      <div class="lever"><b>It's about you</b><span>Your name, avatar, state, transport, relative in Canada and job category all change the run. A Borno player sees choices a Lagos player can't.</span></div>
+      <div class="lever"><b>Routes feed each other</b><span>Student carries into Express Entry; Tourist carries into the LMIA boardroom. Next: Kawosoke protected person → PR landing; a refused study permit → Tourist Gamble.</span></div>
+      <div class="lever"><b>Characters people quote</b><span>Wey Sabi, the paralegal, Mr. Kovacs, Ada-era relatives. Give each one a recurring line so players share them.</span></div>
+    </div>
+  </section>
+
+  <section id="backlog" class="stack">
+    <h2>Scenario backlog</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>Route</th><th>Scenario</th><th>Real rule behind it</th><th>Mechanic</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Tourist</td><td>Pearson primary inspection</td><td>Misrepresentation, 5-year bar</td><td>3-way choice at arrival</td><td><span class="pill built">built</span></td></tr>
+        <tr><td>Tourist</td><td>Kawosoke at the airport or inland</td><td>IRB process, Bill C-12, IFA</td><td>Credibility and evidence meters, 6 endings</td><td><span class="pill built">built</span></td></tr>
+        <tr><td>Tourist</td><td>VFS visa application before the flight</td><td>Refusal grounds: ties to home, funds, purpose</td><td>Document checklist, refusal roll, reapply</td><td><span class="pill next">next</span></td></tr>
+        <tr><td>Tourist</td><td>"Trial shift, unpaid, just to see"</td><td>Unpaid work is still work</td><td>Fatal dashboard card disguised as networking</td><td><span class="pill next">next</span></td></tr>
+        <tr><td>Tourist</td><td>"Buy an LMIA for CAD 25,000"</td><td>Charging a worker for an LMIA is illegal</td><td>Scam call event, instant fail if paid</td><td><span class="pill next">next</span></td></tr>
+        <tr><td>Tourist</td><td>Extend your stay</td><td>Visitor record extension, maintained status</td><td>Pay to add days, risk refusal</td><td><span class="pill next">next</span></td></tr>
+        <tr><td>Kawosoke</td><td>Late claim after one year</td><td>Bill C-12 one-year bar → PRRA only</td><td>Paper-only risk assessment, lower odds</td><td><span class="pill next">next</span></td></tr>
+        <tr><td>Kawosoke</td><td>Refugee Appeal Division</td><td>Appeal after a refusal (not after manifestly unfounded)</td><td>Second chance with new evidence</td><td><span class="pill next">next</span></td></tr>
+        <tr><td>Kawosoke</td><td>Protected person → permanent residence</td><td>PR as a protected person; don't reavail (passport, trips home)</td><td>Carry into a PR landing scene; passport temptation</td><td><span class="pill next">next</span></td></tr>
+        <tr><td>Express Entry</td><td>Healthcare and trades draws</td><td>2026 category-based selection</td><td>Category from profile job</td><td><span class="pill built">built</span></td></tr>
+        <tr><td>Express Entry</td><td>60-day ITA countdown</td><td>Submit the e-APR within 60 days</td><td>Timed checklist: police certificate, medical, funds</td><td><span class="pill next">next</span></td></tr>
+        <tr><td>Express Entry</td><td>NOC duties mismatch</td><td>Job duties must match the NOC code</td><td>Reference-letter mini-game</td><td><span class="pill next">next</span></td></tr>
+        <tr><td>Express Entry</td><td>Profile expires</td><td>Profiles last 12 months</td><td>Clock event; re-enter with a new age</td><td><span class="pill next">next</span></td></tr>
+        <tr><td>Student</td><td>PGWP language test</td><td>CLB 7 / CLB 5 since Nov 2024</td><td>Skip = refused PGWP</td><td><span class="pill built">built</span></td></tr>
+        <tr><td>Student</td><td>Bring your spouse?</td><td>Spousal open work permits narrowed in 2025 (mostly master's of 16+ months, PhD)</td><td>Choice changes funds and desperation</td><td><span class="pill next">next</span></td></tr>
+        <tr><td>Student</td><td>School closes mid-program</td><td>Transfer to another DLI and update the permit</td><td>Random event with a recovery path</td><td><span class="pill next">next</span></td></tr>
+        <tr><td>Student</td><td>Classmate says "Kawosoke"</td><td>Students claiming asylum face the same IRB process</td><td>Crossover into the Kawosoke flow</td><td><span class="pill next">next</span></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="guardrails" class="stack">
+    <h2>Content guardrails for Kawosoke</h2>
+    <ul class="plain">
+      <li>Real persecution is never the joke. LGBTQ Nigerians face prison, women flee real violence, and people in the North lose family to insurgents and bandits. Those choices are written straight and can win.</li>
+      <li>The humour points at the people who sell shortcuts: Wey Sabi, the unlicensed paralegal, the family group chat.</li>
+      <li>Fabrication always fails, with the real penalty named, and the ending says what fake stories cost genuine claimants.</li>
+      <li>The honest "I came for work" answer is always available and costs nothing but time.</li>
+      <li>No step-by-step advice on making a claim look credible. The game shows what the board weighs (consistency, evidence, IFA) and stops there.</li>
+      <li>Keep the "not legal or immigration advice" line on every screen.</li>
+    </ul>
+  </section>
+
+  <section id="sources" class="stack">
+    <h2>Sources</h2>
+    <ul class="plain src">
+      <li><a href="https://pmnewsnigeria.com/2026/04/23/canada-approves-3463-asylum-claims-by-nigerians-in-2025-over-21000-still-pending/" target="_blank" rel="noopener">P.M. News: Canada approves 3,463 asylum claims by Nigerians in 2025 (IRB data)</a></li>
+      <li><a href="https://businessday.ng/news/article/canada-rejects-1596-nigerian-asylum-claims-approves-65-in-2025/" target="_blank" rel="noopener">BusinessDay: Canada approves 65% of Nigerian claims, Jan–Aug 2025</a></li>
+      <li><a href="https://www.cbc.ca/news/canada/canada-refugee-claims-acceptance-rate-1.7424323" target="_blank" rel="noopener">CBC: refugee claim acceptance by country, 2018–2024</a></li>
+      <li><a href="https://www.legalaid.on.ca/in-briefs/update-on-bill-c-12/" target="_blank" rel="noopener">Legal Aid Ontario: Update on Bill C-12</a></li>
+      <li><a href="https://www.hivlegalnetwork.ca/site/statement-on-the-passage-of-bill-c-12/?lang=en" target="_blank" rel="noopener">HIV Legal Network: Statement on the passage of Bill C-12</a></li>
+      <li><a href="https://www.visaverge.com/immigration/bill-c12-receives-royal-assent-tightening-canadas-asylum-rules/" target="_blank" rel="noopener">VisaVerge: Bill C-12 receives royal assent</a></li>
+      <li><a href="https://www.canada.ca/en/immigration-refugees-citizenship/corporate/transparency/committees/cimm-may-04-2026/asylum.html" target="_blank" rel="noopener">IRCC: CIMM briefing, Asylum, May 4, 2026</a></li>
+      <li><a href="https://www.canada.ca/en/immigration-refugees-citizenship/corporate/transparency/committees/cimm-mar-23-2026/asylum.html" target="_blank" rel="noopener">IRCC: CIMM briefing, Asylum, March 23, 2026</a></li>
+      <li><a href="https://www.canada.ca/en/immigration-refugees-citizenship/corporate/transparency/committees/cimm-oct-21-2025/asylum.html" target="_blank" rel="noopener">IRCC: CIMM briefing, Asylum, October 21, 2025</a></li>
+      <li><a href="https://www.cicnews.com/2026/03/canada-broadens-work-permit-access-for-ineligible-asylum-0373621.html" target="_blank" rel="noopener">CIC News: work permits for ineligible asylum claimants (March 2026)</a></li>
+      <li><a href="https://www.cicnews.com/2026/06/breaking-canada-moves-to-enshrine-early-access-to-work-permits-for-asylum-seekers-0676978.html" target="_blank" rel="noopener">CIC News: early access to work permits for asylum seekers (June 2026)</a></li>
+      <li><a href="https://taxnews.ey.com/news/2026-0832-canada-introduces-transitional-open-work-permits-for-certain-ineligible-asylum-claimants" target="_blank" rel="noopener">EY: transitional open work permits for ineligible claimants (April 2026)</a></li>
+      <li><a href="https://refugeelab.ca/?p=7032" target="_blank" rel="noopener">Refugee Law Lab: 2023 RLLR 168 (Nigeria, IFA)</a></li>
+      <li><a href="https://refugeelab.ca/?p=3708" target="_blank" rel="noopener">Refugee Law Lab: 2021 RLLR 52</a></li>
+      <li><a href="https://tandslaw.com/canada-ircc-announces-2026-express-entry-categories-and-priority-occupations/" target="_blank" rel="noopener">T&amp;S Law: 2026 Express Entry categories</a></li>
+      <li><a href="https://moving2canada.com/immigration/express-entry/category-based-express-entry-draws/" target="_blank" rel="noopener">Moving2Canada: category-based draws in 2026</a></li>
+      <li><a href="https://moving2canada.com/express-entry-draw/" target="_blank" rel="noopener">Moving2Canada: latest Express Entry draw (Oct 1, 2026, trades)</a></li>
+      <li><a href="https://hopewayimmigration.com/express-entry-2026-french-language-draw-has-lowest-crs-score/" target="_blank" rel="noopener">Hopeway: French CRS 382, CEC 523</a></li>
+      <li><a href="https://libertyimmigration.ca/express-entry-proof-of-funds-2026-updated-settlement-fund-requirements/" target="_blank" rel="noopener">Liberty Immigration: Express Entry proof of funds 2026</a></li>
+      <li><a href="https://www.novagrad.ai/blog/canada-s-2026-study-permit-rules-why-master-s-applicants-no-longer-need-a-pal" target="_blank" rel="noopener">NovaGrad: master's applicants no longer need a PAL (2026)</a></li>
+      <li><a href="https://assist.applyboard.com/hc/en-us/articles/41470660000141-Canada-Study-Permit-Caps-2026-Provincial-Allocations-Guide" target="_blank" rel="noopener">ApplyBoard: 2026 study permit caps</a></li>
+      <li><a href="https://bridgepointlaw.ca/canada-study-permit-pgwp-complete-guide-2026/" target="_blank" rel="noopener">BridgePoint Law: study permits and PGWP 2026</a></li>
+      <li><a href="https://opaige.com/canada-visa-refusal-rates-2026" target="_blank" rel="noopener">Opaige: Canada visa refusal rates 2025–2026</a></li>
+      <li><a href="https://www.gofarglobal.com/news/canada-visitor-visa-approval-rate-by-country-2026" target="_blank" rel="noopener">GoFar Global: visitor visa approval by country 2026</a></li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>Prepared for the Japa: The Great Escape team, October 12, 2026. Game content is a simulation for entertainment, not legal or immigration advice. Check IRCC (canada.ca) and the IRB (irb-cisr.gc.ca) for current rules.</p>
+  </footer>
+</div>

@@ -12,11 +12,17 @@ const RANK_VIBE: Record<string, string> = {
   pr: "from-red-600/30 via-zinc-950 to-sky-900/40",
   pgwp: "from-amber-300/25 via-red-900/30 to-zinc-950",
   hustle: "from-zinc-800 via-zinc-950 to-amber-950/40",
+  protected: "from-red-600/30 via-zinc-950 to-emerald-900/40",
+  interview: "from-sky-700/30 via-zinc-950 to-amber-900/30",
 };
 
 const RANK_EMOJI: Record<string, string> = {
   vanier: "🎓🔥", pearson: "🇨🇦✈️🇳🇬", village: "👻", flagged: "🚫", hustle: "🚌", pr: "🇨🇦🍁", pgwp: "🎓🍁",
+  protected: "🇨🇦🛡️", interview: "💼🇨🇦", ifa: "🧭🇳🇬", refused: "📄❌", abandoned: "🎉✈️", expired: "⏳", couch: "🛋️",
 };
+
+/** Ranks that celebrate a win; the rest are game overs. */
+const WIN_RANKS: ReadonlySet<string> = new Set(["vanier", "pr", "pgwp", "protected", "interview"]);
 
 function RankGlyph({ id }: { id: string }) {
   if (id === "vanier") {
@@ -47,6 +53,7 @@ function RankGlyph({ id }: { id: string }) {
     );
   }
   if (id === "flagged") return <ShieldAlert className="mx-auto h-10 w-10 text-rose-300" />;
+  if (RANK_EMOJI[id] && id !== "hustle") return <span className="block text-center text-4xl" aria-hidden>{RANK_EMOJI[id]}</span>;
   return <span className="block text-center text-4xl">🚌</span>;
 }
 
@@ -111,7 +118,7 @@ export function GameOverModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md" role="dialog" aria-modal="true">
       <div className={`animate-scene-in relative w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/15 bg-gradient-to-br p-7 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)] ${RANK_VIBE[rank.id] ?? RANK_VIBE.hustle}`}>
-        <p className="text-center text-[11px] font-bold uppercase tracking-[0.28em] text-amber-200">Game Over · {routeName}</p>
+        <p className="text-center text-[11px] font-bold uppercase tracking-[0.28em] text-amber-200">{WIN_RANKS.has(rank.id) ? "You made it" : "Game Over"} · {routeName}</p>
         <div className="mt-5"><RankGlyph id={rank.id} /></div>
         <h3 className="mt-4 text-center text-3xl font-black tracking-tight text-white">{rank.title}</h3>
         <p className="mt-3 text-center text-sm leading-7 text-zinc-200">{rank.blurb}</p>
