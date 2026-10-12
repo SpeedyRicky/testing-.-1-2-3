@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { BookOpen, Lock, Trophy, X } from "lucide-react";
 import { DB } from "@/game/engine";
-import { allEndings, endingKey, lessonFor } from "@/game/endings";
+import { allEndings, lessonFor } from "@/game/endings";
 import type { GameState, RouteId } from "@/game/types";
 import { usePlayer } from "./Player";
 
@@ -30,22 +30,20 @@ const store = {
   subscribe(fn: () => void) { listeners.add(fn); return () => { listeners.delete(fn); }; },
   get: read,
   server: () => EMPTY,
-  add(key: string) {
+  add(key: string): boolean {
     const cur = read();
-    if (cur.found.includes(key)) return;
+    if (cur.found.includes(key)) return false;
     cache = { found: [...cur.found, key], lastNew: key };
     try { window.localStorage.setItem(KEY, JSON.stringify(cache.found)); } catch { /* storage blocked: this visit only */ }
     listeners.forEach((l) => l());
+    return true;
   },
 };
 
-const useFound = () => useSyncExternalStore(store.subscribe, store.get, store.server);
+/** Records an ending; true the first time this player's device sees it. */
+export const recordEnding = (key: string) => store.add(key);
 
-/** Records the ending when a run finishes. */
-export function useRecordEnding(run: GameState | undefined) {
-  const key = run ? endingKey(DB, run) : null;
-  useEffect(() => { if (key) store.add(key); }, [key]);
-}
+const useFound = () => useSyncExternalStore(store.subscribe, store.get, store.server);
 
 const ROUTE_ORDER = Object.keys(DB.routes) as RouteId[];
 

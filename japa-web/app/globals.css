@@ -319,3 +319,12 @@ body {
   100% { opacity: 0; transform: translateY(-12px); }
 }
 @media (prefers-reduced-motion: reduce) { .level-banner { animation: none; } }
+
+/* JP award card: slides up, stays, slides away. */
+.award-toast { animation: award-toast 5.2s cubic-bezier(0.2, 1.2, 0.3, 1) forwards; }
+@keyframes award-toast {
+  0% { opacity: 0; transform: translateY(24px); }
+  8%, 88% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(12px); }
+}
+@media (prefers-reduced-motion: reduce) { .award-toast { animation: none; } }

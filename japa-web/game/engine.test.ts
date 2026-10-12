@@ -17,10 +17,28 @@ import {
 import { initialState, makeReducer } from "./machine";
 import { allEndings, endingKey, lessonFor } from "./endings";
 import { levelIndexOf, levelProgress, levelsFor, starsFor } from "./levels";
+import { gambleOdds } from "./engine";
 import { GROOVES, moodFor } from "./music";
+import { makeSave, readSave } from "./save";
+import {
+  DAILY_MODIFIERS, NEW_META, applyBundle, bundleFor, buy, dailyFor, grant, runAward, titleFor, toggleEquip, touchStreak,
+} from "./meta";
+import { trapChance } from "./engine";
 import type { GameState, RouteId, StatKey } from "./types";
 
 const reducer = makeReducer();
+
+/** Plays by choice text; a [text, roll] pair sets that step's dice (0 = the risky choice works, 0.99 = it doesn't). */
+function playR(route: RouteId, steps: (string | [string, number])[]): GameState {
+  let s = newRun(DB, route);
+  for (const step of steps) {
+    const [pick, roll] = typeof step === "string" ? [step, 0] : step;
+    const idx = presentChoices(DB, s).findIndex((c) => c.text.includes(pick));
+    expect(idx, `choice containing "${pick}" at ${s.currentSceneId}`).toBeGreaterThanOrEqual(0);
+    s = dismissPopup(choose(DB, s, idx, [1, 0, roll]));
+  }
+  return s;
+}
 
 /** Plays by choice text from a given state. */
 function play2(start: GameState, picks: string[]): GameState {
@@ -53,6 +71,8 @@ describe("scenarios.json integrity", () => {
     const missing: string[] = [];
     for (const s of Object.values(DB.scenes)) {
       s.choices?.forEach((c) => !ids.has(c.nextSceneId) && missing.push(`${s.id} -> ${c.nextSceneId}`));
+      s.choices?.forEach((c) => [c.gamble?.success.nextSceneId, c.gamble?.fail.nextSceneId].forEach((n) =>
+        n && !ids.has(n) && missing.push(`${s.id} (gamble) -> ${n}`)));
       s.branch?.forEach((b) => !ids.has(b.nextSceneId) && missing.push(`${s.id} -> ${b.nextSceneId}`));
       if (s.dashboard && !ids.has(s.dashboard.winSceneId)) missing.push(`${s.id} -> ${s.dashboard.winSceneId}`);
     }
@@ -95,7 +115,13 @@ describe("scenarios.json integrity", () => {
     const bad: string[] = [];
     for (const s of Object.values(DB.scenes)) {
       const maps: (object | undefined)[] = [s.onEnter, ...(s.choices ?? []).map((c) => c.effects), ...(s.dashboard?.actions ?? []).map((a) => a.effects)];
-      for (const c of s.choices ?? []) maps.push(c.set, c.requires);
+      for (const c of s.choices ?? []) {
+        maps.push(c.set, c.requires);
+        if (c.gamble) {
+          maps.push(c.gamble.success.effects, c.gamble.success.set, c.gamble.fail.effects, c.gamble.fail.set);
+          for (const b of c.gamble.bonus ?? []) if (!known.has(b.key)) bad.push(`${s.id}: bonus ${b.key}`);
+        }
+      }
       for (const m of maps) for (const k of Object.keys(m ?? {})) if (!known.has(k)) bad.push(`${s.id}: ${k}`);
       for (const b of s.branch ?? []) for (const k of Object.keys(b.when ?? {})) if (!known.has(k)) bad.push(`${s.id}: ${k}`);
     }
@@ -418,10 +444,11 @@ describe("Express Entry route", () => {
     expect(s.energy).toBeGreaterThan(0);
   });
 
-  it("a rushed CLB 7 plus French still falls short of the French cutoff", () => {
-    const s = play("EXPRESS_ENTRY", ["Book the test for Saturday", "official express transcript", "Refresh the rounds",
-      "Enrol at the French institute", "Update your profile", "Refresh the rounds"]);
-    expect(s.routeStats.crsScore).toBe(393);
+  it("a rushed CLB 6 plus a weak French result still falls short of the French cutoff", () => {
+    const s = playR("EXPRESS_ENTRY", [["Book the test for Saturday", 0.99], "official express transcript", "Refresh the rounds",
+      ["Enrol at the French institute", 0.99], "Update your profile", "Refresh the rounds"]);
+    expect(s.routeStats).toMatchObject({ clbFirst: 6, nclcFrench: 5 });
+    expect(s.routeStats.crsScore).toBeLessThan(400);
     expect(s.currentSceneId).toBe("EE_BELOW");
   });
 
@@ -462,12 +489,12 @@ describe("Student pathway", () => {
   });
 
   it("a template study plan gets refused", () => {
-    const s = play("STUDY_PERMIT", ["Two-year Supply Chain", "Work out the money", "entrance scholarship",
-      "Family sponsorship", "funds are ready", "template", "Wait for the decision"]);
+    const steps: (string | [string, number])[] = ["Two-year Supply Chain", "Work out the money", "entrance scholarship",
+      "Family sponsorship", "funds are ready", "template", ["Wait for the decision", 0.5]];
+    const s = playR("STUDY_PERMIT", steps);
     expect(s.currentSceneId).toBe("ST_REFUSED");
     expect(s.outcome).toBeFalsy();
-    expect(play("STUDY_PERMIT", ["Two-year Supply Chain", "Work out the money", "entrance scholarship",
-      "Family sponsorship", "funds are ready", "template", "Wait for the decision", "same file"]).outcome?.reason).toBe("STUDY_PERMIT_REFUSED");
+    expect(playR("STUDY_PERMIT", [...steps, "same file"]).outcome?.reason).toBe("STUDY_PERMIT_REFUSED");
   });
 
   it("private career college graduates get no PGWP", () => {
@@ -903,8 +930,8 @@ describe("Year One in Canada and community-story scenes", () => {
   });
 
   it("a rental scam and an empty account end the year early", () => {
-    const s = year(["best phone plan", "Facebook 'landlord'", "Only apply for jobs at your old level", "bridging program",
-      "Send all of it", "Stay inside", "cheaper province", "Go home for December as an IJGB"]);
+    const s = playR("FIRST_YEAR", ["best phone plan", "Facebook 'landlord'", ["Only apply for jobs at your old level", 0.99],
+      "bridging program", "Send all of it", "Stay inside", "cheaper province", "Go home for December as an IJGB"]);
     expect(s.outcome?.reason).toBe("BURNOUT");
   });
 
@@ -922,11 +949,11 @@ describe("Year One in Canada and community-story scenes", () => {
   });
 
   it("a refused student who reads the GCMS notes can fix the plan and get approved", () => {
-    const s = play("STUDY_PERMIT", ["Two-year Supply Chain", "Work out the money", "entrance scholarship",
-      "Family sponsorship", "funds are ready", "template", "Wait for the decision", "GCMS notes", "specific plan", "Wait for the decision"]);
+    const s = playR("STUDY_PERMIT", ["Two-year Supply Chain", "Work out the money", "entrance scholarship",
+      "Family sponsorship", "funds are ready", "template", ["Wait for the decision", 0.5], "GCMS notes", "specific plan", ["Wait for the decision", 0.5]]);
     expect(s.currentSceneId).toBe("ST_APPROVED");
-    const scam = play("STUDY_PERMIT", ["Two-year Supply Chain", "Work out the money", "entrance scholarship",
-      "Family sponsorship", "funds are ready", "template", "Wait for the decision", "guaranteed visa"]);
+    const scam = playR("STUDY_PERMIT", ["Two-year Supply Chain", "Work out the money", "entrance scholarship",
+      "Family sponsorship", "funds are ready", "template", ["Wait for the decision", 0.5], "guaranteed visa"]);
     expect(scam.outcome?.reason).toBe("MISREPRESENTATION");
   });
 
@@ -1003,6 +1030,141 @@ describe("levels", () => {
     expect(app.activeRoute).toBe("EXPRESS_ENTRY");
     expect(app.runs.EXPRESS_ENTRY).toBe(snap);
     expect(reducer(app, { type: "LOAD_RUN", run: { ...snap, currentSceneId: "NOPE" } })).toBe(app);
+  });
+});
+
+describe("risky choices", () => {
+  it("odds come from preparation and stay within limits", () => {
+    const g = { odds: 0.2, bonus: [{ key: "clbFirst" as StatKey, per: 0.05 }], max: 0.7, success: { feedback: "" }, fail: { feedback: "" } };
+    const s = newRun(DB, "EXPRESS_ENTRY");
+    expect(gambleOdds({ ...s, routeStats: { ...s.routeStats, clbFirst: 0 } }, g)).toBeCloseTo(0.2);
+    expect(gambleOdds({ ...s, routeStats: { ...s.routeStats, clbFirst: 9 } }, g)).toBeCloseTo(0.65);
+    expect(gambleOdds({ ...s, routeStats: { ...s.routeStats, clbFirst: 12 } }, g)).toBeCloseTo(0.7);
+    expect(gambleOdds(s, { ...g, odds: -1, bonus: [] })).toBeCloseTo(0.05);
+  });
+
+  it("buttons show the odds, and the dice pick the branch", () => {
+    const start = newRun(DB, "EXPRESS_ENTRY");
+    const prep = presentChoices(DB, start).find((c) => c.text.startsWith("Book IELTS General Training"))!;
+    expect(prep.odds).toBeGreaterThan(0.5);
+    const rushed = presentChoices(DB, start).find((c) => c.text.startsWith("Book the test for Saturday"))!;
+    expect(rushed.odds).toBeLessThan(prep.odds!);
+    expect(playR("EXPRESS_ENTRY", [["Book IELTS General Training", 0]]).routeStats.clbFirst).toBe(9);
+    const short = playR("EXPRESS_ENTRY", [["Book IELTS General Training", 0.99]]);
+    expect(short.routeStats.clbFirst).toBe(8);
+    expect(short.lastChoice?.label).toBe("ONE_BAND_SHORT");
+  });
+
+  it("a strong study plan raises the visa odds; the dice can still say no", () => {
+    const base = ["Master's in Engineering", "Work out the money", "entrance scholarship", "Family sponsorship", "Sell the plot",
+      "Crowdfund", "funds are ready"];
+    const strong = playR("STUDY_PERMIT", [...base, "specific plan"]);
+    const weak = playR("STUDY_PERMIT", [...base, "template"]);
+    const oddsAt = (s: GameState) => presentChoices(DB, s).find((c) => c.text.startsWith("Wait for the decision"))!.odds!;
+    expect(oddsAt(strong)).toBeGreaterThan(oddsAt(weak) + 0.3);
+    expect(playR("STUDY_PERMIT", [...base, "specific plan", ["Wait for the decision", 0.95]]).currentSceneId).toBe("ST_REFUSED");
+  });
+
+  it("a failed gamble can loop back: the ASUU strike", () => {
+    const s = playR("EXPRESS_ENTRY", ["three months first", ["Go back every week", 0.99]]);
+    expect(s.currentSceneId).toBe("EE_ECA");
+    expect(s.routeStats.ecaComplete ?? 0).toBe(0);
+  });
+});
+
+describe("meta-progression", () => {
+  it("titles grow with lifetime JP", () => {
+    expect(titleFor(0)).toBe("JJC");
+    expect(titleFor(320)).toBe("Visa hustler");
+    expect(titleFor(5000)).toBe("Japa legend");
+  });
+
+  it("the daily challenge is the same all day and changes between days", () => {
+    const routes = ["NIGERIA_LIFE", "STUDY_PERMIT", "EXPRESS_ENTRY", "TOURIST_GAMBLE"] as RouteId[];
+    expect(dailyFor("2026-10-12", routes)).toEqual(dailyFor("2026-10-12", routes));
+    const week = new Set(Array.from({ length: 14 }, (_, i) => {
+      const d = dailyFor(`2026-10-${String(i + 1).padStart(2, "0")}`, routes);
+      return `${d.route}/${d.modifier.id}`;
+    }));
+    expect(week.size).toBeGreaterThan(5);
+  });
+
+  it("perks and daily modifiers change the run: money, energy, traps and odds", () => {
+    const run = newRun(DB, "NIGERIA_LIFE");
+    const b = bundleFor(["malt-bread", "prayer-warrior", "night-reader"], { day: "2026-10-12", modifier: DAILY_MODIFIERS[0] });
+    const s = applyBundle(run, b);
+    expect(s.energy).toBe(Math.min(100, run.energy + 15));
+    expect(s.walletNgn).toBe(Math.round(run.walletNgn * 0.75));
+    expect(trapChance(DB, s)).toBeCloseTo(trapChance(DB, run) * 0.7);
+    expect(s.mods).toMatchObject({ daily: "2026-10-12", label: "Naira crash day", oddsBonus: 0.06 });
+    const ee = applyBundle(newRun(DB, "EXPRESS_ENTRY"), bundleFor(["night-reader"]));
+    const odds = (st: GameState) => presentChoices(DB, st).find((c) => c.text.startsWith("Book the test for Saturday"))!.odds!;
+    expect(odds(ee)).toBeCloseTo(odds(newRun(DB, "EXPRESS_ENTRY")) + 0.06);
+  });
+
+  it("the reducer starts new runs with the equipped perks, and the daily with its modifier", () => {
+    let app = reducer(initialState(), { type: "SET_BUNDLE", bundle: bundleFor(["steady-head"]) });
+    const before = app.runs.NIGERIA_LIFE!.desperation;
+    app = reducer(app, { type: "RESTART" });
+    expect(app.runs.NIGERIA_LIFE!.desperation).toBe(before - 10);
+    app = reducer(app, { type: "START_DAILY", route: "EXPRESS_ENTRY", bundle: bundleFor([], { day: "2026-10-12", modifier: DAILY_MODIFIERS[1] }) });
+    expect(app.activeRoute).toBe("EXPRESS_ENTRY");
+    expect(app.runs.EXPRESS_ENTRY!.mods?.daily).toBe("2026-10-12");
+  });
+
+  it("runs pay JP once; daily wins pay more with a streak", () => {
+    const win = { ...newRun(DB, "EXPRESS_ENTRY"), outcome: { result: "win" as const, reason: "X", title: "X" } };
+    const a = runAward(win, { key: "k1", newEnding: true, today: "2026-10-12", streak: 0 });
+    expect(a.total).toBe(10 + 30 + 25);
+    const m = grant(NEW_META, a);
+    expect(m.jp).toBe(65);
+    expect(grant(m, a)).toBe(m);
+    const daily = runAward({ ...win, mods: { daily: "2026-10-12" } }, { key: "k2", newEnding: false, today: "2026-10-12", streak: 5 });
+    expect(daily.lines.at(-1)!.jp).toBe(90);
+  });
+
+  it("the streak grows on consecutive days and resets after a gap", () => {
+    let m = touchStreak(NEW_META, "2026-10-10");
+    m = touchStreak(m, "2026-10-11");
+    m = touchStreak(m, "2026-10-11");
+    expect(m.streak.count).toBe(2);
+    expect(touchStreak(m, "2026-10-14").streak.count).toBe(1);
+  });
+
+  it("buying needs enough JP, and only two perks can be equipped", () => {
+    let m = { ...NEW_META, jp: 500 };
+    m = buy(m, "malt-bread");
+    expect(m.jp).toBe(440);
+    expect(buy({ ...NEW_META, jp: 10 }, "night-reader").owned).not.toContain("night-reader");
+    m = buy(buy(m, "steady-head"), "prayer-warrior");
+    m = toggleEquip(toggleEquip(toggleEquip(m, "malt-bread"), "steady-head"), "prayer-warrior");
+    expect(m.equipped).toEqual(["malt-bread", "steady-head"]);
+  });
+});
+
+describe("saves", () => {
+  const ada = { version: 1, username: "Ada", avatar: DEFAULT_AVATAR, role: "worker", age: 30, stateCode: "AN",
+    worker: { occupation: "nurse", years: 4, qualification: "bachelors", salary: "150k-400k" } } as PlayerProfile;
+
+  it("a save round-trips through JSON and continues the same runs", () => {
+    let app = reducer(initialState(DB, ada), { type: "SELECT_ROUTE", route: "EXPRESS_ENTRY" });
+    app = reducer(app, { type: "CHOOSE", index: 0, rolls: [1, 0] });
+    const file = JSON.parse(JSON.stringify(makeSave(DB, app)));
+    const back = readSave(DB, file, "Ada");
+    expect(back?.activeRoute).toBe("EXPRESS_ENTRY");
+    const restored = reducer(initialState(DB, ada), { type: "RESTORE_RUNS", ...back! });
+    expect(restored.runs.EXPRESS_ENTRY).toEqual(app.runs.EXPRESS_ENTRY);
+    expect(restored.activeRoute).toBe("EXPRESS_ENTRY");
+  });
+
+  it("ignores another player's save, a broken run, and no profile", () => {
+    const app = initialState(DB, ada);
+    const file = makeSave(DB, app)!;
+    expect(readSave(DB, file, "Tunde")).toBeNull();
+    const broken = { ...file, runs: { ...file.runs, STUDY_PERMIT: { ...file.runs.STUDY_PERMIT!, currentSceneId: "GONE" } } };
+    expect(readSave(DB, broken, "Ada")?.runs.STUDY_PERMIT).toBeUndefined();
+    expect(readSave(DB, { ...file, version: 99 }, "Ada")).toBeNull();
+    expect(makeSave(DB, initialState())).toBeNull();
   });
 });
 

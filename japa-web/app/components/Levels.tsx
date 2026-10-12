@@ -9,6 +9,7 @@ import type { AppEvent } from "@/game/machine";
 import type { GameState, RouteId } from "@/game/types";
 import { useCinematic } from "./Cinematic";
 import { usePlayer } from "./Player";
+import { awardStars } from "./Meta";
 import { useSfxOnMount } from "./Sound";
 
 // --- progress store: best stars and a replay snapshot per level, per player and route ----------
@@ -79,6 +80,11 @@ export function useLevelTracking(run: GameState | undefined) {
       return;
     }
     if (entered === null && !completed) return;
+    if (completed) {
+      const prevBest = read().progress[progressKey(player, run.activeRoute)]?.best[completed.index] ?? 0;
+      const level = levelsFor(DB, run.activeRoute)[completed.index];
+      awardStars(player, `${run.activeRoute}:${level.id}:${completed.stars}`, completed.stars - prevBest, level.title);
+    }
     update(player, run.activeRoute, (p) => {
       const best = [...p.best];
       if (completed) best[completed.index] = Math.max(best[completed.index] ?? 0, completed.stars);

@@ -1,7 +1,8 @@
 // The app's state machine. One reducer; each route keeps its own GameState,
 // so switching modes never loses progress.
 import { DB, applyMarketShock, choose, dismissPopup, newRun, takeAction } from "./engine";
-import type { GameState, RouteId, ScenarioDatabase, Toast } from "./types";
+import type { Effects, GameState, RouteId, RunMods, ScenarioDatabase, Toast } from "./types";
+import { applyBundle } from "./meta";
 import { deriveGameProfile, familyFor, routePatches, type PlayerProfile } from "./profile";
 import { isSibling } from "./family";
 
@@ -10,32 +11,43 @@ export interface AppState {
   activeRoute: RouteId;
   runs: Partial<Record<RouteId, GameState>>;
   toast: Toast | null;
+  /** Equipped perks, applied to each new run. */
+  bundle?: Bundle | null;
 }
 
 export type AppEvent =
   | { type: "SELECT_ROUTE"; route: RouteId }
-  | { type: "CHOOSE"; index: number; rolls?: [number, number] }
+  | { type: "CHOOSE"; index: number; rolls?: number[] }
   | { type: "MARKET_SHOCK" }
   | { type: "DISMISS_POPUP" }
-  | { type: "TAKE_ACTION"; actionId: string; rolls: [number, number] }
+  | { type: "TAKE_ACTION"; actionId: string; rolls: number[] }
   | { type: "RESTART" }
   | { type: "DISMISS_TOAST" }
   | { type: "FOLLOW_UNLOCK" }
   | { type: "SET_PROFILE"; profile: PlayerProfile | null }
   /** Replay a level: restore the run as it was when the level started. */
-  | { type: "LOAD_RUN"; run: GameState };
+  | { type: "LOAD_RUN"; run: GameState }
+  /** Continue where the player left off (from a save). */
+  | { type: "RESTORE_RUNS"; activeRoute: RouteId; runs: Partial<Record<RouteId, GameState>> }
+  /** Equipped perks: applied to every run started from now on. */
+  | { type: "SET_BUNDLE"; bundle: Bundle | null }
+  /** Today's challenge: a fresh run of the route with the daily modifier on top of the perks. */
+  | { type: "START_DAILY"; route: RouteId; bundle: Bundle };
 
 export const PLAYABLE: RouteId[] = (Object.keys(DB.routes) as RouteId[]).filter((r) => DB.routes[r].status === "playable");
 
 /** A fresh run of a route, starting from the player's profile when there is one. */
-export function startRoute(db: ScenarioDatabase, route: RouteId, profile: PlayerProfile | null): GameState {
-  return newRun(db, route, (profile ? routePatches(profile)[route] : undefined) ?? {});
+export type Bundle = RunMods & { effects: Effects };
+
+export function startRoute(db: ScenarioDatabase, route: RouteId, profile: PlayerProfile | null, bundle?: Bundle | null): GameState {
+  const run = newRun(db, route, (profile ? routePatches(profile)[route] : undefined) ?? {});
+  return bundle ? applyBundle(run, bundle) : run;
 }
 
-export function initialState(db: ScenarioDatabase = DB, profile: PlayerProfile | null = null): AppState {
+export function initialState(db: ScenarioDatabase = DB, profile: PlayerProfile | null = null, bundle: Bundle | null = null): AppState {
   const runs: Partial<Record<RouteId, GameState>> = {};
-  for (const r of PLAYABLE) runs[r] = startRoute(db, r, profile);
-  return { profile, activeRoute: PLAYABLE[0], runs, toast: null };
+  for (const r of PLAYABLE) runs[r] = startRoute(db, r, profile, bundle);
+  return { profile, activeRoute: PLAYABLE[0], runs, toast: null, bundle };
 }
 
 export function activeRun(state: AppState): GameState | undefined {
@@ -65,9 +77,16 @@ export function makeReducer(db: ScenarioDatabase = DB) {
         return { ...withRun(state, r.state), toast: { ...r.toast, id: (state.toast?.id ?? 0) + 1 } };
       }
       case "RESTART":
-        return { ...state, runs: { ...state.runs, [state.activeRoute]: startRoute(db, state.activeRoute, state.profile) }, toast: null };
+        return { ...state, runs: { ...state.runs, [state.activeRoute]: startRoute(db, state.activeRoute, state.profile, state.bundle) }, toast: null };
+      case "SET_BUNDLE":
+        return { ...state, bundle: event.bundle };
+      case "START_DAILY":
+        if (db.routes[event.route]?.status !== "playable") return state;
+        return { ...state, activeRoute: event.route, runs: { ...state.runs, [event.route]: startRoute(db, event.route, state.profile, event.bundle) }, toast: null };
       case "SET_PROFILE":
-        return initialState(db, event.profile);
+        return initialState(db, event.profile, state.bundle);
+      case "RESTORE_RUNS":
+        return { ...state, activeRoute: event.activeRoute, runs: { ...state.runs, ...event.runs }, toast: null };
       case "LOAD_RUN":
         if (!db.routes[event.run.activeRoute] || !db.scenes[event.run.currentSceneId]) return state;
         return { ...state, activeRoute: event.run.activeRoute, runs: { ...state.runs, [event.run.activeRoute]: event.run }, toast: null };

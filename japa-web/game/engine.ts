@@ -1,6 +1,6 @@
 // Pure game logic over scenarios.json. No React, no randomness (rolls are passed in),
 // so every rule is unit-testable. Same semantics as the Godot runner (narrative.gd).
-import type {
+import type { Gamble,
   Choice, Conditions, CoreStat, CrsTables, DashboardAction, Effects, GameState, Op, Rank, RouteId, RouteStats,
   ScenarioDatabase, Scene, StatKey, Toast,
 } from "./types";
@@ -198,34 +198,57 @@ export function currentScene(db: ScenarioDatabase, state: GameState): Scene | un
 export interface PresentedChoice extends Choice {
   index: number;
   enabled: boolean;
+  /** For risky choices: the chance of success right now, 0 to 1. */
+  odds?: number;
+}
+
+/** The chance a risky choice succeeds from this state, after preparation bonuses, kept within its limits. */
+export function gambleOdds(state: GameState, g: Gamble): number {
+  let p = g.odds + (state.mods?.oddsBonus ?? 0);
+  for (const b of g.bonus ?? []) p += getStat(state, b.key) * b.per;
+  return Math.min(g.max ?? 0.95, Math.max(g.min ?? 0.05, p));
 }
 
 export function presentChoices(db: ScenarioDatabase, state: GameState): PresentedChoice[] {
   if (state.outcome) return [];
   return (currentScene(db, state)?.choices ?? []).map((c, index) => ({
     ...c, index, enabled: !c.requires || evaluate(state, c.requires),
+    ...(c.gamble ? { odds: gambleOdds(state, c.gamble) } : {}),
   }));
 }
 
 /** Takes a dialogue choice. Invalid or locked choices return the same state object.
- *  `rolls` = [trap roll, trap pick roll] in [0, 1); only routes with traps use them. */
-export function choose(db: ScenarioDatabase, state: GameState, index: number, rolls: [number, number] = [1, 0]): GameState {
+ *  `rolls` = [trap roll, trap pick roll, gamble roll] in [0, 1); only routes with traps use the first two, only
+ *  risky choices the third (a missing gamble roll counts as 0: success, which keeps tests deterministic). */
+export function choose(db: ScenarioDatabase, state: GameState, index: number, rolls: readonly number[] = [1, 0]): GameState {
   if (state.outcome || state.popup) return state;
   const choice = currentScene(db, state)?.choices?.[index];
   if (!choice || (choice.requires && !evaluate(state, choice.requires))) return state;
   const route = db.routes[state.activeRoute];
   let s = applySet(applyEffects(state, choice.effects), choice.set);
+  let nextSceneId = choice.nextSceneId;
+  let label = choice.label;
+  let feedback = choice.feedback ?? "";
+  if (choice.gamble) {
+    // Odds come from the state before the choice: preparation counts, the choice's own cost doesn't.
+    const won = (rolls[2] ?? 0) < gambleOdds(state, choice.gamble);
+    const branch = won ? choice.gamble.success : choice.gamble.fail;
+    s = applySet(applyEffects(s, branch.effects), branch.set);
+    nextSceneId = branch.nextSceneId ?? nextSceneId;
+    label = branch.label ?? (won ? "LUCKY_BREAK" : "NOT_THIS_TIME");
+    feedback = branch.feedback;
+  }
   const history = [...s.history];
-  history[history.length - 1] = { ...history[history.length - 1], answer: choice.text, label: choice.label };
-  s = { ...s, history, lastChoice: choice.label || choice.feedback ? { label: choice.label, feedback: choice.feedback ?? "" } : null };
+  history[history.length - 1] = { ...history[history.length - 1], answer: choice.text, label };
+  s = { ...s, history, lastChoice: label || feedback ? { label, feedback } : null };
   if (choice.floatCad) s = { ...s, cadFloat: { amount: choice.floatCad, tick: s.cadFloat.tick + 1 } };
 
   // Village People traps strike on ordinary moves, never on the move into an ending.
-  const target = db.scenes[choice.nextSceneId];
+  const target = db.scenes[nextSceneId];
   const endingMove = !target || !!target.branch || !!target.outcome;
   const items = route.traps?.items.filter((t) => !t.when || evaluate(s, t.when)) ?? [];
-  if (items.length && !endingMove && rolls[0] < trapChance(db, s)) {
-    const trap = items[Math.floor(rolls[1] * items.length) % items.length];
+  if (items.length && !endingMove && (rolls[0] ?? 1) < trapChance(db, s)) {
+    const trap = items[Math.floor((rolls[1] ?? 0) * items.length) % items.length];
     s = applyEffects(s, trap.effects);
     s = { ...s, popup: { kind: "trap", id: trap.id, kicker: trap.kicker, title: trap.title, body: trap.body } };
   }
@@ -233,7 +256,7 @@ export function choose(db: ScenarioDatabase, state: GameState, index: number, ro
   if (route.collapse && evaluateAny(s, route.collapse.any)) {
     return enterScene(db, s, route.collapse.sceneId);
   }
-  return enterScene(db, s, choice.nextSceneId);
+  return enterScene(db, s, nextSceneId);
 }
 
 // --- Lagos Life modifiers --------------------------------------------------------
@@ -242,7 +265,7 @@ export function choose(db: ScenarioDatabase, state: GameState, index: number, ro
 export function trapChance(db: ScenarioDatabase, state: GameState): number {
   const t = db.routes[state.activeRoute].traps;
   if (!t) return 0;
-  return t.base + Math.pow(state.desperation / 100, t.exponent) * t.scale;
+  return (t.base + Math.pow(state.desperation / 100, t.exponent) * t.scale) * (state.mods?.trapFactor ?? 1);
 }
 
 /** The parallel market jumps: wallet and papers shrink by the configured factors. */
@@ -327,7 +350,7 @@ export function canTake(state: GameState, action: DashboardAction): boolean {
 /** Takes a dashboard action. `rolls` = [lead roll, consequence roll], each in [0, 1).
  *  Returns the new state and the toast to show (null if nothing happened). */
 export function takeAction(
-  db: ScenarioDatabase, state: GameState, actionId: string, rolls: [number, number],
+  db: ScenarioDatabase, state: GameState, actionId: string, rolls: readonly number[],
 ): { state: GameState; toast: Omit<Toast, "id"> | null } {
   const dash = dashboardOf(db, state);
   const action = dash?.actions.find((a) => a.id === actionId);

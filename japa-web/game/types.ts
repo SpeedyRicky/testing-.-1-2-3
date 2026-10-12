@@ -113,6 +113,19 @@ export interface GameState {
   cadFloat: { amount: number; tick: number };
   /** Dashboard routes: where the last action took place (drawn as a 2D stage). */
   currentStage: StageKind | null;
+  /** Perks and daily-challenge modifiers in force for this run. */
+  mods?: RunMods;
+}
+
+export interface RunMods {
+  /** Multiplies the chance of a Village People trap. */
+  trapFactor?: number;
+  /** Added to every risky choice's odds. */
+  oddsBonus?: number;
+  /** Set when this run is a daily challenge (the day, YYYY-MM-DD). */
+  daily?: string;
+  label?: string;
+  moneyFactor?: number;
 }
 
 export interface Popup {
@@ -144,6 +157,28 @@ export interface Choice {
   floatCad?: number;
   /** Values to overwrite (e.g. an IELTS result), applied after effects. */
   set?: Effects;
+  /** A risky move: its odds are shown on the button, and the dice decide which branch happens. */
+  gamble?: Gamble;
+}
+
+export interface GambleBranch {
+  effects?: Effects;
+  set?: Effects;
+  /** Where this branch goes; defaults to the choice's nextSceneId. */
+  nextSceneId?: string;
+  label?: string;
+  feedback: string;
+}
+
+export interface Gamble {
+  /** Base chance of success, 0 to 1. */
+  odds: number;
+  /** Preparation that shifts the odds: each point of `key` adds `per` (negative for stats that hurt). */
+  bonus?: { key: StatKey; per: number }[];
+  min?: number;
+  max?: number;
+  success: GambleBranch;
+  fail: GambleBranch;
 }
 
 export interface Outcome {

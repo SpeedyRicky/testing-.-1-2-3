@@ -3,6 +3,8 @@
 import { Building2, RotateCcw } from "lucide-react";
 import { DB, choose, currentScene, formatLabel, presentChoices } from "@/game/engine";
 import { describeChoice } from "@/game/cinematic";
+import { rolls as rollDice } from "@/game/rng";
+import { OddsChip } from "../OddsChip";
 import { useCinematic } from "../Cinematic";
 import { usePlayer } from "../Player";
 import type { LayoutProps } from "../LayoutContainer";
@@ -18,10 +20,11 @@ export function CorporateOfficeLayout({ run, dispatch, bars }: LayoutProps) {
   const { t, t: tr } = usePlayer();
   function pick(index: number) {
     const choice = scene?.choices?.[index];
-    const next = choose(DB, run, index);
+    const rolls = rollDice();
+    const next = choose(DB, run, index, rolls);
     if (!choice || next === run) return;
-    dispatch({ type: "CHOOSE", index });
-    play({ spec: describeChoice(DB, run, next, t(choice.text), choice.label, t(choice.feedback)), stage: "boardroom", reactor: "kovacs" });
+    dispatch({ type: "CHOOSE", index, rolls });
+    play({ spec: describeChoice(DB, run, next, t(choice.text), next.lastChoice?.label ?? choice.label, t(next.lastChoice?.feedback ?? choice.feedback)), stage: "boardroom", reactor: "kovacs" });
   }
   // Past exchanges: every visited dialogue scene that got an answer.
   const transcript = run.history.filter((h) => h.answer).map((h) => ({ ...h, scene: DB.scenes[h.sceneId] }));
@@ -80,7 +83,7 @@ export function CorporateOfficeLayout({ run, dispatch, bars }: LayoutProps) {
               <div className="eyebrow pt-2">Your response</div>
               {choices.map((c) => (
                 <button key={c.index} className="choice-btn" disabled={!c.enabled} onClick={() => pick(c.index)}>
-                  {tr(c.text)}
+                  {tr(c.text)}<OddsChip odds={c.odds} />
                 </button>
               ))}
             </div>

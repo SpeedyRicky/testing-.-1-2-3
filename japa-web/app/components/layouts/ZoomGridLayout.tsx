@@ -3,6 +3,8 @@
 import { CheckCircle2, Mic, MicOff, MonitorUp, PhoneOff, RotateCcw, Users, Video, XCircle } from "lucide-react";
 import { DB, choose, currentScene, explainResolution, presentChoices } from "@/game/engine";
 import { describeChoice } from "@/game/cinematic";
+import { rolls as rollDice } from "@/game/rng";
+import { OddsChip } from "../OddsChip";
 import { useCinematic } from "../Cinematic";
 import { usePlayer } from "../Player";
 import type { GameState, StatKey } from "@/game/types";
@@ -109,11 +111,12 @@ export function ZoomGridLayout({ run, dispatch, bars }: LayoutProps) {
   const { t, profile } = usePlayer();
   function pick(index: number) {
     const choice = scene?.choices?.[index];
-    const next = choose(DB, run, index);
+    const rolls = rollDice();
+    const next = choose(DB, run, index, rolls);
     if (!choice || next === run) return;
-    dispatch({ type: "CHOOSE", index });
+    dispatch({ type: "CHOOSE", index, rolls });
     const asker = PANEL.find((p) => p.id === speaking)?.who ?? "vance";
-    play({ spec: describeChoice(DB, run, next, t(choice.text), choice.label, t(choice.feedback)), stage: "pitch-room", reactor: asker });
+    play({ spec: describeChoice(DB, run, next, t(choice.text), next.lastChoice?.label ?? choice.label, t(next.lastChoice?.feedback ?? choice.feedback)), stage: "pitch-room", reactor: asker });
   }
   const mood: TileMood = run.outcome ? (run.outcome.result === "win" ? "win" : "fail") : "listen";
   const answered = run.history.filter((h) => h.answer).length;
@@ -160,7 +163,7 @@ export function ZoomGridLayout({ run, dispatch, bars }: LayoutProps) {
             <div className="mt-5 space-y-2.5">
               {choices.map((c) => (
                 <button key={c.index} className="choice-btn" disabled={!c.enabled} onClick={() => pick(c.index)}>
-                  {t(c.text)}
+                  {t(c.text)}<OddsChip odds={c.odds} />
                   {!c.enabled && c.lockedHint && <span className="mt-1 block text-xs text-zinc-500">Locked: {c.lockedHint}</span>}
                 </button>
               ))}

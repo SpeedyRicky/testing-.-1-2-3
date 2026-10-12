@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { FileCheck2, Ghost, GraduationCap, Languages, MapPin, Plane, Sparkles, Trophy, Wallet, Zap } from "lucide-react";
 import { DB, choose, computeCrs, presentChoices, rankFor } from "@/game/engine";
 import { lessonFor } from "@/game/endings";
+import { OddsChip } from "../OddsChip";
 import { describeChoice } from "@/game/cinematic";
 import { useCinematic } from "../Cinematic";
 import { usePlayer } from "../Player";
@@ -197,8 +198,9 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
     if (next === run) return;
     const choice = DB.scenes[run.currentSceneId]?.choices?.[index];
     // Describe the choice itself; a Village People trap gets its own pop-up afterwards.
-    const clean = next.popup ? choose(DB, run, index, [1, 0]) : next;
-    const spec = describeChoice(DB, run, clean, t(choice?.text, run), choice?.label ?? "", t(choice?.feedback, run));
+    const clean = next.popup ? choose(DB, run, index, [1, 0, rolls[2]]) : next;
+    const spec = describeChoice(DB, run, clean, t(choice?.text, run), clean.lastChoice?.label ?? choice?.label ?? "",
+      t(clean.lastChoice?.feedback ?? choice?.feedback, run));
     dispatch({ type: "CHOOSE", index, rolls });
     const from = run.currentSceneId;
     setHold(from);
@@ -278,6 +280,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
                   {i + 1}
                 </span>
                 {t(c.text, run)}
+                <OddsChip odds={c.odds} />
                 {!c.enabled && c.lockedHint ? <span className="mt-1 block text-xs font-normal text-zinc-500">Locked: {t(c.lockedHint, run)}</span> : null}
               </button>
             ))}

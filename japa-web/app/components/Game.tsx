@@ -9,7 +9,8 @@ import { LayoutContainer } from "./LayoutContainer";
 import { LagosBackdrop } from "./layouts/LagosStageLayout";
 import { Person } from "./Person";
 import { CinematicProvider, SpeedToggle, useCinematic } from "./Cinematic";
-import { EndingsButton, RealityCheck, useRecordEnding } from "./Endings";
+import { EndingsButton, RealityCheck } from "./Endings";
+import { AwardToast, MetaChip, RunModsChip, useRunRewards } from "./Meta";
 import { LevelBanner, LevelStrip, useLevelTracking } from "./Levels";
 import { SoundToggle, useSound } from "./Sound";
 import { endingKey } from "@/game/endings";
@@ -17,8 +18,18 @@ import { moodFor } from "@/game/music";
 import { Onboarding } from "./Onboarding";
 import { PlayerProvider } from "./Player";
 import type { PlayerProfile } from "@/game/profile";
+import { makeSave, readSave } from "@/game/save";
 
 const PROFILE_KEY = "japa.profile.v1";
+const SAVE_KEY = "japa.save.v1";
+
+function loadSave(username: string) {
+  try {
+    return readSave(DB, JSON.parse(window.localStorage.getItem(SAVE_KEY) ?? "null"), username);
+  } catch {
+    return null;
+  }
+}
 
 function loadProfile(): PlayerProfile | null {
   try {
@@ -50,11 +61,24 @@ export function Game() {
   useEffect(() => {
     const t = window.setTimeout(() => {
       const saved = loadProfile();
-      if (saved) dispatch({ type: "SET_PROFILE", profile: saved });
+      if (saved) {
+        dispatch({ type: "SET_PROFILE", profile: saved });
+        const progress = loadSave(saved.username);
+        if (progress) dispatch({ type: "RESTORE_RUNS", ...progress });
+      }
       setScreen(saved ? "playing" : "signup");
     }, 0);
     return () => window.clearTimeout(t);
   }, []);
+
+  // Save every run as it changes, so a refresh continues where the player was.
+  useEffect(() => {
+    if (screen !== "playing" || !state.profile) return;
+    const t = window.setTimeout(() => {
+      try { window.localStorage.setItem(SAVE_KEY, JSON.stringify(makeSave(DB, state))); } catch { /* storage full or blocked */ }
+    }, 250);
+    return () => window.clearTimeout(t);
+  }, [state, screen]);
 
   function finish(p: PlayerProfile) {
     saveProfile(p);
@@ -65,6 +89,7 @@ export function Game() {
 
   function signOut() {
     saveProfile(null);
+    try { window.localStorage.removeItem(SAVE_KEY); } catch { /* ignore */ }
     dispatch({ type: "SET_PROFILE", profile: null });
     setScreen("signup");
   }
@@ -108,7 +133,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
 }) {
   const run = activeRun(state);
   const cfg = DB.routes[state.activeRoute];
-  useRecordEnding(run);
+  useRunRewards(run, dispatch);
   useLevelTracking(run);
   const { setMood, play } = useSound();
   const mood = run ? moodFor(DB, run) : "lagos";
@@ -183,6 +208,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
             ) : null}
           </div>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <MetaChip dispatch={dispatch} run={run} />
           <EndingsButton />
           <SoundToggle />
           <SpeedToggle />
@@ -197,6 +223,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
         </div>
         {run && (
           <div key={state.activeRoute} className="animate-fade-in">
+            <RunModsChip run={run} />
             <LevelStrip run={run} dispatch={dispatch} />
             <LayoutContainer run={run} dispatch={dispatch} toast={state.toast} />
             <RealityCheck run={run} className="mt-4" />
@@ -205,6 +232,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
       </main>
 
       <LevelBanner />
+      <AwardToast />
       <footer className="relative z-10 mx-auto max-w-6xl border-t border-white/10 px-4 py-6 text-[11px] leading-relaxed text-zinc-500 sm:px-6">
         A simulation for entertainment. It is not legal or immigration advice. Numbers are illustrative; rules, fees and
         cutoffs change often, so check IRCC (canada.ca) before you act.

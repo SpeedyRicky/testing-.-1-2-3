@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.11.0",
+    "version": "0.13.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -1832,6 +1832,27 @@
             "walletNgn": 45000,
             "energy": -20,
             "desperation": -3
+          },
+          "gamble": {
+            "odds": 0.8,
+            "success": {
+              "feedback": "Cash in hand, two new clients from the market WhatsApp group.",
+              "label": "PAID_IN_FULL"
+            },
+            "fail": {
+              "feedback": "The client said 'I will send it Monday.' It is now three Mondays later.",
+              "effects": {
+                "walletNgn": -40000,
+                "desperation": 8
+              },
+              "label": "I_WILL_SEND_IT_MONDAY"
+            },
+            "bonus": [
+              {
+                "key": "desperation",
+                "per": -0.004
+              }
+            ]
           }
         }
       ]
@@ -1855,6 +1876,29 @@
             "walletNgn": -12000,
             "energy": -16,
             "desperation": -14
+          },
+          "gamble": {
+            "odds": 0.4,
+            "success": {
+              "feedback": "They loved the race-condition story. 'Can you start in Toronto?' The offer letter arrives at 2 a.m.",
+              "label": "GOT_THE_OFFER"
+            },
+            "fail": {
+              "feedback": "NEPA took the light mid-answer. They went with someone in Mississauga. You learn how to fail politely.",
+              "effects": {
+                "desperation": 10,
+                "papers": 4
+              },
+              "nextSceneId": "LAGOS_YABA_DUSK",
+              "label": "NEPA_STRIKES"
+            },
+            "bonus": [
+              {
+                "key": "papers",
+                "per": 0.006
+              }
+            ],
+            "max": 0.85
           }
         },
         {
@@ -2690,10 +2734,30 @@
             "walletCad": -320,
             "desperation": 4
           },
-          "set": {
-            "clbFirst": 9
-          },
-          "feedback": "Band 7.5+ across the board: CLB 9. The single biggest jump in your score."
+          "gamble": {
+            "odds": 0.55,
+            "success": {
+              "feedback": "L8.5 R8 W7 S7.5: CLB 9 across the board. Three months of evenings paid off.",
+              "set": {
+                "clbFirst": 9
+              },
+              "label": "CLB_9"
+            },
+            "fail": {
+              "feedback": "L8 R7 W6.5 S7. Writing missed CLB 9 by half a band: CLB 8 for now.",
+              "set": {
+                "clbFirst": 8
+              },
+              "label": "ONE_BAND_SHORT"
+            },
+            "bonus": [
+              {
+                "key": "energy",
+                "per": 0.003
+              }
+            ],
+            "max": 0.9
+          }
         },
         {
           "text": "Book the test for Saturday. How hard can it be?",
@@ -2702,10 +2766,23 @@
           "effects": {
             "walletCad": -320
           },
-          "set": {
-            "clbFirst": 7
-          },
-          "feedback": "CLB 7. You passed, but every ability is worth 14 points less than at CLB 9."
+          "gamble": {
+            "odds": 0.2,
+            "success": {
+              "feedback": "You're one of those people who are good at exams. CLB 8 with zero preparation.",
+              "set": {
+                "clbFirst": 8
+              },
+              "label": "EXAM_PERSON"
+            },
+            "fail": {
+              "feedback": "The writing task was about 'a community garden'. CLB 6: below the CLB 7 Federal Skilled Worker minimum, so the pool scores you low.",
+              "set": {
+                "clbFirst": 6
+              },
+              "label": "CLB_6"
+            }
+          }
         },
         {
           "text": "Pay an agent who 'guarantees' Band 8 with a leaked paper",
@@ -2749,10 +2826,24 @@
             "energy": -25,
             "desperation": 10
           },
-          "set": {
-            "ecaComplete": 1
-          },
-          "feedback": "Seven weeks and four {bus} rides later, the transcripts go out. ECA done."
+          "gamble": {
+            "odds": 0.55,
+            "success": {
+              "feedback": "On the fifth visit, the registrar finds your file under a calendar. Sealed, stamped, sent to WES.",
+              "set": {
+                "ecaComplete": 1
+              },
+              "label": "PERSISTENCE_PAID"
+            },
+            "fail": {
+              "feedback": "ASUU strike. Registry closed. Come back next month.",
+              "effects": {
+                "energy": -10
+              },
+              "nextSceneId": "EE_ECA",
+              "label": "ASUU_STRIKE"
+            }
+          }
         },
         {
           "text": "Ask a 'connect' to print a transcript tonight",
@@ -2892,10 +2983,30 @@
             "desperation": 10,
             "ageYears": 1
           },
-          "set": {
-            "nclcFrench": 7
-          },
-          "feedback": "Nine months later: NCLC 7. That is up to +62 points and access to French-language draws."
+          "gamble": {
+            "odds": 0.5,
+            "success": {
+              "feedback": "TEF Canada: NCLC 7 in all four abilities. French draws are open to you now.",
+              "set": {
+                "nclcFrench": 7
+              },
+              "label": "NCLC_7"
+            },
+            "fail": {
+              "feedback": "NCLC 5. Some points, but the French-language draws need NCLC 7 in every ability.",
+              "set": {
+                "nclcFrench": 5
+              },
+              "label": "NCLC_5"
+            },
+            "bonus": [
+              {
+                "key": "energy",
+                "per": 0.004
+              }
+            ],
+            "max": 0.85
+          }
         },
         {
           "text": "Retake IELTS and push for CLB 10",
@@ -2906,10 +3017,27 @@
             "walletCad": -320,
             "desperation": 5
           },
-          "set": {
-            "clbFirst": 10
-          },
-          "feedback": "CLB 10 adds 3 points per ability over CLB 9. Useful, but small."
+          "gamble": {
+            "odds": 0.05,
+            "success": {
+              "feedback": "CLB 10. Every ability, every point.",
+              "set": {
+                "clbFirst": 10
+              },
+              "label": "CLB_10"
+            },
+            "fail": {
+              "feedback": "Same score, new receipt. Language points don't move without new preparation.",
+              "label": "SAME_SCORE"
+            },
+            "bonus": [
+              {
+                "key": "clbFirst",
+                "per": 0.05
+              }
+            ],
+            "max": 0.7
+          }
         },
         {
           "text": "Work a second year in Canada, then update your profile",
@@ -2939,17 +3067,38 @@
             "ageYears": 1,
             "desperation": 8
           },
-          "set": {
-            "pnpNomination": 1
-          },
-          "feedback": "Nominated. +600 points. In 2026 most provinces favour people already working there.",
           "requires": {
             "canadianWorkYears": [
               ">=",
               1
             ]
           },
-          "lockedHint": "Provinces are mostly choosing people already working there"
+          "lockedHint": "Provinces are mostly choosing people already working there",
+          "gamble": {
+            "odds": 0.35,
+            "success": {
+              "feedback": "Nominated. +600 points. In 2026 most provinces favour people already working there.",
+              "set": {
+                "pnpNomination": 1
+              },
+              "label": "NOMINATED"
+            },
+            "fail": {
+              "feedback": "Not selected this intake. Provinces received half their 2025 allocation and filled it fast.",
+              "label": "NOT_THIS_INTAKE"
+            },
+            "bonus": [
+              {
+                "key": "canadianWorkYears",
+                "per": 0.15
+              },
+              {
+                "key": "crsScore",
+                "per": 0.0004
+              }
+            ],
+            "max": 0.85
+          }
         },
         {
           "text": "Do a master's in Canada instead (Student route)",
@@ -3430,14 +3579,35 @@
             "scholarshipTried": 1,
             "officerConfidence": 10
           },
-          "feedback": "Awarded: CAD 7,500 off tuition. Officers like a scholarship letter too.",
           "requires": {
             "scholarshipTried": [
               "<",
               1
             ]
           },
-          "lockedHint": "You already applied"
+          "lockedHint": "You already applied",
+          "gamble": {
+            "odds": 0.15,
+            "success": {
+              "feedback": "Entrance scholarship: CAD 7,500 off tuition. Officers like a school that bets on you.",
+              "label": "SCHOLARSHIP_WON"
+            },
+            "fail": {
+              "feedback": "A polite 'we received many strong applications'. The essay is still yours to reuse.",
+              "effects": {
+                "walletCad": -7500,
+                "officerConfidence": -10
+              },
+              "label": "NOT_THIS_YEAR"
+            },
+            "bonus": [
+              {
+                "key": "academicStanding",
+                "per": 0.006
+              }
+            ],
+            "max": 0.8
+          }
         },
         {
           "text": "Family sponsorship: Daddy and Uncle Emeka sign letters with their statements and source of funds",
@@ -3485,14 +3655,33 @@
             "desperation": 4,
             "crowdfunded": 1
           },
-          "feedback": "CAD 3,000 from 140 people. Keep the receipts: they are your source of funds.",
           "requires": {
             "crowdfunded": [
               "<",
               1
             ]
           },
-          "lockedHint": "You already ran the campaign"
+          "lockedHint": "You already ran the campaign",
+          "gamble": {
+            "odds": 0.35,
+            "success": {
+              "feedback": "It went small-viral. Strangers sent CAD 3,000 and a lot of prayer emojis.",
+              "label": "WENT_VIRAL"
+            },
+            "fail": {
+              "feedback": "Your uncles shared it with 'God will do it'. CAD 400 arrived. God is still working on the rest.",
+              "effects": {
+                "walletCad": -2600
+              },
+              "label": "PRAYER_EMOJIS"
+            },
+            "bonus": [
+              {
+                "key": "streetCred",
+                "per": 0.02
+              }
+            ]
+          }
         },
         {
           "text": "Education loan from a lender that funds international students (approved for your school)",
@@ -3657,7 +3846,7 @@
       "stage": "embassy",
       "transitIn": "danfo",
       "speaker": "Visa Application Centre, {vacCity}",
-      "dialogue": "Fingerprints, photo, a long wait on a plastic chair. Your file goes to an officer.",
+      "dialogue": "Fingerprints, a photo, a passport left behind the counter. The officer's decision depends mostly on your study plan and funds; the odds on the button show where you stand.",
       "choices": [
         {
           "text": "Wait for the decision",
@@ -3665,6 +3854,27 @@
           "nextSceneId": "ST_DECISION",
           "effects": {
             "desperation": 6
+          },
+          "gamble": {
+            "odds": 0.12,
+            "bonus": [
+              {
+                "key": "officerConfidence",
+                "per": 0.013
+              }
+            ],
+            "min": 0.1,
+            "max": 0.9,
+            "success": {
+              "feedback": "The email subject line says 'Request for passport'. That means yes.",
+              "nextSceneId": "ST_APPROVED",
+              "label": "APPROVED"
+            },
+            "fail": {
+              "feedback": "Refused. Even a strong file can be refused; a weak one usually is.",
+              "nextSceneId": "ST_REFUSED",
+              "label": "REFUSED"
+            }
           }
         }
       ]
@@ -3779,7 +3989,25 @@
             "energy": -20,
             "desperation": 8
           },
-          "feedback": "You cannot feel your toes by the streetcar stop."
+          "gamble": {
+            "odds": 0.25,
+            "success": {
+              "feedback": "A mild January day, −4°C. You get away with it. Today.",
+              "effects": {
+                "energy": 15,
+                "desperation": -8
+              },
+              "label": "MILD_DAY"
+            },
+            "fail": {
+              "feedback": "−24°C with the wind at the streetcar stop. You can't feel your toes.",
+              "effects": {
+                "desperation": 6,
+                "energy": -5
+              },
+              "label": "FROSTBITE_ADJACENT"
+            }
+          }
         }
       ]
     },
@@ -3852,6 +4080,30 @@
           "effects": {
             "academicStanding": -10,
             "walletCad": 1200
+          },
+          "gamble": {
+            "odds": 0.3,
+            "success": {
+              "feedback": "You studied on the bus and somehow it held: grades steady, CAD 1,200 richer.",
+              "effects": {
+                "academicStanding": 10
+              },
+              "label": "HELD_IT_TOGETHER"
+            },
+            "fail": {
+              "feedback": "You fell asleep in the exam hall. One course failed.",
+              "effects": {
+                "academicStanding": -10
+              },
+              "label": "SLEPT_IN_THE_EXAM"
+            },
+            "bonus": [
+              {
+                "key": "academicStanding",
+                "per": 0.005
+              }
+            ],
+            "max": 0.75
           }
         }
       ]
@@ -4124,7 +4376,28 @@
           "effects": {
             "desperation": -3
           },
-          "feedback": "Admitted as a visitor. The clock starts now: you may network and interview, but not work."
+          "gamble": {
+            "odds": 0.75,
+            "success": {
+              "feedback": "'Enjoy your visit.' Six months on your visitor record.",
+              "label": "ADMITTED"
+            },
+            "fail": {
+              "feedback": "Admitted after two hours in secondary, but the officer writes a three-month limit on your visitor record.",
+              "effects": {
+                "timeRemainingDays": -90,
+                "desperation": 8
+              },
+              "label": "THREE_MONTHS_ONLY"
+            },
+            "bonus": [
+              {
+                "key": "walletCad",
+                "per": 4e-05
+              }
+            ],
+            "max": 0.92
+          }
         },
         {
           "text": "Kawosoke at the counter: tell the officer you want to claim refugee protection",
@@ -4684,10 +4957,33 @@
           "label": "ANSWERED_IFA",
           "nextSceneId": "KW_DECISION",
           "effects": {
-            "kwEvidence": 10,
             "energy": -10
           },
-          "feedback": "The board weighs who is after you, how far their reach goes, and whether moving would be reasonable for you."
+          "gamble": {
+            "odds": 0.25,
+            "success": {
+              "feedback": "Your evidence shows who is looking for you and how far they reach. The member nods slowly.",
+              "effects": {
+                "kwEvidence": 10
+              },
+              "label": "IFA_ANSWERED"
+            },
+            "fail": {
+              "feedback": "The member writes something down and doesn't look up. 'Port Harcourt is a large city.'",
+              "label": "NOT_CONVINCED"
+            },
+            "bonus": [
+              {
+                "key": "kwEvidence",
+                "per": 0.012
+              },
+              {
+                "key": "kwCredibility",
+                "per": 0.004
+              }
+            ],
+            "max": 0.9
+          }
         },
         {
           "text": "Say Lagos is too expensive and the traffic is wicked",
@@ -5017,7 +5313,22 @@
             "energy": -12,
             "desperation": 8
           },
-          "feedback": "Cheap, crowded and often illegal. Cities crack down on overcrowded basements, and you would be the one moving."
+          "gamble": {
+            "odds": 0.6,
+            "success": {
+              "feedback": "Crowded but stable. Nobody inspects anything.",
+              "label": "STABLE_ENOUGH"
+            },
+            "fail": {
+              "feedback": "City inspection: illegal unit, everyone out in 48 hours. Another deposit, another move.",
+              "effects": {
+                "walletCad": -700,
+                "desperation": 10,
+                "energy": -8
+              },
+              "label": "INSPECTED"
+            }
+          }
         },
         {
           "text": "Send the Facebook 'landlord' a CAD 1,500 deposit so nobody else gets it",
@@ -5073,7 +5384,33 @@
             "walletCad": -1200,
             "desperation": 12
           },
-          "feedback": "Savings drain faster than callbacks arrive. Overqualified newcomers are common; underemployed ones are more common."
+          "gamble": {
+            "odds": 0.1,
+            "success": {
+              "feedback": "A callback, then an offer: your old level, a Canadian salary. It happens; just not often.",
+              "effects": {
+                "careerScore": 30,
+                "walletCad": 2400,
+                "desperation": -16
+              },
+              "label": "OLD_LEVEL_OFFER"
+            },
+            "fail": {
+              "feedback": "Forty more rejections. Savings drain faster than callbacks arrive.",
+              "label": "NO_CALLBACKS"
+            },
+            "bonus": [
+              {
+                "key": "careerScore",
+                "per": 0.008
+              },
+              {
+                "key": "community",
+                "per": 0.006
+              }
+            ],
+            "max": 0.6
+          }
         }
       ]
     },
