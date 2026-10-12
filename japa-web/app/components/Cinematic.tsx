@@ -5,6 +5,7 @@ import { FastForward } from "lucide-react";
 import type { CinematicSpec, Delta, Tone } from "@/game/cinematic";
 import type { StageKind, Transit } from "@/game/types";
 import { Person, type PersonPose, type PersonWho } from "./Person";
+import { useSound } from "./Sound";
 import { SceneStage } from "./Stage2D";
 import { STAGES } from "./stages";
 
@@ -198,6 +199,7 @@ export function CinematicProvider({ children }: { children: React.ReactNode }) {
     cb?.();
   }, []);
 
+  const sound = useSound();
   const play = useCallback((req: CinematicRequest, onDone?: () => void) => {
     clearTimers();
     done.current?.(); // a previous cutscene still running: let its caller continue
@@ -206,9 +208,14 @@ export function CinematicProvider({ children }: { children: React.ReactNode }) {
     const ms = DURATION[speed];
     setCurrent({ req, id: seq.current });
     setBeat("say");
-    timers.current.push(window.setTimeout(() => setBeat("react"), Math.round(ms * 0.38)));
+    timers.current.push(window.setTimeout(() => {
+      setBeat("react");
+      const tone = req.spec.tone;
+      sound.play(tone === "triumph" || tone === "good" ? "good" : tone === "danger" ? "danger" : tone === "bad" ? "bad" : "stamp");
+      if (req.spec.money) timers.current.push(window.setTimeout(() => sound.play(req.spec.money === "gain" ? "coin" : "cashOut"), 350));
+    }, Math.round(ms * 0.38)));
     timers.current.push(window.setTimeout(finish, ms));
-  }, [speed, finish]);
+  }, [speed, finish, sound]);
 
   const setSpeed = useCallback((s: Speed) => {
     setSpeedState(s);

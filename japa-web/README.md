@@ -10,7 +10,7 @@ Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · lucide-react.
 ```bash
 npm install
 npm run dev          # open http://localhost:3000 once the terminal says "Ready"
-npm test             # 115 engine tests
+npm test             # 122 engine tests
 npm run lint
 npm run build
 ```
@@ -48,6 +48,38 @@ Their name matches your heritage (`game/family.ts`):
 - The call screen shows their province: city towers (Ontario, Quebec), the Rockies (Alberta, BC), prairie with a
   grain elevator (Manitoba, Saskatchewan) or a harbour of coloured houses (Atlantic), with snow.
 - A sister or brother in Canada sets `siblingInCanada`, worth 15 CRS points in Express Entry (an aunty is not).
+
+## Levels
+Every route is split into named levels (3 to 5 each, 26 in all), set under `routes.<ROUTE>.levels` in
+`game/scenarios.json`: a title, a goal, the scenes it covers and two bonus-star targets. Finishing a level earns one
+star; each target met when you finish earns another. A banner announces each new level after the cutscene (with the
+stars from the one you just finished), a strip above the scene shows your levels, and the **Level map** lets you
+replay any level you have reached from the moment it started. Stars and replay points are saved on the device
+(`japa.levels.v1`). Rules live in `game/levels.ts`; the UI in `app/components/Levels.tsx`.
+
+| Route | Levels |
+|---|---|
+| Nigeria | Generator Coughs · The Paper Chase · The Gate |
+| Student | Admission · Show the Money · The Officer · First Winter · Convocation |
+| Express Entry | Tests and Transcripts · The Pool · Invitation to Apply · Sixty Days |
+| Startup Pitch | Ms. Vance · Mr. Chen · Mr. Ross |
+| Tourist Gamble | Primary Inspection · 180 Days · Kawosoke · The Wait · Room 7 |
+| LMIA Interview | Mr. Kovacs · The Advertising Question |
+| Year One | Landing · The Hustle · Cold Season · Year End |
+
+## Music and sound
+Original Naija-style music, composed live in the browser with Web Audio (no audio files, nothing to license):
+- **Lagos** Afrobeat (108 BPM): off-beat kick, clap, shekere, talking drum, highlife guitar, horn stabs.
+- **Hustle** amapiano (113 BPM): log drum and off-beat piano, for the Tourist dashboard and Year One.
+- **Tension** (84 BPM): heartbeat kick, low drone, a lone talking drum, for visa centres, the border, draw night,
+  the hearing and the boardroom.
+- **Canada** cold highlife with bells, **Pitch** Afro-house, **Triumph** for a win, **Somber** for a loss.
+
+Sound effects play on taps, each cutscene (by tone, plus coins in or out), danfo horns, okada engines, phone rings,
+planes, wind, random events ("wahala?" on the talking drum), level-ups, and the ending fanfare or "dun dun DUN".
+Browsers only allow sound after a tap, so the music starts on your first click. The header chip cycles **Music on →
+Effects only → Muted** and is remembered. Grooves are data in `game/music.ts`; the synth is `app/audio/engine.ts`.
+To use licensed recordings for a mood, see `public/music/README.md`.
 
 ## Endings cabinet and Reality checks
 Every ending (46 so far) ends with a **Reality check**: one plain rule from the real process (`outcome.lesson` on the
@@ -115,6 +147,8 @@ game/family.ts                       the relative in Canada: heritage from the n
 docs/pathways-deep-dive.html         research: 2025-2026 rules per route, replay levers, scenario backlog
 docs/community-voices.html           research: what Nigerians report about each route, and the scene each became
 game/endings.ts                      every ending, its key and its Reality check lesson
+game/levels.ts, app/components/Levels.tsx   levels, stars, banner, level map and replay
+game/music.ts, app/audio/engine.ts, app/components/Sound.tsx   grooves and moods, the Web Audio band, the sound toggle
 app/components/Endings.tsx           Endings chip, cabinet, new-ending badge, Reality check box
 game/cinematic.ts                    pure rules: which stats changed, good or bad, which effects to play
 app/components/Game.tsx              header, route tabs, Reset run

@@ -2,6 +2,7 @@
 
 import { Flame, Ghost, GraduationCap, Plane, Share2, ShieldAlert, TriangleAlert } from "lucide-react";
 import type { Popup, Rank } from "@/game/types";
+import { useSfxOnMount } from "./Sound";
 
 /** Gradient backdrop per rank id; unknown ids fall back to the corridor look. */
 const RANK_VIBE: Record<string, string> = {
@@ -75,6 +76,7 @@ export function ShareOnX({ text, className = "" }: { text: string; className?: s
 /** Village People trap or parallel-market shock. */
 export function PopupModal({ popup, onDismiss }: { popup: Popup; onDismiss: () => void }) {
   const market = popup.kind === "market";
+  useSfxOnMount(market ? "cashOut" : "trap");
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" role="dialog" aria-modal="true">
       <div

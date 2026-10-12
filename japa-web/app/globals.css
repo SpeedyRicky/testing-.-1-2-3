@@ -310,3 +310,12 @@ body {
   100% { opacity: 0; transform: translateY(-4px); visibility: hidden; }
 }
 @media (prefers-reduced-motion: reduce) { .ending-badge { animation-duration: 0.01s; animation-delay: 4s; } }
+
+/* Level-up banner: drops in, stays, then lifts away (it also closes itself after 4.6 s). */
+.level-banner { animation: level-banner 4.6s cubic-bezier(0.2, 1.2, 0.3, 1) forwards; }
+@keyframes level-banner {
+  0% { opacity: 0; transform: translateY(-24px) scale(0.92); }
+  10%, 85% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(-12px); }
+}
+@media (prefers-reduced-motion: reduce) { .level-banner { animation: none; } }

@@ -188,6 +188,82 @@
         "STARTUP_VISA",
         "TOURIST_GAMBLE",
         "FIRST_YEAR"
+      ],
+      "levels": [
+        {
+          "id": "generator",
+          "title": "Generator Coughs",
+          "goal": "Pick your first move: call family in Canada, hunt jobs, or hit the street.",
+          "scenes": [
+            "LAGOS_YABA_DAWN",
+            "LAGOS_JOB_BOARD",
+            "LAGOS_AUNTY_CALL",
+            "LAGOS_YABA_DUSK"
+          ]
+        },
+        {
+          "id": "paper-chase",
+          "title": "The Paper Chase",
+          "goal": "Build a real file: documents, money with a history, and a CV that works. Dodge the agents.",
+          "scenes": [
+            "LAGOS_CV_NIGHT",
+            "LAGOS_AGENT_OFFICE",
+            "LAGOS_DOCUMENT_GRIND",
+            "LAGOS_SHOWING_MONEY",
+            "LAGOS_WEEKEND_GIG",
+            "LAGOS_BERLIN_CALL"
+          ],
+          "stars": [
+            {
+              "label": "Papers at 60 or more",
+              "when": {
+                "papers": [
+                  ">=",
+                  60
+                ]
+              }
+            },
+            {
+              "label": "Village People at 50% or less",
+              "when": {
+                "desperation": [
+                  "<=",
+                  50
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "the-gate",
+          "title": "The Gate",
+          "goal": "Survive the visa centre queue and the wait for the email.",
+          "scenes": [
+            "LAGOS_EMBASSY_QUEUE",
+            "LAGOS_DECISION_GATE",
+            "LAGOS_OUTCOME"
+          ],
+          "stars": [
+            {
+              "label": "Papers at 70 or more",
+              "when": {
+                "papers": [
+                  ">=",
+                  70
+                ]
+              }
+            },
+            {
+              "label": "Village People at 50% or less",
+              "when": {
+                "desperation": [
+                  "<=",
+                  50
+                ]
+              }
+            }
+          ]
+        }
       ]
     },
     "STUDY_PERMIT": {
@@ -360,7 +436,137 @@
             }
           }
         ]
-      }
+      },
+      "levels": [
+        {
+          "id": "admission",
+          "title": "Admission",
+          "goal": "Choose a program that leads somewhere, and a real letter of acceptance.",
+          "scenes": [
+            "ST_START",
+            "ST_LOA"
+          ]
+        },
+        {
+          "id": "show-money",
+          "title": "Show the Money",
+          "goal": "Prove tuition plus CAD 23,448 to live on, with a history behind every naira.",
+          "scenes": [
+            "ST_FUNDS",
+            "ST_FUNDS_SHORT"
+          ],
+          "stars": [
+            {
+              "label": "Village People at 50% or less",
+              "when": {
+                "desperation": [
+                  "<=",
+                  50
+                ]
+              }
+            },
+            {
+              "label": "Energy at 50 or more",
+              "when": {
+                "energy": [
+                  ">=",
+                  50
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "the-officer",
+          "title": "The Officer",
+          "goal": "Write a study plan an officer can believe, then wait for the email.",
+          "scenes": [
+            "ST_SOP",
+            "ST_VFS",
+            "ST_REFUSED",
+            "ST_APPROVED"
+          ],
+          "stars": [
+            {
+              "label": "Officer confidence 45 or more",
+              "when": {
+                "officerConfidence": [
+                  ">=",
+                  45
+                ]
+              }
+            },
+            {
+              "label": "Village People at 50% or less",
+              "when": {
+                "desperation": [
+                  "<=",
+                  50
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "first-winter",
+          "title": "First Winter",
+          "goal": "Land in January, find a safe room, and keep your status.",
+          "scenes": [
+            "ST_ARRIVAL",
+            "ST_HOUSING",
+            "ST_TERM"
+          ],
+          "stars": [
+            {
+              "label": "Funds above CAD 5,000",
+              "when": {
+                "walletCad": [
+                  ">=",
+                  5000
+                ]
+              }
+            },
+            {
+              "label": "Grades at 70 or more",
+              "when": {
+                "academicStanding": [
+                  ">=",
+                  70
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "convocation",
+          "title": "Convocation",
+          "goal": "Pass finals, take the language test, get your PGWP.",
+          "scenes": [
+            "ST_FINALS",
+            "ST_PGWP_LANG"
+          ],
+          "stars": [
+            {
+              "label": "Grades at 80 or more",
+              "when": {
+                "academicStanding": [
+                  ">=",
+                  80
+                ]
+              }
+            },
+            {
+              "label": "Energy at 40 or more",
+              "when": {
+                "energy": [
+                  ">=",
+                  40
+                ]
+              }
+            }
+          ]
+        }
+      ]
     },
     "EXPRESS_ENTRY": {
       "title": "Express Entry",
@@ -546,6 +752,132 @@
       },
       "nextRoutes": [
         "FIRST_YEAR"
+      ],
+      "levels": [
+        {
+          "id": "tests",
+          "title": "Tests and Transcripts",
+          "goal": "Get CLB 9 and your ECA without paying for shortcuts.",
+          "scenes": [
+            "EE_START",
+            "EE_ECA"
+          ],
+          "stars": [
+            {
+              "label": "English at CLB 9 or more",
+              "when": {
+                "clbFirst": [
+                  ">=",
+                  9
+                ]
+              }
+            },
+            {
+              "label": "Energy at 50 or more",
+              "when": {
+                "energy": [
+                  ">=",
+                  50
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "the-pool",
+          "title": "The Pool",
+          "goal": "Survive draw nights. Raise your CRS until a draw picks you.",
+          "scenes": [
+            "EE_PROFILE",
+            "EE_PROFILE_UPDATE",
+            "EE_BELOW",
+            "EE_FRENCH",
+            "EE_CANADA_START"
+          ],
+          "stars": [
+            {
+              "label": "CRS at 470 or more",
+              "when": {
+                "crsScore": [
+                  ">=",
+                  470
+                ]
+              }
+            },
+            {
+              "label": "Village People at 50% or less",
+              "when": {
+                "desperation": [
+                  "<=",
+                  50
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "invitation",
+          "title": "Invitation to Apply",
+          "goal": "Show proof of funds that are really yours.",
+          "scenes": [
+            "EE_ITA_PNP",
+            "EE_ITA_CEC",
+            "EE_ITA_FRENCH",
+            "EE_ITA_HEALTH",
+            "EE_ITA_TRADES",
+            "EE_FUNDS"
+          ],
+          "stars": [
+            {
+              "label": "Settlement funds CAD 15,263+",
+              "when": {
+                "walletCad": [
+                  ">=",
+                  15263
+                ]
+              }
+            },
+            {
+              "label": "Village People at 50% or less",
+              "when": {
+                "desperation": [
+                  "<=",
+                  50
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "sixty-days",
+          "title": "Sixty Days",
+          "goal": "Reference letters, police certificate, medical: a complete application before the deadline.",
+          "scenes": [
+            "EE_REFERENCE",
+            "EE_DOCS",
+            "EE_PFL"
+          ],
+          "stars": [
+            {
+              "label": "No procedural fairness letter",
+              "when": {
+                "pflRisk": [
+                  "<",
+                  1
+                ]
+              }
+            },
+            {
+              "label": "Energy at 30 or more",
+              "when": {
+                "energy": [
+                  ">=",
+                  30
+                ]
+              }
+            }
+          ]
+        }
       ]
     },
     "STARTUP_VISA": {
@@ -576,6 +908,92 @@
         {
           "key": "scalabilityScore",
           "label": "Scalability Score"
+        }
+      ],
+      "levels": [
+        {
+          "id": "vance",
+          "title": "Ms. Vance",
+          "goal": "Open the pitch: who you are and why this business, here.",
+          "scenes": [
+            "SUV_PITCH_START"
+          ],
+          "stars": [
+            {
+              "label": "Investor interest 50+",
+              "when": {
+                "investorInterest": [
+                  ">=",
+                  50
+                ]
+              }
+            },
+            {
+              "label": "Scalability 45+",
+              "when": {
+                "scalabilityScore": [
+                  ">=",
+                  45
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "chen",
+          "title": "Mr. Chen",
+          "goal": "Defend the tech. He has read your GitHub.",
+          "scenes": [
+            "SUV_PITCH_CHEN"
+          ],
+          "stars": [
+            {
+              "label": "Technical credibility 55+",
+              "when": {
+                "technicalCredibility": [
+                  ">=",
+                  55
+                ]
+              }
+            },
+            {
+              "label": "Investor interest 50+",
+              "when": {
+                "investorInterest": [
+                  ">=",
+                  50
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "ross",
+          "title": "Mr. Ross",
+          "goal": "Show the money: market, revenue, a plan to scale.",
+          "scenes": [
+            "SUV_PITCH_ROSS"
+          ],
+          "stars": [
+            {
+              "label": "Investor interest 60+",
+              "when": {
+                "investorInterest": [
+                  ">=",
+                  60
+                ]
+              }
+            },
+            {
+              "label": "Scalability 60+",
+              "when": {
+                "scalabilityScore": [
+                  ">=",
+                  60
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -763,7 +1181,136 @@
         "STAY_EXPIRED": "Visitors are usually allowed up to six months. You can apply to extend before your status expires; staying past it without applying makes you out of status.",
         "BURNOUT": "Job hunting without the right to work is exhausting. Settlement agencies, libraries and newcomer job programs are free, and most are open to visitors.",
         "UNAUTHORIZED_WORK": "Working as a visitor, even cash shifts or an 'unpaid trial', is unauthorized work. It can lead to removal and make future applications fail."
-      }
+      },
+      "levels": [
+        {
+          "id": "pearson",
+          "title": "Primary Inspection",
+          "goal": "Get through the CBSA counter at Pearson without a single lie.",
+          "scenes": [
+            "TOURIST_ARRIVAL"
+          ]
+        },
+        {
+          "id": "180-days",
+          "title": "180 Days",
+          "goal": "Three employer leads before the money or the clock runs out. Never work.",
+          "scenes": [
+            "TOURIST_HUB",
+            "TR_LMIA_SELLER"
+          ],
+          "stars": [
+            {
+              "label": "Village People at 50% or less",
+              "when": {
+                "desperation": [
+                  "<=",
+                  50
+                ]
+              }
+            },
+            {
+              "label": "CAD 1,000+ left",
+              "when": {
+                "walletCad": [
+                  ">=",
+                  1000
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "kawosoke",
+          "title": "Kawosoke",
+          "goal": "Make a claim, or walk away. Only a true story survives.",
+          "scenes": [
+            "KW_POE",
+            "KW_INLAND",
+            "KW_FAKE_STORY",
+            "KW_FILED",
+            "KW_NO_CLAIM"
+          ],
+          "stars": [
+            {
+              "label": "Credibility 55+",
+              "when": {
+                "kwCredibility": [
+                  ">=",
+                  55
+                ]
+              }
+            },
+            {
+              "label": "Village People at 60% or less",
+              "when": {
+                "desperation": [
+                  "<=",
+                  60
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "the-wait",
+          "title": "The Wait",
+          "goal": "Eighteen months of limbo: stay legal, gather evidence, prepare.",
+          "scenes": [
+            "KW_WAIT",
+            "KW_PREP"
+          ],
+          "stars": [
+            {
+              "label": "Evidence 30+",
+              "when": {
+                "kwEvidence": [
+                  ">=",
+                  30
+                ]
+              }
+            },
+            {
+              "label": "Credibility 60+",
+              "when": {
+                "kwCredibility": [
+                  ">=",
+                  60
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "room-7",
+          "title": "Room 7",
+          "goal": "The hearing: tell it straight, answer 'why not Port Harcourt?'",
+          "scenes": [
+            "KW_HEARING",
+            "KW_IFA"
+          ],
+          "stars": [
+            {
+              "label": "Credibility 75+",
+              "when": {
+                "kwCredibility": [
+                  ">=",
+                  75
+                ]
+              }
+            },
+            {
+              "label": "Evidence 45+",
+              "when": {
+                "kwEvidence": [
+                  ">=",
+                  45
+                ]
+              }
+            }
+          ]
+        }
+      ]
     },
     "CAREGIVER_LMIA": {
       "title": "The Hidden LMIA Interview",
@@ -792,6 +1339,64 @@
           "key": "desperation",
           "label": "Desperation",
           "invert": true
+        }
+      ],
+      "levels": [
+        {
+          "id": "kovacs",
+          "title": "Mr. Kovacs",
+          "goal": "Win the employer's trust in the first five minutes.",
+          "scenes": [
+            "LMIA_INTERVIEW_KOVACS"
+          ],
+          "stars": [
+            {
+              "label": "Employer trust 40+",
+              "when": {
+                "employerTrust": [
+                  ">=",
+                  40
+                ]
+              }
+            },
+            {
+              "label": "LMIA probability 35+",
+              "when": {
+                "lmiaProbability": [
+                  ">=",
+                  35
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "advertising",
+          "title": "The Advertising Question",
+          "goal": "Explain the LMIA process honestly, without promising what you can't.",
+          "scenes": [
+            "LMIA_ADVERTISING"
+          ],
+          "stars": [
+            {
+              "label": "Employer trust 60+",
+              "when": {
+                "employerTrust": [
+                  ">=",
+                  60
+                ]
+              }
+            },
+            {
+              "label": "LMIA probability 60+",
+              "when": {
+                "lmiaProbability": [
+                  ">=",
+                  60
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -940,7 +1545,125 @@
       ],
       "lessons": {
         "BURNOUT": "Newcomers in their first five years have had far higher unemployment than people born in Canada. Settlement agencies, food banks, EI and free counselling exist for the hard months; using them is not failure."
-      }
+      },
+      "levels": [
+        {
+          "id": "landing",
+          "title": "Landing",
+          "goal": "SIN, bank, a coat, and a room you can actually keep.",
+          "scenes": [
+            "FY_LANDING",
+            "FY_HOUSING"
+          ],
+          "stars": [
+            {
+              "label": "Savings CAD 3,000+",
+              "when": {
+                "walletCad": [
+                  ">=",
+                  3000
+                ]
+              }
+            },
+            {
+              "label": "Community 15+",
+              "when": {
+                "community": [
+                  ">=",
+                  15
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "hustle",
+          "title": "The Hustle",
+          "goal": "Break the 'Canadian experience' wall without losing your profession.",
+          "scenes": [
+            "FY_JOBS",
+            "FY_CREDENTIALS"
+          ],
+          "stars": [
+            {
+              "label": "Career 35+",
+              "when": {
+                "careerScore": [
+                  ">=",
+                  35
+                ]
+              }
+            },
+            {
+              "label": "Savings CAD 2,000+",
+              "when": {
+                "walletCad": [
+                  ">=",
+                  2000
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "cold-season",
+          "title": "Cold Season",
+          "goal": "Black tax and the first January. Keep your people close.",
+          "scenes": [
+            "FY_BLACK_TAX",
+            "FY_WINTER"
+          ],
+          "stars": [
+            {
+              "label": "Community 30+",
+              "when": {
+                "community": [
+                  ">=",
+                  30
+                ]
+              }
+            },
+            {
+              "label": "Japa blues at 50% or less",
+              "when": {
+                "desperation": [
+                  "<=",
+                  50
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "year-end",
+          "title": "Year End",
+          "goal": "A layoff, Detty December, and the big question: stay or japada?",
+          "scenes": [
+            "FY_WORK_EVENT",
+            "FY_DECEMBER"
+          ],
+          "stars": [
+            {
+              "label": "Career 50+",
+              "when": {
+                "careerScore": [
+                  ">=",
+                  50
+                ]
+              }
+            },
+            {
+              "label": "Savings CAD 2,000+",
+              "when": {
+                "walletCad": [
+                  ">=",
+                  2000
+                ]
+              }
+            }
+          ]
+        }
+      ]
     },
     "TARGETED_TRADE": {
       "title": "Targeted Trade",

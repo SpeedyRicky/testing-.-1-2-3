@@ -266,6 +266,18 @@ export interface RouteConfig {
   ranks?: Rank[];
   /** Routes offered as the next chapter after a win. */
   nextRoutes?: RouteId[];
+  /** The route split into levels, in order. */
+  levels?: LevelSpec[];
+}
+
+/** One level of a route: the scenes it covers, what it asks of the player, and how to earn extra stars. */
+export interface LevelSpec {
+  id: string;
+  title: string;
+  goal: string;
+  scenes: string[];
+  /** Up to two bonus stars, checked when the level is completed (completing it is the first star). */
+  stars?: { label: string; when: Conditions }[];
 }
 
 /** CRS points tables for a candidate without a spouse. */

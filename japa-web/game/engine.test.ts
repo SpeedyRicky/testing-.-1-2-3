@@ -16,6 +16,8 @@ import {
 } from "./family";
 import { initialState, makeReducer } from "./machine";
 import { allEndings, endingKey, lessonFor } from "./endings";
+import { levelIndexOf, levelProgress, levelsFor, starsFor } from "./levels";
+import { GROOVES, moodFor } from "./music";
 import type { GameState, RouteId, StatKey } from "./types";
 
 const reducer = makeReducer();
@@ -947,6 +949,82 @@ describe("Year One in Canada and community-story scenes", () => {
   it("a claimant who works cash before the permit is caught", () => {
     const s = play2(newRun(DB, "TOURIST_GAMBLE"), ["Kawosoke at the counter", "you were outed", "Legal Aid", "cash warehouse job"]);
     expect(s.outcome?.reason).toBe("UNAUTHORIZED_WORK");
+  });
+});
+
+describe("levels", () => {
+  it("every playable route has levels, and every level scene exists in its route, once", () => {
+    for (const r of Object.keys(DB.routes) as RouteId[]) {
+      if (DB.routes[r].status !== "playable") continue;
+      const levels = levelsFor(DB, r);
+      expect(levels.length, r).toBeGreaterThanOrEqual(2);
+      const seen = new Set<string>();
+      for (const l of levels) {
+        expect(l.scenes.length, `${r}/${l.id}`).toBeGreaterThan(0);
+        for (const id of l.scenes) {
+          expect(DB.scenes[id]?.route, `${r}/${l.id}: ${id}`).toBe(r);
+          expect(seen.has(id), `${id} in two levels`).toBe(false);
+          seen.add(id);
+        }
+        expect((l.stars ?? []).length).toBeLessThanOrEqual(2);
+      }
+      expect(levelIndexOf(DB, r, DB.routes[r].startSceneId!), `${r} starts in level 1`).toBe(0);
+    }
+  });
+
+  it("moving into the next level completes the last one, with stars", () => {
+    const before = play("NIGERIA_LIFE", ["about the visa story"]);
+    const after = play("NIGERIA_LIFE", ["about the visa story", "Leave the call"]);
+    expect(levelIndexOf(DB, "NIGERIA_LIFE", before.currentSceneId)).toBe(0);
+    const p = levelProgress(DB, before, after);
+    expect(p).toMatchObject({ from: 0, to: 1, entered: 1 });
+    expect(p.completed?.index).toBe(0);
+    expect(p.completed?.stars).toBeGreaterThanOrEqual(1);
+    expect(p.completed?.stars).toBeLessThanOrEqual(3);
+  });
+
+  it("stepping back to an earlier scene doesn't lose the level", () => {
+    const deep = play("NIGERIA_LIFE", ["hunt remote jobs", "Rewrite the CV"]);
+    const back = levelProgress(DB, undefined, deep);
+    expect(back.to).toBe(1);
+  });
+
+  it("a win completes the level it ended in; stars count the targets met", () => {
+    const run = play("STARTUP_VISA", []);
+    const lvl = levelsFor(DB, "STARTUP_VISA")[0];
+    expect(starsFor(lvl, { ...run, routeStats: { ...run.routeStats, investorInterest: 90, scalabilityScore: 90 } })).toBe(3);
+    expect(starsFor(lvl, { ...run, routeStats: { ...run.routeStats, investorInterest: 0, scalabilityScore: 0 } })).toBe(1);
+  });
+
+  it("replaying a level restores the saved run", () => {
+    const snap = play("EXPRESS_ENTRY", ["three months first"]);
+    let app = reducer(initialState(), { type: "SELECT_ROUTE", route: "STUDY_PERMIT" });
+    app = reducer(app, { type: "LOAD_RUN", run: snap });
+    expect(app.activeRoute).toBe("EXPRESS_ENTRY");
+    expect(app.runs.EXPRESS_ENTRY).toBe(snap);
+    expect(reducer(app, { type: "LOAD_RUN", run: { ...snap, currentSceneId: "NOPE" } })).toBe(app);
+  });
+});
+
+describe("music", () => {
+  it("every groove is a full 16-step bar with chords", () => {
+    for (const [mood, g] of Object.entries(GROOVES)) {
+      for (const k of ["kick", "clap", "shaker", "talk", "bass", "arp"] as const) expect(g[k].length, `${mood}.${k}`).toBe(16);
+      if (g.log) expect(g.log.length).toBe(16);
+      if (g.keys) expect(g.keys.length).toBe(16);
+      if (g.horns) expect(g.horns.length).toBe(16);
+      expect(g.chords.length).toBeGreaterThan(0);
+      expect(g.bpm).toBeGreaterThan(60);
+    }
+  });
+
+  it("the music follows the story: Lagos groove, amapiano hustle, tension at the hearing, a fanfare or a lament at the end", () => {
+    expect(moodFor(DB, newRun(DB, "NIGERIA_LIFE"))).toBe("lagos");
+    expect(moodFor(DB, landed())).toBe("hustle");
+    expect(moodFor(DB, play2(newRun(DB, "TOURIST_GAMBLE"), ["Kawosoke at the counter"]))).toBe("tension");
+    expect(moodFor(DB, newRun(DB, "STARTUP_VISA"))).toBe("pitch");
+    expect(moodFor(DB, play("EXPRESS_ENTRY", ["leaked"]))).toBe("somber");
+    expect(moodFor(DB, newRun(DB, "FIRST_YEAR"))).toBe("hustle");
   });
 });
 

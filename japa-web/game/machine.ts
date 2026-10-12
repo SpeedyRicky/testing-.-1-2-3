@@ -21,7 +21,9 @@ export type AppEvent =
   | { type: "RESTART" }
   | { type: "DISMISS_TOAST" }
   | { type: "FOLLOW_UNLOCK" }
-  | { type: "SET_PROFILE"; profile: PlayerProfile | null };
+  | { type: "SET_PROFILE"; profile: PlayerProfile | null }
+  /** Replay a level: restore the run as it was when the level started. */
+  | { type: "LOAD_RUN"; run: GameState };
 
 export const PLAYABLE: RouteId[] = (Object.keys(DB.routes) as RouteId[]).filter((r) => DB.routes[r].status === "playable");
 
@@ -66,6 +68,9 @@ export function makeReducer(db: ScenarioDatabase = DB) {
         return { ...state, runs: { ...state.runs, [state.activeRoute]: startRoute(db, state.activeRoute, state.profile) }, toast: null };
       case "SET_PROFILE":
         return initialState(db, event.profile);
+      case "LOAD_RUN":
+        if (!db.routes[event.run.activeRoute] || !db.scenes[event.run.currentSceneId]) return state;
+        return { ...state, activeRoute: event.run.activeRoute, runs: { ...state.runs, [event.run.activeRoute]: event.run }, toast: null };
       case "DISMISS_TOAST":
         return state.toast ? { ...state, toast: null } : state;
       case "FOLLOW_UNLOCK": {

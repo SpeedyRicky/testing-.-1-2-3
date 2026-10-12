@@ -4,6 +4,12 @@ import type { Transit } from "@/game/types";
 import { LocalRide } from "./LagosStage";
 import { Person } from "./Person";
 import { usePlayer } from "./Player";
+import { useSfxOnMount } from "./Sound";
+import type { Sfx } from "@/game/music";
+
+const TRAVEL_SFX: Partial<Record<Transit, Sfx>> = {
+  danfo: "horn", okada: "okada", call: "phone", plane: "plane", "snow-walk": "wind", streetcar: "horn",
+};
 
 const LOCAL_COPY = {
   danfo: "Yellow bus. One more passenger!",
@@ -29,6 +35,7 @@ export function TravelRibbon({
   destination: string;
 }) {
   const { transport, t } = usePlayer();
+  useSfxOnMount(TRAVEL_SFX[mode] ?? null);
   if (mode === "none") return null;
 
   return (

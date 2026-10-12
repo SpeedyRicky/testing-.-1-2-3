@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { LogOut, Pencil, Plane, RotateCcw } from "lucide-react";
 import { DB } from "@/game/engine";
 import { activeRun, initialState, reducer } from "@/game/machine";
@@ -8,8 +8,12 @@ import type { RouteId } from "@/game/types";
 import { LayoutContainer } from "./LayoutContainer";
 import { LagosBackdrop } from "./layouts/LagosStageLayout";
 import { Person } from "./Person";
-import { CinematicProvider, SpeedToggle } from "./Cinematic";
+import { CinematicProvider, SpeedToggle, useCinematic } from "./Cinematic";
 import { EndingsButton, RealityCheck, useRecordEnding } from "./Endings";
+import { LevelBanner, LevelStrip, useLevelTracking } from "./Levels";
+import { SoundToggle, useSound } from "./Sound";
+import { endingKey } from "@/game/endings";
+import { moodFor } from "@/game/music";
 import { Onboarding } from "./Onboarding";
 import { PlayerProvider } from "./Player";
 import type { PlayerProfile } from "@/game/profile";
@@ -105,6 +109,21 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
   const run = activeRun(state);
   const cfg = DB.routes[state.activeRoute];
   useRecordEnding(run);
+  useLevelTracking(run);
+  const { setMood, play } = useSound();
+  const mood = run ? moodFor(DB, run) : "lagos";
+  useEffect(() => { setMood(mood); }, [mood, setMood]);
+  // The ending's fanfare (or "dun dun DUN") waits for the choice cutscene to finish.
+  const { playing } = useCinematic();
+  const ending = run ? endingKey(DB, run) : null;
+  const lost = run?.outcome?.result === "fail";
+  const announced = useRef<string | null>(null);
+  useEffect(() => {
+    if (!ending) { announced.current = null; return; }
+    if (playing || announced.current === ending) return;
+    announced.current = ending;
+    play(lost ? "fail" : "win");
+  }, [ending, lost, playing, play]);
   const profile = state.profile;
 
   return (
@@ -163,8 +182,9 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
               </div>
             ) : null}
           </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
           <EndingsButton />
+          <SoundToggle />
           <SpeedToggle />
           <button
             type="button"
@@ -177,12 +197,14 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
         </div>
         {run && (
           <div key={state.activeRoute} className="animate-fade-in">
+            <LevelStrip run={run} dispatch={dispatch} />
             <LayoutContainer run={run} dispatch={dispatch} toast={state.toast} />
             <RealityCheck run={run} className="mt-4" />
           </div>
         )}
       </main>
 
+      <LevelBanner />
       <footer className="relative z-10 mx-auto max-w-6xl border-t border-white/10 px-4 py-6 text-[11px] leading-relaxed text-zinc-500 sm:px-6">
         A simulation for entertainment. It is not legal or immigration advice. Numbers are illustrative; rules, fees and
         cutoffs change often, so check IRCC (canada.ca) before you act.
