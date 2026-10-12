@@ -159,6 +159,8 @@ export interface Choice {
   set?: Effects;
   /** A risky move: its odds are shown on the button, and the dice decide which branch happens. */
   gamble?: Gamble;
+  /** Only listed when these hold (e.g. the submit button for the program the player chose). */
+  hideUnless?: Conditions;
 }
 
 export interface GambleBranch {

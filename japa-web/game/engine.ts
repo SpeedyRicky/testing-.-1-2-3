@@ -214,7 +214,7 @@ export function presentChoices(db: ScenarioDatabase, state: GameState): Presente
   return (currentScene(db, state)?.choices ?? []).map((c, index) => ({
     ...c, index, enabled: !c.requires || evaluate(state, c.requires),
     ...(c.gamble ? { odds: gambleOdds(state, c.gamble) } : {}),
-  }));
+  })).filter((c) => !c.hideUnless || evaluate(state, c.hideUnless));
 }
 
 /** Takes a dialogue choice. Invalid or locked choices return the same state object.
@@ -334,8 +334,9 @@ export function dashboardOf(db: ScenarioDatabase, state: GameState) {
 
 export function leadChance(state: GameState, action: DashboardAction): number {
   if (!action.leadChance) return 0;
-  const bonus = 1 + (state.routeStats.networkScore ?? 0) / 60 + (state.routeStats.resumeScore ?? 0) / 50;
-  return Math.min(0.75, action.leadChance * bonus);
+  // Networking and a Canadian-style resume help, with diminishing returns.
+  const bonus = 1 + Math.min(1, (state.routeStats.networkScore ?? 0) / 120) + Math.min(0.6, (state.routeStats.resumeScore ?? 0) / 100);
+  return Math.min(0.4, action.leadChance * bonus);
 }
 
 export function canTake(state: GameState, action: DashboardAction): boolean {
@@ -397,6 +398,10 @@ export function takeAction(
     s = { ...s, outcome: { result: "fail", reason: "STAY_EXPIRED", title: "Time's up", subtitle: "Your authorized stay is over. Without an offer or an approved extension, it is time to leave." } };
   } else if (s.desperation >= 100) {
     s = { ...s, outcome: { result: "fail", reason: "BURNOUT", title: "Burnout", subtitle: "Desperation hit 100. You stop sleeping, stop eating, and stop making good decisions." } };
+  }
+  if (!s.outcome && !s.currentSceneId.startsWith("KW_") && db.scenes[s.currentSceneId]?.dashboard && !dash.actions.some((x) => !x.fatal && canTake(s, x))) {
+    // Too tired to work the room and too broke to rest: nothing left to do.
+    s = { ...s, outcome: { result: "fail", reason: "OUT_OF_MONEY", title: "Out of money", subtitle: "Too broke to rest and too tired to hustle. You book the cheapest flight back." } };
   }
 
   const tone = gotLead ? "good" : (action.effects.desperation ?? 0) > 0 ? "bad" : "neutral";

@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "standalone": "node scripts/build-standalone.mjs"
+    "standalone": "node scripts/build-standalone.mjs",
+    "simulate": "vitest run --config vitest.sim.config.ts"
   },
   "dependencies": {
     "lucide-react": "^1.54.0",

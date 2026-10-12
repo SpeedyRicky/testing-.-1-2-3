@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.13.0",
+    "version": "0.14.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -12,7 +12,7 @@
       "startSceneId": "LAGOS_YABA_DAWN",
       "initialState": {
         "currentLocation": "{area}, {city}",
-        "energy": 72,
+        "energy": 85,
         "walletNgn": 280000,
         "desperation": 36,
         "routeStats": {
@@ -60,7 +60,7 @@
       },
       "traps": {
         "base": 0.05,
-        "scale": 0.72,
+        "scale": 0.48,
         "exponent": 1.65,
         "items": [
           {
@@ -360,8 +360,8 @@
         "FIRST_YEAR"
       ],
       "traps": {
-        "base": 0.04,
-        "scale": 0.55,
+        "base": 0.03,
+        "scale": 0.4,
         "exponent": 1.6,
         "items": [
           {
@@ -916,15 +916,16 @@
           "title": "Ms. Vance",
           "goal": "Open the pitch: who you are and why this business, here.",
           "scenes": [
-            "SUV_PITCH_START"
+            "SUV_PITCH_START",
+            "SUV_VANCE_TRACTION"
           ],
           "stars": [
             {
-              "label": "Investor interest 50+",
+              "label": "Investor interest 60+",
               "when": {
                 "investorInterest": [
                   ">=",
-                  50
+                  60
                 ]
               }
             },
@@ -944,24 +945,25 @@
           "title": "Mr. Chen",
           "goal": "Defend the tech. He has read your GitHub.",
           "scenes": [
-            "SUV_PITCH_CHEN"
+            "SUV_PITCH_CHEN",
+            "SUV_CHEN_DEMO"
           ],
           "stars": [
             {
-              "label": "Technical credibility 55+",
+              "label": "Technical credibility 70+",
               "when": {
                 "technicalCredibility": [
                   ">=",
-                  55
+                  70
                 ]
               }
             },
             {
-              "label": "Investor interest 50+",
+              "label": "Investor interest 70+",
               "when": {
                 "investorInterest": [
                   ">=",
-                  50
+                  70
                 ]
               }
             }
@@ -972,28 +974,50 @@
           "title": "Mr. Ross",
           "goal": "Show the money: market, revenue, a plan to scale.",
           "scenes": [
-            "SUV_PITCH_ROSS"
+            "SUV_PITCH_ROSS",
+            "SUV_ROSS_MONEY"
           ],
           "stars": [
             {
-              "label": "Investor interest 60+",
+              "label": "Investor interest 90+",
               "when": {
                 "investorInterest": [
                   ">=",
-                  60
+                  90
                 ]
               }
             },
             {
-              "label": "Scalability 60+",
+              "label": "Scalability 70+",
               "when": {
                 "scalabilityScore": [
                   ">=",
-                  60
+                  70
                 ]
               }
             }
           ]
+        }
+      ],
+      "tagline": "Three investors, one Zoom call. Set in 2025, before the program's January 2026 pause.",
+      "ranks": [
+        {
+          "id": "pr",
+          "reason": "SUV_LOS_ISSUED",
+          "title": "Letter of Support",
+          "blurb": "Traction, a working demo and real runway. The committee believed you."
+        },
+        {
+          "id": "flagged",
+          "reason": "PAY_TO_PLAY",
+          "title": "Tried to buy the letter",
+          "blurb": "Designated organizations don't sell visas."
+        },
+        {
+          "id": "hustle",
+          "reason": "SUV_REJECTED",
+          "title": "Back to building",
+          "blurb": "Ship more, sign more customers, pitch again."
         }
       ]
     },
@@ -1345,26 +1369,27 @@
         {
           "id": "kovacs",
           "title": "Mr. Kovacs",
-          "goal": "Win the employer's trust in the first five minutes.",
+          "goal": "Win the employer's trust and name a wage the LMIA will accept.",
           "scenes": [
-            "LMIA_INTERVIEW_KOVACS"
+            "LMIA_INTERVIEW_KOVACS",
+            "LMIA_WAGE"
           ],
           "stars": [
             {
-              "label": "Employer trust 40+",
+              "label": "Employer trust 50+",
               "when": {
                 "employerTrust": [
                   ">=",
-                  40
+                  50
                 ]
               }
             },
             {
-              "label": "LMIA probability 35+",
+              "label": "LMIA probability 55+",
               "when": {
                 "lmiaProbability": [
                   ">=",
-                  35
+                  55
                 ]
               }
             }
@@ -1373,7 +1398,7 @@
         {
           "id": "advertising",
           "title": "The Advertising Question",
-          "goal": "Explain the LMIA process honestly, without promising what you can't.",
+          "goal": "Explain the advertising rules honestly, without promising what you can't.",
           "scenes": [
             "LMIA_ADVERTISING"
           ],
@@ -1388,15 +1413,75 @@
               }
             },
             {
-              "label": "LMIA probability 60+",
+              "label": "LMIA probability 70+",
               "when": {
                 "lmiaProbability": [
                   ">=",
-                  60
+                  70
                 ]
               }
             }
           ]
+        },
+        {
+          "id": "who-pays",
+          "title": "Who Pays?",
+          "goal": "The fee question. Know the rule, keep the job.",
+          "scenes": [
+            "LMIA_FEE_ASK"
+          ],
+          "stars": [
+            {
+              "label": "Employer trust 70+",
+              "when": {
+                "employerTrust": [
+                  ">=",
+                  70
+                ]
+              }
+            },
+            {
+              "label": "Desperation 40 or less",
+              "when": {
+                "desperation": [
+                  "<=",
+                  40
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "ranks": [
+        {
+          "id": "interview",
+          "reason": "LMIA_SPONSORSHIP_STARTED",
+          "title": "Employer will sponsor",
+          "blurb": "Prevailing wage, honest advertising, nobody paid anybody under the table."
+        },
+        {
+          "id": "lmiascam",
+          "reason": "WORKER_PAID_LMIA",
+          "title": "Paid for your own LMIA",
+          "blurb": "Revoked, fined, flagged."
+        },
+        {
+          "id": "caught",
+          "reason": "UNAUTHORIZED_WORK",
+          "title": "Asked for cash",
+          "blurb": "Kovacs liked you until then."
+        },
+        {
+          "id": "flagged",
+          "reason": "BLATANT_MISREPRESENTATION",
+          "title": "Fake job ad",
+          "blurb": "Suggesting fraud to a real employer ends the meeting."
+        },
+        {
+          "id": "hustle",
+          "reason": "NO_SPONSORSHIP",
+          "title": "Not this employer",
+          "blurb": "Most never sponsor. Keep networking."
         }
       ]
     },
@@ -2103,7 +2188,7 @@
           "nextSceneId": "LAGOS_DECISION_GATE",
           "effects": {
             "desperation": -8,
-            "energy": -14,
+            "energy": -8,
             "papers": 6
           }
         },
@@ -2135,7 +2220,7 @@
           "label": "",
           "nextSceneId": "LAGOS_OUTCOME",
           "effects": {
-            "energy": -8,
+            "energy": -2,
             "desperation": -4
           }
         }
@@ -2203,15 +2288,15 @@
           "when": {
             "papers": [
               ">=",
-              48
+              45
             ],
             "desperation": [
               "<=",
-              60
+              65
             ],
             "energy": [
               ">",
-              12
+              10
             ]
           },
           "nextSceneId": "LAGOS_ENDING_WIN"
@@ -2231,7 +2316,7 @@
         {
           "text": "Nigeria's fintech sector is much faster and more innovative than Canada's. Our tech is simply superior.",
           "label": "ARROGANCE TRAP",
-          "nextSceneId": "SUV_PITCH_CHEN",
+          "nextSceneId": "SUV_VANCE_TRACTION",
           "effects": {
             "investorInterest": -30,
             "technicalCredibility": -10,
@@ -2242,7 +2327,7 @@
         {
           "text": "We aren't competing with Canadian banks. Our software is an interoperable bridge that lets Canadian exporters settle invoices with West African suppliers in real time, removing 48-hour delays.",
           "label": "HIGH VALUE MATCH",
-          "nextSceneId": "SUV_PITCH_CHEN",
+          "nextSceneId": "SUV_VANCE_TRACTION",
           "effects": {
             "investorInterest": 25,
             "scalabilityScore": 20
@@ -2261,7 +2346,7 @@
         {
           "text": "We use advanced cloud systems and high-end security encryption to make sure everything stays secure and never crashes.",
           "label": "TECHNICAL DROPOUT",
-          "nextSceneId": "SUV_PITCH_ROSS",
+          "nextSceneId": "SUV_CHEN_DEMO",
           "effects": {
             "technicalCredibility": -35
           },
@@ -2270,7 +2355,7 @@
         {
           "text": "We use an asynchronous, event-driven design with message queues and a local encrypted buffer. If connectivity drops in Nigeria, transactions wait in the queue and settle through verified handshakes when the link returns.",
           "label": "CRITICAL CRUISE",
-          "nextSceneId": "SUV_PITCH_ROSS",
+          "nextSceneId": "SUV_CHEN_DEMO",
           "effects": {
             "technicalCredibility": 40,
             "investorInterest": 15,
@@ -2290,7 +2375,7 @@
         {
           "text": "That won't happen. We are best friends from university and fully committed to moving together. We trust each other completely.",
           "label": "BUSINESS RISK",
-          "nextSceneId": "SUV_PITCH_RESOLVE",
+          "nextSceneId": "SUV_ROSS_MONEY",
           "effects": {
             "scalabilityScore": -20,
             "investorInterest": -10
@@ -2300,7 +2385,7 @@
         {
           "text": "We've already planned for that. Our code and documentation follow strict conventions, and our legal agreement has a key-person clause so a vetted proxy developer in Ontario can step into oversight if a founder is delayed.",
           "label": "OPERATIONAL FAILSAFE",
-          "nextSceneId": "SUV_PITCH_RESOLVE",
+          "nextSceneId": "SUV_ROSS_MONEY",
           "effects": {
             "scalabilityScore": 35,
             "investorInterest": 20
@@ -2318,11 +2403,15 @@
           "when": {
             "investorInterest": [
               ">=",
-              70
+              75
             ],
             "technicalCredibility": [
               ">=",
               65
+            ],
+            "scalabilityScore": [
+              ">=",
+              50
             ]
           },
           "nextSceneId": "SUV_LOS_ISSUED"
@@ -2377,7 +2466,7 @@
         {
           "text": "Please sir, my visa is running out and I don't want to go back to Nigeria. If you sponsor me, I'll work harder than anyone and never complain.",
           "label": "CRITICAL LEAK",
-          "nextSceneId": "LMIA_ADVERTISING",
+          "nextSceneId": "LMIA_WAGE",
           "effects": {
             "employerTrust": -40,
             "lmiaProbability": -50,
@@ -2388,7 +2477,7 @@
         {
           "text": "I understand the hesitation. My background matches your logistics tracking software, so I won't need the usual three-month onboarding. I can clear your inventory backlog and save you more than the LMIA processing fee costs.",
           "label": "HIGH ROI MATCH",
-          "nextSceneId": "LMIA_ADVERTISING",
+          "nextSceneId": "LMIA_WAGE",
           "effects": {
             "employerTrust": 30,
             "lmiaProbability": 25
@@ -2402,7 +2491,7 @@
       "route": "CAREGIVER_LMIA",
       "layoutType": "CORPORATE_OFFICE",
       "speaker": "Mr. Kovacs (Operations Director)",
-      "dialogue": "The numbers make sense. But Service Canada requires me to show I advertised this job to Canadians and permanent residents and couldn't find a qualified person. How do we get past that?",
+      "dialogue": "The numbers make sense. But Service Canada requires me to show I advertised this job to Canadians and permanent residents and couldn't find a qualified person, and since April 2026 low-wage jobs need eight weeks of ads. How do we get past that?",
       "choices": [
         {
           "text": "We can post a fake job listing with impossible requirements so no Canadian qualifies and the government has to approve my file.",
@@ -2414,7 +2503,7 @@
         {
           "text": "Your freight runs through West African corridors. If the role genuinely needs knowledge of those trade compliance frameworks, that requirement can be documented in the posting.",
           "label": "RISKY GAMBLE",
-          "nextSceneId": "LMIA_RESOLVE",
+          "nextSceneId": "LMIA_FEE_ASK",
           "effects": {
             "lmiaProbability": 30,
             "desperation": -20
@@ -2424,7 +2513,7 @@
         {
           "text": "Let's follow the advertising rules exactly. I'll help you document the real requirements of the role and any recruitment you've already done.",
           "label": "COMPLIANT PATH",
-          "nextSceneId": "LMIA_RESOLVE",
+          "nextSceneId": "LMIA_FEE_ASK",
           "effects": {
             "lmiaProbability": 15,
             "employerTrust": 15
@@ -2459,11 +2548,11 @@
           "when": {
             "lmiaProbability": [
               ">=",
-              50
+              70
             ],
             "employerTrust": [
               ">=",
-              20
+              40
             ]
           },
           "nextSceneId": "LMIA_SPONSORSHIP"
@@ -2531,7 +2620,7 @@
               "desperation": -3,
               "networkScore": 8
             },
-            "leadChance": 0.3,
+            "leadChance": 0.06,
             "location": "Metro Toronto Convention Centre",
             "consequences": [
               "You collected 14 tote bags, 3 stress balls and one real business card. It belongs to a recruiter from your own village.",
@@ -2553,7 +2642,7 @@
               "energy": -15,
               "desperation": 2
             },
-            "leadChance": 0.12,
+            "leadChance": 0.025,
             "location": "Cousin's couch, Brampton",
             "consequences": [
               "9 left you on 'seen'. One replied: 'Wrong person, I sell insurance. Are you covered?'",
@@ -2578,7 +2667,7 @@
               "networkScore": 12,
               "streetCred": 3
             },
-            "leadChance": 0.08,
+            "leadChance": 0.035,
             "location": "Tim Hortons, Square One",
             "consequences": [
               "Wey Sabi has been here 11 years. First advice: 'Buy proper boots.' Second: 'Stop saying sir.' Third, in a whisper: 'Kawosoke. Everybody dey do am.'",
@@ -2978,7 +3067,7 @@
           "label": "FRENCH_PIVOT",
           "nextSceneId": "EE_FRENCH",
           "effects": {
-            "energy": -25,
+            "energy": -18,
             "walletCad": -950,
             "desperation": 10,
             "ageYears": 1
@@ -3273,6 +3362,23 @@
           "feedback": "Four months of overtime: +CAD 3,000. The balance climbs; so does the tiredness."
         },
         {
+          "text": "Take a week off before the 60-day deadline",
+          "label": "BREATHER",
+          "nextSceneId": "EE_FUNDS",
+          "effects": {
+            "energy": 20,
+            "desperation": -6
+          },
+          "requires": {
+            "energy": [
+              "<",
+              50
+            ]
+          },
+          "lockedHint": "Only when you're running low",
+          "feedback": "You slept. The documents are still there. So are you."
+        },
+        {
           "text": "Borrow from your cousin for a week to show the balance",
           "label": "FRAUD",
           "nextSceneId": "EE_FRAUD_FUNDS",
@@ -3296,7 +3402,7 @@
           "label": "DONE_RIGHT",
           "nextSceneId": "EE_REVIEW",
           "effects": {
-            "energy": -10,
+            "energy": -6,
             "walletCad": -450,
             "desperation": 4
           }
@@ -3615,7 +3721,7 @@
           "nextSceneId": "ST_FUNDS",
           "effects": {
             "walletCad": 20000,
-            "desperation": 10,
+            "desperation": 6,
             "familyAsked": 1
           },
           "feedback": "CAD 20,000 with a paper trail. The family WhatsApp group will want updates.",
@@ -3633,7 +3739,7 @@
           "nextSceneId": "ST_FUNDS",
           "effects": {
             "walletCad": 12000,
-            "desperation": 12,
+            "desperation": 8,
             "landSold": 1
           },
           "feedback": "CAD 12,000, documented. Your mother cried, then helped with the paperwork.",
@@ -3652,7 +3758,7 @@
           "effects": {
             "walletCad": 3000,
             "streetCred": 5,
-            "desperation": 4,
+            "desperation": 2,
             "crowdfunded": 1
           },
           "requires": {
@@ -3689,7 +3795,7 @@
           "nextSceneId": "ST_FUNDS",
           "effects": {
             "walletCad": 25000,
-            "desperation": 8,
+            "desperation": 5,
             "loanTaken": 1
           },
           "feedback": "A loan from a financial institution is accepted proof of funds. Repayments start after graduation.",
@@ -3708,10 +3814,107 @@
           "effects": {}
         },
         {
-          "text": "The funds are ready: book biometrics and submit",
+          "text": "The funds are ready: book biometrics and submit (CAD 57,448 for the master's)",
           "label": "",
-          "nextSceneId": "ST_FUNDS_CHECK",
-          "effects": {}
+          "nextSceneId": "ST_SOP",
+          "effects": {},
+          "requires": {
+            "programType": [
+              "==",
+              2
+            ],
+            "walletCad": [
+              ">=",
+              57448
+            ]
+          },
+          "lockedHint": "Needs CAD 57,448: first-year tuition plus CAD 23,448 to live on",
+          "hideUnless": {
+            "programType": [
+              "==",
+              2
+            ]
+          }
+        },
+        {
+          "text": "The funds are ready: book biometrics and submit (CAD 60,448 for the bachelor's)",
+          "label": "",
+          "nextSceneId": "ST_SOP",
+          "effects": {},
+          "requires": {
+            "programType": [
+              "==",
+              4
+            ],
+            "walletCad": [
+              ">=",
+              60448
+            ]
+          },
+          "lockedHint": "Needs CAD 60,448: first-year tuition plus CAD 23,448 to live on",
+          "hideUnless": {
+            "programType": [
+              "==",
+              4
+            ]
+          }
+        },
+        {
+          "text": "The funds are ready: book biometrics and submit (CAD 43,448 for the college diploma)",
+          "label": "",
+          "nextSceneId": "ST_SOP",
+          "effects": {},
+          "requires": {
+            "programType": [
+              "==",
+              1
+            ],
+            "walletCad": [
+              ">=",
+              43448
+            ]
+          },
+          "lockedHint": "Needs CAD 43,448: first-year tuition plus CAD 23,448 to live on",
+          "hideUnless": {
+            "programType": [
+              "==",
+              1
+            ]
+          }
+        },
+        {
+          "text": "The funds are ready: book biometrics and submit (CAD 34,448 for the private certificate)",
+          "label": "",
+          "nextSceneId": "ST_SOP",
+          "effects": {},
+          "requires": {
+            "programType": [
+              "==",
+              3
+            ],
+            "walletCad": [
+              ">=",
+              34448
+            ]
+          },
+          "lockedHint": "Needs CAD 34,448: first-year tuition plus CAD 23,448 to live on",
+          "hideUnless": {
+            "programType": [
+              "==",
+              3
+            ]
+          }
+        },
+        {
+          "text": "Defer a year: work, save, and apply next intake",
+          "label": "DEFERRED",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {
+            "walletCad": 9000,
+            "energy": -10,
+            "desperation": 6
+          },
+          "feedback": "A year of savings with a real history behind it. Officers like that more than a sudden deposit."
         }
       ]
     },
@@ -3853,7 +4056,7 @@
           "label": "",
           "nextSceneId": "ST_DECISION",
           "effects": {
-            "desperation": 6
+            "desperation": 3
           },
           "gamble": {
             "odds": 0.12,
@@ -5893,7 +6096,7 @@
           "effects": {
             "walletCad": -1800,
             "desperation": 8,
-            "energy": -10
+            "energy": -5
           },
           "feedback": "Evidence that the job was real answered the concern."
         },
@@ -6004,6 +6207,312 @@
         "title": "Caught working without a permit",
         "subtitle": "Wait for the permit. It usually comes.",
         "lesson": "Refugee claimants can get an open work permit once the claim is eligible and the medical is done. Working before that is unauthorized work, and enforcement often starts with a tip."
+      }
+    },
+    "SUV_VANCE_TRACTION": {
+      "id": "SUV_VANCE_TRACTION",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "speaker": "Ms. Vance (Committee Chair)",
+      "dialogue": "Fine. Then show me traction. Who is paying you today, and how do I know they exist?",
+      "choices": [
+        {
+          "text": "Four paying pilots in Lagos and one Toronto importer, with signed letters of intent. Small, but real.",
+          "label": "REAL_TRACTION",
+          "nextSceneId": "SUV_PITCH_CHEN",
+          "effects": {
+            "investorInterest": 15,
+            "scalabilityScore": 5
+          },
+          "feedback": "Small and verifiable beats big and vague. Committees call your references."
+        },
+        {
+          "text": "'Ten thousand active users.' (You have four hundred.)",
+          "label": "INFLATED_NUMBERS",
+          "nextSceneId": "SUV_PITCH_CHEN",
+          "effects": {
+            "investorInterest": -25,
+            "technicalCredibility": -10,
+            "desperation": 10
+          },
+          "feedback": "Ms. Vance asks for the analytics dashboard. Due diligence is the whole job."
+        },
+        {
+          "text": "Book a live call with your biggest pilot customer right now",
+          "label": "CALL_THE_CUSTOMER",
+          "nextSceneId": "SUV_PITCH_CHEN",
+          "effects": {
+            "energy": -10
+          },
+          "gamble": {
+            "odds": 0.35,
+            "bonus": [
+              {
+                "key": "investorInterest",
+                "per": 0.006
+              }
+            ],
+            "max": 0.85,
+            "success": {
+              "feedback": "Mama Ngozi's logistics company picks up on the second ring and talks for four minutes about saved days.",
+              "effects": {
+                "investorInterest": 25
+              },
+              "label": "CUSTOMER_PICKED_UP"
+            },
+            "fail": {
+              "feedback": "Voicemail. 'The number you are calling is switched off.' Ms. Vance writes something down.",
+              "effects": {
+                "investorInterest": -8
+              },
+              "label": "SWITCHED_OFF"
+            }
+          }
+        }
+      ]
+    },
+    "SUV_CHEN_DEMO": {
+      "id": "SUV_CHEN_DEMO",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "speaker": "Mr. Chen (Chief Technology Officer)",
+      "dialogue": "Share your screen. I'd like to see a settlement go through, live, start to finish.",
+      "choices": [
+        {
+          "text": "Run the live demo on your own laptop",
+          "label": "LIVE_DEMO",
+          "nextSceneId": "SUV_PITCH_ROSS",
+          "effects": {
+            "energy": -10
+          },
+          "gamble": {
+            "odds": 0.25,
+            "bonus": [
+              {
+                "key": "technicalCredibility",
+                "per": 0.006
+              }
+            ],
+            "max": 0.85,
+            "success": {
+              "feedback": "The settlement clears in 3.2 seconds. Mr. Chen unmutes just to say 'nice'.",
+              "effects": {
+                "technicalCredibility": 25,
+                "investorInterest": 10
+              },
+              "label": "DEMO_WORKED"
+            },
+            "fail": {
+              "feedback": "NEPA takes the light, the router reboots, the demo freezes at 'Processing…'. You narrate the rest from memory.",
+              "effects": {
+                "technicalCredibility": -12,
+                "desperation": 10
+              },
+              "label": "NEPA_TOOK_THE_DEMO"
+            }
+          }
+        },
+        {
+          "text": "Play the pre-recorded walkthrough, and offer sandbox access after the call",
+          "label": "RECORDED_DEMO",
+          "nextSceneId": "SUV_PITCH_ROSS",
+          "effects": {
+            "technicalCredibility": 10
+          },
+          "feedback": "Safe and honest. Mr. Chen will try the sandbox tonight."
+        },
+        {
+          "text": "Show the clickable Figma prototype and call it 'the live system'",
+          "label": "FAKE_DEMO",
+          "nextSceneId": "SUV_PITCH_ROSS",
+          "effects": {
+            "technicalCredibility": -30,
+            "investorInterest": -15
+          },
+          "feedback": "Mr. Chen asks you to change one field. Figma doesn't do that."
+        }
+      ]
+    },
+    "SUV_ROSS_MONEY": {
+      "id": "SUV_ROSS_MONEY",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "speaker": "Mr. Ross (Managing Partner)",
+      "dialogue": "Last question. How long can you survive in Toronto before revenue, and who is putting money in besides you?",
+      "choices": [
+        {
+          "text": "Eighteen months of runway, shown in naira and dollars, with a plan for when the naira slips again",
+          "label": "REAL_RUNWAY",
+          "nextSceneId": "SUV_PITCH_RESOLVE",
+          "effects": {
+            "scalabilityScore": 15,
+            "investorInterest": 10
+          },
+          "feedback": "Founders also need personal settlement funds for the visa itself. Ross likes that you know."
+        },
+        {
+          "text": "A Lagos angel will put in CAD 75,000 if you get the Letter of Support",
+          "label": "ANGEL_PROMISE",
+          "nextSceneId": "SUV_PITCH_RESOLVE",
+          "effects": {},
+          "gamble": {
+            "odds": 0.4,
+            "bonus": [
+              {
+                "key": "investorInterest",
+                "per": 0.004
+              }
+            ],
+            "max": 0.8,
+            "success": {
+              "feedback": "The angel's term sheet is already in your data room. Ross reads it during the call.",
+              "effects": {
+                "investorInterest": 20,
+                "scalabilityScore": 10
+              },
+              "label": "TERM_SHEET_READY"
+            },
+            "fail": {
+              "feedback": "'Conditional on the visa' plus 'no signed paper' sounds like 'no money' to Ross.",
+              "effects": {
+                "investorInterest": -10
+              },
+              "label": "VAPOUR_MONEY"
+            }
+          }
+        },
+        {
+          "text": "Offer the incubator 10% equity and a CAD 50,000 'program fee' for the Letter of Support",
+          "label": "PAY_TO_PLAY",
+          "nextSceneId": "SUV_PAY_TO_PLAY",
+          "effects": {
+            "walletNgn": -1000000
+          }
+        }
+      ]
+    },
+    "SUV_PAY_TO_PLAY": {
+      "id": "SUV_PAY_TO_PLAY",
+      "route": "STARTUP_VISA",
+      "layoutType": "ZOOM_GRID",
+      "speaker": "Mr. Ross (Managing Partner)",
+      "dialogue": "The call goes quiet. 'We don't sell Letters of Support.' Two days later, a consultant who heard about your pitch offers to 'arrange one' for CAD 80,000.",
+      "outcome": {
+        "result": "fail",
+        "reason": "PAY_TO_PLAY",
+        "title": "Tried to buy a Letter of Support",
+        "subtitle": "Designated organizations invest in businesses; they don't sell visas.",
+        "lesson": "Startup Visa 'pay-to-play' schemes were a major reason the program was paused in January 2026. A Letter of Support bought instead of earned can be found non-genuine, and that is misrepresentation."
+      },
+      "onEnter": {
+        "desperation": 20
+      }
+    },
+    "LMIA_WAGE": {
+      "id": "LMIA_WAGE",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "CORPORATE_OFFICE",
+      "speaker": "Mr. Kovacs (Operations Director)",
+      "dialogue": "Say we try. What salary are you expecting? Be honest; it changes the paperwork.",
+      "choices": [
+        {
+          "text": "The Job Bank median for this occupation in Peel Region, and I've brought the printout",
+          "label": "PREVAILING_WAGE",
+          "nextSceneId": "LMIA_ADVERTISING",
+          "effects": {
+            "employerTrust": 15,
+            "lmiaProbability": 15
+          },
+          "feedback": "An LMIA must offer at least the prevailing wage. You just did his homework."
+        },
+        {
+          "text": "'Anything you can pay, sir. I just need the papers.'",
+          "label": "LOWBALL",
+          "nextSceneId": "LMIA_ADVERTISING",
+          "effects": {
+            "lmiaProbability": -20,
+            "employerTrust": -10,
+            "desperation": 10
+          },
+          "feedback": "Below the prevailing wage, ESDC refuses the LMIA. It also tells Kovacs you'd accept anything."
+        },
+        {
+          "text": "Twenty percent above market: you're worth it",
+          "label": "HIGH_ASK",
+          "nextSceneId": "LMIA_ADVERTISING",
+          "effects": {
+            "employerTrust": -5,
+            "lmiaProbability": 5
+          },
+          "feedback": "Above median puts the job in the high-wage stream: fewer caps, more paperwork for him."
+        }
+      ]
+    },
+    "LMIA_FEE_ASK": {
+      "id": "LMIA_FEE_ASK",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "CORPORATE_OFFICE",
+      "speaker": "Mr. Kovacs (Operations Director)",
+      "dialogue": "Last thing. Our lawyer's quote is CAD 6,000 plus the CAD 1,000 government fee. Some companies have the worker cover that. Would you?",
+      "choices": [
+        {
+          "text": "Explain, politely, that employers can't recover LMIA costs from workers, and offer to save him the hours instead",
+          "label": "KNOWS_THE_RULES",
+          "nextSceneId": "LMIA_RESOLVE",
+          "effects": {
+            "employerTrust": 10,
+            "lmiaProbability": 10
+          },
+          "feedback": "Recovering LMIA fees from a worker is prohibited. Kovacs didn't know; his lawyer confirms it."
+        },
+        {
+          "text": "Pay it: CAD 7,000 is cheaper than going home",
+          "label": "PAID_FOR_IT",
+          "nextSceneId": "LMIA_WORKER_PAID",
+          "effects": {
+            "walletCad": -2000
+          }
+        },
+        {
+          "text": "Ask if he can pay you cash while the LMIA processes",
+          "label": "CASH_ASK",
+          "nextSceneId": "LMIA_CASH",
+          "effects": {}
+        }
+      ]
+    },
+    "LMIA_WORKER_PAID": {
+      "id": "LMIA_WORKER_PAID",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "CORPORATE_OFFICE",
+      "speaker": "Northline Logistics",
+      "dialogue": "Three months later an ESDC inspection finds the payment in your e-transfer history. The LMIA is revoked, the company is fined, and your file is marked.",
+      "outcome": {
+        "result": "fail",
+        "reason": "WORKER_PAID_LMIA",
+        "title": "You paid for your own LMIA",
+        "subtitle": "Employers can't recover LMIA costs from workers.",
+        "lesson": "An employer who charges a worker for an LMIA (or lets them pay the lawyer) breaks the Temporary Foreign Worker Program rules: the LMIA can be revoked and the employer fined or banned."
+      },
+      "onEnter": {
+        "desperation": 20
+      }
+    },
+    "LMIA_CASH": {
+      "id": "LMIA_CASH",
+      "route": "CAREGIVER_LMIA",
+      "layoutType": "CORPORATE_OFFICE",
+      "speaker": "Mr. Kovacs",
+      "dialogue": "Kovacs's face changes. 'I can't do that, and I'm a little worried you asked.' The meeting ends.",
+      "outcome": {
+        "result": "fail",
+        "reason": "UNAUTHORIZED_WORK",
+        "title": "Asked for cash work",
+        "subtitle": "Visitors can't work, even 'just until the papers come'.",
+        "lesson": "Working on a visitor record is unauthorized work, and an employer who pays cash risks fines and a ban from the program. Asking for it costs you the employer's trust."
+      },
+      "onEnter": {
+        "desperation": 15
       }
     }
   },

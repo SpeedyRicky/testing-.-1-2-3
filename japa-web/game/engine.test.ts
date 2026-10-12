@@ -20,20 +20,25 @@ import { levelIndexOf, levelProgress, levelsFor, starsFor } from "./levels";
 import { gambleOdds } from "./engine";
 import { GROOVES, moodFor } from "./music";
 import { makeSave, readSave } from "./save";
+import { PLAYABLE_ROUTES, simulate } from "./simulate";
 import {
   DAILY_MODIFIERS, NEW_META, applyBundle, bundleFor, buy, dailyFor, grant, runAward, titleFor, toggleEquip, touchStreak,
 } from "./meta";
-import { trapChance } from "./engine";
 import type { GameState, RouteId, StatKey } from "./types";
 
 const reducer = makeReducer();
+
+/** The engine index of the first choice on screen that matches (hidden choices are skipped, so positions can differ). */
+function choiceIndex(s: GameState, pred: (c: ReturnType<typeof presentChoices>[number]) => boolean): number {
+  return presentChoices(DB, s).find(pred)?.index ?? -1;
+}
 
 /** Plays by choice text; a [text, roll] pair sets that step's dice (0 = the risky choice works, 0.99 = it doesn't). */
 function playR(route: RouteId, steps: (string | [string, number])[]): GameState {
   let s = newRun(DB, route);
   for (const step of steps) {
     const [pick, roll] = typeof step === "string" ? [step, 0] : step;
-    const idx = presentChoices(DB, s).findIndex((c) => c.text.includes(pick));
+    const idx = choiceIndex(s, (c) => c.text.includes(pick));
     expect(idx, `choice containing "${pick}" at ${s.currentSceneId}`).toBeGreaterThanOrEqual(0);
     s = dismissPopup(choose(DB, s, idx, [1, 0, roll]));
   }
@@ -44,7 +49,7 @@ function playR(route: RouteId, steps: (string | [string, number])[]): GameState 
 function play2(start: GameState, picks: string[]): GameState {
   let s = start;
   for (const pick of picks) {
-    const idx = presentChoices(DB, s).findIndex((c) => c.text.includes(pick));
+    const idx = choiceIndex(s, (c) => c.text.includes(pick));
     expect(idx, `choice containing "${pick}" at ${s.currentSceneId}`).toBeGreaterThanOrEqual(0);
     s = dismissPopup(choose(DB, s, idx, [1, 0]));
   }
@@ -58,7 +63,7 @@ const landed = () => newRun(DB, "TOURIST_GAMBLE", {}, "TOURIST_HUB");
 function play(route: RouteId, picks: string[], rolls: [number, number] = [1, 0]): GameState {
   let s = newRun(DB, route);
   for (const pick of picks) {
-    const idx = presentChoices(DB, s).findIndex((c) => c.text.includes(pick));
+    const idx = choiceIndex(s, (c) => c.text.includes(pick));
     expect(idx, `choice containing "${pick}" at ${s.currentSceneId}`).toBeGreaterThanOrEqual(0);
     s = dismissPopup(choose(DB, s, idx, rolls));
   }
@@ -142,35 +147,44 @@ describe("Startup Visa pitch (same paths as the Godot tests)", () => {
   });
 
   it("best pitch earns the Letter of Support", () => {
-    const s = play("STARTUP_VISA", ["interoperable bridge", "event-driven", "key-person clause"]);
+    const s = play("STARTUP_VISA", ["interoperable bridge", "Four paying pilots", "event-driven", "pre-recorded walkthrough",
+      "key-person clause", "Eighteen months of runway"]);
     expect(s.outcome).toMatchObject({ result: "win", reason: "SUV_LOS_ISSUED", decidedBy: "SUV_PITCH_RESOLVE" });
     expect(s.energy).toBe(90);
   });
 
-  it("one weak answer is survivable", () => {
-    expect(play("STARTUP_VISA", ["interoperable bridge", "event-driven", "best friends"]).outcome?.result).toBe("win");
+  it("one weak answer is survivable if the rest is strong", () => {
+    expect(play("STARTUP_VISA", ["interoperable bridge", "Four paying pilots", "event-driven", "pre-recorded walkthrough",
+      "best friends", "Eighteen months of runway"]).outcome?.result).toBe("win");
   });
 
-  it("a vague technical answer sinks it, and the resolution explains why", () => {
-    const s = play("STARTUP_VISA", ["interoperable bridge", "advanced cloud", "key-person clause"]);
+  it("a vague technical answer and a fake demo sink it, and the resolution explains why", () => {
+    const s = play("STARTUP_VISA", ["interoperable bridge", "Four paying pilots", "advanced cloud", "Figma prototype",
+      "key-person clause", "Eighteen months of runway"]);
     expect(s.outcome).toMatchObject({ result: "fail", reason: "SUV_REJECTED" });
     expect(s.walletNgn).toBe(4000000);
     const crit = explainResolution(DB, "SUV_PITCH_RESOLVE", s);
-    expect(crit.map((c) => [c.key, c.threshold, c.passed])).toEqual([
-      ["investorInterest", 70, true],
-      ["technicalCredibility", 65, false],
-    ]);
+    expect(crit.find((c) => c.key === "technicalCredibility")?.passed).toBe(false);
   });
 
-  it("the arrogance trap fails the pitch and adds desperation", () => {
-    const s = play("STARTUP_VISA", ["simply superior", "event-driven", "key-person clause"]);
+  it("the arrogance trap plus inflated numbers fail the pitch", () => {
+    const s = play("STARTUP_VISA", ["simply superior", "Ten thousand", "event-driven", "pre-recorded walkthrough",
+      "key-person clause", "Eighteen months of runway"]);
     expect(s.outcome?.result).toBe("fail");
-    expect(s.desperation).toBe(30 + 15 + 20);
+    expect(s.desperation).toBe(30 + 15 + 10 + 20);
+  });
+
+  it("a live demo is a gamble; offering to buy the letter is the end", () => {
+    const at = play("STARTUP_VISA", ["interoperable bridge", "Four paying pilots", "event-driven"]);
+    const live = presentChoices(DB, at).find((c) => c.label === "LIVE_DEMO")!;
+    expect(live.odds).toBeGreaterThan(0.5);
+    expect(play("STARTUP_VISA", ["interoperable bridge", "Four paying pilots", "event-driven", "pre-recorded walkthrough",
+      "key-person clause", "10% equity"]).outcome?.reason).toBe("PAY_TO_PLAY");
   });
 
   it("bars get their pass marks from the content", () => {
-    expect(thresholdsFor(DB, "STARTUP_VISA")).toEqual({ investorInterest: 70, technicalCredibility: 65 });
-    expect(thresholdsFor(DB, "CAREGIVER_LMIA")).toEqual({ lmiaProbability: 50, employerTrust: 20 });
+    expect(thresholdsFor(DB, "STARTUP_VISA")).toEqual({ investorInterest: 75, technicalCredibility: 65, scalabilityScore: 50 });
+    expect(thresholdsFor(DB, "CAREGIVER_LMIA")).toEqual({ lmiaProbability: 70, employerTrust: 40 });
   });
 
   it("invalid choices change nothing", () => {
@@ -181,18 +195,23 @@ describe("Startup Visa pitch (same paths as the Godot tests)", () => {
 });
 
 describe("LMIA interview", () => {
-  it("compliant path wins sponsorship", () => {
-    expect(play("CAREGIVER_LMIA", ["I understand the hesitation", "follow the advertising rules"]).outcome)
+  it("prevailing wage, compliant advertising and knowing who pays win sponsorship", () => {
+    expect(play("CAREGIVER_LMIA", ["I understand the hesitation", "Job Bank median", "follow the advertising rules", "employers can't recover"]).outcome)
       .toMatchObject({ result: "win", reason: "LMIA_SPONSORSHIP_STARTED" });
   });
   it("suggesting a fake posting ends the interview", () => {
-    expect(play("CAREGIVER_LMIA", ["I understand the hesitation", "fake job listing"]).outcome?.reason)
+    expect(play("CAREGIVER_LMIA", ["I understand the hesitation", "Job Bank median", "fake job listing"]).outcome?.reason)
       .toBe("BLATANT_MISREPRESENTATION");
   });
-  it("desperation then a gamble is declined", () => {
-    const s = play("CAREGIVER_LMIA", ["Please sir", "West African corridors"]);
+  it("desperation and a lowball wage are declined", () => {
+    const s = play("CAREGIVER_LMIA", ["Please sir", "Anything you can pay", "West African corridors", "employers can't recover"]);
     expect(s.outcome?.reason).toBe("NO_SPONSORSHIP");
     expect(s.history.find((h) => h.sceneId === "LMIA_INTERVIEW_KOVACS")?.label).toBe("CRITICAL LEAK");
+  });
+  it("paying for your own LMIA or asking for cash both end it", () => {
+    const base = ["I understand the hesitation", "Job Bank median", "follow the advertising rules"];
+    expect(play("CAREGIVER_LMIA", [...base, "Pay it"]).outcome?.reason).toBe("WORKER_PAID_LMIA");
+    expect(play("CAREGIVER_LMIA", [...base, "pay you cash"]).outcome?.reason).toBe("UNAUTHORIZED_WORK");
   });
 });
 
@@ -253,7 +272,7 @@ describe("state machine", () => {
     app = reducer(app, { type: "TAKE_ACTION", actionId: "resume", rolls: [0.9, 0] });
     expect(app.toast?.id).toBe(1);
     app = reducer(app, { type: "SELECT_ROUTE", route: "STARTUP_VISA" });
-    expect(app.runs.STARTUP_VISA?.currentSceneId).toBe("SUV_PITCH_CHEN");
+    expect(app.runs.STARTUP_VISA?.currentSceneId).toBe("SUV_VANCE_TRACTION");
     expect(app.runs.TOURIST_GAMBLE?.routeStats.resumeScore).toBe(15);
     expect(app.toast).toBeNull();
   });
@@ -291,18 +310,19 @@ describe("Lagos Life (merged from the Cursor build)", () => {
   const HONEST = ["about the visa story", "Leave the call", "Book the appointment", "Answer every question",
     "call, then wait", "Open the email"];
 
-  it("starts in Yaba with the original meters (hope 64 = interference 36)", () => {
+  it("starts in the player's area with interference 36 and energy 85 (rebalanced from 72 after simulation)", () => {
     const s = newRun(DB, "NIGERIA_LIFE");
     expect(s.currentSceneId).toBe("LAGOS_YABA_DAWN");
-    expect(s).toMatchObject({ walletNgn: 280000, energy: 72, desperation: 36 });
+    expect(s).toMatchObject({ walletNgn: 280000, energy: 85, desperation: 36 });
     expect(s.routeStats.papers).toBe(18);
   });
 
-  it("the remote-job path runs out of energy (original balance, kept on purpose)", () => {
+  it("the remote-job path wins when the interview goes well, and loops back when NEPA strikes", () => {
     const s = play("NIGERIA_LIFE", ["hunt remote jobs", "Rewrite the CV", "Take the interview",
       "Use the offer as the spine", "Answer every question", "call, then wait", "Open the email"]);
-    expect(s.outcome?.result).toBe("fail");
-    expect(s.energy).toBeLessThanOrEqual(12);
+    expect(s.outcome?.result).toBe("win");
+    const nepa = playR("NIGERIA_LIFE", ["hunt remote jobs", "Rewrite the CV", ["Take the interview", 0.99]]);
+    expect(nepa.currentSceneId).toBe("LAGOS_YABA_DUSK");
   });
 
   it("a borrowed bank statement is an instant fail", () => {
@@ -332,8 +352,8 @@ describe("Lagos Life (merged from the Cursor build)", () => {
 
   it("trap chance rises with interference, as in the original formula", () => {
     const s = newRun(DB, "NIGERIA_LIFE");
-    expect(trapChance(DB, s)).toBeCloseTo(0.05 + Math.pow(0.36, 1.65) * 0.72, 6);
-    expect(trapChance(DB, { ...s, desperation: 100 })).toBeCloseTo(0.77, 6);
+    expect(trapChance(DB, s)).toBeCloseTo(0.05 + Math.pow(0.36, 1.65) * 0.48, 6);
+    expect(trapChance(DB, { ...s, desperation: 100 })).toBeCloseTo(0.53, 6);
     expect(trapChance(DB, newRun(DB, "STARTUP_VISA"))).toBe(0);
   });
 
@@ -456,7 +476,7 @@ describe("Express Entry route", () => {
     const s = play("EXPRESS_ENTRY", ["three months first", "official express transcript", "Refresh the rounds",
       "Enrol at the French institute", "Update your profile", "Refresh the rounds", "Start the application"]);
     expect(presentChoices(DB, s).find((c) => c.text.startsWith("Submit six months"))?.enabled).toBe(false);
-    const f = choose(DB, s, presentChoices(DB, s).findIndex((c) => c.text.startsWith("Borrow")));
+    const f = choose(DB, s, choiceIndex(s, (c) => c.text.startsWith("Borrow")));
     expect(f.outcome?.reason).toBe("MISREPRESENTATION");
   });
 
@@ -478,9 +498,14 @@ describe("Student pathway", () => {
     expect(rankFor(DB, s)?.id).toBe("pgwp");
   });
 
-  it("funds below tuition + CAD 23,448 + travel send you back to the funding plan", () => {
-    const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "Family sponsorship", "funds are ready"]);
-    expect(s.currentSceneId).toBe("ST_FUNDS_SHORT");
+  it("submitting stays locked (with the amount shown) until funds cover tuition + CAD 23,448; only your program's button shows", () => {
+    const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "Family sponsorship"]);
+    const ready = presentChoices(DB, s).filter((c) => c.text.startsWith("The funds are ready"));
+    expect(ready).toHaveLength(1);
+    expect(ready[0].enabled).toBe(false);
+    expect(ready[0].lockedHint).toContain("57,448");
+    const deferred = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "Family sponsorship", "Defer a year"]);
+    expect(deferred.walletCad).toBe(s.walletCad + 9000);
   });
 
   it("each funding source can only be used once", () => {
@@ -522,7 +547,7 @@ describe("Student pathway", () => {
     const picks = ["Master's in Engineering", "Work out the money", ...FUND_ALL, "funds are ready", "specific plan",
       "Wait for the decision", "Board the flight", "proper boots", "host family", "Campus cafe", "Library every night", "Book IELTS"];
     for (const p of picks) {
-      const idx = presentChoices(DB, app.runs.STUDY_PERMIT!).findIndex((c) => c.text.includes(p));
+      const idx = choiceIndex(app.runs.STUDY_PERMIT!, (c) => c.text.includes(p));
       app = reducer(app, { type: "CHOOSE", index: idx, rolls: [1, 0] });
     }
     app = reducer(app, { type: "FOLLOW_UNLOCK" });
@@ -535,7 +560,7 @@ describe("Student pathway", () => {
     expect(s.routeStats.crsScore).toBe(513);
     s = choose(DB, s, 0); // refresh the rounds page
     expect(s.currentSceneId).toBe("EE_BELOW");
-    s = choose(DB, s, presentChoices(DB, s).findIndex((c) => c.text.startsWith("Work a second year")));
+    s = choose(DB, s, choiceIndex(s, (c) => c.text.startsWith("Work a second year")));
     expect(s.routeStats.crsScore).toBe(521);
     s = choose(DB, s, 0);
     expect(s.currentSceneId).toBe("EE_ITA_CEC");
@@ -545,7 +570,7 @@ describe("Student pathway", () => {
 describe("choice cutscenes", () => {
   const pickAndDescribe = (route: RouteId, picks: string[], last: string) => {
     const before = play(route, picks);
-    const idx = presentChoices(DB, before).findIndex((c) => c.text.includes(last));
+    const idx = choiceIndex(before, (c) => c.text.includes(last));
     const choice = DB.scenes[before.currentSceneId].choices![idx];
     const after = choose(DB, before, idx);
     return describeChoice(DB, before, after, choice.text, choice.label, choice.feedback ?? "");
@@ -657,7 +682,7 @@ describe("player profiles", () => {
       "Sell the plot", "Crowdfund", "Education loan", "funds are ready", "specific plan", "Wait for the decision",
       "Board the flight", "proper boots", "host family", "Campus cafe", "Library every night", "Book IELTS"];
     for (const p of picks) {
-      const idx = presentChoices(DB, app.runs.STUDY_PERMIT!).findIndex((c) => c.text.includes(p));
+      const idx = choiceIndex(app.runs.STUDY_PERMIT!, (c) => c.text.includes(p));
       expect(idx, p).toBeGreaterThanOrEqual(0);
       app = reducer(app, { type: "CHOOSE", index: idx, rolls: [1, 0] });
     }
@@ -729,7 +754,7 @@ describe("Kawosoke (asylum claims inside the Tourist Gamble)", () => {
   const tourist = (profile: PlayerProfile | null = null) => initialState(DB, profile).runs.TOURIST_GAMBLE!;
   function walk(s: GameState, picks: string[]): GameState {
     for (const pick of picks) {
-      const idx = presentChoices(DB, s).findIndex((c) => fillText(c.text, profileVars(null)).includes(pick) || c.text.includes(pick));
+      const idx = choiceIndex(s, (c) => fillText(c.text, profileVars(null)).includes(pick) || c.text.includes(pick));
       expect(idx, `choice containing "${pick}" at ${s.currentSceneId}`).toBeGreaterThanOrEqual(0);
       s = dismissPopup(choose(DB, s, idx, [1, 0]));
     }
@@ -939,7 +964,7 @@ describe("Year One in Canada and community-story scenes", () => {
     let app = reducer(initialState(), { type: "SELECT_ROUTE", route: "TOURIST_GAMBLE" });
     for (const pick of ["Kawosoke at the counter", "you were outed", "Legal Aid", "Gather evidence", "line by line",
       "say 'I don't remember'", "Explain, with your evidence"]) {
-      const idx = presentChoices(DB, app.runs.TOURIST_GAMBLE!).findIndex((c) => c.text.includes(pick));
+      const idx = choiceIndex(app.runs.TOURIST_GAMBLE!, (c) => c.text.includes(pick));
       app = reducer(app, { type: "CHOOSE", index: idx, rolls: [1, 0] });
     }
     app = reducer(app, { type: "FOLLOW_UNLOCK" });
@@ -1140,6 +1165,21 @@ describe("meta-progression", () => {
     m = toggleEquip(toggleEquip(toggleEquip(m, "malt-bread"), "steady-head"), "prayer-warrior");
     expect(m.equipped).toEqual(["malt-bread", "steady-head"]);
   });
+});
+
+describe("balance (seeded simulated playthroughs)", () => {
+  // npm run simulate prints the full report; these are the guard rails.
+  for (const route of PLAYABLE_ROUTES) {
+    it(`${route}: a thoughtful player wins sometimes, never always; a random one rarely; nobody gets stuck`, () => {
+      const smart = simulate(DB, route, "smart", 300, 11);
+      const random = simulate(DB, route, "random", 300, 11);
+      const winish = (r: typeof smart) => (r.win + r.neutral) / r.runs;
+      expect(smart.win / smart.runs, "smart wins").toBeGreaterThanOrEqual(0.2);
+      expect(smart.win / smart.runs, "smart doesn't always win").toBeLessThanOrEqual(0.9);
+      expect(winish(random), "random does worse than smart").toBeLessThan(winish(smart) + 0.05);
+      expect(smart.stuck / smart.runs, "stuck runs").toBeLessThanOrEqual(0.05);
+    });
+  }
 });
 
 describe("saves", () => {
