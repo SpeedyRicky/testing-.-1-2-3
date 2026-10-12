@@ -10,7 +10,8 @@ Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · lucide-react.
 ```bash
 npm install
 npm run dev          # open http://localhost:3000 once the terminal says "Ready"
-npm test             # 122 engine tests
+npm test             # 144 engine tests, including seeded balance checks
+npm run simulate     # balance report: thousands of simulated playthroughs per route
 npm run lint
 npm run build
 ```
@@ -49,6 +50,42 @@ Their name matches your heritage (`game/family.ts`):
   grain elevator (Manitoba, Saskatchewan) or a harbour of coloured houses (Atlantic), with snow.
 - A sister or brother in Canada sets `siblingInCanada`, worth 15 CRS points in Express Entry (an aunty is not).
 
+## Risky choices
+Some choices are gambles: the button shows the chance of success (a 🎲 chip, green when likely, red when a long shot),
+worked out from your preparation (`choice.gamble` in `scenarios.json`: base `odds`, a `bonus` per stat point, and
+`success`/`fail` branches with their own effects and destinations). Examples: IELTS with three months of study
+(CLB 9, or "one band short" at CLB 8) versus booking for Saturday; the study permit decision, driven by your study
+plan; a live demo for Mr. Chen; "why not Port Harcourt?" at the hearing, driven by your evidence. Frauds are never
+gambles: they always fail.
+
+## Japa Points, the Oja market and the daily challenge
+- **Japa Points (JP):** 10 for finishing a run, 30 for a win, 25 for a new ending, 5 per new level star, plus the
+  daily challenge. Lifetime JP sets your title (JJC → Japa apprentice → Visa hustler → Paper chase pro → Japa legend).
+- **Oja market:** perks that change your next runs (equip two): +15 energy, −10 Village People, +15% money, 30% fewer
+  traps, +6% on every risky choice, +10 Street Cred. Plus name flair next to your username.
+- **Daily challenge:** the same route and modifier for every player each day (Naira crash day, Harmattan, Wey Sabi is
+  in town, Lucky Friday, Strike season, Owambe weekend). Win for 60 JP × your streak bonus (up to ×2).
+- **Streak:** finish a run on consecutive days.
+- Progress is saved per player on this device (`japa.meta.v1`); mid-run state too (`japa.save.v1`), so a refresh
+  continues where you were. A first-time "How to play" tour opens once; the ? button reopens it.
+
+## Balance
+`game/simulate.ts` plays each route thousands of times with three seeded players: random, careful (avoids frauds and
+dead ends) and smart (also manages energy and nerves, avoids loops, likes good odds). Win rates for the smart player
+after tuning:
+
+| Route | Smart win | Notes |
+|---|---|---|
+| Nigeria | 42% | was 13% before tuning (energy ran out) |
+| Student | 37% | grades and program choice decide most losses |
+| Express Entry | 64% | plus 27% switch to the Student route |
+| Startup Pitch | 44% | one weak answer costs you unless a gamble lands |
+| Tourist Gamble | 76% | about 67 days per win; 21% run out of money |
+| LMIA Interview | 82% | short, and the right answers are learnable |
+| Year One | 30% back in your field | 65% "surviving", which is still a pass |
+
+The balance tests fail if a smart player wins less than 20% or more than 90% of a route, or if runs get stuck.
+
 ## Levels
 Every route is split into named levels (3 to 5 each, 26 in all), set under `routes.<ROUTE>.levels` in
 `game/scenarios.json`: a title, a goal, the scenes it covers and two bonus-star targets. Finishing a level earns one
@@ -82,7 +119,7 @@ Effects only → Muted** and is remembered. Grooves are data in `game/music.ts`;
 To use licensed recordings for a mood, see `public/music/README.md`.
 
 ## Endings cabinet and Reality checks
-Every ending (46 so far) ends with a **Reality check**: one plain rule from the real process (`outcome.lesson` on the
+Every ending (49 so far) ends with a **Reality check**: one plain rule from the real process (`outcome.lesson` on the
 scene, or `routes.<ROUTE>.lessons` by reason). The **Endings** chip in the header counts the endings you've found on
 this device (`localStorage` key `japa.endings.v1`) and opens a cabinet grouped by route. A test fails if any ending
 has no lesson.
@@ -147,6 +184,9 @@ game/family.ts                       the relative in Canada: heritage from the n
 docs/pathways-deep-dive.html         research: 2025-2026 rules per route, replay levers, scenario backlog
 docs/community-voices.html           research: what Nigerians report about each route, and the scene each became
 game/endings.ts                      every ending, its key and its Reality check lesson
+game/meta.ts, app/components/Meta.tsx      Japa Points, titles, perks, flair, daily challenge, streak, Japa Hub
+game/save.ts                         mid-run saves; game/simulate.ts: the balance simulator
+app/components/Tutorial.tsx, OddsChip.tsx  first-play tour; the odds chip on risky choices
 game/levels.ts, app/components/Levels.tsx   levels, stars, banner, level map and replay
 game/music.ts, app/audio/engine.ts, app/components/Sound.tsx   grooves and moods, the Web Audio band, the sound toggle
 app/components/Endings.tsx           Endings chip, cabinet, new-ending badge, Reality check box

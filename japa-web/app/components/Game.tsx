@@ -11,6 +11,7 @@ import { Person } from "./Person";
 import { CinematicProvider, SpeedToggle, useCinematic } from "./Cinematic";
 import { EndingsButton, RealityCheck } from "./Endings";
 import { AwardToast, MetaChip, RunModsChip, useRunRewards } from "./Meta";
+import { HelpButton, Tutorial } from "./Tutorial";
 import { LevelBanner, LevelStrip, useLevelTracking } from "./Levels";
 import { SoundToggle, useSound } from "./Sound";
 import { endingKey } from "@/game/endings";
@@ -134,6 +135,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
   const run = activeRun(state);
   const cfg = DB.routes[state.activeRoute];
   useRunRewards(run, dispatch);
+  const [helpOpen, setHelpOpen] = useState(false);
   useLevelTracking(run);
   const { setMood, play } = useSound();
   const mood = run ? moodFor(DB, run) : "lagos";
@@ -208,6 +210,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
             ) : null}
           </div>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <HelpButton onClick={() => setHelpOpen(true)} />
           <MetaChip dispatch={dispatch} run={run} />
           <EndingsButton />
           <SoundToggle />
@@ -233,6 +236,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
 
       <LevelBanner />
       <AwardToast />
+      <Tutorial forceOpen={helpOpen} onClose={() => setHelpOpen(false)} />
       <footer className="relative z-10 mx-auto max-w-6xl border-t border-white/10 px-4 py-6 text-[11px] leading-relaxed text-zinc-500 sm:px-6">
         A simulation for entertainment. It is not legal or immigration advice. Numbers are illustrative; rules, fees and
         cutoffs change often, so check IRCC (canada.ca) before you act.
