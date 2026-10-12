@@ -15,6 +15,7 @@ import {
   type Heritage, type Relation, type Relative,
 } from "./family";
 import { initialState, makeReducer } from "./machine";
+import { allEndings, endingKey, lessonFor } from "./endings";
 import type { GameState, RouteId, StatKey } from "./types";
 
 const reducer = makeReducer();
@@ -863,6 +864,30 @@ describe("family in Canada", () => {
     expect(withSister.siblingInCanada).toBe(1);
     expect(withAunty.siblingInCanada).toBe(0);
     expect(withSister.crsScore! - withAunty.crsScore!).toBe(15);
+  });
+});
+
+describe("endings cabinet and reality checks", () => {
+  it("lists every playable ending once, including the dashboard's own", () => {
+    const e = allEndings(DB);
+    expect(new Set(e.map((x) => x.key)).size).toBe(e.length);
+    expect(e.some((x) => x.key === "TOURIST_GAMBLE:STAY_EXPIRED")).toBe(true);
+    expect(e.some((x) => x.key === "EXPRESS_ENTRY:EE_COPR" && x.result === "win")).toBe(true);
+  });
+
+  it("keys a finished run by its ending scene, or by reason on the dashboard", () => {
+    const fraud = play("EXPRESS_ENTRY", ["leaked"]);
+    expect(endingKey(DB, fraud)).toBe("EXPRESS_ENTRY:EE_FRAUD_IELTS");
+    const expired = takeAction(DB, { ...landed(), timeRemainingDays: 1 }, "rest", [0.99, 0]).state;
+    expect(endingKey(DB, expired)).toBe("TOURIST_GAMBLE:STAY_EXPIRED");
+    expect(endingKey(DB, newRun(DB, "EXPRESS_ENTRY"))).toBeNull();
+  });
+
+  it("every ending teaches something", () => {
+    const missing = allEndings(DB).filter((e) => !e.lesson).map((e) => e.key);
+    expect(missing).toEqual([]);
+    const expired = takeAction(DB, { ...landed(), timeRemainingDays: 1 }, "rest", [0.99, 0]).state;
+    expect(lessonFor(DB, expired)).toBeTruthy();
   });
 });
 

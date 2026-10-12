@@ -631,6 +631,12 @@
             }
           }
         ]
+      },
+      "lessons": {
+        "OUT_OF_MONEY": "Visitors must show they can support themselves for the whole stay. Most people underestimate rent, transit and winter clothes in their first months.",
+        "STAY_EXPIRED": "Visitors are usually allowed up to six months. You can apply to extend before your status expires; staying past it without applying makes you out of status.",
+        "BURNOUT": "Job hunting without the right to work is exhausting. Settlement agencies, libraries and newcomer job programs are free, and most are open to visitors.",
+        "UNAUTHORIZED_WORK": "Working as a visitor, even cash shifts or an 'unpaid trial', is unauthorized work. It can lead to removal and make future applications fail."
       }
     },
     "CAREGIVER_LMIA": {
@@ -1127,7 +1133,8 @@
       "outcome": {
         "result": "win",
         "reason": "JAPA_APPROVED",
-        "title": "You japa"
+        "title": "You japa",
+        "lesson": "A visa in the passport is permission to travel, not to stay. The officer at the Canadian port of entry still decides, and your status is only as good as the reason you gave."
       }
     },
     "LAGOS_ENDING_STAY": {
@@ -1143,7 +1150,8 @@
       "outcome": {
         "result": "fail",
         "reason": "STAYED_IN_LAGOS",
-        "title": "The country keeps you"
+        "title": "The country keeps you",
+        "lesson": "Most applications that fail can be made again. A refusal letter usually names the reason (funds, ties, purpose); fix that reason before you pay another fee."
       }
     },
     "LAGOS_RESOLVE": {
@@ -1298,7 +1306,8 @@
         "result": "win",
         "reason": "SUV_LOS_ISSUED",
         "title": "LETTER OF SUPPORT ISSUED",
-        "subtitle": "The committee backs your startup. Now the real paperwork begins."
+        "subtitle": "The committee backs your startup. Now the real paperwork begins.",
+        "lesson": "A Letter of Support is only step one. IRCC still assesses the business, the founders' funds and admissibility, and the Startup Visa program has been capped and paused in recent years. Check its status before paying anyone."
       }
     },
     "SUV_PITCH_FAIL": {
@@ -1314,7 +1323,8 @@
       "outcome": {
         "result": "fail",
         "reason": "SUV_REJECTED",
-        "title": "Suv Rejected"
+        "title": "Suv Rejected",
+        "lesson": "Designated organizations choose businesses they believe in; nobody can legitimately sell you a Letter of Support. Ads promising one for a fee are a common scam."
       }
     },
     "LMIA_INTERVIEW_KOVACS": {
@@ -1396,7 +1406,8 @@
       "outcome": {
         "result": "fail",
         "reason": "BLATANT_MISREPRESENTATION",
-        "title": "Blatant Misrepresentation"
+        "title": "Blatant Misrepresentation",
+        "lesson": "Lying in an interview that feeds an immigration application is misrepresentation too. Employers verify, and IRCC can refuse and bar you for five years."
       }
     },
     "LMIA_RESOLVE": {
@@ -1436,7 +1447,8 @@
         "result": "win",
         "reason": "LMIA_SPONSORSHIP_STARTED",
         "title": "EMPLOYER WILL SPONSOR",
-        "subtitle": "The LMIA process starts. The clock is still running."
+        "subtitle": "The LMIA process starts. The clock is still running.",
+        "lesson": "An employer willing to apply is the start. The LMIA itself is the employer's application to ESDC, the employer pays its fee, and charging a worker for it is illegal."
       }
     },
     "LMIA_DECLINED": {
@@ -1451,7 +1463,8 @@
       "outcome": {
         "result": "fail",
         "reason": "NO_SPONSORSHIP",
-        "title": "No Sponsorship"
+        "title": "No Sponsorship",
+        "lesson": "Most employers never sponsor: the LMIA costs them time, a CAD 1,000 fee and proof that no Canadian could do the job. Low-wage LMIAs are also paused in high-unemployment cities since 2024."
       }
     },
     "TOURIST_HUB": {
@@ -1622,7 +1635,8 @@
         "result": "win",
         "reason": "INTERVIEW_SECURED",
         "title": "You got the meeting",
-        "subtitle": "The Hidden LMIA Interview is unlocked. Your desperation walks in with you."
+        "subtitle": "The Hidden LMIA Interview is unlocked. Your desperation walks in with you.",
+        "lesson": "Visitors may look for work and attend interviews, but may not start working. The job only becomes real after a work permit is approved."
       },
       "unlocksRoute": "CAREGIVER_LMIA"
     },
@@ -1639,7 +1653,8 @@
       "outcome": {
         "result": "fail",
         "reason": "MISREPRESENTATION",
-        "title": "Flagged for misrepresentation"
+        "title": "Flagged for misrepresentation",
+        "lesson": "Borrowed or 'parked' money shown as your own is misrepresentation under section 40 of IRPA: refusal plus a five-year ban on applying. Officers ask for the source of large recent deposits."
       }
     },
     "EE_START": {
@@ -2145,7 +2160,8 @@
       "outcome": {
         "result": "win",
         "reason": "PERMANENT_RESIDENCE",
-        "title": "Permanent resident"
+        "title": "Permanent resident",
+        "lesson": "Permanent residence comes after the ITA, a complete application (police certificates, medical, funds, reference letters) and months of processing. Keep living in Canada at least two of every five years to keep it."
       }
     },
     "EE_SWITCH": {
@@ -2161,7 +2177,8 @@
       "outcome": {
         "result": "neutral",
         "reason": "SWITCHED_TO_STUDY",
-        "title": "Switching to the Student route"
+        "title": "Switching to the Student route",
+        "lesson": "Canadian education plus a year of Canadian work is the most common way people now get invited: Canadian Experience Class draws have dominated since 2024."
       },
       "unlocksRoute": "STUDY_PERMIT"
     },
@@ -2203,7 +2220,8 @@
       "outcome": {
         "result": "fail",
         "reason": "MISREPRESENTATION",
-        "title": "Flagged"
+        "title": "Flagged",
+        "lesson": "Test providers and IRCC check results directly. A 'leaked paper' is almost always a scam, and test fraud can lead to a misrepresentation finding."
       }
     },
     "EE_FRAUD_DOCS": {
@@ -2219,7 +2237,8 @@
       "outcome": {
         "result": "fail",
         "reason": "MISREPRESENTATION",
-        "title": "Flagged for misrepresentation"
+        "title": "Flagged for misrepresentation",
+        "lesson": "IRCC can verify transcripts, reference letters and certificates with the issuer. A forged document is misrepresentation: refusal and a five-year ban."
       }
     },
     "EE_FRAUD_JOB": {
@@ -2235,7 +2254,8 @@
       "outcome": {
         "result": "fail",
         "reason": "MISREPRESENTATION",
-        "title": "Flagged for misrepresentation"
+        "title": "Flagged for misrepresentation",
+        "lesson": "Since March 25, 2025 a job offer adds no CRS points. Anyone still selling a 'job offer for points' is selling nothing, and a fake offer is misrepresentation."
       }
     },
     "EE_FRAUD_FUNDS": {
@@ -2251,7 +2271,8 @@
       "outcome": {
         "result": "fail",
         "reason": "MISREPRESENTATION",
-        "title": "Flagged for misrepresentation"
+        "title": "Flagged for misrepresentation",
+        "lesson": "Express Entry proof of funds must be your own and available, usually shown with about six months of statements. Borrowed money does not count."
       }
     },
     "EE_BURNOUT": {
@@ -2267,7 +2288,8 @@
       "outcome": {
         "result": "fail",
         "reason": "BURNOUT",
-        "title": "Burnout"
+        "title": "Burnout",
+        "lesson": "An Express Entry profile stays in the pool for 12 months. Waiting is normal; burning out is optional. Rest, then update the profile."
       }
     },
     "ST_START": {
@@ -2674,7 +2696,8 @@
       "outcome": {
         "result": "fail",
         "reason": "STUDY_PERMIT_REFUSED",
-        "title": "Study permit refused"
+        "title": "Study permit refused",
+        "lesson": "Most study permit refusals cite purpose of visit, ties to home or funds. Reapply only after fixing the reason the officer gave; asking for the officer's notes shows exactly what they thought."
       }
     },
     "ST_ARRIVAL": {
@@ -2842,7 +2865,8 @@
       "outcome": {
         "result": "win",
         "reason": "PGWP_ISSUED",
-        "title": "Graduate with a PGWP"
+        "title": "Graduate with a PGWP",
+        "lesson": "Master's graduates can get up to a three-year post-graduation work permit, and master's programs are exempt from the field-of-study list."
       },
       "unlocksRoute": "EXPRESS_ENTRY",
       "unlockStartSceneId": "EE_CANADA_START",
@@ -2875,7 +2899,8 @@
       "outcome": {
         "result": "win",
         "reason": "PGWP_ISSUED",
-        "title": "Graduate with a PGWP"
+        "title": "Graduate with a PGWP",
+        "lesson": "College graduates now need a program on the field-of-study list (applications since November 2024) and CLB 5 in English or French to get a PGWP."
       },
       "unlocksRoute": "EXPRESS_ENTRY",
       "unlockStartSceneId": "EE_CANADA_START",
@@ -2908,7 +2933,8 @@
       "outcome": {
         "result": "fail",
         "reason": "NOT_PGWP_ELIGIBLE",
-        "title": "Graduated, no work permit"
+        "title": "Graduated, no work permit",
+        "lesson": "Programs at private career colleges are generally not PGWP-eligible. Check the school's PGWP status on the DLI list before paying a deposit."
       }
     },
     "ST_PROBATION": {
@@ -2924,7 +2950,8 @@
       "outcome": {
         "result": "fail",
         "reason": "ACADEMIC_PROBATION",
-        "title": "Academic probation"
+        "title": "Academic probation",
+        "lesson": "Study permits require you to stay enrolled and make progress. Failing courses costs tuition and can affect your status and later applications."
       }
     },
     "ST_STATUS_BREACH": {
@@ -2940,7 +2967,8 @@
       "outcome": {
         "result": "fail",
         "reason": "STATUS_BREACH",
-        "title": "Study permit conditions breached"
+        "title": "Study permit conditions breached",
+        "lesson": "Off-campus work is capped at 24 hours a week during classes. Working past it breaches your study permit conditions and can end your stay."
       }
     },
     "ST_FAKE_LOA": {
@@ -2956,7 +2984,8 @@
       "outcome": {
         "result": "fail",
         "reason": "MISREPRESENTATION",
-        "title": "Flagged for misrepresentation"
+        "title": "Flagged for misrepresentation",
+        "lesson": "Since December 2023 IRCC checks every letter of acceptance with the school. In 2023, hundreds of students faced removal over fake admission letters sold by an agent."
       }
     },
     "ST_FUNDS_PARKING": {
@@ -2972,7 +3001,8 @@
       "outcome": {
         "result": "fail",
         "reason": "MISREPRESENTATION",
-        "title": "Flagged for misrepresentation"
+        "title": "Flagged for misrepresentation",
+        "lesson": "Officers look for a history of savings, not a sudden deposit. Explain every large deposit with a source (salary, sale agreement, loan letter)."
       }
     },
     "ST_BURNOUT": {
@@ -2988,7 +3018,8 @@
       "outcome": {
         "result": "fail",
         "reason": "BURNOUT",
-        "title": "Burnout"
+        "title": "Burnout",
+        "lesson": "Food banks, campus counselling and student associations exist for this. Most international students report that the first winter is the hardest."
       }
     },
     "ST_PGWP_BACHELORS": {
@@ -3002,7 +3033,8 @@
       "outcome": {
         "result": "win",
         "reason": "PGWP_ISSUED",
-        "title": "Graduate with a PGWP"
+        "title": "Graduate with a PGWP",
+        "lesson": "Three or more years of Canadian study can mean a three-year PGWP and extra CRS points for Canadian education."
       },
       "unlocksRoute": "EXPRESS_ENTRY",
       "unlockStartSceneId": "EE_CANADA_START",
@@ -3079,7 +3111,8 @@
         "result": "fail",
         "reason": "MISREPRESENTATION",
         "title": "Refused at the border",
-        "subtitle": "Misrepresentation carries a five-year inadmissibility. The next flight to {airportCode} has a seat for you."
+        "subtitle": "Misrepresentation carries a five-year inadmissibility. The next flight to {airportCode} has a seat for you.",
+        "lesson": "A border officer can refuse entry even with a valid visa. Lying about the purpose of a visit is misrepresentation, with a five-year ban."
       }
     },
     "KW_POE": {
@@ -3667,7 +3700,8 @@
         "result": "win",
         "reason": "PROTECTED_PERSON",
         "title": "Protected person",
-        "subtitle": "Your real story, told straight, with evidence. Permanent residence is next."
+        "subtitle": "Your real story, told straight, with evidence. Permanent residence is next.",
+        "lesson": "Refugee protection rests on a real fear of persecution or serious harm, told consistently and backed by evidence. Protected persons can apply for permanent residence, but returning to the home country or renewing its passport can cost them the protection."
       }
     },
     "KW_FAKE_EXPOSED": {
@@ -3684,7 +3718,8 @@
         "result": "fail",
         "reason": "MISREPRESENTATION",
         "title": "Bought story, refused",
-        "subtitle": "Manifestly unfounded. No appeal, removal, and the paralegal has already sold your page to someone else."
+        "subtitle": "Manifestly unfounded. No appeal, removal, and the paralegal has already sold your page to someone else.",
+        "lesson": "Board members hear the same template stories many times. A fabricated claim can be found manifestly unfounded (no appeal to the Refugee Appeal Division), and fake claims make it harder for real ones to be believed."
       }
     },
     "KW_VILLAGE_REFUSED": {
@@ -3701,7 +3736,8 @@
         "result": "fail",
         "reason": "NO_NEXUS",
         "title": "Refused: no nexus",
-        "subtitle": "Village People Interference: 100%. Appeal options exist, but the juju is not a Convention ground."
+        "subtitle": "Village People Interference: 100%. Appeal options exist, but the juju is not a Convention ground.",
+        "lesson": "Refugee protection covers persecution for race, religion, nationality, political opinion or membership in a particular social group, or a personal risk the state can't protect you from. Spiritual attacks rarely meet that test."
       }
     },
     "KW_REFUSED": {
@@ -3718,7 +3754,8 @@
         "result": "fail",
         "reason": "CLAIM_REFUSED",
         "title": "Refused on credibility",
-        "subtitle": "Inconsistencies, embellishments and a TikTok. The appeal clock starts now."
+        "subtitle": "Inconsistencies, embellishments and a TikTok. The appeal clock starts now.",
+        "lesson": "Most refused claims fail on credibility: dates, places and details that change between the form, the interview and the hearing. Correct mistakes before the hearing, not during it."
       }
     },
     "KW_REFUSED_IFA": {
@@ -3735,7 +3772,8 @@
         "result": "fail",
         "reason": "IFA_FOUND",
         "title": "Internal flight alternative",
-        "subtitle": "Believed, refused. More evidence of who is looking for you might have changed it."
+        "subtitle": "Believed, refused. More evidence of who is looking for you might have changed it.",
+        "lesson": "For many Nigerian claims the deciding question is internal flight alternative: could you live safely in another city? Evidence of who is looking for you, and how far they can reach, decides it."
       }
     },
     "KW_ABANDONED": {
@@ -3752,7 +3790,8 @@
         "result": "fail",
         "reason": "CLAIM_ABANDONED",
         "title": "Claim over",
-        "subtitle": "Going home to the place you fear tells everyone you don't fear it."
+        "subtitle": "Going home to the place you fear tells everyone you don't fear it.",
+        "lesson": "Leaving Canada ends a pending refugee claim. Travelling back to the country you fear is strong evidence that you don't fear it."
       }
     },
     "EE_ITA_HEALTH": {
@@ -3839,7 +3878,8 @@
         "result": "fail",
         "reason": "NOT_PGWP_ELIGIBLE",
         "title": "PGWP refused",
-        "subtitle": "No language test, no PGWP. A three-week study plan would have saved two years."
+        "subtitle": "No language test, no PGWP. A three-week study plan would have saved two years.",
+        "lesson": "Since November 1, 2024 a PGWP needs a language test: CLB 7 for university graduates, CLB 5 for college graduates. Book it before your final term ends."
       }
     }
   },

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FileCheck2, Ghost, GraduationCap, Languages, MapPin, Plane, Sparkles, Trophy, Wallet, Zap } from "lucide-react";
 import { DB, choose, computeCrs, presentChoices, rankFor } from "@/game/engine";
+import { lessonFor } from "@/game/endings";
 import { describeChoice } from "@/game/cinematic";
 import { useCinematic } from "../Cinematic";
 import { usePlayer } from "../Player";
@@ -275,6 +276,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
                   {i + 1}
                 </span>
                 {t(c.text, run)}
+                {!c.enabled && c.lockedHint ? <span className="mt-1 block text-xs font-normal text-zinc-500">Locked: {t(c.lockedHint, run)}</span> : null}
               </button>
             ))}
           </div>
@@ -285,6 +287,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
       {ended && rank && (
         <GameOverModal
           rank={{ ...rank, title: t(rank.title), blurb: t(rank.blurb) }}
+          lesson={lessonFor(DB, run) ? t(lessonFor(DB, run), run) : undefined}
           interference={run.desperation}
           routeName={cfg.title}
           onReset={() => dispatch({ type: "RESTART" })}

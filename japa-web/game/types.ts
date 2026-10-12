@@ -147,6 +147,8 @@ export interface Outcome {
   subtitle?: string;
   /** For RESOLUTION-decided outcomes: the scene whose rule decided it. */
   decidedBy?: string;
+  /** "Reality check": what this ending teaches about the real process. */
+  lesson?: string;
 }
 
 export interface DashboardAction {
@@ -251,6 +253,8 @@ export interface RouteConfig {
   /** If any condition holds after a move, the run jumps to sceneId. */
   collapse?: { any: Conditions; sceneId: string };
   traps?: TrapConfig;
+  /** Reality-check lessons by outcome reason, for endings without their own `lesson`. */
+  lessons?: Record<string, string>;
   marketShock?: MarketShockConfig;
   /** End-of-run ranks, first match wins. */
   ranks?: Rank[];

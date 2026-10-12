@@ -9,6 +9,7 @@ import { LayoutContainer } from "./LayoutContainer";
 import { LagosBackdrop } from "./layouts/LagosStageLayout";
 import { Person } from "./Person";
 import { CinematicProvider, SpeedToggle } from "./Cinematic";
+import { EndingsButton, RealityCheck, useRecordEnding } from "./Endings";
 import { Onboarding } from "./Onboarding";
 import { PlayerProvider } from "./Player";
 import type { PlayerProfile } from "@/game/profile";
@@ -103,6 +104,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
 }) {
   const run = activeRun(state);
   const cfg = DB.routes[state.activeRoute];
+  useRecordEnding(run);
   const profile = state.profile;
 
   return (
@@ -161,7 +163,8 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
               </div>
             ) : null}
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <EndingsButton />
           <SpeedToggle />
           <button
             type="button"
@@ -175,6 +178,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
         {run && (
           <div key={state.activeRoute} className="animate-fade-in">
             <LayoutContainer run={run} dispatch={dispatch} toast={state.toast} />
+            <RealityCheck run={run} className="mt-4" />
           </div>
         )}
       </main>

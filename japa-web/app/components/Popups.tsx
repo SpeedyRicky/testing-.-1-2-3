@@ -106,9 +106,11 @@ export function PopupModal({ popup, onDismiss }: { popup: Popup; onDismiss: () =
 }
 
 export function GameOverModal({
-  rank, interference, routeName, next, onReset,
+  rank, interference, routeName, next, onReset, lesson,
 }: {
   rank: Rank;
+  /** "Reality check" for this ending. */
+  lesson?: string;
   interference: number;
   routeName: string;
   next?: { label: string; onClick: () => void }[];
@@ -122,6 +124,12 @@ export function GameOverModal({
         <div className="mt-5"><RankGlyph id={rank.id} /></div>
         <h3 className="mt-4 text-center text-3xl font-black tracking-tight text-white">{rank.title}</h3>
         <p className="mt-3 text-center text-sm leading-7 text-zinc-200">{rank.blurb}</p>
+        {lesson ? (
+          <div className="mt-4 rounded-2xl border border-sky-300/25 bg-black/25 px-4 py-3">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-sky-200">Reality check</p>
+            <p className="mt-1 text-sm leading-6 text-zinc-100">{lesson}</p>
+          </div>
+        ) : null}
         <p className="mt-4 text-center font-mono text-xs text-zinc-400">Village People Interference {Math.round(interference)}%</p>
         {next && next.length > 0 && (
           <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-3">

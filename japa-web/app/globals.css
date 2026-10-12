@@ -301,3 +301,12 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* "New ending" badge under the Endings chip: pops in, then fades away by itself. */
+.ending-badge { animation: ending-badge 4.5s ease forwards; }
+@keyframes ending-badge {
+  0% { opacity: 0; transform: translateY(-6px) scale(0.96); }
+  8%, 80% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(-4px); visibility: hidden; }
+}
+@media (prefers-reduced-motion: reduce) { .ending-badge { animation-duration: 0.01s; animation-delay: 4s; } }
