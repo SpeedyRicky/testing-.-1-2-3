@@ -164,6 +164,13 @@ export const STAGES = {
     people: [{ who: "officer", x: 26, pose: "wave", caption: "Officer" },
       { who: "you", x: 50, pose: "cheer", caption: "You", wear: SCARF, moods: { fail: "slump" } }, { who: "ada", x: 72, pose: "wave", caption: "Ada (video)", scale: 0.8 }],
   },
+  "pitch-room": {
+    wall: "#14532d", ground: "carpet",
+    props: [{ kind: "window", x: 14, w: 80, window: "night" },
+      { kind: "screen", x: 60, w: 210, label: "Zoom · Maple Venture Incubator · 4 participants" },
+      { kind: "desk2", x: 60, w: 160 }, { kind: "laptop2", x: 60 }],
+    people: [{ who: "you", x: 60, pose: "sit", caption: "You", moods: { win: "cheer", fail: "slump", talk: "talk" } }],
+  },
 } satisfies Record<KitStageKind, StageSpec>;
 
 

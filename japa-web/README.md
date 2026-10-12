@@ -1,17 +1,29 @@
 # Japa: The Great Escape
 
 Survive Lagos Life, study in Canada, chase an Express Entry invitation, pitch an incubator, gamble 180 days as a
-tourist, and face Mr. Kovacs in the boardroom. Every route plays out in animated 2D scenes.
+tourist, and face Mr. Kovacs in the boardroom. Every route plays out in animated 2D scenes, and every choice
+plays a short cutscene.
 Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · lucide-react.
 
 ## Run it
 ```bash
 npm install
 npm run dev          # open http://localhost:3000 once the terminal says "Ready"
-npm test             # 64 engine tests
+npm test             # 72 engine tests
 npm run lint
 npm run build
 ```
+
+## Choice cutscenes
+After every choice (and every Tourist Gamble action) a ~3 second cutscene plays in the scene where you chose:
+1. **Say:** the camera pushes in, a big "You" steps in and the line appears word by word in a speech bubble.
+2. **React:** the other character responds, the choice's label slams down as a stamp, and the scene reacts to the
+   tone: confetti (good), maple-leaf confetti (win), sweat drops and a red shake (bad), sirens (fraud), coins falling
+   or flying away (money in or out).
+3. **Results:** each stat change pops out as a green or red chip.
+
+It is built automatically from what the choice changed (`game/cinematic.ts`), so new scenes need no extra work.
+Tap, Escape or Skip ends it early; the header switch toggles **Full** (3 s) and **Quick** (1.3 s) and is remembered.
 
 ## Routes
 | Tab | Layout | What happens |
@@ -31,6 +43,8 @@ app/globals.css, app/lagos-2d.css    Tailwind v4 theme + the hand-built 2D Lagos
 app/canada-2d.css                    2D kit: Toronto skyline, CN Tower, snow, streetcar, interiors, props, extra poses
 app/components/stages.ts             every non-Lagos 2D location as data (sky, ground, props, people, moods)
 app/components/Stage2D.tsx           draws any stage; SceneStage picks LagosStage or the kit
+app/components/Cinematic.tsx, app/cinematic.css   the after-choice cutscene, its provider and the speed switch
+game/cinematic.ts                    pure rules: which stats changed, good or bad, which effects to play
 app/components/Game.tsx              header, route tabs, Reset run
 app/components/LayoutContainer.tsx   reads the current scene, picks layout + background by route, draws stat bars
 app/components/layouts/              LagosStageLayout, ZoomGridLayout, DashboardLayout, CorporateOfficeLayout

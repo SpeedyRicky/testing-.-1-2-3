@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { FileCheck2, Ghost, GraduationCap, Languages, MapPin, Plane, Sparkles, Trophy, Wallet, Zap } from "lucide-react";
 import { DB, choose, computeCrs, presentChoices, rankFor } from "@/game/engine";
+import { describeChoice } from "@/game/cinematic";
+import { useCinematic } from "../Cinematic";
 import { chance, rolls as rollDice } from "@/game/rng";
 import type { BarSpec, GameState, RouteId, Transit } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
@@ -180,18 +182,28 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
     return () => window.clearInterval(id);
   }, [shock, live, dispatch]);
 
+  const { play } = useCinematic();
+
+  /** Choice -> cutscene -> travel ribbon -> next scene. The meters update at once underneath. */
   function pick(index: number) {
     if (moving || run.popup) return;
     const rolls = rollDice();
     const next = choose(DB, run, index, rolls); // same pure rules the reducer runs
     if (next === run) return;
+    const choice = DB.scenes[run.currentSceneId]?.choices?.[index];
+    // Describe the choice itself; a Village People trap gets its own pop-up afterwards.
+    const clean = next.popup ? choose(DB, run, index, [1, 0]) : next;
+    const spec = describeChoice(DB, run, clean, choice?.text ?? "", choice?.label ?? "", choice?.feedback ?? "");
     dispatch({ type: "CHOOSE", index, rolls });
+    const from = run.currentSceneId;
+    setHold(from);
     const dest = DB.scenes[next.currentSceneId];
     const mode = dest?.transitIn ?? "none";
-    if (mode === "none" || !dest) return;
-    setHold(run.currentSceneId);
-    setTravel({ mode, destination: dest.location ?? "" });
-    timer.current = window.setTimeout(() => { setHold(null); setTravel(null); }, TRAVEL_MS[mode]);
+    play({ spec, stage: DB.scenes[from]?.stage ?? "room-night" }, () => {
+      if (mode === "none" || !dest) { setHold(null); return; }
+      setTravel({ mode, destination: dest.location ?? "" });
+      timer.current = window.setTimeout(() => { setHold(null); setTravel(null); }, TRAVEL_MS[mode]);
+    });
   }
 
   const rank = ended ? rankFor(DB, run) : null;
@@ -267,7 +279,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
         </article>
       </div>
 
-      {run.popup && !run.outcome && <PopupModal popup={run.popup} onDismiss={() => dispatch({ type: "DISMISS_POPUP" })} />}
+      {run.popup && !run.outcome && !moving && <PopupModal popup={run.popup} onDismiss={() => dispatch({ type: "DISMISS_POPUP" })} />}
       {ended && rank && (
         <GameOverModal
           rank={rank}

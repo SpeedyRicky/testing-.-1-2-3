@@ -21,7 +21,7 @@ export type LagosStageKind =
 export type KitStageKind =
   | "ielts-centre" | "bank-hall" | "university-registry" | "french-class" | "ircc-portal"
   | "pearson-arrivals" | "toronto-street" | "campus" | "lecture-hall" | "tim-hortons" | "basement"
-  | "job-fair" | "library" | "warehouse" | "boardroom" | "graduation" | "pr-landing";
+  | "job-fair" | "library" | "warehouse" | "boardroom" | "graduation" | "pr-landing" | "pitch-room";
 export type StageKind = LagosStageKind | KitStageKind;
 /** How the player travels into a scene (drawn by TravelRibbon). */
 export type Transit = "none" | "trek" | "danfo" | "okada" | "call" | "plane" | "streetcar" | "snow-walk";

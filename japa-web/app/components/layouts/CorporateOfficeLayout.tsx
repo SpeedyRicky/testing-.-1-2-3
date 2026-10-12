@@ -1,7 +1,9 @@
 "use client";
 
 import { Building2, RotateCcw } from "lucide-react";
-import { DB, currentScene, formatLabel, presentChoices } from "@/game/engine";
+import { DB, choose, currentScene, formatLabel, presentChoices } from "@/game/engine";
+import { describeChoice } from "@/game/cinematic";
+import { useCinematic } from "../Cinematic";
 import type { LayoutProps } from "../LayoutContainer";
 import { FeedbackChip } from "../FeedbackChip";
 import { ShareOnX } from "../Popups";
@@ -11,6 +13,14 @@ export function CorporateOfficeLayout({ run, dispatch, bars }: LayoutProps) {
   const scene = currentScene(DB, run);
   const choices = presentChoices(DB, run);
   const won = run.outcome?.result === "win";
+  const { play } = useCinematic();
+  function pick(index: number) {
+    const choice = scene?.choices?.[index];
+    const next = choose(DB, run, index);
+    if (!choice || next === run) return;
+    dispatch({ type: "CHOOSE", index });
+    play({ spec: describeChoice(DB, run, next, choice.text, choice.label, choice.feedback ?? ""), stage: "boardroom", reactor: "kovacs" });
+  }
   // Past exchanges: every visited dialogue scene that got an answer.
   const transcript = run.history.filter((h) => h.answer).map((h) => ({ ...h, scene: DB.scenes[h.sceneId] }));
 
@@ -67,7 +77,7 @@ export function CorporateOfficeLayout({ run, dispatch, bars }: LayoutProps) {
               </div>
               <div className="eyebrow pt-2">Your response</div>
               {choices.map((c) => (
-                <button key={c.index} className="choice-btn" disabled={!c.enabled} onClick={() => dispatch({ type: "CHOOSE", index: c.index })}>
+                <button key={c.index} className="choice-btn" disabled={!c.enabled} onClick={() => pick(c.index)}>
                   {c.text}
                 </button>
               ))}

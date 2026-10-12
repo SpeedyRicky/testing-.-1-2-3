@@ -1,7 +1,9 @@
 "use client";
 
 import { CheckCircle2, Mic, MicOff, MonitorUp, PhoneOff, RotateCcw, Users, Video, XCircle } from "lucide-react";
-import { DB, currentScene, explainResolution, presentChoices } from "@/game/engine";
+import { DB, choose, currentScene, explainResolution, presentChoices } from "@/game/engine";
+import { describeChoice } from "@/game/cinematic";
+import { useCinematic } from "../Cinematic";
 import type { GameState, StatKey } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
 import { FeedbackChip } from "../FeedbackChip";
@@ -102,6 +104,15 @@ export function ZoomGridLayout({ run, dispatch, bars }: LayoutProps) {
   const scene = currentScene(DB, run);
   const speaking = run.outcome ? null : PANEL.find((p) => scene?.speaker?.startsWith(p.name))?.id ?? null;
   const choices = presentChoices(DB, run);
+  const { play } = useCinematic();
+  function pick(index: number) {
+    const choice = scene?.choices?.[index];
+    const next = choose(DB, run, index);
+    if (!choice || next === run) return;
+    dispatch({ type: "CHOOSE", index });
+    const asker = PANEL.find((p) => p.id === speaking)?.who ?? "vance";
+    play({ spec: describeChoice(DB, run, next, choice.text, choice.label, choice.feedback ?? ""), stage: "pitch-room", reactor: asker });
+  }
   const mood: TileMood = run.outcome ? (run.outcome.result === "win" ? "win" : "fail") : "listen";
   const answered = run.history.filter((h) => h.answer).length;
 
@@ -146,7 +157,7 @@ export function ZoomGridLayout({ run, dispatch, bars }: LayoutProps) {
             <p className="mt-2 text-[15px] leading-relaxed text-zinc-100">{scene?.dialogue}</p>
             <div className="mt-5 space-y-2.5">
               {choices.map((c) => (
-                <button key={c.index} className="choice-btn" disabled={!c.enabled} onClick={() => dispatch({ type: "CHOOSE", index: c.index })}>
+                <button key={c.index} className="choice-btn" disabled={!c.enabled} onClick={() => pick(c.index)}>
                   {c.text}
                   {!c.enabled && c.lockedHint && <span className="mt-1 block text-xs text-zinc-500">Locked: {c.lockedHint}</span>}
                 </button>

@@ -7,10 +7,19 @@ import { activeRun, initialState, reducer } from "@/game/machine";
 import type { RouteId } from "@/game/types";
 import { LayoutContainer } from "./LayoutContainer";
 import { LagosBackdrop } from "./layouts/LagosStageLayout";
+import { CinematicProvider, SpeedToggle } from "./Cinematic";
 
 const ROUTES = Object.keys(DB.routes) as RouteId[];
 
 export function Game() {
+  return (
+    <CinematicProvider>
+      <GameScreen />
+    </CinematicProvider>
+  );
+}
+
+function GameScreen() {
   const [state, dispatch] = useReducer(reducer, undefined, () => initialState());
   const run = activeRun(state);
   const cfg = DB.routes[state.activeRoute];
@@ -56,6 +65,8 @@ export function Game() {
       <main className="relative z-10 mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-5 flex items-center justify-between gap-3">
           <h1 className="text-xl font-semibold tracking-tight text-zinc-50 sm:text-2xl">{cfg.title}</h1>
+          <div className="flex shrink-0 items-center gap-2">
+          <SpeedToggle />
           <button
             type="button"
             onClick={() => dispatch({ type: "RESTART" })}
@@ -63,6 +74,7 @@ export function Game() {
           >
             <RotateCcw className="h-3.5 w-3.5" /> Reset run
           </button>
+          </div>
         </div>
         {run && (
           <div key={state.activeRoute} className="animate-fade-in">

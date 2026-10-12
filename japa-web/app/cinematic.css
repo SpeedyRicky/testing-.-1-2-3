@@ -1,0 +1,259 @@
+/* After-every-choice cutscene. Three beats: say (actor speaks), react (stamp, particles,
+   reactions), results (stat chips). Durations come from --cine-ms so "Quick" mode scales them. */
+
+.cine-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(5 4 10 / 0.82);
+  backdrop-filter: blur(6px);
+  animation: cine-fade 0.25s ease-out both;
+}
+@keyframes cine-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.cine-card {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  overflow: hidden;
+  border-radius: 1.75rem;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background: #0b0a12;
+  box-shadow: 0 30px 90px -20px rgb(0 0 0 / 0.9);
+  animation: cine-pop 0.45s cubic-bezier(0.2, 1.3, 0.3, 1) both;
+}
+@keyframes cine-pop {
+  from { transform: scale(0.9) translateY(18px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* The scene zooms in slowly, like a camera push. */
+.cine-stage {
+  position: relative;
+  height: 250px;
+  overflow: hidden;
+}
+@media (min-width: 640px) { .cine-stage { height: 300px; } }
+.cine-scene {
+  position: absolute;
+  inset: 0;
+  transform-origin: 30% 80%;
+  animation: cine-push calc(var(--cine-ms, 3000ms) * 1.1) ease-out both;
+  filter: brightness(0.7) saturate(1.1);
+}
+.cine-scene > * { height: 100% !important; border-radius: 0 !important; }
+@keyframes cine-push { from { transform: scale(1); } to { transform: scale(1.12); } }
+
+/* Big actors in the foreground. */
+.cine-actor {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  pointer-events: none;
+}
+.cine-actor .person-wrap { bottom: 2%; }
+.cine-actor.enter-left .person-wrap { animation: cine-enter-left 0.5s cubic-bezier(0.2, 1.2, 0.3, 1) both; }
+.cine-actor.enter-right .person-wrap { animation: cine-enter-right 0.5s 0.15s cubic-bezier(0.2, 1.2, 0.3, 1) both; }
+@keyframes cine-enter-left { from { translate: -140px 0; opacity: 0; } to { translate: 0 0; opacity: 1; } }
+@keyframes cine-enter-right { from { translate: 140px 0; opacity: 0; } to { translate: 0 0; opacity: 1; } }
+
+/* Speech bubble with a typing reveal. */
+.cine-bubble {
+  position: absolute;
+  left: 34%;
+  top: 9%;
+  right: 6%;
+  z-index: 14;
+  padding: 10px 14px;
+  border-radius: 16px 16px 16px 4px;
+  background: #fffbeb;
+  color: #1c1917;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.45);
+  animation: cine-bubble 0.35s 0.25s cubic-bezier(0.2, 1.4, 0.3, 1) both;
+}
+@media (min-width: 640px) { .cine-bubble { font-size: 15px; left: 30%; } }
+.cine-bubble::after {
+  content: "";
+  position: absolute;
+  left: -8px;
+  bottom: 8px;
+  border: 8px solid transparent;
+  border-right-color: #fffbeb;
+  border-left: 0;
+}
+/* Words appear one after another, so long lines wrap naturally. */
+.cine-bubble .word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(4px);
+  animation: cine-word 0.18s var(--delay) ease-out forwards;
+}
+@keyframes cine-word { to { opacity: 1; transform: none; } }
+/* Lagos stages carry an "Ada" inset; the cutscene has its own actors. */
+.cine-scene .ada-inset { display: none; }
+@keyframes cine-bubble { from { transform: scale(0.6) translateY(10px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* The stamp slams down on the react beat. */
+.cine-stamp {
+  position: absolute;
+  right: 8%;
+  bottom: 18%;
+  z-index: 15;
+  padding: 8px 16px;
+  border: 4px solid currentColor;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: rgb(0 0 0 / 0.35);
+  transform: rotate(-9deg);
+  animation: cine-stamp 0.45s cubic-bezier(0.2, 1.6, 0.3, 1) both;
+}
+@media (min-width: 640px) { .cine-stamp { font-size: 24px; } }
+@keyframes cine-stamp {
+  0% { transform: scale(2.6) rotate(-20deg); opacity: 0; }
+  60% { transform: scale(0.92) rotate(-7deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-9deg); opacity: 1; }
+}
+.tone-good .cine-stamp, .tone-triumph .cine-stamp { color: #86efac; }
+.tone-bad .cine-stamp { color: #fda4af; }
+.tone-danger .cine-stamp { color: #f87171; }
+.tone-neutral .cine-stamp { color: #fde68a; }
+
+/* Whole-card reactions. */
+.tone-bad.react .cine-stage,
+.tone-danger.react .cine-stage { animation: cine-shake 0.45s ease-in-out 2; }
+@keyframes cine-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(7px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(4px); }
+}
+.cine-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+  opacity: 0;
+}
+.tone-bad.react .cine-flash { background: radial-gradient(circle, transparent 40%, rgb(225 29 72 / 0.55)); animation: cine-flash 0.9s ease-out; }
+.tone-good.react .cine-flash,
+.tone-triumph.react .cine-flash { background: radial-gradient(circle, rgb(253 230 138 / 0.45), transparent 65%); animation: cine-flash 0.9s ease-out; }
+.tone-danger.react .cine-flash { animation: cine-siren 0.5s steps(1, end) infinite; opacity: 1; }
+@keyframes cine-flash { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes cine-siren {
+  0% { background: radial-gradient(circle at 15% 20%, rgb(239 68 68 / 0.55), transparent 55%); }
+  50% { background: radial-gradient(circle at 85% 20%, rgb(59 130 246 / 0.55), transparent 55%); }
+}
+
+/* Particles. Positions come from inline custom properties set per particle. */
+.cine-particles {
+  position: absolute;
+  inset: 0;
+  z-index: 13;
+  pointer-events: none;
+  overflow: hidden;
+}
+.cine-p {
+  position: absolute;
+  top: -24px;
+  left: var(--x);
+  animation: cine-fall var(--d) var(--delay) cubic-bezier(0.3, 0.6, 0.5, 1) both;
+  font-size: var(--s);
+  line-height: 1;
+}
+.cine-p.confetti { width: 8px; height: 13px; border-radius: 2px; background: var(--c); }
+@keyframes cine-fall {
+  from { transform: translateY(0) rotate(0deg); opacity: 1; }
+  to { transform: translateY(330px) rotate(var(--r)); opacity: 0.2; }
+}
+/* Money flying away: coins burst up and out from the actor. */
+.cine-p.away {
+  top: auto;
+  bottom: 30%;
+  left: 24%;
+  animation: cine-away var(--d) var(--delay) ease-out both;
+}
+@keyframes cine-away {
+  from { transform: translate(0, 0) scale(1); opacity: 1; }
+  to { transform: translate(var(--tx), var(--ty)) scale(0.6) rotate(var(--r)); opacity: 0; }
+}
+.cine-p.spark {
+  top: auto;
+  bottom: var(--y);
+  width: 6px;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--c);
+  box-shadow: 0 0 10px var(--c);
+  animation: cine-spark var(--d) var(--delay) ease-out both;
+}
+@keyframes cine-spark {
+  0% { transform: scale(0); opacity: 0; }
+  40% { transform: scale(1.6); opacity: 1; }
+  100% { transform: scale(0) translateY(-40px); opacity: 0; }
+}
+
+/* Results row: chips pop in one after another. */
+.cine-results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 16px 6px;
+  min-height: 52px;
+}
+.cine-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  animation: cine-chip 0.45s var(--delay) cubic-bezier(0.2, 1.5, 0.3, 1) both;
+}
+.cine-chip.up { background: rgb(34 197 94 / 0.15); color: #86efac; border: 1px solid rgb(34 197 94 / 0.35); }
+.cine-chip.down { background: rgb(244 63 94 / 0.15); color: #fda4af; border: 1px solid rgb(244 63 94 / 0.35); }
+@keyframes cine-chip {
+  from { transform: translateY(14px) scale(0.6); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.cine-progress {
+  height: 3px;
+  background: linear-gradient(90deg, #fbbf24, #fb7185);
+  transform-origin: left;
+  animation: cine-progress var(--cine-ms, 3000ms) linear both;
+}
+@keyframes cine-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* Transit badge for dashboard actions. */
+.cine-transit {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  z-index: 15;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.6);
+  color: #fde68a;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  animation: cine-bubble 0.35s cubic-bezier(0.2, 1.4, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cine-scene, .cine-stage, .cine-p, .cine-flash { animation: none !important; }
+  .cine-bubble .word { opacity: 1; transform: none; animation: none; }
+}

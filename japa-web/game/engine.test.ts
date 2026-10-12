@@ -4,6 +4,7 @@ import {
   presentChoices, rankFor, takeAction, thresholdsFor, trapChance,
 } from "./engine";
 import { STAGES } from "../app/components/stages";
+import { describeChoice, diffStats } from "./cinematic";
 import { initialState, makeReducer } from "./machine";
 import type { GameState, RouteId, StatKey } from "./types";
 
@@ -473,6 +474,68 @@ describe("Student pathway", () => {
     expect(s.routeStats.crsScore).toBe(521);
     s = choose(DB, s, 0);
     expect(s.currentSceneId).toBe("EE_ITA_CEC");
+  });
+});
+
+describe("choice cutscenes", () => {
+  const pickAndDescribe = (route: RouteId, picks: string[], last: string) => {
+    const before = play(route, picks);
+    const idx = presentChoices(DB, before).findIndex((c) => c.text.includes(last));
+    const choice = DB.scenes[before.currentSceneId].choices![idx];
+    const after = choose(DB, before, idx);
+    return describeChoice(DB, before, after, choice.text, choice.label, choice.feedback ?? "");
+  };
+
+  it("a strong pitch answer is a good moment with green chips", () => {
+    const c = pickAndDescribe("STARTUP_VISA", [], "interoperable bridge");
+    expect(c.tone).toBe("good");
+    expect(c.label).toBe("HIGH VALUE MATCH");
+    expect(c.deltas.map((d) => [d.label, d.value, d.good])).toEqual([
+      ["Investor Interest", 25, true], ["Scalability Score", 20, true],
+    ]);
+  });
+
+  it("an arrogant answer is a bad moment", () => {
+    expect(pickAndDescribe("STARTUP_VISA", [], "simply superior").tone).toBe("bad");
+  });
+
+  it("fraud is a danger moment (sirens), even before the ending text", () => {
+    const c = pickAndDescribe("STUDY_PERMIT", [], "guaranteed admission letter");
+    expect(c.tone).toBe("danger");
+  });
+
+  it("the final winning move is a triumph", () => {
+    const c = pickAndDescribe("LAGOS_LIFE", ["Call Sister Ada", "Leave the call", "Book the appointment",
+      "Answer every question", "Pick Ada's call"], "Open the email");
+    expect(c.tone).toBe("triumph");
+  });
+
+  it("money moves are flagged so coins fly the right way", () => {
+    const loss = pickAndDescribe("LAGOS_LIFE", ["Danfo to Computer Village"], "visa consultant");
+    expect(loss.money).toBe("loss");
+    expect(loss.deltas[0]).toMatchObject({ key: "walletNgn", value: -35000, format: "ngn" });
+    const gain = pickAndDescribe("STUDY_PERMIT", ["Master's in Engineering", "Work out the money"], "Family sponsorship");
+    expect(gain.money).toBe("gain");
+  });
+
+  it("a fall in Village People Interference counts as good news", () => {
+    const before = newRun(DB, "LAGOS_LIFE");
+    const d = diffStats(DB, before, applyEffects(before, { desperation: -10 }));
+    expect(d).toEqual([expect.objectContaining({ key: "desperation", value: -10, good: true })]);
+  });
+
+  it("bookkeeping counters never show as chips; the CRS change does", () => {
+    const c = pickAndDescribe("EXPRESS_ENTRY", ["three months first"], "official express transcript");
+    const keys = c.deltas.map((d) => d.key);
+    expect(keys).not.toContain("ecaComplete");
+    expect(c.deltas.find((d) => d.key === "crsScore")?.value).toBe(120 + 25); // education + its transferability
+  });
+
+  it("dashboard actions describe their result too", () => {
+    const before = newRun(DB, "TOURIST_GAMBLE");
+    const after = takeAction(DB, before, "job_fair", [0.99, 0]).state;
+    const c = describeChoice(DB, before, after, "Attend In-Person Tech/Job Fair");
+    expect(c.deltas.map((d) => d.key)).toEqual(expect.arrayContaining(["walletCad", "energy", "timeRemainingDays"]));
   });
 });
 

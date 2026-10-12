@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { ArrowRight, Clock, MapPin, RotateCcw, Target, Wallet, X } from "lucide-react";
-import { DB, canTake, currentScene, dashboardOf, leadChance } from "@/game/engine";
+import { DB, canTake, currentScene, dashboardOf, leadChance, takeAction } from "@/game/engine";
+import { describeChoice } from "@/game/cinematic";
+import { useCinematic } from "../Cinematic";
 import { rolls as rollDice } from "@/game/rng";
 import type { DashboardAction } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
 import { ShareOnX } from "../Popups";
 import { SceneStage } from "../Stage2D";
-import { TravelRibbon } from "../TravelRibbon";
-import type { Transit } from "@/game/types";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
 
@@ -42,23 +42,16 @@ export function DashboardLayout({ run, dispatch, bars, toast }: LayoutProps) {
   const status = run.outcome ? (run.outcome.result === "win" ? "won" : "lost") : "playing";
   const day = 1 + (DB.routes.TOURIST_GAMBLE.initialState?.timeRemainingDays ?? 180) - run.timeRemainingDays;
 
-  // Travelling to an action's location: a short ribbon over the 2D stage.
-  const [travel, setTravel] = useState<{ mode: Transit; destination: string } | null>(null);
-  const travelTimer = useRef<number | undefined>(undefined);
-  const stageRef = useRef<HTMLDivElement>(null);
-  useEffect(() => () => window.clearTimeout(travelTimer.current), []);
+  // Every action plays a cutscene at its destination before the dashboard updates.
+  const { play } = useCinematic();
   const stage = run.currentStage ?? scene?.stage ?? "pearson-arrivals";
   function act(a: (typeof hub.actions)[number]) {
-    dispatch({ type: "TAKE_ACTION", actionId: a.id, rolls: rollDice() });
-    if (a.transit && a.transit !== "none" && !a.fatal) {
-      setTravel({ mode: a.transit, destination: a.location });
-      const box = stageRef.current?.getBoundingClientRect();
-      if (box && (box.bottom < 0 || box.top > window.innerHeight)) {
-        stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-      window.clearTimeout(travelTimer.current);
-      travelTimer.current = window.setTimeout(() => setTravel(null), 1100);
-    }
+    const rolls = rollDice();
+    const r = takeAction(DB, run, a.id, rolls); // same pure rules the reducer runs
+    if (!r.toast) return;
+    dispatch({ type: "TAKE_ACTION", actionId: a.id, rolls });
+    const spec = describeChoice(DB, run, r.state, a.label, r.toast.title === "Employer lead!" ? "EMPLOYER LEAD" : a.fatal ? "FRAUD" : "", r.toast.text);
+    play({ spec, stage: a.stage ?? stage, transit: a.transit, location: a.location });
   }
 
   useEffect(() => {
@@ -69,10 +62,7 @@ export function DashboardLayout({ run, dispatch, bars, toast }: LayoutProps) {
 
   return (
     <div className="space-y-5">
-      <div className="relative scroll-mt-28" ref={stageRef}>
-        <SceneStage stage={stage} mood={run.outcome ? (run.outcome.result === "win" ? "win" : "fail") : "calm"} />
-        {travel && <TravelRibbon mode={travel.mode} destination={travel.destination} />}
-      </div>
+      <SceneStage stage={stage} mood={run.outcome ? (run.outcome.result === "win" ? "win" : "fail") : "calm"} />
       <div className="card overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-5 py-3">
           <div className="font-mono text-xs tracking-wider text-zinc-400">
