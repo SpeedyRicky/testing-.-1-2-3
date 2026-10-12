@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.14.0",
+    "version": "0.15.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -550,6 +550,7 @@
           "scenes": [
             "ST_ARRIVAL",
             "ST_HOUSING",
+            "ST_SPOUSE",
             "ST_TERM"
           ],
           "stars": [
@@ -1194,6 +1195,12 @@
           "blurb": "Positive LMIA, negative bank balance."
         },
         {
+          "id": "lmiascam",
+          "reason": "CAREGIVER_SCAM",
+          "title": "Caregiver scam",
+          "blurb": "₦600k for a certificate with a gold border."
+        },
+        {
           "id": "caught",
           "reason": "UNAUTHORIZED_WORK",
           "title": "Cash job, CBSA tip",
@@ -1327,7 +1334,8 @@
           "goal": "Three employer leads before the money or the clock runs out. Never work.",
           "scenes": [
             "TOURIST_HUB",
-            "TR_LMIA_SELLER"
+            "TR_LMIA_SELLER",
+            "TR_CAREGIVER_AD"
           ],
           "stars": [
             {
@@ -1834,7 +1842,8 @@
           "goal": "Black tax and the first January. Keep your people close.",
           "scenes": [
             "FY_BLACK_TAX",
-            "FY_WINTER"
+            "FY_WINTER",
+            "FY_ACCENT"
           ],
           "stars": [
             {
@@ -2870,6 +2879,22 @@
             "stage": "basement",
             "transit": "none",
             "goToSceneId": "TR_LMIA_SELLER"
+          },
+          {
+            "id": "caregiver_ad",
+            "label": "Reply to 'Caregiver Sponsorship, ₦600k Training Fee'",
+            "blurb": "A Facebook ad says Canadian families need nannies NOW",
+            "effects": {
+              "timeRemainingDays": -1,
+              "energy": -5
+            },
+            "location": "Facebook, cousin's couch",
+            "consequences": [
+              "The page has 40,000 followers and a lot of stock photos of smiling grandmothers."
+            ],
+            "stage": "basement",
+            "transit": "none",
+            "goToSceneId": "TR_CAREGIVER_AD"
           },
           {
             "id": "resume",
@@ -5894,7 +5919,7 @@
         {
           "text": "Stay inside and scroll until spring",
           "label": "HIBERNATED",
-          "nextSceneId": "FY_WORK_EVENT",
+          "nextSceneId": "FY_ACCENT",
           "effects": {
             "desperation": 15,
             "energy": -5
@@ -5904,7 +5929,7 @@
         {
           "text": "Join the Nigerian association's winter games night and the church choir",
           "label": "FOUND_PEOPLE",
-          "nextSceneId": "FY_WORK_EVENT",
+          "nextSceneId": "FY_ACCENT",
           "effects": {
             "community": 15,
             "desperation": -12,
@@ -5915,7 +5940,7 @@
         {
           "text": "Book a family doctor or walk-in visit about your mood (covered by your health card)",
           "label": "GOT_HELP",
-          "nextSceneId": "FY_WORK_EVENT",
+          "nextSceneId": "FY_ACCENT",
           "effects": {
             "desperation": -15,
             "energy": 8
@@ -6160,7 +6185,7 @@
         {
           "text": "Two weeks with the church host family, then a proper room near campus",
           "label": "HOST_FAMILY",
-          "nextSceneId": "ST_TERM",
+          "nextSceneId": "ST_SPOUSE",
           "effects": {
             "walletCad": -800,
             "desperation": -8,
@@ -6171,7 +6196,7 @@
         {
           "text": "Take the CAD 375 bunk bed: you are here to save money",
           "label": "BUNK_BED",
-          "nextSceneId": "ST_TERM",
+          "nextSceneId": "ST_SPOUSE",
           "effects": {
             "walletCad": -375,
             "energy": -15,
@@ -6182,7 +6207,7 @@
         {
           "text": "Pay a CAD 1,500 deposit to a Facebook landlord you haven't met",
           "label": "RENTAL_SCAM",
-          "nextSceneId": "ST_TERM",
+          "nextSceneId": "ST_SPOUSE",
           "effects": {
             "walletCad": -1500,
             "desperation": 15
@@ -6688,6 +6713,203 @@
       "onEnter": {
         "desperation": 15
       }
+    },
+    "ST_SPOUSE": {
+      "id": "ST_SPOUSE",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "'When am I coming?'",
+      "location": "WhatsApp video call",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "WhatsApp video call",
+      "dialogue": "Your partner back home asks the question every week. Since January 2025, a spouse gets an open work permit only if you're in a master's of 16 months or more, a PhD, or certain professional programs. Your program decides what's possible.",
+      "choices": [
+        {
+          "text": "Apply for your spouse's open work permit: your master's qualifies",
+          "label": "SPOUSAL_OWP",
+          "nextSceneId": "ST_TERM",
+          "effects": {
+            "walletCad": -255,
+            "desperation": -10
+          },
+          "feedback": "Approved. Two incomes, one basement, half the loneliness.",
+          "requires": {
+            "programType": [
+              "==",
+              2
+            ]
+          },
+          "lockedHint": "Only for master's (16+ months), PhD or some professional programs"
+        },
+        {
+          "text": "Apply for a visitor visa so they can at least visit",
+          "label": "SPOUSE_VISIT",
+          "nextSceneId": "ST_TERM",
+          "effects": {
+            "walletCad": -100
+          },
+          "gamble": {
+            "odds": 0.3,
+            "bonus": [
+              {
+                "key": "walletCad",
+                "per": 4e-06
+              }
+            ],
+            "max": 0.6,
+            "success": {
+              "feedback": "Approved for a visit. Three weeks of jollof and hugs in January.",
+              "effects": {
+                "desperation": -12,
+                "walletCad": -1800
+              },
+              "label": "VISIT_APPROVED"
+            },
+            "fail": {
+              "feedback": "Refused: 'not satisfied they will leave Canada'. Spouses of students hear that a lot.",
+              "effects": {
+                "desperation": 8
+              },
+              "label": "VISIT_REFUSED"
+            }
+          }
+        },
+        {
+          "text": "Agree to wait: you'll apply together once you have a PGWP",
+          "label": "WAIT_FOR_PGWP",
+          "nextSceneId": "ST_TERM",
+          "effects": {
+            "desperation": 4
+          },
+          "feedback": "Honest and hard. Video calls at 6 a.m. Toronto time, noon in {city}."
+        }
+      ]
+    },
+    "TR_CAREGIVER_AD": {
+      "id": "TR_CAREGIVER_AD",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "'Caregiver sponsorship, limited slots.'",
+      "location": "Facebook, cousin's couch",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "Facebook, cousin's couch",
+      "dialogue": "₦600,000 for 'training and placement', then a Canadian family sponsors you. Wey Sabi says caregiver na the easy route.",
+      "choices": [
+        {
+          "text": "Pay the training fee before the slots fill",
+          "label": "PAID_CAREGIVER_FEE",
+          "nextSceneId": "TR_CAREGIVER_PAID",
+          "effects": {
+            "walletCad": -520
+          }
+        },
+        {
+          "text": "Check IRCC's page for the home care worker pilots first",
+          "label": "VERIFIED",
+          "nextSceneId": "TOURIST_HUB",
+          "effects": {
+            "desperation": 3
+          },
+          "feedback": "The pilots filled their caps on day one in 2025 and aren't taking new applications until 2030. The ad is selling a closed door."
+        },
+        {
+          "text": "Report the page and warn the family group chat",
+          "label": "REPORTED",
+          "nextSceneId": "TOURIST_HUB",
+          "effects": {
+            "streetCred": 4
+          },
+          "feedback": "Somebody's aunty was about to pay. She thanks you with a voice note."
+        }
+      ]
+    },
+    "TR_CAREGIVER_PAID": {
+      "id": "TR_CAREGIVER_PAID",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Training complete. Placement: never.",
+      "location": "Facebook",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "Facebook",
+      "dialogue": "You got a certificate with a gold border and a WhatsApp group that went silent. The 'sponsoring family' was never real.",
+      "outcome": {
+        "result": "fail",
+        "reason": "CAREGIVER_SCAM",
+        "title": "Paid for a closed door",
+        "subtitle": "The caregiver pilots aren't open, and no family sells sponsorship.",
+        "lesson": "Canada's home care worker pilots reached their caps on day one in March 2025 and won't take new applications from March 2026 to March 2030. Check a program is open on canada.ca before paying anyone."
+      }
+    },
+    "FY_ACCENT": {
+      "id": "FY_ACCENT",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "'Can you speak slower?'",
+      "location": "Your new team, Mississauga",
+      "stage": "warehouse",
+      "transitIn": "none",
+      "speaker": "Your new team, Mississauga",
+      "dialogue": "Team meeting, week three. Your manager stops you mid-update: 'Can you speak slower? Your accent…' Two people look at their shoes. You've spoken English your whole life.",
+      "choices": [
+        {
+          "text": "Keep going, a little slower, and send a crisp written summary after",
+          "label": "LET_IT_SLIDE",
+          "nextSceneId": "FY_WORK_EVENT",
+          "effects": {
+            "careerScore": 4,
+            "desperation": 6
+          },
+          "feedback": "Your written summary becomes the one everyone forwards. The comment still stings."
+        },
+        {
+          "text": "Ask your manager for a quick chat after: what exactly was unclear?",
+          "label": "NAMED_IT",
+          "nextSceneId": "FY_WORK_EVENT",
+          "effects": {
+            "careerScore": 6,
+            "community": 4
+          },
+          "gamble": {
+            "odds": 0.5,
+            "bonus": [
+              {
+                "key": "community",
+                "per": 0.008
+              }
+            ],
+            "max": 0.85,
+            "success": {
+              "feedback": "She apologises: 'That came out wrong.' The next meeting, she asks for your view first.",
+              "effects": {
+                "careerScore": 6,
+                "desperation": -6
+              },
+              "label": "MANAGER_LISTENED"
+            },
+            "fail": {
+              "feedback": "'Don't be so sensitive.' You note the date in your phone, just in case.",
+              "effects": {
+                "desperation": 8
+              },
+              "label": "BRUSHED_OFF"
+            }
+          }
+        },
+        {
+          "text": "Join the company's Black employee network and find a mentor",
+          "label": "FOUND_A_MENTOR",
+          "nextSceneId": "FY_WORK_EVENT",
+          "effects": {
+            "community": 10,
+            "careerScore": 5,
+            "energy": -5
+          },
+          "feedback": "A senior director from Enugu takes you to lunch. 'I heard the same thing in 2009. Here's what I did.'"
+        }
+      ]
     }
   },
   "crs": {
