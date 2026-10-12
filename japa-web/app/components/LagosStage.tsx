@@ -1,5 +1,22 @@
+"use client";
+
 import type { StageKind as SceneKind } from "@/game/types";
 import { Person } from "./Person";
+import { usePlayer } from "./Player";
+
+/** The local commercial vehicle: a yellow danfo in Lagos, a keke or a bus elsewhere. */
+export function LocalRide({ mini = false, children }: { mini?: boolean; children?: React.ReactNode }) {
+  const { transport } = usePlayer();
+  if (transport === "keke") {
+    return <span className={`keke ${mini ? "mini" : ""}`}><span className="keke-canopy" />{children}</span>;
+  }
+  return (
+    <span className={`danfo-bus ${mini ? "mini" : ""} ${transport === "bus" ? "city-bus" : ""}`}>
+      <span className="danfo-stripe" />
+      {children}
+    </span>
+  );
+}
 
 function Sky({ dusk = false, night = false }: { dusk?: boolean; night?: boolean }) {
   const cls = night
@@ -54,6 +71,7 @@ function AdaInset() {
 }
 
 export function LagosStage({ scene }: { scene: SceneKind }) {
+  const { t } = usePlayer();
   return (
     <div className="lagos-stage" data-scene={scene}>
       {scene === "yaba-dawn" ? (
@@ -61,7 +79,7 @@ export function LagosStage({ scene }: { scene: SceneKind }) {
           <Sky />
           <Buildings />
           <Shop label="PURE WATER" x={12} />
-          <Shop label="YABA MARKET" x={62} />
+          <Shop label={t("{marketSign}")} x={62} />
           <div className="genny">GEN</div>
           <Road />
           <Person who="roommate" pose="sit" x={22} caption="Roommate" />
@@ -79,9 +97,7 @@ export function LagosStage({ scene }: { scene: SceneKind }) {
           <Shop label="GLO / MTN" x={70} />
           <Road />
           <div className="danfo-pass">
-            <span className="danfo-bus mini">
-              <span className="danfo-stripe" />
-            </span>
+            <LocalRide mini />
           </div>
           <Person who="preacher" pose="wave" x={18} caption="Preacher" />
           <Person who="you" pose="idle" x={44} caption="Tolu" />
@@ -112,7 +128,7 @@ export function LagosStage({ scene }: { scene: SceneKind }) {
         <>
           <div className="split-call">
             <div className="call-pane lagos">
-              <p>Yaba · generator light</p>
+              <p>{t("{area}")} · generator light</p>
               <Sky night />
               <Person who="you" pose="phone" x={50} scale={1.15} caption="Tolu" />
             </div>
@@ -241,7 +257,7 @@ export function LagosStage({ scene }: { scene: SceneKind }) {
         <>
           <Sky />
           <Buildings accent="#94a3b8" />
-          <Shop label="MMA2" x={12} />
+          <Shop label={t("{airportCode}")} x={12} />
           <Road />
           <Person who="you" pose="wave" x={38} caption="Tolu" />
           <Person who="clerk" pose="idle" x={18} caption="Scanner" />

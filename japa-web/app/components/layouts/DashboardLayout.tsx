@@ -5,6 +5,7 @@ import { ArrowRight, Clock, MapPin, RotateCcw, Target, Wallet, X } from "lucide-
 import { DB, canTake, currentScene, dashboardOf, leadChance, takeAction } from "@/game/engine";
 import { describeChoice } from "@/game/cinematic";
 import { useCinematic } from "../Cinematic";
+import { usePlayer } from "../Player";
 import { rolls as rollDice } from "@/game/rng";
 import type { DashboardAction } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
@@ -44,6 +45,7 @@ export function DashboardLayout({ run, dispatch, bars, toast }: LayoutProps) {
 
   // Every action plays a cutscene at its destination before the dashboard updates.
   const { play } = useCinematic();
+  const { t } = usePlayer();
   const stage = run.currentStage ?? scene?.stage ?? "pearson-arrivals";
   function act(a: (typeof hub.actions)[number]) {
     const rolls = rollDice();
@@ -114,7 +116,7 @@ export function DashboardLayout({ run, dispatch, bars, toast }: LayoutProps) {
           </div>
         </div>
       ) : (
-        <p className="max-w-3xl text-sm leading-relaxed text-zinc-400">{scene?.dialogue}</p>
+        <p className="max-w-3xl text-sm leading-relaxed text-zinc-400">{t(scene?.dialogue)}</p>
       )}
 
       <div>

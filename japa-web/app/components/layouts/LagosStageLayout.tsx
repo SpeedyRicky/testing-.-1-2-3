@@ -5,6 +5,7 @@ import { FileCheck2, Ghost, GraduationCap, Languages, MapPin, Plane, Sparkles, T
 import { DB, choose, computeCrs, presentChoices, rankFor } from "@/game/engine";
 import { describeChoice } from "@/game/cinematic";
 import { useCinematic } from "../Cinematic";
+import { usePlayer } from "../Player";
 import { chance, rolls as rollDice } from "@/game/rng";
 import type { BarSpec, GameState, RouteId, Transit } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
@@ -36,7 +37,7 @@ const HUD: Record<string, { icon: typeof Wallet; bar: string; tint: string; glow
 
 /** Purple Lagos night for Lagos Life; cooler skies once the story heads for Canada. */
 const BACKDROP: Record<string, string> = {
-  LAGOS_LIFE: "bg-[radial-gradient(circle_at_top,_#3b1d6e_0%,_#07060c_55%)]",
+  NIGERIA_LIFE: "bg-[radial-gradient(circle_at_top,_#3b1d6e_0%,_#07060c_55%)]",
   STUDY_PERMIT: "bg-[radial-gradient(circle_at_top,_#7f1d1d_0%,_#07060c_55%)]",
   EXPRESS_ENTRY: "bg-[radial-gradient(circle_at_top,_#1e3a8a_0%,_#07060c_55%)]",
 };
@@ -108,10 +109,10 @@ function Confetti() {
 }
 
 /** The animated Lagos backdrop: orbs, stars and a plane taxiing across. */
-export function LagosBackdrop({ route = "LAGOS_LIFE" }: { route?: string }) {
+export function LagosBackdrop({ route = "NIGERIA_LIFE" }: { route?: string }) {
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden>
-      <div className={`absolute inset-0 ${BACKDROP[route] ?? BACKDROP.LAGOS_LIFE}`} />
+      <div className={`absolute inset-0 ${BACKDROP[route] ?? BACKDROP.NIGERIA_LIFE}`} />
       <div className="bg-orb -left-20 top-10 h-72 w-72 animate-[drift_12s_ease-in-out_infinite] bg-fuchsia-600/30" />
       <div className="bg-orb right-[-4rem] top-32 h-80 w-80 animate-[drift-alt_14s_ease-in-out_infinite] bg-amber-500/20" />
       <div className="bg-orb bottom-[-3rem] left-1/3 h-64 w-64 animate-[drift_16s_ease-in-out_infinite] bg-sky-500/20" />
@@ -183,6 +184,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
   }, [shock, live, dispatch]);
 
   const { play } = useCinematic();
+  const { t } = usePlayer();
 
   /** Choice -> cutscene -> travel ribbon -> next scene. The meters update at once underneath. */
   function pick(index: number) {
@@ -193,7 +195,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
     const choice = DB.scenes[run.currentSceneId]?.choices?.[index];
     // Describe the choice itself; a Village People trap gets its own pop-up afterwards.
     const clean = next.popup ? choose(DB, run, index, [1, 0]) : next;
-    const spec = describeChoice(DB, run, clean, choice?.text ?? "", choice?.label ?? "", choice?.feedback ?? "");
+    const spec = describeChoice(DB, run, clean, t(choice?.text, run), choice?.label ?? "", t(choice?.feedback, run));
     dispatch({ type: "CHOOSE", index, rolls });
     const from = run.currentSceneId;
     setHold(from);
@@ -201,7 +203,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
     const mode = dest?.transitIn ?? "none";
     play({ spec, stage: DB.scenes[from]?.stage ?? "room-night" }, () => {
       if (mode === "none" || !dest) { setHold(null); return; }
-      setTravel({ mode, destination: dest.location ?? "" });
+      setTravel({ mode, destination: t(dest.location, next) });
       timer.current = window.setTimeout(() => { setHold(null); setTravel(null); }, TRAVEL_MS[mode]);
     });
   }
@@ -224,7 +226,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
             <Sparkles className="h-3 w-3 animate-[bounce-soft_1.4s_ease-in-out_infinite]" />
             {cfg.short} · Japa
           </p>
-          <p className="title-shimmer text-xl font-black tracking-tight sm:text-3xl">{cfg.tagline}</p>
+          <p className="title-shimmer text-xl font-black tracking-tight sm:text-3xl">{t(cfg.tagline)}</p>
         </div>
         <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {cfg.bars.map((b) => <HudMeter key={b.key} spec={b} value={valueOf(run, b.key)} />)}
@@ -248,14 +250,14 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
         >
           <p className="animate-stamp mb-3 inline-flex items-center gap-2 rounded-full border border-dashed border-amber-300/50 px-3 py-1 text-xs uppercase tracking-[0.18em] text-amber-200">
             <MapPin className="h-3.5 w-3.5" aria-hidden />
-            {scene?.location}
+            {t(scene?.location, run)}
           </p>
-          <h2 className="text-2xl font-black tracking-tight text-white sm:text-3xl">{scene?.title}</h2>
-          <p className="mt-3 text-sm leading-7 text-zinc-300 sm:text-base sm:leading-8">{scene?.dialogue}</p>
+          <h2 className="text-2xl font-black tracking-tight text-white sm:text-3xl">{t(scene?.title, run)}</h2>
+          <p className="mt-3 text-sm leading-7 text-zinc-300 sm:text-base sm:leading-8">{t(scene?.dialogue, run)}</p>
 
           {run.lastChoice?.feedback && !moving && (
             <p className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/5 px-4 py-2.5 text-sm text-amber-100/90">
-              {run.lastChoice.feedback}
+              {t(run.lastChoice.feedback, run)}
             </p>
           )}
 
@@ -272,7 +274,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
                 <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-300/15 text-[11px] text-amber-200 transition group-hover:scale-110">
                   {i + 1}
                 </span>
-                {c.text}
+                {t(c.text, run)}
               </button>
             ))}
           </div>
@@ -282,7 +284,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
       {run.popup && !run.outcome && !moving && <PopupModal popup={run.popup} onDismiss={() => dispatch({ type: "DISMISS_POPUP" })} />}
       {ended && rank && (
         <GameOverModal
-          rank={rank}
+          rank={{ ...rank, title: t(rank.title), blurb: t(rank.blurb) }}
           interference={run.desperation}
           routeName={cfg.title}
           onReset={() => dispatch({ type: "RESTART" })}

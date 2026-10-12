@@ -2,7 +2,7 @@
 // components only render what these types describe.
 
 export type RouteId =
-  | "LAGOS_LIFE"
+  | "NIGERIA_LIFE"
   | "STUDY_PERMIT"
   | "EXPRESS_ENTRY"
   | "STARTUP_VISA"
@@ -59,6 +59,8 @@ export interface RouteStats {
   familyAsked?: number;
   landSold?: number;
   crowdfunded?: number;
+  loanTaken?: number;
+  hasDegree?: number; // from the player's profile: 1 if they hold a bachelor's or higher
   // Added for the Tourist Gamble dashboard:
   networkScore?: number;
   resumeScore?: number;
@@ -178,7 +180,7 @@ export interface Scene {
   unlocksRoute?: RouteId;
   /** Where the unlocked route starts, and which stats travel with the player. */
   unlockStartSceneId?: string;
-  carry?: { routeStats?: RouteStats };
+  carry?: { routeStats?: RouteStats; /** Years since the profile age (sets ageYears when a profile exists). */ ageOffset?: number };
   // Lagos Life stage scenes:
   title?: string;
   location?: string;

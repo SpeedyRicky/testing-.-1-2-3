@@ -468,3 +468,40 @@
 @media (min-width: 640px) {
   .lagos-stage { height: 320px; }
 }
+
+/* Keke (tricycle) for states outside Lagos, and Abuja's city bus. */
+.local-ride-rig { display: flex; justify-content: center; padding-top: 34px; }
+.keke {
+  position: relative;
+  display: block;
+  width: 130px;
+  height: 64px;
+  background: linear-gradient(#facc15 0 60%, #15803d 60%);
+  border: 3px solid #111;
+  border-radius: 34px 18px 8px 8px;
+}
+.keke.mini { width: 92px; height: 46px; }
+.keke-canopy {
+  position: absolute;
+  left: 10px;
+  right: 18px;
+  top: -12px;
+  height: 14px;
+  background: #111;
+  border-radius: 8px 8px 0 0;
+}
+.keke::before,
+.keke::after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #444;
+  border: 3px solid #111;
+}
+.keke::before { left: 10px; }
+.keke::after { right: 10px; }
+.danfo-bus.city-bus { background: #16a34a; }
+.danfo-bus.city-bus .danfo-stripe { background: #f8fafc; }

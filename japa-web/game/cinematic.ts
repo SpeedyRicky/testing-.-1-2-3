@@ -50,7 +50,7 @@ const LABELS: Partial<Record<StatKey, string>> = {
 /** Bookkeeping counters the player never needs to see animate. */
 const HIDDEN: ReadonlySet<string> = new Set([
   "programType", "scholarshipTried", "familyAsked", "landSold", "crowdfunded", "ecaComplete", "pnpNomination",
-  "educationLevel", "canadianEducation", "foreignWorkYears", "siblingInCanada",
+  "educationLevel", "canadianEducation", "foreignWorkYears", "siblingInCanada", "loanTaken", "hasDegree",
 ]);
 
 /** Stats where a rise is bad news. Age is only bad for the CRS, which already shows its own change. */

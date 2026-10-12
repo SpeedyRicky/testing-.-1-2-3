@@ -7,3 +7,7 @@ export function rolls(): [number, number] {
 export function chance(p: number): boolean {
   return Math.random() < p;
 }
+
+export function pickFrom<T>(items: readonly T[]): T {
+  return items[Math.floor(Math.random() * items.length)];
+}

@@ -1,0 +1,160 @@
+/* Player avatar: body sizes, hairstyles, outfits and headwear on top of the base .person figure. */
+
+/* --- Body size ---------------------------------------------------------------- */
+.body-slim .p-torso { width: 15px; left: 10.5px; }
+.body-slim .p-arm-l { left: 6px; }
+.body-slim .p-arm-r { right: 6px; }
+.body-plus .p-torso { width: 24px; left: 6px; border-radius: 9px 9px 6px 6px; }
+.body-plus .p-arm-l { left: 1px; }
+.body-plus .p-arm-r { right: 1px; }
+.body-plus .p-leg { width: 8px; }
+.body-plus .p-leg-l { left: 9px; }
+.body-plus .p-leg-r { right: 9px; }
+
+/* --- Hair ----------------------------------------------------------------------- */
+.hair-low-cut .p-hair { height: 8px; top: 8px; }
+.hair-afro .p-hair { width: 32px; height: 22px; left: 2px; top: -1px; border-radius: 50%; }
+.hair-braids .p-hair { height: 30px; top: 5px; left: 5px; width: 26px; border-radius: 10px 10px 4px 4px; z-index: 1; }
+.hair-braids .p-hair::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-linear-gradient(90deg, transparent 0 3px, rgb(0 0 0 / 0.35) 3px 4px);
+}
+.hair-bun .p-hair::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: -8px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: inherit;
+}
+.hair-bald .p-hair { display: none; }
+
+/* --- Headwear --------------------------------------------------------------------- */
+.p-gele {
+  position: absolute;
+  left: -4px;
+  top: -10px;
+  width: 44px;
+  height: 22px;
+  border-radius: 55% 45% 30% 30%;
+  z-index: 5;
+  transform: rotate(-8deg);
+  box-shadow: inset -6px -4px 0 rgb(0 0 0 / 0.18);
+}
+.p-gele::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: -6px;
+  width: 18px;
+  height: 14px;
+  border-radius: 50% 50% 20% 50%;
+  background: inherit;
+  filter: brightness(1.15);
+}
+.p-fila {
+  position: absolute;
+  left: 7px;
+  top: 1px;
+  width: 24px;
+  height: 11px;
+  border-radius: 7px 9px 0 0;
+  z-index: 5;
+  transform: skewX(-14deg) rotate(-6deg);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.25);
+}
+.p-beanie {
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 24px;
+  height: 12px;
+  border-radius: 12px 12px 2px 2px;
+  z-index: 5;
+  box-shadow: inset 0 -3px 0 rgb(255 255 255 / 0.35);
+}
+.p-beanie::after {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: -5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f8fafc;
+}
+
+/* --- Outfits --------------------------------------------------------------------- */
+.ankara {
+  background-image:
+    radial-gradient(circle at 25% 25%, #facc15 0 2px, transparent 2.5px),
+    radial-gradient(circle at 75% 75%, #f97316 0 2px, transparent 2.5px),
+    linear-gradient(45deg, transparent 45%, rgb(255 255 255 / 0.25) 45% 55%, transparent 55%);
+  background-size: 8px 8px, 8px 8px, 10px 10px;
+}
+/* Dress / iro: a flared wrap over the legs. */
+.p-skirt {
+  position: absolute;
+  left: 5px;
+  top: 48px;
+  width: 26px;
+  height: 18px;
+  z-index: 3;
+  clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
+}
+.outfit-buba-iro .p-skirt { top: 46px; height: 28px; left: 7px; width: 22px; clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%); }
+/* Agbada: a wide flowing robe from the shoulders to below the knee. */
+.p-robe {
+  position: absolute;
+  left: -3px;
+  top: 27px;
+  width: 42px;
+  height: 40px;
+  z-index: 4;
+  clip-path: polygon(30% 0, 70% 0, 100% 72%, 86% 100%, 14% 100%, 0 72%);
+  box-shadow: inset 0 -6px 0 rgb(0 0 0 / 0.18);
+}
+.outfit-agbada .p-arm { z-index: 5; }
+/* Senator: a long top to mid-thigh. */
+.outfit-senator .p-torso { height: 30px; }
+/* Suit: white shirt line with a tie. */
+.p-shirtline {
+  position: absolute;
+  left: 16px;
+  top: 28px;
+  width: 4px;
+  height: 18px;
+  background: #f8fafc;
+  z-index: 3;
+}
+/* Hoodie: a hood behind the head. */
+.p-hood {
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50% 50% 40% 40%;
+  z-index: 1;
+}
+
+/* Lighter frames so glasses read as glasses, not a visor. */
+.person-wrap .p-glasses {
+  left: 2px;
+  top: 6px;
+  width: 16px;
+  height: 6px;
+  border: 1.5px solid #111827;
+  border-radius: 3px;
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 0.28) 0 44%, transparent 44% 56%, rgb(255 255 255 / 0.28) 56%);
+}
+/* Lift the name tag above tall headwear and big hair. */
+.person-wrap:has(.p-gele) .person-name,
+.person-wrap.hair-afro .person-name,
+.person-wrap.hair-bun .person-name { top: -30px; }

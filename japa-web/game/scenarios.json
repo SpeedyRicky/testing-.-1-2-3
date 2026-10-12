@@ -1,17 +1,17 @@
 {
   "meta": {
-    "version": "0.6.0",
+    "version": "0.8.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
-    "LAGOS_LIFE": {
-      "title": "Lagos Life",
-      "short": "Lagos Life",
+    "NIGERIA_LIFE": {
+      "title": "Nigeria",
+      "short": "Nigeria",
       "status": "playable",
-      "tagline": "Trek, danfo, call Ada.",
+      "tagline": "Trek, {bus}, call Ada.",
       "startSceneId": "LAGOS_YABA_DAWN",
       "initialState": {
-        "currentLocation": "Yaba, Lagos",
+        "currentLocation": "{area}, {city}",
         "energy": 72,
         "walletNgn": 280000,
         "desperation": 36,
@@ -122,7 +122,7 @@
             ]
           },
           "title": "Deported at Pearson Airport",
-          "blurb": "You cleared MMA2. Canada did not clear you. The officer stamped the dream on the way back to the gate."
+          "blurb": "You cleared {airportCode}. Canada did not clear you. The officer stamped the dream on the way back to the gate."
         },
         {
           "id": "village",
@@ -138,7 +138,7 @@
         {
           "id": "hustle",
           "title": "Still on the Corridor",
-          "blurb": "Not Pearson. Not Vanier. Yaba still knows your name. The next danfo is boarding."
+          "blurb": "Not Pearson. Not Vanier. {area} still knows your name. The next danfo is boarding."
         }
       ],
       "nextRoutes": [
@@ -166,7 +166,9 @@
           "scholarshipTried": 0,
           "familyAsked": 0,
           "landSold": 0,
-          "crowdfunded": 0
+          "crowdfunded": 0,
+          "loanTaken": 0,
+          "hasDegree": 1
         }
       },
       "bars": [
@@ -260,7 +262,8 @@
           "canadianWorkYears": 0,
           "canadianEducation": 0,
           "pnpNomination": 0,
-          "siblingInCanada": 0
+          "siblingInCanada": 0,
+          "familyAsked": 0
         }
       },
       "bars": [
@@ -449,17 +452,17 @@
   "scenes": {
     "LAGOS_YABA_DAWN": {
       "id": "LAGOS_YABA_DAWN",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "Generator coughs. Light dies.",
-      "location": "Yaba, Lagos",
+      "location": "{area}, {city}",
       "stage": "yaba-dawn",
       "transitIn": "none",
-      "speaker": "Yaba, Lagos",
-      "dialogue": "NEPA has packed up. Your roommate is already in a Europe group chat. Downstairs, Yaba is waking. Your sister Ada in Peckham sent three missed calls. Japa this year, or watch another circle leave.",
+      "speaker": "{area}, {city}",
+      "dialogue": "NEPA has packed up. Your roommate is already in a Europe group chat. Downstairs, {area} is waking. Your sister Ada in Peckham sent three missed calls. Japa this year, or watch another circle leave.",
       "choices": [
         {
-          "text": "Danfo to Computer Village and hunt remote jobs",
+          "text": "{Bus} to {techHub} and hunt remote jobs",
           "label": "",
           "nextSceneId": "LAGOS_JOB_BOARD",
           "effects": {
@@ -490,13 +493,13 @@
     },
     "LAGOS_JOB_BOARD": {
       "id": "LAGOS_JOB_BOARD",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "Four hundred applicants. One reply.",
-      "location": "Computer Village, Ikeja",
+      "location": "{techHub}",
       "stage": "cafe",
       "transitIn": "danfo",
-      "speaker": "Computer Village, Ikeja",
+      "speaker": "{techHub}",
       "dialogue": "The cyber cafe hums like a generator. A Toronto listing wants three years of React and right to work in Canada. You have a bootcamp PDF, stubborn data, and Ada typing 'have you left the house??' from Peckham.",
       "choices": [
         {
@@ -510,7 +513,7 @@
           }
         },
         {
-          "text": "Danfo to the visa consultant blasting your status",
+          "text": "{Bus} to the visa consultant blasting your status",
           "label": "",
           "nextSceneId": "LAGOS_AGENT_OFFICE",
           "effects": {
@@ -521,7 +524,7 @@
           "floatCad": 1500
         },
         {
-          "text": "Trek back to Yaba and rethink the whole plan",
+          "text": "Trek back to {area} and rethink the whole plan",
           "label": "",
           "nextSceneId": "LAGOS_YABA_DUSK",
           "effects": {
@@ -533,13 +536,13 @@
     },
     "LAGOS_AUNTY_CALL": {
       "id": "LAGOS_AUNTY_CALL",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "Ada does not sugarcoat.",
-      "location": "Peckham × Yaba FaceTime",
+      "location": "Peckham × {area} FaceTime",
       "stage": "call-sister",
       "transitIn": "call",
-      "speaker": "Peckham × Yaba FaceTime",
+      "speaker": "Peckham × {area} FaceTime",
       "dialogue": "Her kitchen is grey London morning. Yours is generator light. She will write an invitation letter. She will not lie on a bank statement. 'Bring your own proof, Tolu, or don't come and disgrace me at Heathrow.'",
       "choices": [
         {
@@ -565,17 +568,17 @@
     },
     "LAGOS_YABA_DUSK": {
       "id": "LAGOS_YABA_DUSK",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "The street is louder than your plan.",
-      "location": "Yaba market edge",
+      "location": "{market}, at the edge",
       "stage": "yaba-street",
       "transitIn": "trek",
-      "speaker": "Yaba market edge",
-      "dialogue": "Pepper soup steam, danfo horns, a preacher on a megaphone. People are going somewhere: work, church, the park, abroad in their heads. Ada's last voice note is still unplayed.",
+      "speaker": "{market}, at the edge",
+      "dialogue": "Pepper soup steam, {bus} horns, a preacher on a megaphone. People are going somewhere: work, church, the park, abroad in their heads. Ada's last voice note is still unplayed.",
       "choices": [
         {
-          "text": "Catch another danfo to the job hunt",
+          "text": "Catch another {bus} to the job hunt",
           "label": "",
           "nextSceneId": "LAGOS_JOB_BOARD",
           "effects": {
@@ -593,7 +596,7 @@
           }
         },
         {
-          "text": "Okada to a Surulere weekend gig",
+          "text": "Okada to a weekend gig in {gigArea}",
           "label": "",
           "nextSceneId": "LAGOS_WEEKEND_GIG",
           "effects": {
@@ -606,13 +609,13 @@
     },
     "LAGOS_CV_NIGHT": {
       "id": "LAGOS_CV_NIGHT",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "The document starts to look like a person.",
-      "location": "Yaba room, 3 a.m.",
+      "location": "{area} room, 3 a.m.",
       "stage": "room-night",
       "transitIn": "trek",
-      "speaker": "Yaba room, 3 a.m.",
+      "speaker": "{area} room, 3 a.m.",
       "dialogue": "You quantify the internships. You hide the generator. A recruiter in Berlin replies. Ada is asleep in Peckham; her status still says 'call me when light comes.'",
       "choices": [
         {
@@ -638,17 +641,17 @@
     },
     "LAGOS_AGENT_OFFICE": {
       "id": "LAGOS_AGENT_OFFICE",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "The office smells like toner and panic.",
-      "location": "Ikeja GRA, second floor",
+      "location": "Agent's office, {city}",
       "stage": "agent",
       "transitIn": "danfo",
-      "speaker": "Ikeja GRA, second floor",
+      "speaker": "Agent's office, {city}",
       "dialogue": "He talks fast: Schengen, Canada express, 'we know people'. Ada would shout if she saw this receipt. Your folder is heavier. Your stomach is not.",
       "choices": [
         {
-          "text": "Pay 'facilitation' then danfo to the visa centre",
+          "text": "Pay 'facilitation' then {bus} to the visa centre",
           "label": "",
           "nextSceneId": "LAGOS_EMBASSY_QUEUE",
           "effects": {
@@ -671,17 +674,17 @@
     },
     "LAGOS_DOCUMENT_GRIND": {
       "id": "LAGOS_DOCUMENT_GRIND",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "Photocopies, stamps, another queue.",
       "location": "Immigration annex, Alausa",
       "stage": "annex",
       "transitIn": "danfo",
       "speaker": "Immigration annex, Alausa",
-      "dialogue": "Bodies in a line that does not move and also never ends. A clerk calls names like a danfo conductor. Ada texts a photo of the invitation letter, steam from a kettle behind her.",
+      "dialogue": "Bodies in a line that does not move and also never ends. A clerk calls names like a {bus} conductor. Ada texts a photo of the invitation letter, steam from a kettle behind her.",
       "choices": [
         {
-          "text": "Book the appointment. Danfo to the visa centre",
+          "text": "Book the appointment. {Bus} to the visa centre",
           "label": "",
           "nextSceneId": "LAGOS_EMBASSY_QUEUE",
           "effects": {
@@ -703,7 +706,7 @@
     },
     "LAGOS_SHOWING_MONEY": {
       "id": "LAGOS_SHOWING_MONEY",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "Love, with conditions.",
       "location": "WhatsApp: Ada & the family group",
@@ -737,17 +740,17 @@
     },
     "LAGOS_WEEKEND_GIG": {
       "id": "LAGOS_WEEKEND_GIG",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "Cash in the pocket. Dust in the lungs.",
-      "location": "Surulere rain, then the okada home",
+      "location": "Rain in {gigArea}, then the okada home",
       "stage": "gig",
       "transitIn": "okada",
-      "speaker": "Surulere rain, then the okada home",
+      "speaker": "Rain in {gigArea}, then the okada home",
       "dialogue": "You fix a POS network, then two Bolt trips in the rain. The envelope thickens. A woman under a shop awning is shouting into her phone the same way you shout to Ada: 'I am coming. Traffic.'",
       "choices": [
         {
-          "text": "Bank it. Danfo to the paperwork",
+          "text": "Bank it. {Bus} to the paperwork",
           "label": "",
           "nextSceneId": "LAGOS_DOCUMENT_GRIND",
           "effects": {
@@ -767,7 +770,7 @@
           }
         },
         {
-          "text": "One more weekend. Trek back to Yaba.",
+          "text": "One more weekend. Trek back to {area}.",
           "label": "",
           "nextSceneId": "LAGOS_YABA_DUSK",
           "effects": {
@@ -780,17 +783,17 @@
     },
     "LAGOS_BERLIN_CALL": {
       "id": "LAGOS_BERLIN_CALL",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "7:03 a.m. The call connects.",
-      "location": "Yaba, on borrowed light",
+      "location": "{area}, on borrowed light",
       "stage": "video-job",
       "transitIn": "call",
-      "speaker": "Yaba, on borrowed light",
+      "speaker": "{area}, on borrowed light",
       "dialogue": "Berlin asks about a race condition you actually fixed. Then they ask if you can fly. Ada is on speaker from the bus to work: 'Say yes. We will figure Heathrow.'",
       "choices": [
         {
-          "text": "Use the offer as the spine. Danfo to the visa centre",
+          "text": "Use the offer as the spine. {Bus} to the visa centre",
           "label": "",
           "nextSceneId": "LAGOS_EMBASSY_QUEUE",
           "effects": {
@@ -812,13 +815,13 @@
     },
     "LAGOS_EMBASSY_QUEUE": {
       "id": "LAGOS_EMBASSY_QUEUE",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "The queue is a weather system.",
-      "location": "Visa application centre, Victoria Island",
+      "location": "Visa Application Centre, {vacCity}",
       "stage": "embassy",
       "transitIn": "danfo",
-      "speaker": "Visa application centre, Victoria Island",
+      "speaker": "Visa Application Centre, {vacCity}",
       "dialogue": "Plastic chairs. Names like a lottery. A man in front is whispering to his brother in Houston. You hold Ada's letter like it can stand in the line for you.",
       "choices": [
         {
@@ -845,7 +848,7 @@
     },
     "LAGOS_DECISION_GATE": {
       "id": "LAGOS_DECISION_GATE",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "They take the passport. You take the wait.",
       "location": "Outside the centre, VI sun",
@@ -867,13 +870,13 @@
     },
     "LAGOS_OUTCOME": {
       "id": "LAGOS_OUTCOME",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "A text at 11:41 p.m.",
-      "location": "Yaba mattress, phone glowing",
+      "location": "{area} mattress, phone glowing",
       "stage": "phone-text",
       "transitIn": "none",
-      "speaker": "Yaba mattress, phone glowing",
+      "speaker": "{area} mattress, phone glowing",
       "dialogue": "Ada is typing. The embassy mail is sitting unopened. If the file and the spirit held, the country lets you leave. If not, you are still here — which is not the same as finished.",
       "choices": [
         {
@@ -886,13 +889,13 @@
     },
     "LAGOS_ENDING_WIN": {
       "id": "LAGOS_ENDING_WIN",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "You japa.",
-      "location": "Airside, MMA2 → the glass",
+      "location": "Airside, {airportCode} → the glass",
       "stage": "airport",
       "transitIn": "plane",
-      "speaker": "Airside, MMA2 → the glass",
+      "speaker": "Airside, {airportCode} → the glass",
       "dialogue": "Plastic tray. Stamped page. Ada is on FaceTime from arrivals in a future you have not reached yet, and also from Peckham right now, crying and laughing. You go. That is the deal.",
       "outcome": {
         "result": "win",
@@ -902,13 +905,13 @@
     },
     "LAGOS_ENDING_STAY": {
       "id": "LAGOS_ENDING_STAY",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "The country keeps you.",
-      "location": "Yaba, same generator, new month",
+      "location": "{area}, same generator, new month",
       "stage": "stay",
       "transitIn": "none",
-      "speaker": "Yaba, same generator, new month",
+      "speaker": "{area}, same generator, new month",
       "dialogue": "Ada does not drop the call. 'We try again. I am not going anywhere.' Rice that tastes like delay. Tomorrow you can trek another corridor. People do.",
       "outcome": {
         "result": "fail",
@@ -918,7 +921,7 @@
     },
     "LAGOS_RESOLVE": {
       "id": "LAGOS_RESOLVE",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "RESOLUTION",
       "branch": [
         {
@@ -978,7 +981,7 @@
       "route": "STARTUP_VISA",
       "layoutType": "ZOOM_GRID",
       "speaker": "Mr. Chen (Chief Technology Officer)",
-      "dialogue": "Let's look at your architecture. Your platform handles high-volume cross-border ledger balances. If the data pipes fail or a severe bottleneck occurs between Lagos and Toronto, how does your ledger protect financial integrity without crashing performance?",
+      "dialogue": "Let's look at your architecture. Your platform handles high-volume cross-border ledger balances. If the data pipes fail or a severe bottleneck occurs between {city} and Toronto, how does your ledger protect financial integrity without crashing performance?",
       "choices": [
         {
           "text": "We use advanced cloud systems and high-end security encryption to make sure everything stays secure and never crashes.",
@@ -1007,7 +1010,7 @@
       "route": "STARTUP_VISA",
       "layoutType": "ZOOM_GRID",
       "speaker": "Mr. Ross (Managing Partner)",
-      "dialogue": "Your team listing shows four co-founders, all in Lagos. If we issue a Letter of Support, the core team must relocate to Canada to scale this business. What happens if your Lead Developer decides to stay behind or fails their immigration check?",
+      "dialogue": "Your team listing shows four co-founders, all in {city}. If we issue a Letter of Support, the core team must relocate to Canada to scale this business. What happens if your Lead Developer decides to stay behind or fails their immigration check?",
       "choices": [
         {
           "text": "That won't happen. We are best friends from university and fully committed to moving together. We trust each other completely.",
@@ -1092,7 +1095,7 @@
       "route": "CAREGIVER_LMIA",
       "layoutType": "CORPORATE_OFFICE",
       "speaker": "Mr. Kovacs (Operations Director)",
-      "dialogue": "Your operational background in Lagos is honestly fantastic. You've managed larger fleets than we have here. But I see you're on a visitor record, and we need someone who can start full-time immediately. Why should I spend our legal budget waiting on an LMIA for you?",
+      "dialogue": "Your operational background in {city} is honestly fantastic. You've managed larger fleets than we have here. But I see you're on a visitor record, and we need someone who can start full-time immediately. Why should I spend our legal budget waiting on an LMIA for you?",
       "choices": [
         {
           "text": "Please sir, my visa is running out and I don't want to go back to Nigeria. If you sponsor me, I'll work harder than anyone and never complain.",
@@ -1380,13 +1383,13 @@
     },
     "LAGOS_MISREPRESENTATION": {
       "id": "LAGOS_MISREPRESENTATION",
-      "route": "LAGOS_LIFE",
+      "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "The statement wasn't yours.",
-      "location": "Visa Application Centre, Ikeja",
+      "location": "Visa Application Centre, {vacCity}",
       "stage": "embassy",
       "transitIn": "danfo",
-      "speaker": "Visa Application Centre, Ikeja",
+      "speaker": "Visa Application Centre, {vacCity}",
       "dialogue": "The officer compares the account name with your passport, then slides the statement back. A borrowed bank statement is misrepresentation, and that can bar you from applying for five years.",
       "outcome": {
         "result": "fail",
@@ -1398,12 +1401,12 @@
       "id": "EE_START",
       "route": "EXPRESS_ENTRY",
       "layoutType": "STORY_STAGE",
-      "title": "The calculator says 110.",
-      "location": "Yaba, Lagos",
+      "title": "The calculator says {crs}.",
+      "location": "{area}, {city}",
       "stage": "room-night",
       "transitIn": "none",
-      "speaker": "Yaba, Lagos",
-      "dialogue": "You are 29, with a B.Sc. and three years as a logistics analyst. The IRCC calculator is blunt: without a language test or an Educational Credential Assessment (ECA), your Comprehensive Ranking System score is 110. Every point from here has to be earned.",
+      "speaker": "{area}, {city}",
+      "dialogue": "You are {age}, with {educationPhrase} and {experiencePhrase}. The IRCC calculator is blunt: without a language test or an Educational Credential Assessment (ECA), your Comprehensive Ranking System score is {crs}. Every point from here has to be earned.",
       "choices": [
         {
           "text": "Book IELTS General Training and study for three months first",
@@ -1446,11 +1449,11 @@
       "route": "EXPRESS_ENTRY",
       "layoutType": "STORY_STAGE",
       "title": "Transcripts, sealed and direct.",
-      "location": "University registry, Lagos",
+      "location": "School registry, {city}",
       "stage": "university-registry",
       "transitIn": "danfo",
-      "speaker": "University registry, Lagos",
-      "dialogue": "WES will only accept transcripts sent directly by your university. The registry window says six to eight weeks. Without the ECA, your degree is worth zero points.",
+      "speaker": "School registry, {city}",
+      "dialogue": "WES will only accept transcripts sent directly by your school. The registry window says six to eight weeks. Without the ECA, your education is worth zero points.",
       "choices": [
         {
           "text": "Pay the official express transcript fee and courier",
@@ -1463,7 +1466,7 @@
           "set": {
             "ecaComplete": 1
           },
-          "feedback": "WES confirms a Canadian bachelor's equivalent: +120 points, and it unlocks transferability points."
+          "feedback": "WES confirms the Canadian equivalent of your education, and it unlocks transferability points."
         },
         {
           "text": "Go back every week and follow up in person",
@@ -1476,7 +1479,7 @@
           "set": {
             "ecaComplete": 1
           },
-          "feedback": "Seven weeks and four danfos later, the transcripts go out. ECA done."
+          "feedback": "Seven weeks and four {bus} rides later, the transcripts go out. ECA done."
         },
         {
           "text": "Ask a 'connect' to print a transcript tonight",
@@ -1680,11 +1683,11 @@
       "route": "EXPRESS_ENTRY",
       "layoutType": "STORY_STAGE",
       "title": "Bonjour, NCLC 7.",
-      "location": "French institute, Lagos",
+      "location": "French institute, {city}",
       "stage": "french-class",
       "transitIn": "danfo",
-      "speaker": "French institute, Lagos",
-      "dialogue": "Nine months of evenings, verb tables on the danfo and one very patient Madame Leclerc. You also had a birthday: turning 30 costs 5 age points. Check the meter.",
+      "speaker": "French institute, {city}",
+      "dialogue": "Nine months of evenings, verb tables on the {bus} and one very patient Madame Leclerc. You are also nine months older: after 29, every birthday costs CRS points. Check the meter.",
       "choices": [
         {
           "text": "Update your profile with the TEF Canada results",
@@ -1756,10 +1759,10 @@
       "route": "EXPRESS_ENTRY",
       "layoutType": "STORY_STAGE",
       "title": "Proof of funds.",
-      "location": "Bank, Lagos",
+      "location": "Bank, {city}",
       "stage": "bank-hall",
       "transitIn": "danfo",
-      "speaker": "Bank, Lagos",
+      "speaker": "Bank, {city}",
       "dialogue": "Federal Skilled Worker applicants must show settlement funds in their own name: CAD $15,263 for one person (the figure in use since July 2025). Borrowed money does not count. Canadian Experience Class applicants are exempt.",
       "choices": [
         {
@@ -1793,6 +1796,24 @@
           "lockedHint": "Only for Canadian Experience Class"
         },
         {
+          "text": "Family gift: parents transfer savings with a signed gift letter and their bank records",
+          "label": "DOCUMENTED_GIFT",
+          "nextSceneId": "EE_FUNDS",
+          "effects": {
+            "walletCad": 6000,
+            "desperation": 6,
+            "familyAsked": 1
+          },
+          "feedback": "Gifted funds count when they are documented and truly yours to keep. +CAD 6,000.",
+          "requires": {
+            "familyAsked": [
+              "<",
+              1
+            ]
+          },
+          "lockedHint": "The family has given what it can"
+        },
+        {
           "text": "Work overtime for four more months and save",
           "label": "SAVING_UP",
           "nextSceneId": "EE_FUNDS",
@@ -1816,10 +1837,10 @@
       "route": "EXPRESS_ENTRY",
       "layoutType": "STORY_STAGE",
       "title": "Police certificate. Medical. Uploads.",
-      "location": "Police HQ, Lagos",
+      "location": "Police command, {city}",
       "stage": "annex",
       "transitIn": "danfo",
-      "speaker": "Police HQ, Lagos",
+      "speaker": "Police command, {city}",
       "dialogue": "A police character certificate, a medical with an IRCC panel physician, and every document scanned and uploaded before the deadline.",
       "choices": [
         {
@@ -1919,10 +1940,10 @@
       "route": "EXPRESS_ENTRY",
       "layoutType": "STORY_STAGE",
       "title": "The document was fake.",
-      "location": "Lagos",
+      "location": "{city}",
       "stage": "university-registry",
       "transitIn": "none",
-      "speaker": "Lagos",
+      "speaker": "{city}",
       "dialogue": "IRCC verifies documents with the issuing body. A forged document is misrepresentation: refusal and a five-year ban.",
       "outcome": {
         "result": "fail",
@@ -1951,10 +1972,10 @@
       "route": "EXPRESS_ENTRY",
       "layoutType": "STORY_STAGE",
       "title": "Whose money is this?",
-      "location": "Bank, Lagos",
+      "location": "Bank, {city}",
       "stage": "bank-hall",
       "transitIn": "none",
-      "speaker": "Bank, Lagos",
+      "speaker": "Bank, {city}",
       "dialogue": "The officer asks for the source of a large recent deposit. Borrowed funds presented as savings is misrepresentation.",
       "outcome": {
         "result": "fail",
@@ -1967,10 +1988,10 @@
       "route": "EXPRESS_ENTRY",
       "layoutType": "STORY_STAGE",
       "title": "You ran out of you.",
-      "location": "Yaba, Lagos",
+      "location": "{area}, {city}",
       "stage": "room-night",
       "transitIn": "none",
-      "speaker": "Yaba, Lagos",
+      "speaker": "{area}, {city}",
       "dialogue": "The profile expires while you sleep for a week straight. The pool will still be there. Rest first.",
       "outcome": {
         "result": "fail",
@@ -1983,11 +2004,11 @@
       "route": "STUDY_PERMIT",
       "layoutType": "STORY_STAGE",
       "title": "Three admission emails.",
-      "location": "Cyber cafe, Yaba",
+      "location": "Cyber cafe, {area}",
       "stage": "cafe",
       "transitIn": "none",
-      "speaker": "Cyber cafe, Yaba",
-      "dialogue": "The most common route to Canada starts with a classroom. Your inbox has three offers. Choose carefully: the program decides your tuition, your funds and whether you get a post-graduation work permit (PGWP).",
+      "speaker": "Cyber cafe, {area}",
+      "dialogue": "The most common route to Canada starts with a classroom. Your inbox has offers. Choose carefully: the program decides your tuition, your funds and whether you get a post-graduation work permit (PGWP).",
       "choices": [
         {
           "text": "Master's in Engineering Management, public university (1 year, CAD 32,000)",
@@ -1999,7 +2020,26 @@
           "set": {
             "programType": 2
           },
-          "feedback": "Master's graduates are exempt from the PGWP field-of-study list."
+          "feedback": "Master's graduates are exempt from the PGWP field-of-study list.",
+          "requires": {
+            "hasDegree": [
+              ">=",
+              1
+            ]
+          },
+          "lockedHint": "Needs a completed bachelor's degree (or equivalent)"
+        },
+        {
+          "text": "Four-year bachelor's in Computer Science, public university (CAD 35,000 a year)",
+          "label": "BACHELORS",
+          "nextSceneId": "ST_LOA",
+          "effects": {
+            "desperation": 6
+          },
+          "set": {
+            "programType": 4
+          },
+          "feedback": "A Canadian bachelor's counts as 3+ years of Canadian education: the most CRS points for study in Canada."
         },
         {
           "text": "Two-year Supply Chain diploma, public college (CAD 18,000 a year)",
@@ -2036,10 +2076,10 @@
       "route": "STUDY_PERMIT",
       "layoutType": "STORY_STAGE",
       "title": "Letter of acceptance.",
-      "location": "Yaba, Lagos",
+      "location": "{area}, {city}",
       "stage": "phone-text",
       "transitIn": "none",
-      "speaker": "Yaba, Lagos",
+      "speaker": "{area}, {city}",
       "dialogue": "Your letter of acceptance arrives from a designated learning institution. If your program needs a provincial attestation letter (PAL), the school requests it from the province. In 2026 most master's and doctoral students at public institutions are exempt.",
       "choices": [
         {
@@ -2055,11 +2095,11 @@
       "route": "STUDY_PERMIT",
       "layoutType": "STORY_STAGE",
       "title": "Show the money.",
-      "location": "Bank, Lagos",
+      "location": "Bank, {city}",
       "stage": "bank-hall",
       "transitIn": "danfo",
-      "speaker": "Bank, Lagos",
-      "dialogue": "You need first-year tuition, CAD 23,448 for living costs (applications from September 1, 2026) and money for travel. Since July 2026 officers also ask where the money came from. Master's: about CAD 57,500. College: about CAD 43,500. Private certificate: about CAD 34,500.",
+      "speaker": "Bank, {city}",
+      "dialogue": "You need first-year tuition, CAD 23,448 for living costs (applications from September 1, 2026) and money for travel. Since July 2026 officers also ask where the money came from. Bachelor's: about CAD 60,500. Master's: about CAD 57,500. College: about CAD 43,500. Private certificate: about CAD 34,500.",
       "choices": [
         {
           "text": "Apply for the entrance scholarship (write the essay tonight)",
@@ -2136,6 +2176,24 @@
           "lockedHint": "You already ran the campaign"
         },
         {
+          "text": "Education loan from a lender that funds international students (approved for your school)",
+          "label": "EDUCATION_LOAN",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {
+            "walletCad": 25000,
+            "desperation": 8,
+            "loanTaken": 1
+          },
+          "feedback": "A loan from a financial institution is accepted proof of funds. Repayments start after graduation.",
+          "requires": {
+            "loanTaken": [
+              "<",
+              1
+            ]
+          },
+          "lockedHint": "You already have the loan"
+        },
+        {
           "text": "Ask a friend to 'park' N25M in your account for two weeks",
           "label": "FRAUD",
           "nextSceneId": "ST_FUNDS_PARKING",
@@ -2154,6 +2212,19 @@
       "route": "STUDY_PERMIT",
       "layoutType": "RESOLUTION",
       "branch": [
+        {
+          "when": {
+            "programType": [
+              "==",
+              4
+            ],
+            "walletCad": [
+              ">=",
+              60448
+            ]
+          },
+          "nextSceneId": "ST_SOP"
+        },
         {
           "when": {
             "programType": [
@@ -2203,10 +2274,10 @@
       "route": "STUDY_PERMIT",
       "layoutType": "STORY_STAGE",
       "title": "The numbers don't add up yet.",
-      "location": "Bank, Lagos",
+      "location": "Bank, {city}",
       "stage": "bank-hall",
       "transitIn": "none",
-      "speaker": "Bank, Lagos",
+      "speaker": "Bank, {city}",
       "dialogue": "Tuition plus CAD 23,448 plus travel is more than you can show. An application without enough funds is refused, and the refusal stays on your record.",
       "choices": [
         {
@@ -2222,10 +2293,10 @@
       "route": "STUDY_PERMIT",
       "layoutType": "STORY_STAGE",
       "title": "The study plan.",
-      "location": "Yaba, Lagos",
+      "location": "{area}, {city}",
       "stage": "room-night",
       "transitIn": "none",
-      "speaker": "Yaba, Lagos",
+      "speaker": "{area}, {city}",
       "dialogue": "The officer will read one document to understand you: your study plan. Why this program, why Canada, and what happens after.",
       "choices": [
         {
@@ -2263,10 +2334,10 @@
       "route": "STUDY_PERMIT",
       "layoutType": "STORY_STAGE",
       "title": "Biometrics at the VAC.",
-      "location": "Visa Application Centre, Ikeja",
+      "location": "Visa Application Centre, {vacCity}",
       "stage": "embassy",
       "transitIn": "danfo",
-      "speaker": "Visa Application Centre, Ikeja",
+      "speaker": "Visa Application Centre, {vacCity}",
       "dialogue": "Fingerprints, photo, a long wait on a plastic chair. Your file goes to an officer.",
       "choices": [
         {
@@ -2303,10 +2374,10 @@
       "route": "STUDY_PERMIT",
       "layoutType": "STORY_STAGE",
       "title": "Study permit approved.",
-      "location": "Murtala Muhammed Airport",
+      "location": "{airport}",
       "stage": "airport",
       "transitIn": "call",
-      "speaker": "Murtala Muhammed Airport",
+      "speaker": "{airport}",
       "dialogue": "The port of entry letter lands in your inbox. Ada screams on the phone. Pack for winter.",
       "choices": [
         {
@@ -2324,10 +2395,10 @@
       "route": "STUDY_PERMIT",
       "layoutType": "STORY_STAGE",
       "title": "Refused.",
-      "location": "Yaba, Lagos",
+      "location": "{area}, {city}",
       "stage": "phone-text",
       "transitIn": "none",
-      "speaker": "Yaba, Lagos",
+      "speaker": "{area}, {city}",
       "dialogue": "'I am not satisfied that you will leave Canada at the end of your stay, based on the purpose of your visit.' A stronger study plan is the usual fix. You can apply again.",
       "outcome": {
         "result": "fail",
@@ -2344,7 +2415,7 @@
       "stage": "pearson-arrivals",
       "transitIn": "plane",
       "speaker": "Toronto Pearson",
-      "dialogue": "The officer checks your letter and issues the study permit. Outside it is -18°C and your Lagos 'jacket' is a hoodie.",
+      "dialogue": "The officer checks your letter and issues the study permit. Outside it is -18°C and your {city} 'jacket' is a hoodie.",
       "choices": [
         {
           "text": "Buy proper boots and a parka before anything else (CAD 350)",
@@ -2468,6 +2539,15 @@
           "when": {
             "programType": [
               "==",
+              4
+            ]
+          },
+          "nextSceneId": "ST_PGWP_BACHELORS"
+        },
+        {
+          "when": {
+            "programType": [
+              "==",
               2
             ]
           },
@@ -2507,7 +2587,8 @@
           "siblingInCanada": 0,
           "ageYears": 30,
           "educationLevel": 6
-        }
+        },
+        "ageOffset": 2
       }
     },
     "ST_PGWP_COLLEGE": {
@@ -2539,7 +2620,8 @@
           "siblingInCanada": 0,
           "ageYears": 31,
           "educationLevel": 5
-        }
+        },
+        "ageOffset": 3
       }
     },
     "ST_NO_PGWP": {
@@ -2595,10 +2677,10 @@
       "route": "STUDY_PERMIT",
       "layoutType": "STORY_STAGE",
       "title": "The letter was fake.",
-      "location": "Agent's office, Ikeja",
+      "location": "Agent's office, {city}",
       "stage": "agent",
       "transitIn": "danfo",
-      "speaker": "Agent's office, Ikeja",
+      "speaker": "Agent's office, {city}",
       "dialogue": "IRCC now verifies every letter of acceptance directly with the school. A fake one is misrepresentation: refusal and a five-year ban.",
       "outcome": {
         "result": "fail",
@@ -2611,10 +2693,10 @@
       "route": "STUDY_PERMIT",
       "layoutType": "STORY_STAGE",
       "title": "Parked money.",
-      "location": "Bank, Lagos",
+      "location": "Bank, {city}",
       "stage": "bank-hall",
       "transitIn": "none",
-      "speaker": "Bank, Lagos",
+      "speaker": "Bank, {city}",
       "dialogue": "A large deposit two weeks before applying, with no source. Officers ask where it came from, and parked funds presented as your own is misrepresentation.",
       "outcome": {
         "result": "fail",
@@ -2636,6 +2718,39 @@
         "result": "fail",
         "reason": "BURNOUT",
         "title": "Burnout"
+      }
+    },
+    "ST_PGWP_BACHELORS": {
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Convocation.",
+      "location": "Toronto",
+      "stage": "graduation",
+      "transitIn": "snow-walk",
+      "speaker": "Toronto",
+      "outcome": {
+        "result": "win",
+        "reason": "PGWP_ISSUED",
+        "title": "Graduate with a PGWP"
+      },
+      "unlocksRoute": "EXPRESS_ENTRY",
+      "unlockStartSceneId": "EE_CANADA_START",
+      "id": "ST_PGWP_BACHELORS",
+      "dialogue": "Four winters later: a Canadian bachelor's degree and a post-graduation work permit. Three or more years of Canadian study is worth the most CRS points for education in Canada.",
+      "carry": {
+        "routeStats": {
+          "ecaComplete": 1,
+          "clbFirst": 9,
+          "nclcFrench": 0,
+          "foreignWorkYears": 3,
+          "canadianWorkYears": 0,
+          "canadianEducation": 2,
+          "pnpNomination": 0,
+          "siblingInCanada": 0,
+          "ageYears": 33,
+          "educationLevel": 4
+        },
+        "ageOffset": 5
       }
     }
   },

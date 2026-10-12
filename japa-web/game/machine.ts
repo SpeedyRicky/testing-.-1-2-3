@@ -2,8 +2,10 @@
 // so switching modes never loses progress.
 import { DB, applyMarketShock, choose, dismissPopup, newRun, takeAction } from "./engine";
 import type { GameState, RouteId, ScenarioDatabase, Toast } from "./types";
+import { deriveGameProfile, routePatches, type PlayerProfile } from "./profile";
 
 export interface AppState {
+  profile: PlayerProfile | null;
   activeRoute: RouteId;
   runs: Partial<Record<RouteId, GameState>>;
   toast: Toast | null;
@@ -17,14 +19,20 @@ export type AppEvent =
   | { type: "TAKE_ACTION"; actionId: string; rolls: [number, number] }
   | { type: "RESTART" }
   | { type: "DISMISS_TOAST" }
-  | { type: "FOLLOW_UNLOCK" };
+  | { type: "FOLLOW_UNLOCK" }
+  | { type: "SET_PROFILE"; profile: PlayerProfile | null };
 
 export const PLAYABLE: RouteId[] = (Object.keys(DB.routes) as RouteId[]).filter((r) => DB.routes[r].status === "playable");
 
-export function initialState(db: ScenarioDatabase = DB): AppState {
+/** A fresh run of a route, starting from the player's profile when there is one. */
+export function startRoute(db: ScenarioDatabase, route: RouteId, profile: PlayerProfile | null): GameState {
+  return newRun(db, route, (profile ? routePatches(profile)[route] : undefined) ?? {});
+}
+
+export function initialState(db: ScenarioDatabase = DB, profile: PlayerProfile | null = null): AppState {
   const runs: Partial<Record<RouteId, GameState>> = {};
-  for (const r of PLAYABLE) runs[r] = newRun(db, r);
-  return { activeRoute: PLAYABLE[0], runs, toast: null };
+  for (const r of PLAYABLE) runs[r] = startRoute(db, r, profile);
+  return { profile, activeRoute: PLAYABLE[0], runs, toast: null };
 }
 
 export function activeRun(state: AppState): GameState | undefined {
@@ -54,7 +62,9 @@ export function makeReducer(db: ScenarioDatabase = DB) {
         return { ...withRun(state, r.state), toast: { ...r.toast, id: (state.toast?.id ?? 0) + 1 } };
       }
       case "RESTART":
-        return { ...state, runs: { ...state.runs, [state.activeRoute]: newRun(db, state.activeRoute) }, toast: null };
+        return { ...state, runs: { ...state.runs, [state.activeRoute]: startRoute(db, state.activeRoute, state.profile) }, toast: null };
+      case "SET_PROFILE":
+        return initialState(db, event.profile);
       case "DISMISS_TOAST":
         return state.toast ? { ...state, toast: null } : state;
       case "FOLLOW_UNLOCK": {
@@ -69,11 +79,33 @@ export function makeReducer(db: ScenarioDatabase = DB) {
           streetCred: run.streetCred,
           timeRemainingDays: run.timeRemainingDays,
           flags: { ...run.flags, [`from_${run.activeRoute.toLowerCase()}`]: true },
-          routeStats: scene.carry?.routeStats,
+          routeStats: carriedStats(scene.carry, state.profile),
         }, scene.unlockStartSceneId);
         return { ...state, activeRoute: target, runs: { ...state.runs, [target]: carried }, toast: null };
       }
     }
+  };
+}
+
+/** CRS education after Canadian study. Codes: 3 two-year, 4 bachelor's, 5 two or more credentials
+ *  (one of them 3+ years), 6 master's. The JSON marks a college diploma as 5 (assuming a prior degree). */
+function combinedEducation(canadian: number, nigerianDegree: boolean): number {
+  if (canadian >= 6) return canadian;
+  if (canadian === 4) return nigerianDegree ? 5 : 4;
+  if (canadian === 5) return nigerianDegree ? 5 : 3;
+  return canadian;
+}
+
+/** Stats carried into the next route; age and work history follow the player's real profile. */
+function carriedStats(carry: { routeStats?: GameState["routeStats"]; ageOffset?: number } | undefined, profile: PlayerProfile | null) {
+  if (!carry?.routeStats) return undefined;
+  if (!profile) return carry.routeStats;
+  const g = deriveGameProfile(profile);
+  return {
+    ...carry.routeStats,
+    ageYears: profile.age + (carry.ageOffset ?? 0),
+    foreignWorkYears: g.foreignWorkYears,
+    educationLevel: combinedEducation(carry.routeStats.educationLevel ?? 0, g.hasDegree),
   };
 }
 

@@ -1,5 +1,15 @@
+"use client";
+
 import type { Transit } from "@/game/types";
+import { LocalRide } from "./LagosStage";
 import { Person } from "./Person";
+import { usePlayer } from "./Player";
+
+const LOCAL_COPY = {
+  danfo: "Yellow bus. One more passenger!",
+  keke: "Keke. Shift small, one more person!",
+  bus: "Along! Bus heading into town.",
+};
 
 const COPY: Record<Exclude<Transit, "none">, string> = {
   trek: "Trekking… go-slow of the feet",
@@ -18,21 +28,20 @@ export function TravelRibbon({
   mode: Transit;
   destination: string;
 }) {
+  const { transport } = usePlayer();
   if (mode === "none") return null;
 
   return (
     <div className="travel-ribbon" role="status">
-      <p className="travel-kicker">{COPY[mode]}</p>
+      <p className="travel-kicker">{mode === "danfo" ? LOCAL_COPY[transport] : COPY[mode]}</p>
       <p className="travel-dest">{destination}</p>
       <div className={`travel-stage ${mode === "streetcar" || mode === "snow-walk" ? "travel-snow" : ""}`}>
         {mode === "danfo" ? (
-          <div className="danfo-bus">
-            <span className="danfo-stripe" />
-            <span className="danfo-win w1" />
-            <span className="danfo-win w2" />
-            <span className="danfo-win w3" />
-            <Person who="you" pose="sit" x={52} scale={0.55} caption="You" />
-            <Person who="npc" pose="sit" x={38} scale={0.5} />
+          <div className="local-ride-rig">
+            <LocalRide>
+              <Person who="you" pose="sit" x={56} scale={0.55} caption="You" />
+              <Person who="npc" pose="sit" x={34} scale={0.5} />
+            </LocalRide>
           </div>
         ) : null}
         {mode === "okada" ? (

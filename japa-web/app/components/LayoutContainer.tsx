@@ -12,7 +12,7 @@ import { LagosStageLayout } from "./layouts/LagosStageLayout";
 
 /** Per-route look. Class names are written out in full so Tailwind keeps them. */
 export const ROUTE_THEME: Record<RouteId, { backdrop: string; tones: Tone[]; accent: string }> = {
-  LAGOS_LIFE: { backdrop: "", tones: [], accent: "text-amber-300" },
+  NIGERIA_LIFE: { backdrop: "", tones: [], accent: "text-amber-300" },
   STUDY_PERMIT: { backdrop: "", tones: [], accent: "text-red-300" },
   EXPRESS_ENTRY: { backdrop: "", tones: [], accent: "text-sky-300" },
   STARTUP_VISA: {

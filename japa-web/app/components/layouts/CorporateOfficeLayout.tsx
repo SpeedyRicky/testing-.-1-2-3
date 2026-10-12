@@ -4,6 +4,7 @@ import { Building2, RotateCcw } from "lucide-react";
 import { DB, choose, currentScene, formatLabel, presentChoices } from "@/game/engine";
 import { describeChoice } from "@/game/cinematic";
 import { useCinematic } from "../Cinematic";
+import { usePlayer } from "../Player";
 import type { LayoutProps } from "../LayoutContainer";
 import { FeedbackChip } from "../FeedbackChip";
 import { ShareOnX } from "../Popups";
@@ -14,12 +15,13 @@ export function CorporateOfficeLayout({ run, dispatch, bars }: LayoutProps) {
   const choices = presentChoices(DB, run);
   const won = run.outcome?.result === "win";
   const { play } = useCinematic();
+  const { t, t: tr } = usePlayer();
   function pick(index: number) {
     const choice = scene?.choices?.[index];
     const next = choose(DB, run, index);
     if (!choice || next === run) return;
     dispatch({ type: "CHOOSE", index });
-    play({ spec: describeChoice(DB, run, next, choice.text, choice.label, choice.feedback ?? ""), stage: "boardroom", reactor: "kovacs" });
+    play({ spec: describeChoice(DB, run, next, t(choice.text), choice.label, t(choice.feedback)), stage: "boardroom", reactor: "kovacs" });
   }
   // Past exchanges: every visited dialogue scene that got an answer.
   const transcript = run.history.filter((h) => h.answer).map((h) => ({ ...h, scene: DB.scenes[h.sceneId] }));
@@ -60,10 +62,10 @@ export function CorporateOfficeLayout({ run, dispatch, bars }: LayoutProps) {
             <div key={i} className="space-y-2">
               <div className="rounded-2xl rounded-tl-sm border border-white/10 bg-white/[0.03] px-4 py-3 text-sm leading-relaxed text-zinc-300">
                 <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-amber-200/60">{t.scene?.speaker}</div>
-                {t.scene?.dialogue}
+                {tr(t.scene?.dialogue)}
               </div>
               <div className="ml-auto max-w-[90%] rounded-2xl rounded-tr-sm border border-sky-400/20 bg-sky-400/[0.06] px-4 py-3 text-sm leading-relaxed text-zinc-200">
-                {t.answer}
+                {tr(t.answer)}
                 {t.label && <div className="mt-1.5 font-mono text-[10px] uppercase tracking-wider text-sky-300/70">{formatLabel(t.label)}</div>}
               </div>
             </div>
@@ -73,12 +75,12 @@ export function CorporateOfficeLayout({ run, dispatch, bars }: LayoutProps) {
             <div key={run.currentSceneId} className="animate-fade-in space-y-3">
               <div className="rounded-2xl rounded-tl-sm border border-amber-200/15 bg-amber-100/[0.03] px-4 py-3 text-[15px] leading-relaxed text-zinc-100">
                 <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-amber-200/70">{scene.speaker}</div>
-                {scene.dialogue}
+                {tr(scene.dialogue)}
               </div>
               <div className="eyebrow pt-2">Your response</div>
               {choices.map((c) => (
                 <button key={c.index} className="choice-btn" disabled={!c.enabled} onClick={() => pick(c.index)}>
-                  {c.text}
+                  {tr(c.text)}
                 </button>
               ))}
             </div>

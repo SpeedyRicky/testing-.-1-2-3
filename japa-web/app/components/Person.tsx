@@ -1,3 +1,8 @@
+"use client";
+
+import type { Avatar } from "@/game/profile";
+import { usePlayer } from "./Player";
+
 export type PersonPose = "idle" | "walk" | "phone" | "sit" | "wave" | "queue" | "talk" | "cheer" | "slump";
 export type PersonWho =
   | "you"
@@ -49,6 +54,15 @@ const POSE_CLASS: Record<PersonPose, string> = {
   slump: "person-slump",
 };
 
+const DRESSED_LEGS = new Set(["ankara-dress", "buba-iro"]);
+
+function pantsFor(a: Avatar): string {
+  if (DRESSED_LEGS.has(a.outfit)) return a.skin;
+  if (a.outfit === "tee-jeans") return "#1e3a8a";
+  if (a.outfit === "hoodie") return "#1f2937";
+  return a.outfitColor;
+}
+
 export function Person({
   who,
   pose = "idle",
@@ -59,6 +73,7 @@ export function Person({
   shirt,
   caption,
   wear = [],
+  avatar,
 }: {
   who: PersonWho;
   pose?: PersonPose;
@@ -70,45 +85,67 @@ export function Person({
   caption?: string;
   /** Extra accessories on top of the character's own (e.g. a scarf in winter). */
   wear?: Accessory[];
+  /** Explicit look (the sign-up preview); otherwise "you" uses the signed-in player's avatar. */
+  avatar?: Avatar;
 }) {
-  const look = LOOK[who];
-  const extras = new Set<Accessory>([...(look.extra ?? []), ...wear]);
-  const tint = look.tint ?? "#dc2626";
+  const { profile } = usePlayer();
+  const base = LOOK[who];
+  const av = who === "you" ? avatar ?? profile?.avatar : undefined;
+  const extras = new Set<Accessory>([...(base.extra ?? []), ...wear]);
+  if (av?.glasses) extras.add("glasses");
+  const tint = base.tint ?? "#dc2626";
+  const skin = av?.skin ?? base.skin;
+  const top = shirt ?? av?.outfitColor ?? base.shirt;
+  const pants = av ? pantsFor(av) : base.pants;
+  const hairColor = av?.hairColor ?? base.hair;
+  const ankaraTop = av && (av.outfit === "ankara-dress" || av.outfit === "buba-iro");
+  // The player's name tag shows their username.
+  const label = who === "you" && caption && profile ? profile.username : caption;
+  const classes = av ? `body-${av.body} hair-${av.hair} outfit-${av.outfit}` : "";
+  const headwear = av?.headwear && av.headwear !== "none" ? av.headwear : null;
 
   return (
     <div
-      className={`person-wrap ${POSE_CLASS[pose]}`}
+      className={`person-wrap ${POSE_CLASS[pose]} ${classes}`}
       style={{
         left: `${x}%`,
         animationDelay: delay,
         transform: `translateX(-50%) scale(${flip ? -scale : scale}, ${scale})`,
       }}
     >
-      {caption ? (
+      {label ? (
         // Un-mirror the name tag when the person is flipped to face left.
-        <span className="person-name" style={flip ? { transform: "translateX(-50%) scaleX(-1)" } : undefined}>{caption}</span>
+        <span className="person-name" style={flip ? { transform: "translateX(-50%) scaleX(-1)" } : undefined}>{label}</span>
       ) : null}
       <div className="person">
-        {extras.has("headwrap") ? (
+        {av?.outfit === "hoodie" ? <span className="p-hood" style={{ background: top }} /> : null}
+        {extras.has("headwrap") && !av ? (
           <span className="p-headwrap" style={{ background: tint }} />
         ) : (
-          <span className="p-hair" style={{ background: look.hair }} />
+          <span className="p-hair" style={{ background: hairColor }} />
         )}
+        {headwear === "gele" ? <span className="p-gele" style={{ background: av!.headwearColor }} /> : null}
+        {headwear === "fila" ? <span className="p-fila" style={{ background: av!.headwearColor }} /> : null}
+        {headwear === "headwrap" ? <span className="p-headwrap" style={{ background: av!.headwearColor }} /> : null}
+        {headwear === "beanie" ? <span className="p-beanie" style={{ background: av!.headwearColor }} /> : null}
         {extras.has("cap") ? <span className="p-cap" /> : null}
-        <span className="p-head" style={{ background: look.skin }}>
+        <span className="p-head" style={{ background: skin }}>
           <i className="p-eye e1" />
           <i className="p-eye e2" />
           {extras.has("glasses") ? <i className="p-glasses" /> : null}
         </span>
-        <span className="p-torso" style={{ background: shirt ?? look.shirt }} />
+        <span className={`p-torso ${ankaraTop ? "ankara" : ""}`} style={{ backgroundColor: top }} />
+        {av?.outfit === "suit" ? <><span className="p-shirtline" /><span className="p-tie" style={{ background: "#111827" }} /></> : null}
+        {av?.outfit === "agbada" ? <span className="p-robe ankara" style={{ backgroundColor: top }} /> : null}
         {extras.has("scarf") ? <span className="p-scarf" style={{ background: who === "you" ? "#dc2626" : tint }} /> : null}
         {extras.has("tie") ? <span className="p-tie" style={{ background: tint }} /> : null}
-        <span className="p-arm p-arm-l" style={{ background: look.skin }} />
-        <span className="p-arm p-arm-r" style={{ background: look.skin }}>
+        <span className="p-arm p-arm-l" style={{ background: av?.outfit === "agbada" || av?.outfit === "hoodie" || av?.outfit === "suit" ? top : skin }} />
+        <span className="p-arm p-arm-r" style={{ background: av?.outfit === "agbada" || av?.outfit === "hoodie" || av?.outfit === "suit" ? top : skin }}>
           {pose === "phone" ? <b className="p-phone" /> : null}
         </span>
-        <span className="p-leg p-leg-l" style={{ background: look.pants }} />
-        <span className="p-leg p-leg-r" style={{ background: look.pants }} />
+        <span className="p-leg p-leg-l" style={{ background: pants }} />
+        <span className="p-leg p-leg-r" style={{ background: pants }} />
+        {av && DRESSED_LEGS.has(av.outfit) ? <span className="p-skirt ankara" style={{ backgroundColor: top }} /> : null}
       </div>
     </div>
   );

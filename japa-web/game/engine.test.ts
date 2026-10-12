@@ -5,6 +5,11 @@ import {
 } from "./engine";
 import { STAGES } from "../app/components/stages";
 import { describeChoice, diffStats } from "./cinematic";
+import {
+  deriveGameProfile, fillText, profileProblem, profileVars, usernameProblem, DEFAULT_AVATAR,
+  type PlayerProfile,
+} from "./profile";
+import { STATES, placeFor, placeVars, vacCityFor } from "./nigeria";
 import { initialState, makeReducer } from "./machine";
 import type { GameState, RouteId, StatKey } from "./types";
 
@@ -64,6 +69,7 @@ describe("scenarios.json integrity", () => {
       "papers", "ageYears", "educationLevel", "ecaComplete", "clbFirst", "nclcFrench", "foreignWorkYears",
       "canadianWorkYears", "canadianEducation", "pnpNomination", "siblingInCanada", "crsScore", "programType",
       "academicStanding", "officerConfidence", "scholarshipTried", "familyAsked", "landSold", "crowdfunded",
+      "loanTaken", "hasDegree",
     ]);
     const bad: string[] = [];
     for (const s of Object.values(DB.scenes)) {
@@ -182,8 +188,8 @@ describe("state machine", () => {
   it("lists only playable routes and opens on Lagos Life", () => {
     const app = initialState();
     expect(Object.keys(app.runs).sort()).toEqual(
-      ["CAREGIVER_LMIA", "EXPRESS_ENTRY", "LAGOS_LIFE", "STARTUP_VISA", "STUDY_PERMIT", "TOURIST_GAMBLE"]);
-    expect(app.activeRoute).toBe("LAGOS_LIFE");
+      ["CAREGIVER_LMIA", "EXPRESS_ENTRY", "NIGERIA_LIFE", "STARTUP_VISA", "STUDY_PERMIT", "TOURIST_GAMBLE"]);
+    expect(app.activeRoute).toBe("NIGERIA_LIFE");
     expect(reducer(app, { type: "SELECT_ROUTE", route: "PNP_RURAL" })).toBe(app);
   });
 
@@ -231,33 +237,33 @@ describe("Lagos Life (merged from the Cursor build)", () => {
     "Pick Ada's call", "Open the email"];
 
   it("starts in Yaba with the original meters (hope 64 = interference 36)", () => {
-    const s = newRun(DB, "LAGOS_LIFE");
+    const s = newRun(DB, "NIGERIA_LIFE");
     expect(s.currentSceneId).toBe("LAGOS_YABA_DAWN");
     expect(s).toMatchObject({ walletNgn: 280000, energy: 72, desperation: 36 });
     expect(s.routeStats.papers).toBe(18);
   });
 
   it("the remote-job path runs out of energy (original balance, kept on purpose)", () => {
-    const s = play("LAGOS_LIFE", ["Danfo to Computer Village", "Rewrite the CV", "Take the interview",
+    const s = play("NIGERIA_LIFE", ["hunt remote jobs", "Rewrite the CV", "Take the interview",
       "Use the offer as the spine", "Answer every question", "Pick Ada's call", "Open the email"]);
     expect(s.outcome?.result).toBe("fail");
     expect(s.energy).toBeLessThanOrEqual(12);
   });
 
   it("a borrowed bank statement is an instant fail", () => {
-    const s = play("LAGOS_LIFE", ["Call Sister Ada", "Ask her to lend", "friend's statement"]);
+    const s = play("NIGERIA_LIFE", ["Call Sister Ada", "Ask her to lend", "friend's statement"]);
     expect(s.outcome).toMatchObject({ result: "fail", reason: "MISREPRESENTATION" });
     expect(rankFor(DB, s)?.id).toBe("flagged");
   });
 
   it("the honest annex path wins and ranks Vanier Scholar", () => {
-    const s = play("LAGOS_LIFE", HONEST);
+    const s = play("NIGERIA_LIFE", HONEST);
     expect(s.outcome).toMatchObject({ result: "win", reason: "JAPA_APPROVED", decidedBy: "LAGOS_RESOLVE" });
     expect(rankFor(DB, s)?.id).toBe("vanier");
   });
 
   it("over-explaining at the embassy still loses on papers", () => {
-    const s = play("LAGOS_LIFE", ["Danfo to Computer Village", "Danfo to the visa consultant", "Pay 'facilitation'",
+    const s = play("NIGERIA_LIFE", ["hunt remote jobs", "visa consultant blasting", "Pay 'facilitation'",
       "Over-explain", "Pick Ada's call", "Open the email"]);
     expect(s.outcome?.result).toBe("fail");
     expect(s.currentSceneId).toBe("LAGOS_ENDING_STAY");
@@ -265,19 +271,19 @@ describe("Lagos Life (merged from the Cursor build)", () => {
   });
 
   it("paying the consultant floats -$1,500 CAD", () => {
-    const s = play("LAGOS_LIFE", ["Danfo to Computer Village", "Danfo to the visa consultant"]);
+    const s = play("NIGERIA_LIFE", ["hunt remote jobs", "visa consultant blasting"]);
     expect(s.cadFloat).toEqual({ amount: 1500, tick: 1 });
   });
 
   it("trap chance rises with interference, as in the original formula", () => {
-    const s = newRun(DB, "LAGOS_LIFE");
+    const s = newRun(DB, "NIGERIA_LIFE");
     expect(trapChance(DB, s)).toBeCloseTo(0.05 + Math.pow(0.36, 1.65) * 0.72, 6);
     expect(trapChance(DB, { ...s, desperation: 100 })).toBeCloseTo(0.77, 6);
     expect(trapChance(DB, newRun(DB, "STARTUP_VISA"))).toBe(0);
   });
 
   it("a trap applies its hit, shows a pop-up and blocks moves until dismissed", () => {
-    const start = newRun(DB, "LAGOS_LIFE");
+    const start = newRun(DB, "NIGERIA_LIFE");
     const s = choose(DB, start, 0, [0, 0]);
     expect(s.popup).toMatchObject({ kind: "trap", id: "ielts" });
     expect(s.desperation).toBe(36 - 6 + 16);
@@ -287,21 +293,21 @@ describe("Lagos Life (merged from the Cursor build)", () => {
   });
 
   it("traps never fire on the move into the ending", () => {
-    let s = play("LAGOS_LIFE", HONEST.slice(0, -1));
+    let s = play("NIGERIA_LIFE", HONEST.slice(0, -1));
     s = choose(DB, s, 0, [0, 0]);
     expect(s.popup).toBeNull();
     expect(s.outcome).not.toBeNull();
   });
 
   it("any meter running out collapses the run", () => {
-    const broke = { ...newRun(DB, "LAGOS_LIFE"), walletNgn: 1000 };
+    const broke = { ...newRun(DB, "NIGERIA_LIFE"), walletNgn: 1000 };
     const s = choose(DB, broke, 1); // call Ada costs N2,000
     expect(s.currentSceneId).toBe("LAGOS_ENDING_STAY");
     expect(s.outcome?.result).toBe("fail");
   });
 
   it("the parallel-market shock cuts cash and papers by 25%", () => {
-    const s = applyMarketShock(DB, newRun(DB, "LAGOS_LIFE"));
+    const s = applyMarketShock(DB, newRun(DB, "NIGERIA_LIFE"));
     expect(s.walletNgn).toBe(210000);
     expect(s.routeStats.papers).toBe(13);
     expect(s.popup?.kind).toBe("market");
@@ -310,7 +316,7 @@ describe("Lagos Life (merged from the Cursor build)", () => {
   });
 
   it("papers stay within 0-100", () => {
-    const s = applyEffects(newRun(DB, "LAGOS_LIFE"), { papers: 500 });
+    const s = applyEffects(newRun(DB, "NIGERIA_LIFE"), { papers: 500 });
     expect(s.routeStats.papers).toBe(100);
   });
 });
@@ -505,13 +511,13 @@ describe("choice cutscenes", () => {
   });
 
   it("the final winning move is a triumph", () => {
-    const c = pickAndDescribe("LAGOS_LIFE", ["Call Sister Ada", "Leave the call", "Book the appointment",
+    const c = pickAndDescribe("NIGERIA_LIFE", ["Call Sister Ada", "Leave the call", "Book the appointment",
       "Answer every question", "Pick Ada's call"], "Open the email");
     expect(c.tone).toBe("triumph");
   });
 
   it("money moves are flagged so coins fly the right way", () => {
-    const loss = pickAndDescribe("LAGOS_LIFE", ["Danfo to Computer Village"], "visa consultant");
+    const loss = pickAndDescribe("NIGERIA_LIFE", ["hunt remote jobs"], "visa consultant");
     expect(loss.money).toBe("loss");
     expect(loss.deltas[0]).toMatchObject({ key: "walletNgn", value: -35000, format: "ngn" });
     const gain = pickAndDescribe("STUDY_PERMIT", ["Master's in Engineering", "Work out the money"], "Family sponsorship");
@@ -519,7 +525,7 @@ describe("choice cutscenes", () => {
   });
 
   it("a fall in Village People Interference counts as good news", () => {
-    const before = newRun(DB, "LAGOS_LIFE");
+    const before = newRun(DB, "NIGERIA_LIFE");
     const d = diffStats(DB, before, applyEffects(before, { desperation: -10 }));
     expect(d).toEqual([expect.objectContaining({ key: "desperation", value: -10, good: true })]);
   });
@@ -536,6 +542,123 @@ describe("choice cutscenes", () => {
     const after = takeAction(DB, before, "job_fair", [0.99, 0]).state;
     const c = describeChoice(DB, before, after, "Attend In-Person Tech/Job Fair");
     expect(c.deltas.map((d) => d.key)).toEqual(expect.arrayContaining(["walletCad", "energy", "timeRemainingDays"]));
+  });
+});
+
+describe("player profiles", () => {
+  const nurse: PlayerProfile = {
+    version: 1, username: "Chioma", avatar: DEFAULT_AVATAR, role: "worker", age: 28, stateCode: "EN",
+    worker: { occupation: "nurse", years: 5, qualification: "bachelors", salary: "150k-400k" },
+  };
+  const fresher: PlayerProfile = {
+    version: 1, username: "Musa", avatar: DEFAULT_AVATAR, role: "student", age: 19, stateCode: "KN",
+    student: { institution: "university", course: "Computer Science", level: "200", cgpa: "2-1" },
+  };
+
+  it("a worker's profile becomes CRS inputs", () => {
+    const g = deriveGameProfile(nurse);
+    expect(g).toMatchObject({ educationLevel: 4, hasDegree: true, foreignWorkYears: 5 });
+    expect(g.experiencePhrase).toBe("5 years as a registered nurse");
+    expect(g.savingsNgn).toBe(275000 * 10);
+  });
+
+  it("an undergraduate has no degree yet and no work experience", () => {
+    const g = deriveGameProfile(fresher);
+    expect(g).toMatchObject({ educationLevel: 1, hasDegree: false, foreignWorkYears: 0, academicStanding: 72 });
+  });
+
+  it("an HND or NCE graduate is treated as a diploma, not a degree", () => {
+    const hnd = { ...fresher, student: { ...fresher.student!, institution: "polytechnic" as const, level: "graduated" as const } };
+    expect(deriveGameProfile(hnd)).toMatchObject({ educationLevel: 3, hasDegree: false });
+  });
+
+  it("the profile sets each route's starting state", () => {
+    const app = initialState(DB, nurse);
+    const ee = app.runs.EXPRESS_ENTRY!;
+    expect(ee.routeStats).toMatchObject({ ageYears: 28, educationLevel: 4, foreignWorkYears: 5 });
+    expect(ee.routeStats.crsScore).toBe(110);
+    expect(play("EXPRESS_ENTRY", []).routeStats.ageYears).toBe(29); // without a profile: the default character
+    expect(app.runs.NIGERIA_LIFE!.walletNgn).toBe(2000000);
+    expect(app.runs.STUDY_PERMIT!.routeStats.hasDegree).toBe(1);
+  });
+
+  it("an undergraduate can't pick the master's but can pick the bachelor's", () => {
+    const app = initialState(DB, fresher);
+    const st = app.runs.STUDY_PERMIT!;
+    const choices = presentChoices(DB, st);
+    expect(choices.find((c) => c.text.startsWith("Master's"))?.enabled).toBe(false);
+    expect(choices.find((c) => c.text.startsWith("Four-year bachelor's"))?.enabled).toBe(true);
+  });
+
+  it("a bachelor's in Canada carries 3+ years of Canadian education and the real age into Express Entry", () => {
+    let app = reducer(initialState(DB, fresher), { type: "SELECT_ROUTE", route: "STUDY_PERMIT" });
+    const picks = ["Four-year bachelor's", "Work out the money", "entrance scholarship", "Family sponsorship",
+      "Sell the plot", "Crowdfund", "Education loan", "funds are ready", "specific plan", "Wait for the decision",
+      "Board the flight", "proper boots", "Campus cafe", "Library every night"];
+    for (const p of picks) {
+      const idx = presentChoices(DB, app.runs.STUDY_PERMIT!).findIndex((c) => c.text.includes(p));
+      expect(idx, p).toBeGreaterThanOrEqual(0);
+      app = reducer(app, { type: "CHOOSE", index: idx, rolls: [1, 0] });
+    }
+    expect(app.runs.STUDY_PERMIT!.outcome?.reason).toBe("PGWP_ISSUED");
+    app = reducer(app, { type: "FOLLOW_UNLOCK" });
+    expect(app.runs.EXPRESS_ENTRY!.routeStats).toMatchObject({ ageYears: 24, canadianEducation: 2, educationLevel: 4, foreignWorkYears: 0 });
+  });
+
+  it("sign out (no profile) goes back to the default character", () => {
+    const app = reducer(initialState(DB, nurse), { type: "SET_PROFILE", profile: null });
+    expect(app.profile).toBeNull();
+    expect(app.runs.EXPRESS_ENTRY!.routeStats.ageYears).toBe(29);
+  });
+
+  it("validates usernames and profiles", () => {
+    expect(usernameProblem("A")).toBeTruthy();
+    expect(usernameProblem("9lives")).toBeTruthy();
+    expect(usernameProblem("Tolu_99")).toBeNull();
+    expect(profileProblem(nurse)).toBeNull();
+    expect(profileProblem({ ...nurse, age: 12 })).toBeTruthy();
+  });
+});
+
+describe("Nigeria localisation", () => {
+  it("covers all 36 states and the FCT", () => {
+    expect(STATES).toHaveLength(37);
+    expect(new Set(STATES.map((s) => s.code)).size).toBe(37);
+  });
+
+  it("every scene, choice and rank fills completely for every state", () => {
+    const problems: string[] = [];
+    for (const st of STATES) {
+      const vars = { ...profileVars({ ...{ version: 1, username: "Ada", avatar: DEFAULT_AVATAR, role: "worker", age: 30, stateCode: st.code,
+        worker: { occupation: "nurse", years: 2, qualification: "bachelors", salary: "400k-1m" } } } as PlayerProfile), crs: "110" };
+      const texts: string[] = [];
+      for (const s of Object.values(DB.scenes)) {
+        texts.push(s.title ?? "", s.location ?? "", s.dialogue ?? "", s.speaker ?? "");
+        for (const c of s.choices ?? []) texts.push(c.text, c.feedback ?? "");
+      }
+      for (const r of Object.values(DB.routes)) {
+        texts.push(r.tagline ?? "", r.title);
+        for (const k of r.ranks ?? []) texts.push(k.title, k.blurb);
+      }
+      for (const t of texts) {
+        const out = fillText(t, vars);
+        if (/\{\w+\}/.test(out)) problems.push(`${st.code}: ${out.slice(0, 60)}`);
+      }
+    }
+    expect(problems).toEqual([]);
+  });
+
+  it("no Lagos-only place names are left in the story text", () => {
+    const blob = JSON.stringify(Object.values(DB.scenes).map((s) => [s.title, s.location, s.dialogue, (s.choices ?? []).map((c) => c.text)]));
+    for (const w of ["Yaba", "Ikeja", "Surulere", "Computer Village", "Victoria Island"]) expect(blob).not.toContain(w);
+  });
+
+  it("places use local transport and the nearest visa centre", () => {
+    expect(placeVars(placeFor("LA"))).toMatchObject({ city: "Lagos", area: "Yaba", bus: "danfo", vacCity: "Lagos", vacTrip: "across Lagos" });
+    expect(placeVars(placeFor("KN"))).toMatchObject({ city: "Kano", bus: "keke", vacCity: "Abuja", vacTrip: "the overnight bus to Abuja" });
+    expect(placeVars(placeFor("FC"))).toMatchObject({ city: "Abuja", bus: "bus", vacCity: "Abuja" });
+    expect(vacCityFor(placeFor("RI"))).toBe("Lagos");
+    expect(fillText("{Bus} to {techHub}", placeVars(placeFor("EN")))).toBe("Keke to the phone and laptop market in Enugu");
   });
 });
 

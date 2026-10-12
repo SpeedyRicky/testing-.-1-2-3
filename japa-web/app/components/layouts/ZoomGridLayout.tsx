@@ -4,6 +4,7 @@ import { CheckCircle2, Mic, MicOff, MonitorUp, PhoneOff, RotateCcw, Users, Video
 import { DB, choose, currentScene, explainResolution, presentChoices } from "@/game/engine";
 import { describeChoice } from "@/game/cinematic";
 import { useCinematic } from "../Cinematic";
+import { usePlayer } from "../Player";
 import type { GameState, StatKey } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
 import { FeedbackChip } from "../FeedbackChip";
@@ -105,13 +106,14 @@ export function ZoomGridLayout({ run, dispatch, bars }: LayoutProps) {
   const speaking = run.outcome ? null : PANEL.find((p) => scene?.speaker?.startsWith(p.name))?.id ?? null;
   const choices = presentChoices(DB, run);
   const { play } = useCinematic();
+  const { t, profile } = usePlayer();
   function pick(index: number) {
     const choice = scene?.choices?.[index];
     const next = choose(DB, run, index);
     if (!choice || next === run) return;
     dispatch({ type: "CHOOSE", index });
     const asker = PANEL.find((p) => p.id === speaking)?.who ?? "vance";
-    play({ spec: describeChoice(DB, run, next, choice.text, choice.label, choice.feedback ?? ""), stage: "pitch-room", reactor: asker });
+    play({ spec: describeChoice(DB, run, next, t(choice.text), choice.label, t(choice.feedback)), stage: "pitch-room", reactor: asker });
   }
   const mood: TileMood = run.outcome ? (run.outcome.result === "win" ? "win" : "fail") : "listen";
   const answered = run.history.filter((h) => h.answer).length;
@@ -129,7 +131,7 @@ export function ZoomGridLayout({ run, dispatch, bars }: LayoutProps) {
           </div>
           <div className="grid grid-cols-2 gap-2 p-2 sm:gap-3 sm:p-3">
             {PANEL.map((p) => <Tile key={p.id} {...p} speaking={speaking === p.id} mood={mood} />)}
-            <Tile name="You" role="Founder, Lagos" who="you" room="linear-gradient(#14532d, #052e16)" window="night"
+            <Tile name={profile?.username ?? "You"} role={t("Founder, {city}")} who="you" room="linear-gradient(#14532d, #052e16)" window="night"
               speaking={false} mood={mood} you />
           </div>
           <div className="flex items-center justify-center gap-2 border-t border-white/10 px-4 py-3 text-[11px] text-zinc-400">
@@ -154,11 +156,11 @@ export function ZoomGridLayout({ run, dispatch, bars }: LayoutProps) {
         ) : (
           <div className="card animate-fade-in p-5" key={run.currentSceneId}>
             <div className="eyebrow">{scene?.speaker}</div>
-            <p className="mt-2 text-[15px] leading-relaxed text-zinc-100">{scene?.dialogue}</p>
+            <p className="mt-2 text-[15px] leading-relaxed text-zinc-100">{t(scene?.dialogue)}</p>
             <div className="mt-5 space-y-2.5">
               {choices.map((c) => (
                 <button key={c.index} className="choice-btn" disabled={!c.enabled} onClick={() => pick(c.index)}>
-                  {c.text}
+                  {t(c.text)}
                   {!c.enabled && c.lockedHint && <span className="mt-1 block text-xs text-zinc-500">Locked: {c.lockedHint}</span>}
                 </button>
               ))}
