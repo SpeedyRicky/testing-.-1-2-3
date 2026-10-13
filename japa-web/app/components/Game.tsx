@@ -9,6 +9,9 @@ import { LayoutContainer } from "./LayoutContainer";
 import { LagosBackdrop } from "./layouts/LagosStageLayout";
 import { Person, YouFaceProvider } from "./Person";
 import { faceFor } from "@/game/face";
+import { useAnalytics } from "../launch/useAnalytics";
+import { track, visitSource } from "../launch/analytics";
+import { InstallButton, useServiceWorker } from "../launch/Install";
 import { CinematicProvider, SpeedToggle, useCinematic } from "./Cinematic";
 import { EndingsButton, RealityCheck } from "./Endings";
 import { AwardToast, MetaChip, RunModsChip, useRunRewards } from "./Meta";
@@ -58,6 +61,7 @@ type Screen = "loading" | "signup" | "edit" | "playing";
 export function Game() {
   const [state, dispatch] = useReducer(reducer, undefined, () => initialState());
   const [screen, setScreen] = useState<Screen>("loading");
+  useServiceWorker();
 
   // Read the saved profile after mount (storage is browser-only).
   useEffect(() => {
@@ -69,6 +73,7 @@ export function Game() {
         if (progress) dispatch({ type: "RESTORE_RUNS", ...progress });
       }
       setScreen(saved ? "playing" : "signup");
+      track("app_open", { source: visitSource(), returning: Boolean(saved) });
     }, 0);
     return () => window.clearTimeout(t);
   }, []);
@@ -83,6 +88,7 @@ export function Game() {
   }, [state, screen]);
 
   function finish(p: PlayerProfile) {
+    if (screen === "signup") track("signup_complete", { role: p.role });
     saveProfile(p);
     dispatch({ type: "SET_PROFILE", profile: p });
     setScreen("playing");
@@ -138,6 +144,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
   useRunRewards(run, dispatch);
   const [helpOpen, setHelpOpen] = useState(false);
   useLevelTracking(run);
+  useAnalytics(run ?? null);
   const { setMood, play } = useSound();
   const mood = run ? moodFor(DB, run) : "lagos";
   useEffect(() => { setMood(mood); }, [mood, setMood]);
@@ -212,6 +219,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
             ) : null}
           </div>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <InstallButton />
           <HelpButton onClick={() => setHelpOpen(true)} />
           <MetaChip dispatch={dispatch} run={run} />
           <EndingsButton />
@@ -241,7 +249,8 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
       <Tutorial forceOpen={helpOpen} onClose={() => setHelpOpen(false)} />
       <footer className="relative z-10 mx-auto max-w-6xl border-t border-white/10 px-4 py-6 text-[11px] leading-relaxed text-zinc-500 sm:px-6">
         A simulation for entertainment. It is not legal or immigration advice. Numbers are illustrative; rules, fees and
-        cutoffs change often, so check IRCC (canada.ca) before you act.
+        cutoffs change often, so check IRCC (canada.ca) before you act. We count plays anonymously (routes and endings,
+        never your name or profile) to improve the game.
       </footer>
     </div>
     </YouFaceProvider>

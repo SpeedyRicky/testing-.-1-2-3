@@ -21,7 +21,11 @@ createRoot(document.getElementById("root")).render(<SoundProvider><Game /></Soun
     resolveDir: process.cwd(),
   },
   bundle: true, minify: true, write: false, format: "iife", jsx: "automatic",
-  tsconfig: "tsconfig.json", define: { "process.env.NODE_ENV": '"production"' },
+  tsconfig: "tsconfig.json", define: {
+    "process.env.NODE_ENV": '"production"', "process.env.NEXT_PUBLIC_SITE_URL": "undefined",
+    "process.env.VERCEL_PROJECT_PRODUCTION_URL": "undefined", "process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN": "undefined",
+    "process.env.NEXT_PUBLIC_POSTHOG_KEY": "undefined", "process.env.NEXT_PUBLIC_POSTHOG_HOST": "undefined",
+  },
   logLevel: "error",
 });
 

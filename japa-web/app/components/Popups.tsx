@@ -5,6 +5,8 @@ import { createPortal } from "react-dom";
 import { Flame, Ghost, GraduationCap, Plane, Share2, ShieldAlert, Sparkles, TriangleAlert } from "lucide-react";
 import type { Popup, Rank } from "@/game/types";
 import { useSfxOnMount } from "./Sound";
+import { track } from "../launch/analytics";
+import { SITE_URL, shareUrl } from "../launch/site";
 
 /** Gradient backdrop per rank id; unknown ids fall back to the corridor look. */
 const RANK_VIBE: Record<string, string> = {
@@ -64,9 +66,14 @@ function RankGlyph({ id }: { id: string }) {
 export function ShareOnX({ text, className = "" }: { text: string; className?: string }) {
   return (
     <a
-      href={`https://x.com/intent/post?text=${encodeURIComponent(text)}`}
+      href={`https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(`${SITE_URL}/?utm_source=x&utm_medium=share`)}`}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={(e) => {
+        // The live page's own address wins over the configured one (e.g. a preview deploy).
+        e.currentTarget.href = `https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl("x"))}`;
+        track("share", { channel: "x" });
+      }}
       className={`inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-zinc-950 transition duration-500 ease-out hover:bg-amber-200 ${className}`}
     >
       <Share2 className="h-4 w-4" />
@@ -81,12 +88,16 @@ function CopyResult({ text }: { text: string }) {
   return (
     <>
       <button type="button"
-        onClick={() => navigator.clipboard?.writeText(text).then(() => setState("copied"), () => setState("manual")) ?? setState("manual")}
+        onClick={() => {
+          track("share", { channel: "copy" });
+          const full = `${text}\n${shareUrl("copy")}`;
+          return navigator.clipboard?.writeText(full).then(() => setState("copied"), () => setState("manual")) ?? setState("manual");
+        }}
         className="flex-1 rounded-2xl border border-white/20 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/10">
         {state === "copied" ? "Copied!" : "Copy result"}
       </button>
       {state === "manual" ? (
-        <textarea readOnly value={text} aria-label="Your result" rows={5} onFocus={(e) => e.currentTarget.select()}
+        <textarea readOnly value={`${text}\n${shareUrl("copy")}`} aria-label="Your result" rows={5} onFocus={(e) => e.currentTarget.select()}
           className="mt-2 w-full basis-full rounded-xl border border-white/15 bg-black/40 p-2 font-mono text-xs text-zinc-200" />
       ) : null}
     </>

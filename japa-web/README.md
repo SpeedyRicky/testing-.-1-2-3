@@ -286,6 +286,15 @@ Everything a player sees comes from `game/scenarios.json`.
 
 `npm test` checks every link, stat name and dead end, so a typo fails the tests, not the game.
 
+## Launch: previews, analytics, install
+- **Link previews:** a 1200×630 card (`app/opengraph-image.tsx`) with Open Graph and X tags, so a pasted link shows
+  the title and art on X, WhatsApp and LinkedIn. Set `NEXT_PUBLIC_SITE_URL` so the card uses your domain.
+- **Analytics:** `app/launch/analytics.ts`, off unless you set Plausible or PostHog keys (see `.env.example`). It
+  sends route and ending ids, counts and the visit source, never names or profile data, and respects Do Not Track.
+- **Home-screen install:** web app manifest, icons, a service worker for offline play, and an **Install** chip
+  (a how-to on iPhone Safari).
+- The step-by-step plan from deploy to investors is in `docs/LAUNCH.md`.
+
 ## Share a preview
 `npm run standalone` writes `out/japa-standalone.html`, a single file that runs without a server.
 

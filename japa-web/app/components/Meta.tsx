@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "../launch/analytics";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { CalendarDays, Check, Coins, Flame, ShoppingBag, Sparkles, Trophy, X } from "lucide-react";
@@ -185,6 +186,7 @@ function Hub({ dispatch, run, onClose }: { dispatch: React.Dispatch<AppEvent>; r
   const next = nextTitle(meta.lifetime);
   const playDaily = () => {
     const bundle: Bundle = bundleFor(meta.equipped, { day, modifier: daily.modifier });
+    track("daily_start", { route: daily.route });
     dispatch({ type: "START_DAILY", route: daily.route, bundle });
     onClose();
     window.scrollTo({ top: 0 });
