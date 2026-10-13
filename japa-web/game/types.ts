@@ -84,6 +84,12 @@ export interface RouteStats {
   postedPass?: number;
   /** Warned the family group chat about a scam (Tourist; a blessing can follow). */
   warnedFamily?: number;
+  /** Startup Pitch: your CTO left mid-pitch. */
+  dayoLeft?: number;
+  /** Nigeria Life: the player works in healthcare (registration comes before a job offer). */
+  healthTrack?: number;
+  /** Year One: the player's field is regulated (licence, bridging) rather than resume-and-referral. */
+  regulated?: number;
   kwAtAirport?: number;
   kwCredibility?: number;
   kwEvidence?: number;

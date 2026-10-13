@@ -146,7 +146,12 @@ const pick = <T,>(items: T[], rand: () => number) => items[Math.min(items.length
 export function makeRelative(heritage: Heritage, rand: () => number, relation?: Relation, playerName = ""): Relative {
   const rel = relation ?? pick(["sister", "sister", "brother", "aunty"] as Relation[], rand);
   const own = playerName.trim().toLowerCase().split(/[\s_0-9]+/)[0];
-  const pool = RELATIVE_NAMES[heritage][rel].filter((n) => n.toLowerCase() !== own);
+  // Not the player's own name, nor its long or short form (Tunde / Babatunde, Ade / Adebayo).
+  const clash = (n: string) => {
+    const x = n.toLowerCase();
+    return !!own && (x === own || (own.length >= 3 && x.includes(own)) || (x.length >= 3 && own.includes(x)));
+  };
+  const pool = RELATIVE_NAMES[heritage][rel].filter((n) => !clash(n));
   const province = pick(PROVINCES, rand);
   return { heritage, relation: rel, name: pick(pool, rand), provinceCode: province.code, city: pick(province.cities, rand) };
 }
@@ -196,6 +201,12 @@ export function faithFor(heritage: Heritage, rand: () => number): Faith {
 }
 
 const PARENT: Record<Heritage, string> = { hausa: "Umma", yoruba: "Mummy", igbo: "Mama", other: "Mummy" };
+const HOME: Record<Heritage, { homeFood: string; homeMeat: string; uncle: string; partyCloth: string }> = {
+  hausa: { homeFood: "dambun nama, kuli-kuli, daddawa and yaji", homeMeat: "dambun nama", uncle: "Uncle Sani", partyCloth: "anko" },
+  yoruba: { homeFood: "elubo, iru, crayfish and dried fish", homeMeat: "dried fish", uncle: "Uncle Femi", partyCloth: "aso-ebi" },
+  igbo: { homeFood: "ogbono, crayfish, stockfish and pepper", homeMeat: "stockfish", uncle: "Uncle Emeka", partyCloth: "aso-ebi" },
+  other: { homeFood: "garri, crayfish, stockfish and pepper", homeMeat: "stockfish", uncle: "Uncle Tony", partyCloth: "aso-ebi" },
+};
 
 /** Words for home life: {faithHub}, {faithGroup}, {faithDay}, {parent}. */
 export function homeVars(heritage: Heritage, faith: Faith): Record<string, string> {
@@ -207,6 +218,7 @@ export function homeVars(heritage: Heritage, faith: Faith): Record<string, strin
     faithDay: masjid ? "Jumu'ah" : "Sunday service",
     faithLeader: masjid ? "the imam" : "the pastor",
     parent: PARENT[heritage],
+    ...HOME[heritage],
   };
 }
 

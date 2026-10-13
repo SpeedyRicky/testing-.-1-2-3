@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.18.0",
+    "version": "0.19.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -998,7 +998,7 @@
       "status": "playable",
       "startSceneId": "SUV_PITCH_START",
       "initialState": {
-        "currentLocation": "Home office, Lekki (Zoom)",
+        "currentLocation": "Home office, {area} (Zoom)",
         "energy": 100,
         "walletNgn": 30000000,
         "desperation": 30,
@@ -1356,7 +1356,8 @@
             "TR_LMIA_SELLER",
             "TR_CAREGIVER_AD",
             "TR_CASH_SHIFT",
-            "TR_COUCH_TIGHT"
+            "TR_COUCH_TIGHT",
+            "TR_KUNLE"
           ],
           "stars": [
             {
@@ -1681,7 +1682,8 @@
         "desperation": 30,
         "routeStats": {
           "careerScore": 15,
-          "community": 10
+          "community": 10,
+          "regulated": 1
         }
       },
       "bars": [
@@ -1997,7 +1999,7 @@
       "stage": "yaba-dawn",
       "transitIn": "none",
       "speaker": "{area}, {city}",
-      "dialogue": "NEPA has packed up. Your roommate is already in a Europe group chat. Downstairs, {area} is waking. {RelWho} in {relCity} sent three missed calls. Everybody don japa. This year na your turn, or another send-forth you go attend.",
+      "dialogue": "NEPA has packed up. Your neighbour is already in a Europe group chat. Downstairs, {area} is waking. {RelWho} in {relCity} sent three missed calls. Everybody don japa. This year na your turn, or another send-forth you go attend.",
       "choices": [
         {
           "text": "{Bus} to {jobPlace} and hunt {jobHunt}",
@@ -2094,7 +2096,7 @@
           }
         },
         {
-          "text": "Ask her to lend you the showing-money",
+          "text": "Ask {relObj} to lend you the showing-money",
           "label": "",
           "nextSceneId": "LAGOS_SHOWING_MONEY",
           "effects": {
@@ -2175,7 +2177,7 @@
       "stage": "room-night",
       "transitIn": "trek",
       "speaker": "{area} room, 3 a.m.",
-      "dialogue": "You quantify the internships. You hide the generator. A recruiter in Toronto replies. {RelName} is on a night shift in {relCity}; {relPoss} status still says 'call me when light comes.'",
+      "dialogue": "You put numbers on every year of your work. You hide the generator. A recruiter in Toronto replies. {RelName} is on a night shift in {relCity}; {relPoss} status still says 'call me when light comes.'",
       "choices": [
         {
           "text": "Take the interview. Buy data. Set two alarms.",
@@ -2189,7 +2191,7 @@
           "gamble": {
             "odds": 0.4,
             "success": {
-              "feedback": "They loved {interviewHook}. 'Can you start in Toronto?' The offer letter arrives at 10 p.m.",
+              "feedback": "They loved {interviewHook}. A second call with the hiring manager is booked for tomorrow.",
               "label": "GOT_THE_OFFER"
             },
             "fail": {
@@ -2269,18 +2271,18 @@
       "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "Photocopies, stamps, another queue.",
-      "location": "Immigration annex, Alausa",
+      "location": "Passport and documents office, {city}",
       "stage": "annex",
       "transitIn": "danfo",
       "speaker": "Immigration annex, Alausa",
       "dialogue": "Bodies in a line that does not move and also never ends. A clerk calls names like a {bus} conductor. {RelName} texts a photo of the invitation letter, snow on the window behind {relObj}.",
       "choices": [
         {
-          "text": "Book the appointment. {Bus} to the visa centre",
+          "text": "Book the appointment: CAD 185 in visa and biometrics fees. {Bus} to the visa centre",
           "label": "",
           "nextSceneId": "LAGOS_EMBASSY_QUEUE",
           "effects": {
-            "walletNgn": -48000,
+            "walletNgn": -120000,
             "papers": 18,
             "energy": -12,
             "desperation": -10
@@ -2352,7 +2354,7 @@
           }
         },
         {
-          "text": "Go home and spend some on a better portfolio",
+          "text": "Go home and spend some on a sharper CV and LinkedIn",
           "label": "",
           "nextSceneId": "LAGOS_CV_NIGHT",
           "effects": {
@@ -2394,7 +2396,30 @@
             "desperation": -18,
             "energy": -10
           },
-          "feedback": "A job offer needs a work permit, not a visitor visa. Working on a visitor visa is unauthorized work."
+          "feedback": "A job offer needs a work permit, not a visitor visa. Working on a visitor visa is unauthorized work.",
+          "hideUnless": {
+            "healthTrack": [
+              "<",
+              1
+            ]
+          }
+        },
+        {
+          "text": "Start your nursing college registration, and visit {relName} on a visitor visa while it runs",
+          "label": "REGISTER_FIRST",
+          "nextSceneId": "LAGOS_DOCUMENT_GRIND",
+          "effects": {
+            "papers": 14,
+            "desperation": -10,
+            "energy": -8
+          },
+          "feedback": "The honest order for nurses: registration first, then a job offer and work permit. The visit is just a visit.",
+          "hideUnless": {
+            "healthTrack": [
+              ">=",
+              1
+            ]
+          }
         },
         {
           "text": "Panic. Go back to the street and call {relName} later",
@@ -2584,13 +2609,13 @@
         }
       ],
       "title": "The pitch.",
-      "location": "Zoom, Lekki"
+      "location": "Zoom, {area}"
     },
     "SUV_PITCH_CHEN": {
       "id": "SUV_PITCH_CHEN",
       "route": "STARTUP_VISA",
       "layoutType": "ZOOM_GRID",
-      "speaker": "Mr. Chen (Chief Technology Officer)",
+      "speaker": "Dr. Chen (Chief Technology Officer)",
       "dialogue": "Let's look at your architecture. Your platform handles high-volume cross-border ledger balances. If the data pipes fail or a severe bottleneck occurs between {city} and Toronto, how does your ledger protect financial integrity without crashing performance?",
       "choices": [
         {
@@ -2625,7 +2650,7 @@
         }
       ],
       "title": "The architecture question.",
-      "location": "Zoom, Lekki"
+      "location": "Zoom, {area}"
     },
     "SUV_PITCH_ROSS": {
       "id": "SUV_PITCH_ROSS",
@@ -2652,7 +2677,30 @@
             "scalabilityScore": 35,
             "investorInterest": 20
           },
-          "feedback": "That showed institutional maturity."
+          "feedback": "That showed institutional maturity.",
+          "requires": {
+            "dayoLeft": [
+              "<",
+              1
+            ]
+          },
+          "lockedHint": "Your CTO left this week. There's no backup to claim"
+        },
+        {
+          "text": "Be straight: our CTO left this week. Kemi built the settlement queue, and here's her plan and our hiring budget",
+          "label": "HONEST_GAP",
+          "nextSceneId": "SUV_ROSS_MONEY",
+          "effects": {
+            "scalabilityScore": 25,
+            "investorInterest": 10
+          },
+          "feedback": "Mr. Ross respects it. 'Every startup loses someone. Most hide it.'",
+          "hideUnless": {
+            "dayoLeft": [
+              ">=",
+              1
+            ]
+          }
         },
         {
           "text": "Our lead dev will stay in Lagos and work remotely; that's cheaper",
@@ -2666,7 +2714,7 @@
         }
       ],
       "title": "The team question.",
-      "location": "Zoom, Lekki"
+      "location": "Zoom, {area}"
     },
     "SUV_PITCH_RESOLVE": {
       "id": "SUV_PITCH_RESOLVE",
@@ -2693,7 +2741,10 @@
         {
           "nextSceneId": "SUV_PITCH_FAIL"
         }
-      ]
+      ],
+      "dialogue": "",
+      "title": "The vote.",
+      "location": "Zoom, {area}"
     },
     "SUV_LOS_ISSUED": {
       "id": "SUV_LOS_ISSUED",
@@ -2710,8 +2761,10 @@
         "reason": "SUV_LOS_ISSUED",
         "title": "LETTER OF SUPPORT ISSUED",
         "subtitle": "The committee backs your startup. Now the real paperwork begins.",
-        "lesson": "A Letter of Support is only step one. IRCC still assesses the business, the founders' funds and admissibility, and the Startup Visa program has been capped and paused in recent years. Check its status before paying anyone."
-      }
+        "lesson": "A Letter of Support is only step one: IRCC still assesses the business, the founders' funds and admissibility. Heads-up: IRCC has paused new Start-up Visa applications; this route shows how the pitch worked. Check canada.ca for the current entrepreneur programs."
+      },
+      "title": "Letter of Support.",
+      "location": "Zoom, {area}"
     },
     "SUV_PITCH_FAIL": {
       "id": "SUV_PITCH_FAIL",
@@ -2727,9 +2780,11 @@
         "result": "fail",
         "reason": "SUV_REJECTED",
         "title": "Committee passes",
-        "lesson": "Designated organizations choose businesses they believe in; nobody can legitimately sell you a Letter of Support. Ads promising one for a fee are a common scam.",
+        "lesson": "Designated organizations choose businesses they believe in; nobody can legitimately sell you a Letter of Support. Ads promising one for a fee are a common scam. Heads-up: IRCC has paused new Start-up Visa applications; this route shows how the pitch worked. Check canada.ca for the current entrepreneur programs.",
         "subtitle": "The pitch wasn't ready. The scam ads will say otherwise."
-      }
+      },
+      "title": "Committee passes.",
+      "location": "Zoom, {area}"
     },
     "LMIA_INTERVIEW_KOVACS": {
       "id": "LMIA_INTERVIEW_KOVACS",
@@ -2759,7 +2814,9 @@
           },
           "feedback": "You framed the legal cost as an operating saving."
         }
-      ]
+      ],
+      "title": "Mr. Kovacs.",
+      "location": "Northline Logistics, Mississauga"
     },
     "LMIA_ADVERTISING": {
       "id": "LMIA_ADVERTISING",
@@ -2780,22 +2837,24 @@
           "label": "RISKY GAMBLE",
           "nextSceneId": "LMIA_FEE_ASK",
           "effects": {
-            "lmiaProbability": 30,
-            "desperation": -20
+            "lmiaProbability": 12,
+            "employerTrust": -5
           },
-          "feedback": "A real, specific requirement can be legitimate. An inflated one gets scrutinised, and it can backfire."
+          "feedback": "A requirement written to fit one candidate gets scrutinised. Service Canada asks why a Canadian couldn't learn it."
         },
         {
           "text": "Let's follow the advertising rules exactly. I'll help you document the real requirements of the role and any recruitment you've already done.",
           "label": "COMPLIANT PATH",
           "nextSceneId": "LMIA_FEE_ASK",
           "effects": {
-            "lmiaProbability": 15,
+            "lmiaProbability": 25,
             "employerTrust": 15
           },
           "feedback": "Slower, but nothing here can be used against either of you."
         }
-      ]
+      ],
+      "title": "The advertising question.",
+      "location": "Northline Logistics"
     },
     "LMIA_FRAUD_FAIL": {
       "id": "LMIA_FRAUD_FAIL",
@@ -2812,7 +2871,9 @@
         "reason": "BLATANT_MISREPRESENTATION",
         "title": "Blatant Misrepresentation",
         "lesson": "Lying in an interview that feeds an immigration application is misrepresentation too. Employers verify, and IRCC can refuse and bar you for five years."
-      }
+      },
+      "title": "Interview over.",
+      "location": "Northline Logistics"
     },
     "LMIA_RESOLVE": {
       "id": "LMIA_RESOLVE",
@@ -2835,7 +2896,9 @@
         {
           "nextSceneId": "LMIA_DECLINED"
         }
-      ]
+      ],
+      "title": "The decision.",
+      "location": "Northline Logistics"
     },
     "LMIA_SPONSORSHIP": {
       "id": "LMIA_SPONSORSHIP",
@@ -2853,7 +2916,9 @@
         "title": "EMPLOYER WILL SPONSOR",
         "subtitle": "The LMIA process starts. The clock is still running.",
         "lesson": "An employer willing to apply is the start. The LMIA itself is the employer's application to ESDC, the employer pays its fee, and charging a worker for it is illegal."
-      }
+      },
+      "title": "He'll sponsor.",
+      "location": "Northline Logistics"
     },
     "LMIA_DECLINED": {
       "id": "LMIA_DECLINED",
@@ -2869,7 +2934,9 @@
         "reason": "NO_SPONSORSHIP",
         "title": "No Sponsorship",
         "lesson": "Most employers never sponsor: the LMIA costs them time, a CAD 1,000 fee and proof that no Canadian could do the job. Low-wage LMIAs are also paused in high-unemployment cities since 2024."
-      }
+      },
+      "title": "Too much risk.",
+      "location": "Northline Logistics"
     },
     "TOURIST_HUB": {
       "id": "TOURIST_HUB",
@@ -2989,6 +3056,22 @@
             "goToSceneId": "TR_CAREGIVER_AD"
           },
           {
+            "id": "kunle",
+            "label": "Coffee with Kunle from Ibadan",
+            "blurb": "He says he 'has news' about his job",
+            "effects": {
+              "timeRemainingDays": -1,
+              "walletCad": -6
+            },
+            "location": "Tim Hortons, Queen St, Brampton",
+            "consequences": [
+              "He slides his phone across the table."
+            ],
+            "stage": "tim-hortons",
+            "transit": "none",
+            "goToSceneId": "TR_KUNLE"
+          },
+          {
             "id": "resume",
             "label": "Canadianize Your Resume",
             "blurb": "Delete the passport photo, add metrics",
@@ -3059,7 +3142,7 @@
           {
             "id": "cash_job",
             "label": "Take a Cash Warehouse Shift (Under the Table)",
-            "blurb": "CAD 15 an hour, cash, 'no SIN, no wahala'",
+            "blurb": "CAD 14 an hour, cash, 'no SIN, no wahala'",
             "effects": {
               "timeRemainingDays": -1
             },
@@ -3093,7 +3176,9 @@
           }
         ]
       },
-      "stage": "pearson-arrivals"
+      "stage": "pearson-arrivals",
+      "title": "180 days, one couch.",
+      "location": "Cousin's couch, Brampton"
     },
     "TOURIST_WIN": {
       "id": "TOURIST_WIN",
@@ -3108,7 +3193,9 @@
         "subtitle": "The Hidden LMIA Interview is unlocked. Your desperation walks in with you.",
         "lesson": "Visitors may look for work and attend interviews, but may not start working. If an employer gets an LMIA, the work permit is normally applied for from outside Canada, so the honest win often means flying home to wait."
       },
-      "unlocksRoute": "CAREGIVER_LMIA"
+      "unlocksRoute": "CAREGIVER_LMIA",
+      "title": "The meeting.",
+      "location": "Northline Logistics, Mississauga"
     },
     "LAGOS_MISREPRESENTATION": {
       "id": "LAGOS_MISREPRESENTATION",
@@ -3150,7 +3237,7 @@
           "gamble": {
             "odds": 0.55,
             "success": {
-              "feedback": "L8.5 R8 W7 S7.5: CLB 9 across the board. Three months of evenings paid off.",
+              "feedback": "L8.5 R8 W7 S7.5: CLB 9 or better in every ability. Three months of evenings paid off.",
               "set": {
                 "clbFirst": 9
               },
@@ -3738,7 +3825,7 @@
       "stage": "annex",
       "transitIn": "danfo",
       "speaker": "Police command, {city}",
-      "dialogue": "A police character certificate through the Nigeria Police online portal (when it is up), a medical with an IRCC panel physician before you submit, and every document uploaded within 60 days of the invitation.",
+      "dialogue": "A police character certificate through the Nigeria Police online portal (when it is up), a medical with an IRCC panel physician when IRCC asks for it, and every document uploaded within 60 days of the invitation.",
       "choices": [
         {
           "text": "Queue for the certificate and book the panel physician properly",
@@ -3908,7 +3995,7 @@
       "stage": "room-night",
       "transitIn": "none",
       "speaker": "{area}, {city}",
-      "dialogue": "The profile expires while you sleep for a week straight. The pool will still be there. Rest first.",
+      "dialogue": "You stop opening the portal for a month. Your profile is still in the pool, but you have nothing left for it. Rest first.",
       "outcome": {
         "result": "fail",
         "reason": "BURNOUT",
@@ -4059,7 +4146,7 @@
           }
         },
         {
-          "text": "Family sponsorship: Daddy and Uncle Emeka sign letters with their statements and source of funds",
+          "text": "Family sponsorship: Daddy and {uncle} sign letters with their statements and source of funds",
           "label": "FAMILY_SPONSOR",
           "nextSceneId": "ST_FUNDS",
           "effects": {
@@ -4489,7 +4576,7 @@
       "dialogue": "'I am not satisfied that you will leave Canada at the end of your stay, based on the purpose of your visit.' Two lines. Your family group chat has already seen your face.",
       "choices": [
         {
-          "text": "Order your GCMS notes (about 30 days) and fix the reason the officer actually wrote down",
+          "text": "Ask {relName} in Canada to order your GCMS notes (about 30 days), then fix the reason the officer actually wrote down",
           "label": "GCMS_NOTES",
           "nextSceneId": "ST_SOP",
           "effects": {
@@ -4613,7 +4700,7 @@
       "stage": "lecture-hall",
       "transitIn": "streetcar",
       "speaker": "Campus, Toronto",
-      "dialogue": "Rent is CAD 950 for a basement room. Students can work up to 24 hours a week off campus during classes and full-time in scheduled breaks.",
+      "dialogue": "Rent is CAD 950 for a basement room, and year-two tuition comes out of your account whatever you choose. Students can work up to 24 hours a week off campus during classes and full-time in scheduled breaks.",
       "choices": [
         {
           "text": "Campus cafe job, 12 hours a week",
@@ -5136,7 +5223,7 @@
           }
         },
         {
-          "text": "Village people: your uncle's juju is after you and the pastor confirmed it",
+          "text": "Tell them what you truly believe: your uncle's juju is after you, and the pastor confirmed it",
           "label": "VILLAGE_PEOPLE_CLAIM",
           "nextSceneId": "KW_FILED",
           "effects": {
@@ -5160,7 +5247,7 @@
       "stage": "ircc-portal",
       "transitIn": "none",
       "speaker": "IRCC portal, cousin's couch",
-      "dialogue": "The portal wants every address since 18, every trip, every job. Then one box: 'What do you fear if you return to Nigeria?' Your own story: {kwStory} Wey Sabi's voice note: 'Just pick one.'",
+      "dialogue": "The portal wants every address since 18, every trip, every job. A claim made more than a year after you first entered goes to a paper risk assessment, not the board. Then one box: 'What do you fear if you return to Nigeria?' Your own story: {kwStory} Wey Sabi's voice note: 'Just pick one.'",
       "choices": [
         {
           "text": "The truth: nothing will happen to me. I came to find work.",
@@ -5255,7 +5342,7 @@
           }
         },
         {
-          "text": "Village people: your uncle's juju is after you and the pastor confirmed it",
+          "text": "Tell them what you truly believe: your uncle's juju is after you, and the pastor confirmed it",
           "label": "VILLAGE_PEOPLE_CLAIM",
           "nextSceneId": "KW_FILED",
           "effects": {
@@ -5305,11 +5392,10 @@
         {
           "text": "File it anyway",
           "label": "FILED_A_BOUGHT_STORY",
-          "nextSceneId": "KW_FILED",
+          "nextSceneId": "KW_FAKE_EXPOSED",
           "effects": {
             "desperation": 5
-          },
-          "feedback": "Filed. Your name, someone else's life."
+          }
         },
         {
           "text": "Walk out. The CAD 1,500 is gone, but so is the trap",
@@ -5436,7 +5522,7 @@
           "feedback": "Twelve thousand likes. The board can read TikTok too, and the video does not match your form."
         },
         {
-          "text": "Ask for your passport back and fly home for Mummy's 60th. The aso-ebi is already sewn",
+          "text": "Ask for your passport back and fly home for {parent}'s 60th. The {partyCloth} is already sewn",
           "label": "WENT_HOME",
           "nextSceneId": "KW_ABANDONED",
           "effects": {}
@@ -5837,7 +5923,7 @@
           }
         },
         {
-          "text": "Skip it. Four years in English is proof enough",
+          "text": "Skip it. Studying in English is proof enough",
           "label": "SKIPPED_TEST",
           "nextSceneId": "ST_NO_PGWP_LANG",
           "effects": {}
@@ -5871,7 +5957,7 @@
       "stage": "pearson-arrivals",
       "transitIn": "plane",
       "speaker": "Toronto Pearson, Terminal 3",
-      "dialogue": "Welcome to Canada. You have savings, two suitcases and a list of things everyone forgot to tell you: SIN, bank, phone, health card, a place to live, a coat. {RelName} is calling from {relCity}. What do you do first?",
+      "dialogue": "Welcome to Canada, as a new permanent resident. You have savings, two suitcases and a list of things everyone forgot to tell you: SIN, bank, phone, health card, a place to live, a coat. {RelName} is calling from {relCity}. What do you do first?",
       "choices": [
         {
           "text": "Get your SIN at the airport Service Canada desk, then open a newcomer bank account this week",
@@ -5917,7 +6003,7 @@
       "dialogue": "You have no Canadian credit history. The first landlord wants six months' rent in advance. The second listing is a shared basement bed for CAD 375. A Facebook 'landlord' who is 'out of the country' wants a deposit before a viewing.",
       "choices": [
         {
-          "text": "Offer a bank letter, a job-search plan and a guarantor from church",
+          "text": "Offer a bank letter, a job-search plan and a guarantor from the {faithHub}",
           "label": "GUARANTOR",
           "nextSceneId": "FY_JOBS",
           "effects": {
@@ -6060,6 +6146,12 @@
           "feedback": "Slow and expensive, and the fastest legal way back to your profession.",
           "set": {
             "officeJob": 1
+          },
+          "hideUnless": {
+            "regulated": [
+              ">=",
+              1
+            ]
           }
         },
         {
@@ -6074,6 +6166,12 @@
           "feedback": "Paid, close to your field, exhausting. Many nurses spend their first years as PSWs.",
           "set": {
             "officeJob": 1
+          },
+          "hideUnless": {
+            "regulated": [
+              ">=",
+              1
+            ]
           }
         },
         {
@@ -6088,6 +6186,12 @@
           "feedback": "Two pages, no photo, no date of birth, no state of origin. The certificate gets you past the robots.",
           "set": {
             "officeJob": 1
+          },
+          "hideUnless": {
+            "regulated": [
+              "<",
+              1
+            ]
           }
         },
         {
@@ -6228,7 +6332,7 @@
             "careerScore": 10,
             "community": -10
           },
-          "feedback": "Cheaper rent and a real job offer, far from everyone you know. {RelName} in {relCity} offers a couch."
+          "feedback": "Cheaper rent and a real job offer, far from everyone you know. {RelName} in {relCity} promises to visit."
         },
         {
           "text": "Take any shift on any app this week",
@@ -6731,7 +6835,7 @@
             ],
             "max": 0.85,
             "success": {
-              "feedback": "Mama Ngozi's logistics company picks up on the second ring and talks for four minutes about saved days.",
+              "feedback": "A Lagos shipper's logistics company picks up on the second ring and talks for four minutes about saved days.",
               "effects": {
                 "investorInterest": 25
               },
@@ -6748,13 +6852,13 @@
         }
       ],
       "title": "'Show me traction.'",
-      "location": "Zoom, Lekki"
+      "location": "Zoom, {area}"
     },
     "SUV_CHEN_DEMO": {
       "id": "SUV_CHEN_DEMO",
       "route": "STARTUP_VISA",
       "layoutType": "ZOOM_GRID",
-      "speaker": "Mr. Chen (Chief Technology Officer)",
+      "speaker": "Dr. Chen (Chief Technology Officer)",
       "dialogue": "Share your screen. I'd like to see a settlement go through, live, start to finish.",
       "choices": [
         {
@@ -6774,7 +6878,7 @@
             ],
             "max": 0.85,
             "success": {
-              "feedback": "The settlement clears in 3.2 seconds. Mr. Chen unmutes just to say 'nice'.",
+              "feedback": "The settlement clears in 3.2 seconds. Dr. Chen unmutes just to say 'nice'.",
               "effects": {
                 "technicalCredibility": 25,
                 "investorInterest": 10
@@ -6798,7 +6902,7 @@
           "effects": {
             "technicalCredibility": 10
           },
-          "feedback": "Safe and honest. Mr. Chen will try the sandbox tonight."
+          "feedback": "Safe and honest. Dr. Chen will try the sandbox tonight."
         },
         {
           "text": "Show the clickable Figma prototype and call it 'the live system'",
@@ -6808,11 +6912,11 @@
             "technicalCredibility": -30,
             "investorInterest": -15
           },
-          "feedback": "Mr. Chen asks you to change one field. Figma doesn't do that."
+          "feedback": "Dr. Chen asks you to change one field. Figma doesn't do that."
         }
       ],
       "title": "Live demo?",
-      "location": "Zoom, Lekki"
+      "location": "Zoom, {area}"
     },
     "SUV_ROSS_MONEY": {
       "id": "SUV_ROSS_MONEY",
@@ -6866,16 +6970,16 @@
           "feedback": "Only a designated Canadian angel group (CAD 75k+) or VC fund (CAD 200k+) counts. Your uncle's friend doesn't."
         },
         {
-          "text": "Pay the incubator a CAD 50,000 'fee' to guarantee the Letter",
+          "text": "Offer the incubator a ₦25 million 'fee' to guarantee the Letter",
           "label": "PAY_TO_PLAY",
           "nextSceneId": "SUV_PAY_TO_PLAY",
           "effects": {
-            "walletNgn": -1000000
+            "walletNgn": -25000000
           }
         }
       ],
       "title": "Show me the money.",
-      "location": "Zoom, Lekki"
+      "location": "Zoom, {area}"
     },
     "SUV_PAY_TO_PLAY": {
       "id": "SUV_PAY_TO_PLAY",
@@ -6892,7 +6996,9 @@
       },
       "onEnter": {
         "desperation": 20
-      }
+      },
+      "title": "The call goes quiet.",
+      "location": "Zoom, {area}"
     },
     "LMIA_WAGE": {
       "id": "LMIA_WAGE",
@@ -6932,7 +7038,9 @@
           },
           "feedback": "The prevailing wage is the floor, not the target. Overshooting makes him rethink the whole thing."
         }
-      ]
+      ],
+      "title": "The wage question.",
+      "location": "Northline Logistics"
     },
     "LMIA_FEE_ASK": {
       "id": "LMIA_FEE_ASK",
@@ -6952,11 +7060,11 @@
           "feedback": "Recovering LMIA fees from a worker is prohibited. Kovacs didn't know; his lawyer confirms it."
         },
         {
-          "text": "Pay it: CAD 7,000 is cheaper than going home",
+          "text": "Pay it: CAD 7,000, half now from your savings",
           "label": "PAID_FOR_IT",
           "nextSceneId": "LMIA_WORKER_PAID",
           "effects": {
-            "walletCad": -2000
+            "walletCad": -3500
           }
         },
         {
@@ -6965,24 +7073,28 @@
           "nextSceneId": "LMIA_CASH",
           "effects": {}
         }
-      ]
+      ],
+      "title": "Who pays?",
+      "location": "Northline Logistics"
     },
     "LMIA_WORKER_PAID": {
       "id": "LMIA_WORKER_PAID",
       "route": "CAREGIVER_LMIA",
       "layoutType": "CORPORATE_OFFICE",
       "speaker": "Northline Logistics",
-      "dialogue": "Three months later an ESDC inspection finds the payment in your e-transfer history. The LMIA is revoked, the company is fined, and your file is marked.",
+      "dialogue": "Three months later an ESDC inspection finds your e-transfer. The employer broke the rules by taking it: the LMIA is revoked and the company is fined. You can report it and ask for your money back, but this job is gone.",
       "outcome": {
         "result": "fail",
         "reason": "WORKER_PAID_LMIA",
-        "title": "You paid for your own LMIA",
+        "title": "The employer made you pay",
         "subtitle": "Employers can't recover LMIA costs from workers.",
-        "lesson": "An employer who charges a worker for an LMIA (or lets them pay the lawyer) breaks the Temporary Foreign Worker Program rules: the LMIA can be revoked and the employer fined or banned."
+        "lesson": "Employers can't recover LMIA costs from workers. If one does, the employer is at fault: the LMIA can be revoked and the employer fined or banned, and the worker can report it to ESDC's tip line."
       },
       "onEnter": {
         "desperation": 20
-      }
+      },
+      "title": "The inspection.",
+      "location": "Northline Logistics"
     },
     "LMIA_CASH": {
       "id": "LMIA_CASH",
@@ -6999,7 +7111,9 @@
       },
       "onEnter": {
         "desperation": 15
-      }
+      },
+      "title": "The cash question.",
+      "location": "Northline Logistics"
     },
     "ST_SPOUSE": {
       "id": "ST_SPOUSE",
@@ -7395,31 +7509,13 @@
       "stage": "warehouse",
       "transitIn": "none",
       "speaker": "Warehouse lot, Bolton",
-      "dialogue": "Agency man: 'No SIN, no wahala. CAD 15 an hour, cash.' Your wallet says what it says. Rent for the couch is Friday.",
+      "dialogue": "Agency man: 'No SIN, no wahala. CAD 14 an hour, cash.' That's below Ontario's CAD 17.60 minimum wage, and you'd have no one to complain to. Your wallet says what it says.",
       "choices": [
         {
           "text": "Do the shift. Just one.",
           "label": "CASH_SHIFT",
-          "nextSceneId": "TOURIST_HUB",
-          "effects": {
-            "energy": -30
-          },
-          "gamble": {
-            "odds": 0.6,
-            "success": {
-              "feedback": "CAD 120 in an envelope. Nobody asked. This time.",
-              "effects": {
-                "walletCad": 120,
-                "desperation": 5
-              },
-              "label": "NOBODY_ASKED"
-            },
-            "fail": {
-              "feedback": "Inspection day. The supervisor points at the van.",
-              "nextSceneId": "TR_CASH_CAUGHT",
-              "label": "INSPECTION"
-            }
-          }
+          "nextSceneId": "TR_CASH_CAUGHT",
+          "effects": {}
         },
         {
           "text": "Decline, and take the free resume clinic at the library instead",
@@ -7530,7 +7626,7 @@
       "route": "STARTUP_VISA",
       "layoutType": "ZOOM_GRID",
       "title": "One more thing.",
-      "location": "Zoom, Lekki",
+      "location": "Zoom, {area}",
       "speaker": "Ms. Vance (Committee Chair)",
       "dialogue": "You move money across borders. Who regulates you in Canada?",
       "choices": [
@@ -7734,7 +7830,7 @@
             "desperation": -10,
             "community": 4
           },
-          "feedback": "'Ọmọ mi / my child, why didn't you tell me it was this hard?'"
+          "feedback": "'My child, why didn't you tell me it was this hard?'"
         },
         {
           "text": "Wait for them to call you",
@@ -7756,7 +7852,7 @@
       "stage": "pearson-arrivals",
       "transitIn": "none",
       "speaker": "Toronto Pearson, customs",
-      "dialogue": "{parent} packed ogbono, crayfish, stockfish and pepper. The kiosk asks: 'Bringing food?' The man behind you whispers, 'Tick No. Dem no dey check.'",
+      "dialogue": "{parent} packed {homeFood}. The kiosk asks: 'Bringing food?' The man behind you whispers, 'Tick No. Dem no dey check.'",
       "choices": [
         {
           "text": "Declare everything",
@@ -7783,7 +7879,7 @@
               "label": "WALKED_THROUGH"
             },
             "fail": {
-              "feedback": "The beagle found the stockfish. Undeclared food means a fine and a note on your record.",
+              "feedback": "The beagle found the {homeMeat}. Undeclared food means a fine and a note on your record.",
               "effects": {
                 "walletCad": -800,
                 "desperation": 12
@@ -7963,7 +8059,7 @@
       "route": "STARTUP_VISA",
       "layoutType": "STORY_STAGE",
       "title": "Between rounds.",
-      "location": "Home office, Lekki, midnight",
+      "location": "Home office, {area}, midnight",
       "stage": "room-night",
       "transitIn": "none",
       "speaker": "Home office, Lekki, midnight",
@@ -8006,7 +8102,10 @@
                 "technicalCredibility": -15,
                 "desperation": 10
               },
-              "label": "DAYO_LEFT"
+              "label": "DAYO_LEFT",
+              "set": {
+                "dayoLeft": 1
+              }
             }
           }
         },
@@ -8018,7 +8117,10 @@
             "technicalCredibility": -6,
             "scalabilityScore": 4
           },
-          "feedback": "Kemi is brilliant and terrified. The committee will ask about her experience."
+          "feedback": "Kemi is brilliant and terrified. The committee will ask about her experience.",
+          "set": {
+            "dayoLeft": 1
+          }
         }
       ]
     },
@@ -8053,6 +8155,48 @@
             "desperation": 10
           },
           "feedback": "The college is happy. Express Entry isn't: Academic doesn't count there, so you'll be booking again."
+        }
+      ]
+    },
+    "TR_KUNLE": {
+      "id": "TR_KUNLE",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Kunle paid.",
+      "location": "Tim Hortons, Queen St, Brampton",
+      "stage": "tim-hortons",
+      "transitIn": "none",
+      "speaker": "Tim Hortons, Queen St, Brampton",
+      "dialogue": "Kunle slides his phone over: a CAD 28,000 receipt. 'The job was real for two weeks. Now the boss holds my passport and pays half. Abeg, no talk am for anybody.'",
+      "choices": [
+        {
+          "text": "Tell him about the open work permit for vulnerable workers, and help him find a settlement worker",
+          "label": "HELPED_KUNLE",
+          "nextSceneId": "TOURIST_HUB",
+          "effects": {
+            "streetCred": 8,
+            "energy": -10,
+            "networkScore": 5
+          },
+          "feedback": "Holding someone's passport is illegal. Workers on an employer-specific permit who face abuse can apply for an open work permit. Kunle is a victim, not a criminal."
+        },
+        {
+          "text": "Ask for his agent's number. Maybe yours will be different",
+          "label": "WANTED_AGENT",
+          "nextSceneId": "TR_LMIA_PAID",
+          "effects": {
+            "walletCad": -1500
+          }
+        },
+        {
+          "text": "Buy him a double-double and change the topic",
+          "label": "CHANGED_TOPIC",
+          "nextSceneId": "TOURIST_HUB",
+          "effects": {
+            "desperation": 6,
+            "streetCred": -4
+          },
+          "feedback": "He texts 'thanks' at 2 a.m. You don't reply."
         }
       ]
     }

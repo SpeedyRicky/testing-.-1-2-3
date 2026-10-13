@@ -10,7 +10,7 @@ Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · lucide-react.
 ```bash
 npm install
 npm run dev          # open http://localhost:3000 once the terminal says "Ready"
-npm test             # 166 engine tests, including seeded balance checks
+npm test             # 175 engine tests, including seeded balance checks
 npm run simulate     # balance report: thousands of simulated playthroughs per route
 npm run lint
 npm run build
@@ -183,6 +183,18 @@ What changed:
   Entry letter later.
 - **Feel:** characters have faces (brows, blinking, a mouth that follows your stats), stat bars flash and pop on
   change and pulse **Danger** near a collapse line, and the sound chip is a mixer.
+
+## Your job shapes the story (v0.18–v0.19)
+`game/careers.ts` maps the sign-up occupation (or course) to a track: tech, health, teaching, engineering, trades or
+business. Nigeria Life's job hunt, listing, interview story, offer catch and side hustle follow it (a nurse hunts on a
+ward and registers with the nursing college before any offer); the Student route offers programs in your field and
+the study plan names your background; Year One shows bridging and licence options only for regulated fields.
+Nurse licensing: NNAS for most provinces (BC's college assesses directly), and the provincial regulator decides when
+you sit the NCLEX-RN; "Two tests, one nurse" explains IELTS Academic/CELBAN vs the Express Entry tests.
+Round-3 fixes: unauthorized cash work and filing a bought asylum story are instant fails again; heritage words
+(`{homeFood}`, `{uncle}`, `{partyCloth}`) replace Southern-only details; relatives never share your name; the
+Startup route says IRCC has paused new Start-up Visa applications; a worker charged for an LMIA is treated as the
+victim; a new Tourist scene with Kunle, whose boss holds his passport.
 
 ## Kawosoke: the asylum branch of the Tourist Gamble
 "Kawosoke" is the slang for claiming asylum, and Mentor Wey Sabi recommends it to everyone. Claim at the Pearson counter

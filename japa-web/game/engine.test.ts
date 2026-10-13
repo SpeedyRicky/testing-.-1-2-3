@@ -121,7 +121,7 @@ describe("scenarios.json integrity", () => {
       "papers", "ageYears", "educationLevel", "ecaComplete", "clbFirst", "nclcFrench", "foreignWorkYears",
       "canadianWorkYears", "canadianEducation", "pnpNomination", "siblingInCanada", "crsScore", "programType",
       "academicStanding", "officerConfidence", "scholarshipTried", "familyAsked", "landSold", "crowdfunded",
-      "loanTaken", "hasDegree", "careerScore", "community", "pflRisk", "conflictRegion", "kwBasis", "kwAtAirport", "kwCredibility", "kwEvidence", "eeCategory", "kwTruth", "officeJob", "saidNoHome", "nursePath", "postedPass", "warnedFamily",
+      "loanTaken", "hasDegree", "careerScore", "community", "pflRisk", "conflictRegion", "kwBasis", "kwAtAirport", "kwCredibility", "kwEvidence", "eeCategory", "kwTruth", "officeJob", "saidNoHome", "nursePath", "postedPass", "warnedFamily", "dayoLeft", "healthTrack", "regulated",
     ]);
     const bad: string[] = [];
     for (const s of Object.values(DB.scenes)) {
@@ -185,7 +185,7 @@ describe("Startup Visa pitch (same paths as the Godot tests)", () => {
     const live = presentChoices(DB, at).find((c) => c.label === "LIVE_DEMO")!;
     expect(live.odds).toBeGreaterThan(0.5);
     expect(play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven", "pre-recorded walkthrough", "5% more equity",
-      "Key-person clause", "CAD 50,000 'fee'"]).outcome?.reason).toBe("PAY_TO_PLAY");
+      "Key-person clause", "₦25 million 'fee'"]).outcome?.reason).toBe("PAY_TO_PLAY");
   });
 
   it("bars get their pass marks from the content", () => {
@@ -249,14 +249,11 @@ describe("Tourist Gamble dashboard", () => {
     expect(act(s, "rest").state.energy).toBe(50);
   });
 
-  it("the cash shift is a temptation: usually nobody asks, sometimes the inspector does", () => {
+  it("the cash shift is tempting, and taking it is an instant fail", () => {
     const { state } = act(landed(), "cash_job");
     expect(state.currentSceneId).toBe("TR_CASH_SHIFT");
     const shift = choiceIndex(state, (c) => c.label === "CASH_SHIFT");
-    const paid = dismissPopup(choose(DB, state, shift, [1, 0, 0, 1]));
-    expect(paid.currentSceneId).toBe("TOURIST_HUB");
-    expect(paid.walletCad).toBe(state.walletCad + 120);
-    const caught = choose(DB, state, shift, [1, 0, 0.99, 1]);
+    const caught = choose(DB, state, shift, [1, 0, 0, 1]);
     expect(caught.outcome).toMatchObject({ result: "fail", reason: "CASH_WORK_CAUGHT" });
     expect(act(caught, "rest").toast).toBeNull();
   });
@@ -816,10 +813,9 @@ describe("Kawosoke (asylum claims inside the Tourist Gamble)", () => {
     expect(s.outcome?.reason).toBe("CLAIM_REFUSED");
   });
 
-  it("a bought story is exposed even with perfect answers, and walking away keeps the run alive", () => {
-    const bought = walk(landed(), []);
-    const inland = takeAction(DB, bought, "kawosoke", [0.99, 0]).state;
-    const s = walk(inland, ["ready-made story", "File it anyway", ...STRONG.slice(0, 4)]);
+  it("filing a bought story is an instant fail, and walking away keeps the run alive", () => {
+    const inland = takeAction(DB, landed(), "kawosoke", [0.99, 0]).state;
+    const s = walk(inland, ["ready-made story", "File it anyway"]);
     expect(s.outcome).toMatchObject({ result: "fail", reason: "MISREPRESENTATION" });
     const out = walk(takeAction(DB, landed(), "kawosoke", [0.99, 0]).state, ["ready-made story", "Walk out", "Back to the job hunt"]);
     expect(out.currentSceneId).toBe("TOURIST_HUB");
@@ -828,7 +824,7 @@ describe("Kawosoke (asylum claims inside the Tourist Gamble)", () => {
   });
 
   it("village people are not a Convention ground; flying home ends the claim", () => {
-    expect(walk(tourist(), ["Kawosoke at the counter", "Village people", ...STRONG.slice(0, 4)]).outcome?.reason).toBe("NO_NEXUS");
+    expect(walk(tourist(), ["Kawosoke at the counter", "what you truly believe", ...STRONG.slice(0, 4)]).outcome?.reason).toBe("NO_NEXUS");
     expect(walk(truth(1), ["Kawosoke at the counter", "you were outed", "Legal Aid", "fly home for Mummy"]).outcome?.reason).toBe("CLAIM_ABANDONED");
   });
 
@@ -1419,7 +1415,8 @@ describe("v0.16: playtest fixes", () => {
     expect(gig.currentSceneId).toBe("FY_GIG_LIFE");
     const dec = play2(gig, ["Keep driving", "any shift", "volunteer tax clinic"]);
     expect(dec.currentSceneId).toBe("FY_SILENCE");
-    const office = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days",
+    const fy = newRun(DB, "FIRST_YEAR");
+    const office = play2({ ...fy, routeStats: { ...fy.routeStats, regulated: 0 } }, ["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days",
       "Unregulated field", "Swap shifts", "fixed share", "Nigerian association"]);
     expect(office.currentSceneId).toBe("FY_ACCENT");
   });
@@ -1540,5 +1537,54 @@ describe("v0.18: your job shapes the story", () => {
     expect(nclex.feedback).toMatch(/provincial regulator decides/);
     expect(nclex.feedback).toMatch(/BC/);
     expect(DB.scenes.NURSE_TWO_TESTS.dialogue).toMatch(/IELTS Academic or CELBAN/);
+  });
+});
+
+describe("v0.19: round-3 fixes", () => {
+  it("a relative never shares the player's name or its long form", () => {
+    for (let i = 0; i < 50; i++) {
+      const r = makeRelative("yoruba", seededRandom(`tunde${i}`), "brother", "Tunde");
+      expect(r.name.toLowerCase()).not.toContain("tunde");
+    }
+  });
+
+  it("food, uncles and party cloth follow heritage", () => {
+    const hausa = profileVars({ version: 1, username: "Aisha", avatar: DEFAULT_AVATAR, role: "worker", age: 31, stateCode: "KD",
+      worker: { occupation: "data", years: 5, qualification: "bachelors", salary: "150k-400k" } } as PlayerProfile);
+    expect(fillText(DB.scenes.FY_CUSTOMS.dialogue!, hausa)).toMatch(/dambun nama/);
+    expect(hausa.uncle).toBe("Uncle Sani");
+    expect(JSON.stringify(DB.scenes.FY_SILENCE)).not.toMatch(/Ọmọ/);
+  });
+
+  it("the regulated-field options only show for regulated jobs in Year One", () => {
+    const fy = newRun(DB, "FIRST_YEAR");
+    const at = (regulated: number) => play2({ ...fy, routeStats: { ...fy.routeStats, regulated } },
+      ["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days"]);
+    expect(presentChoices(DB, at(0)).map((c) => c.label)).not.toContain("BRIDGING");
+    expect(presentChoices(DB, at(0)).some((c) => c.label === "CERT_AND_CV")).toBe(true);
+    expect(presentChoices(DB, at(1)).some((c) => c.label === "CERT_AND_CV")).toBe(false);
+  });
+
+  it("if the CTO leaves, the pitch can't claim a backup, but honesty about the gap scores", () => {
+    const at = { ...newRun(DB, "STARTUP_VISA"), currentSceneId: "SUV_PITCH_ROSS" };
+    const left = { ...at, routeStats: { ...at.routeStats, dayoLeft: 1 } };
+    expect(presentChoices(DB, left).find((c) => c.label === "OPERATIONAL FAILSAFE")?.enabled).toBe(false);
+    expect(presentChoices(DB, left).some((c) => c.label === "HONEST_GAP")).toBe(true);
+    expect(presentChoices(DB, at).some((c) => c.label === "HONEST_GAP")).toBe(false);
+    expect(DB.scenes.SUV_LOS_ISSUED.outcome!.lesson).toMatch(/paused new Start-up Visa applications/);
+  });
+
+  it("nurses in Nigeria Life register first instead of taking an LMIA offer", () => {
+    const at = { ...newRun(DB, "NIGERIA_LIFE"), currentSceneId: "LAGOS_BERLIN_CALL" };
+    const nurse = { ...at, routeStats: { ...at.routeStats, healthTrack: 1 } };
+    expect(presentChoices(DB, nurse).map((c) => c.label)).toContain("REGISTER_FIRST");
+    expect(presentChoices(DB, at).map((c) => c.label)).not.toContain("REGISTER_FIRST");
+  });
+
+  it("Kunle paid for an LMIA: helping him is the lesson, asking for his agent is the scam", () => {
+    const k = takeAction(DB, landed(), "kunle", [0.99, 0]).state;
+    expect(k.currentSceneId).toBe("TR_KUNLE");
+    expect(play2(k, ["agent's number"]).outcome?.reason).toBe("LMIA_SCAM");
+    expect(play2(k, ["open work permit for vulnerable workers"]).currentSceneId).toBe("TOURIST_HUB");
   });
 });

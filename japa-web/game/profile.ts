@@ -220,6 +220,9 @@ const EE_CATEGORY: Record<string, number> = {
   nurse: 1, doctor: 1, pharmacist: 1, software: 2, data: 2, engineer: 2, electrician: 3, teacher: 4,
 };
 
+/** Fields with a licence wall in Canada. */
+const REGULATED = new Set(["health", "teach", "eng", "trades"]);
+
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 /** Starting-state overrides per route, layered over each route's defaults. */
@@ -227,11 +230,12 @@ export function routePatches(p: PlayerProfile): Partial<Record<RouteId, Partial<
   const g = deriveGameProfile(p);
   const place = placeVars(placeFor(p.stateCode));
   const where = `${place.area}, ${place.city}`;
+  const track = trackFor(p.role, p.worker?.occupation, p.student?.course);
   return {
     NIGERIA_LIFE: {
       currentLocation: where,
       walletNgn: clamp(g.savingsNgn, 200000, 2000000),
-      routeStats: { papers: g.hasDegree ? 24 : 18 },
+      routeStats: { papers: g.hasDegree ? 24 : 18, healthTrack: track === "health" ? 1 : 0 },
     },
     EXPRESS_ENTRY: {
       currentLocation: where,
@@ -250,7 +254,7 @@ export function routePatches(p: PlayerProfile): Partial<Record<RouteId, Partial<
     },
     FIRST_YEAR: {
       walletCad: clamp(g.savingsCad, 6000, 15000),
-      routeStats: { careerScore: g.hasDegree ? 15 : 8, community: 10 },
+      routeStats: { careerScore: g.hasDegree ? 15 : 8, community: 10, regulated: REGULATED.has(track) ? 1 : 0 },
     },
     TOURIST_GAMBLE: {
       walletCad: clamp(g.savingsCad, 1500, 6000),
