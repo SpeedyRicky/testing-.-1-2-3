@@ -2,6 +2,7 @@
 // Pure functions turn it into starting stats for each route and words for each scene.
 import type { GameState, RouteId } from "./types";
 import { placeFor, placeVars } from "./nigeria";
+import { careerVars, trackFor } from "./careers";
 import { detectHeritage, faithFor, homeVars, isSibling, kwStory, kwTruthFor, makeRelative, relativeVars, seededRandom, type Relative } from "./family";
 
 export type BodySize = "slim" | "average" | "plus";
@@ -262,12 +263,14 @@ export function routePatches(p: PlayerProfile): Partial<Record<RouteId, Partial<
 export function profileVars(p: PlayerProfile | null): Record<string, string> {
   const home = homeFor(p);
   const where = placeVars(placeFor(p?.stateCode ?? "LA"));
+  const career = careerVars(trackFor(p?.role, p?.worker?.occupation, p?.student?.course));
   const place = {
     ...where, ...relativeVars(familyFor(p)), ...homeVars(home.heritage, home.faith),
     kwStory: fillText(kwStory(kwTruthOf(p)), where),
+    ...Object.fromEntries(Object.entries(career).map(([k, v]) => [k, fillText(v, where)])),
   };
   if (!p) {
-    return { ...place, name: "Tolu", age: "29", educationPhrase: "a B.Sc.", experiencePhrase: "three years as a logistics analyst", occupation: "a logistics analyst" };
+    return { ...place, name: "Tolu", age: "29", educationPhrase: "a B.Sc.", experiencePhrase: "three years as a logistics analyst", occupation: "a logistics analyst", sopBackground: "three years in logistics" };
   }
   const g = deriveGameProfile(p);
   return {
@@ -277,6 +280,7 @@ export function profileVars(p: PlayerProfile | null): Record<string, string> {
     educationPhrase: g.educationPhrase,
     experiencePhrase: g.experiencePhrase,
     occupation: g.occupation,
+    sopBackground: p.role === "student" && p.student ? `your ${p.student.course} studies` : g.experiencePhrase,
   };
 }
 

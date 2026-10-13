@@ -19,6 +19,7 @@ import { allEndings, endingKey, lessonFor } from "./endings";
 import { levelIndexOf, levelProgress, levelsFor, starsFor } from "./levels";
 import { blessingChance, dangerStats, gambleOdds } from "./engine";
 import { faceFor } from "./face";
+import { careerVars, trackFor } from "./careers";
 import { GROOVES, moodFor } from "./music";
 import { makeSave, readSave } from "./save";
 import { PLAYABLE_ROUTES, simulate } from "./simulate";
@@ -28,6 +29,10 @@ import {
 import type { GameState, RouteId, StatKey } from "./types";
 
 const reducer = makeReducer();
+
+const NULL_VARS = profileVars(null);
+/** True if a choice's text (raw, or filled for the default player) contains `pick`. */
+const matches = (text: string, pick: string) => text.includes(pick) || fillText(text, NULL_VARS).includes(pick);
 
 /** The engine index of the first choice on screen that matches (hidden choices are skipped, so positions can differ). */
 function choiceIndex(s: GameState, pred: (c: ReturnType<typeof presentChoices>[number]) => boolean): number {
@@ -39,7 +44,7 @@ function playR(route: RouteId, steps: (string | [string, number])[]): GameState 
   let s = newRun(DB, route);
   for (const step of steps) {
     const [pick, roll] = typeof step === "string" ? [step, 0] : step;
-    const idx = choiceIndex(s, (c) => c.text.includes(pick));
+    const idx = choiceIndex(s, (c) => matches(c.text, pick));
     expect(idx, `choice containing "${pick}" at ${s.currentSceneId}`).toBeGreaterThanOrEqual(0);
     s = dismissPopup(choose(DB, s, idx, [1, 0, roll]));
   }
@@ -50,7 +55,7 @@ function playR(route: RouteId, steps: (string | [string, number])[]): GameState 
 function play2(start: GameState, picks: string[]): GameState {
   let s = start;
   for (const pick of picks) {
-    const idx = choiceIndex(s, (c) => c.text.includes(pick));
+    const idx = choiceIndex(s, (c) => matches(c.text, pick));
     expect(idx, `choice containing "${pick}" at ${s.currentSceneId}`).toBeGreaterThanOrEqual(0);
     s = dismissPopup(choose(DB, s, idx, [1, 0]));
   }
@@ -64,7 +69,7 @@ const landed = () => newRun(DB, "TOURIST_GAMBLE", {}, "TOURIST_HUB");
 function play(route: RouteId, picks: string[], rolls: [number, number] = [1, 0]): GameState {
   let s = newRun(DB, route);
   for (const pick of picks) {
-    const idx = choiceIndex(s, (c) => c.text.includes(pick));
+    const idx = choiceIndex(s, (c) => matches(c.text, pick));
     expect(idx, `choice containing "${pick}" at ${s.currentSceneId}`).toBeGreaterThanOrEqual(0);
     s = dismissPopup(choose(DB, s, idx, rolls));
   }
@@ -560,7 +565,7 @@ describe("Student pathway", () => {
     const picks = ["Master's in Engineering", "Work out the money", ...FUND_ALL, "funds are ready", "specific plan",
       "Wait for the decision", "Start packing", "close family only", "New parka and boots", "host family", "Agree to wait", "Campus cafe", "Library every night", "Book IELTS"];
     for (const p of picks) {
-      const idx = choiceIndex(app.runs.STUDY_PERMIT!, (c) => c.text.includes(p));
+      const idx = choiceIndex(app.runs.STUDY_PERMIT!, (c) => matches(c.text, p));
       app = reducer(app, { type: "CHOOSE", index: idx, rolls: [1, 0] });
     }
     app = reducer(app, { type: "FOLLOW_UNLOCK" });
@@ -685,7 +690,7 @@ describe("player profiles", () => {
     const app = initialState(DB, fresher);
     const st = app.runs.STUDY_PERMIT!;
     const choices = presentChoices(DB, st);
-    expect(choices.find((c) => c.text.startsWith("Master's"))?.enabled).toBe(false);
+    expect(choices.find((c) => c.set?.programType === 2)?.enabled).toBe(false);
     expect(choices.find((c) => c.text.startsWith("Four-year bachelor's"))?.enabled).toBe(true);
   });
 
@@ -695,7 +700,7 @@ describe("player profiles", () => {
       "Sell the plot", "Crowdfund", "Education loan", "funds are ready", "specific plan", "Wait for the decision",
       "Start packing", "close family only", "New parka and boots", "host family", "Agree to wait", "Campus cafe", "Library every night", "Book IELTS"];
     for (const p of picks) {
-      const idx = choiceIndex(app.runs.STUDY_PERMIT!, (c) => c.text.includes(p));
+      const idx = choiceIndex(app.runs.STUDY_PERMIT!, (c) => matches(c.text, p));
       expect(idx, p).toBeGreaterThanOrEqual(0);
       app = reducer(app, { type: "CHOOSE", index: idx, rolls: [1, 0] });
     }
@@ -990,7 +995,7 @@ describe("Year One in Canada and community-story scenes", () => {
     app = reducer(app, { type: "SELECT_ROUTE", route: "TOURIST_GAMBLE" });
     for (const pick of ["Kawosoke at the counter", "you were outed", "Legal Aid", "Gather evidence", "line by line",
       "say 'I don't remember'", "Explain, with your evidence"]) {
-      const idx = choiceIndex(app.runs.TOURIST_GAMBLE!, (c) => c.text.includes(pick));
+      const idx = choiceIndex(app.runs.TOURIST_GAMBLE!, (c) => matches(c.text, pick));
       app = reducer(app, { type: "CHOOSE", index: idx, rolls: [1, 0] });
     }
     app = reducer(app, { type: "FOLLOW_UNLOCK" });
@@ -1402,8 +1407,8 @@ describe("v0.16: playtest fixes", () => {
     const at = play2(nurse, ["three months first", "official express transcript"]);
     expect(at.currentSceneId).toBe("NURSE_VERIFY");
     expect(play2(at, ["man at the council"]).outcome?.reason).toBe("NURSE_TOUT");
-    expect(play2(at, ["Apply quietly"]).currentSceneId).toBe("NURSE_UK_OR_CANADA");
-    expect(play2(at, ["Apply quietly", "Go UK first"]).outcome).toMatchObject({ result: "win", reason: "UK_FIRST" });
+    expect(play2(at, ["Apply quietly"]).currentSceneId).toBe("NURSE_TWO_TESTS");
+    expect(play2(at, ["Apply quietly", "Write both", "Go UK first"]).outcome).toMatchObject({ result: "win", reason: "UK_FIRST" });
     const tech = initialState(DB, prof("Tunde", "OY", "software")).runs.EXPRESS_ENTRY!;
     expect(play2(tech, ["three months first", "official express transcript"]).currentSceneId).toBe("EE_PROFILE");
   });
@@ -1497,5 +1502,43 @@ describe("callbacks: earlier choices come back", () => {
     const at = { ...newRun(DB, "EXPRESS_ENTRY"), currentSceneId: "EE_REFERENCE" };
     const odds = (s: GameState) => presentChoices(DB, s)[0].odds!;
     expect(odds({ ...at, routeStats: { ...at.routeStats, nursePath: 2 } })).toBeGreaterThan(odds(at));
+  });
+});
+
+describe("v0.18: your job shapes the story", () => {
+  const worker = (occupation: string) => ({ version: 1, username: "Chiamaka", avatar: DEFAULT_AVATAR, role: "worker", age: 29,
+    stateCode: "LA", worker: { occupation, years: 5, qualification: "bachelors", salary: "150k-400k" } }) as PlayerProfile;
+
+  it("each track gets its own job hunt, interview story and side hustle", () => {
+    expect(trackFor("worker", "nurse")).toBe("health");
+    expect(trackFor("student", undefined, "Civil Engineering")).toBe("eng");
+    expect(trackFor(undefined)).toBe("default");
+    const nurse = profileVars(worker("nurse"));
+    expect(fillText(DB.scenes.LAGOS_JOB_BOARD.dialogue!, nurse)).toMatch(/RNs, Ontario registration required/);
+    expect(fillText(DB.scenes.LAGOS_BERLIN_CALL.dialogue!, nurse)).toMatch(/nursing registration first/);
+    expect(fillText(DB.scenes.LAGOS_WEEKEND_GIG.dialogue!, nurse)).toMatch(/home-care shift/);
+    expect(fillText(DB.scenes.LAGOS_WEEKEND_GIG.dialogue!, profileVars(worker("electrician")))).toMatch(/wire a duplex/);
+    for (const t of ["tech", "health", "teach", "eng", "trades", "business", "default"] as const) {
+      for (const v of Object.values(careerVars(t))) expect(v.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("Student offers programs in your field, and the study plan names your background", () => {
+    const st = initialState(DB, worker("nurse")).runs.STUDY_PERMIT!;
+    const vars = profileVars(worker("nurse"));
+    const texts = presentChoices(DB, st).map((c) => fillText(c.text, vars));
+    expect(texts.some((t) => t.startsWith("Master of Public Health"))).toBe(true);
+    expect(texts.some((t) => t.startsWith("Two-year Practical Nursing diploma"))).toBe(true);
+    expect(fillText(DB.scenes.ST_SOP.choices![0].text, vars)).toMatch(/5 years as a registered nurse/);
+  });
+
+  it("the Nigeria route names the visitor visa, and nurse licensing goes through the provincial college", () => {
+    expect(DB.scenes.LAGOS_ENDING_WIN.outcome!.title).toBe("Visa in hand");
+    expect(DB.scenes.LAGOS_ENDING_WIN.outcome!.lesson).toMatch(/28 August 2024/);
+    expect(DB.scenes.LAGOS_AUNTY_CALL.dialogue).toMatch(/visitor visa/);
+    const nclex = DB.scenes.NURSE_UK_OR_CANADA.choices!.find((c) => c.label === "NCLEX")!;
+    expect(nclex.feedback).toMatch(/provincial regulator decides/);
+    expect(nclex.feedback).toMatch(/BC/);
+    expect(DB.scenes.NURSE_TWO_TESTS.dialogue).toMatch(/IELTS Academic or CELBAN/);
   });
 });

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.17.0",
+    "version": "0.18.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -837,6 +837,7 @@
             "EE_START",
             "EE_ECA",
             "NURSE_VERIFY",
+            "NURSE_TWO_TESTS",
             "NURSE_UK_OR_CANADA"
           ],
           "stars": [
@@ -1999,7 +2000,7 @@
       "dialogue": "NEPA has packed up. Your roommate is already in a Europe group chat. Downstairs, {area} is waking. {RelWho} in {relCity} sent three missed calls. Everybody don japa. This year na your turn, or another send-forth you go attend.",
       "choices": [
         {
-          "text": "{Bus} to {techHub} and hunt remote jobs",
+          "text": "{Bus} to {jobPlace} and hunt {jobHunt}",
           "label": "",
           "nextSceneId": "LAGOS_JOB_BOARD",
           "effects": {
@@ -2033,11 +2034,11 @@
       "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "Four hundred applicants. One reply.",
-      "location": "{techHub}",
+      "location": "{jobPlace}",
       "stage": "cafe",
       "transitIn": "danfo",
       "speaker": "{techHub}",
-      "dialogue": "The cyber cafe hums like a generator. A Toronto listing wants three years of React and right to work in Canada. You have a bootcamp PDF, stubborn data, and {relName} typing 'have you left the house??' from {relCity}.",
+      "dialogue": "Application forty. {jobListing}, and {relName} typing 'have you left the house??' from {relCity}.",
       "choices": [
         {
           "text": "Rewrite the CV the Canadian way: two pages, no photo, no date of birth",
@@ -2080,10 +2081,10 @@
       "stage": "call-sister",
       "transitIn": "call",
       "speaker": "{relCity} × {area} FaceTime",
-      "dialogue": "{RelPoss} window in {relCity} shows {relWeather}; {relSubj} is {relGap}. Yours is generator light. {RelSubj} will write an invitation letter. {RelSubj} will not lie on a bank statement. 'Bring your own proof, {name}, or don't come and disgrace me at Pearson.'",
+      "dialogue": "{RelPoss} window in {relCity} shows {relWeather}; {relSubj} is {relGap}. Yours is generator light. {RelSubj} will write an invitation letter for a visitor visa: a visit, not a job. {RelSubj} will not lie on a bank statement. 'Bring your own proof, {name}, or don't come and disgrace me at Pearson.'",
       "choices": [
         {
-          "text": "Leave the call. Trek the annex and start a real paper trail",
+          "text": "Leave the call. Go to the annex and start a real paper trail",
           "label": "",
           "nextSceneId": "LAGOS_DOCUMENT_GRIND",
           "effects": {
@@ -2133,7 +2134,7 @@
           }
         },
         {
-          "text": "Okada to a weekend gig in {gigArea}",
+          "text": "Keke to a weekend gig in {gigArea}",
           "label": "",
           "nextSceneId": "LAGOS_WEEKEND_GIG",
           "effects": {
@@ -2188,7 +2189,7 @@
           "gamble": {
             "odds": 0.4,
             "success": {
-              "feedback": "They loved the race-condition story. 'Can you start in Toronto?' The offer letter arrives at 10 p.m.",
+              "feedback": "They loved {interviewHook}. 'Can you start in Toronto?' The offer letter arrives at 10 p.m.",
               "label": "GOT_THE_OFFER"
             },
             "fail": {
@@ -2286,7 +2287,7 @@
           }
         },
         {
-          "text": "Envelope too thin. Okada to the weekend hustle",
+          "text": "Envelope too thin. Keke to the weekend hustle",
           "label": "",
           "nextSceneId": "LAGOS_WEEKEND_GIG",
           "effects": {
@@ -2307,14 +2308,15 @@
       "dialogue": "{RelName} will send a statement snapshot, not a transfer. 'If they ask whose money, tell the truth.' Uncle in Abuja laughs from the group chat: Canada is for people with uncles in Canada.",
       "choices": [
         {
-          "text": "Hang up. Build an honest file at the annex",
+          "text": "Accept {relName}'s documented host support and build an honest file around it",
           "label": "",
           "nextSceneId": "LAGOS_DOCUMENT_GRIND",
           "effects": {
             "papers": 10,
             "desperation": -8,
             "energy": -8
-          }
+          },
+          "feedback": "A host's letter and their own statement, labelled as theirs, are legitimate support for a visitor visa. Borrowed money shown as yours is not."
         },
         {
           "text": "Borrow a friend's statement and go anyway",
@@ -2334,11 +2336,11 @@
       "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
       "title": "Cash in the pocket. Dust in the lungs.",
-      "location": "Rain in {gigArea}, then the okada home",
+      "location": "Rain in {gigArea}, then a keke home",
       "stage": "gig",
       "transitIn": "okada",
       "speaker": "Rain in {gigArea}, then the okada home",
-      "dialogue": "You fix a POS network, then two Bolt trips in the rain. The envelope thickens. A woman under a shop awning is shouting into her phone the same way you shout to {relName}: 'I am coming. Traffic.'",
+      "dialogue": "{gigWork}, then two Bolt trips in the rain. The envelope thickens. A woman under a shop awning is shouting into her phone the same way you shout to {relName}: 'I am coming. Traffic.'",
       "choices": [
         {
           "text": "Bank it. {Bus} to the paperwork",
@@ -2361,7 +2363,7 @@
           }
         },
         {
-          "text": "One more weekend. Trek back to {area}.",
+          "text": "One more weekend. Waka back to {area}.",
           "label": "",
           "nextSceneId": "LAGOS_YABA_DUSK",
           "effects": {
@@ -2381,7 +2383,7 @@
       "stage": "video-job",
       "transitIn": "call",
       "speaker": "{area}, on borrowed light",
-      "dialogue": "Toronto asks about a race condition you actually fixed. Then: 'If we offer, we'd start the LMIA. That takes months.' {RelName} is on speaker from a {relCity} bus: 'Say yes. I will be waiting at Pearson.'",
+      "dialogue": "Toronto asks about {interviewStory}. Then: '{offerCatch}' {RelName} is on speaker from a {relCity} bus: 'Say yes. I go dey wait for you when you land.'",
       "choices": [
         {
           "text": "Take the offer. Apply for the work permit once their LMIA comes through",
@@ -2449,7 +2451,7 @@
       "stage": "outside",
       "transitIn": "trek",
       "speaker": "Outside the centre, VI sun",
-      "dialogue": "You step into the heat. {RelName} is already ringing. Tracking sites lie. WhatsApp groups lie louder. Canada only asks for the passport after a yes: the famous PPR. You go home and live inside a status page.",
+      "dialogue": "You step into the heat. {RelName} is already ringing. Your file is a visitor visa on {relPoss} invitation, or a work permit if the job came through. Canada only asks for the passport after a yes: the famous PPR. You go home and live inside a status page.",
       "choices": [
         {
           "text": "Pick {relName}'s call, then wait with the phone on loud",
@@ -2485,7 +2487,7 @@
       "id": "LAGOS_ENDING_WIN",
       "route": "NIGERIA_LIFE",
       "layoutType": "STORY_STAGE",
-      "title": "You japa.",
+      "title": "Visa in hand.",
       "location": "Airside, {airportCode} → the glass",
       "stage": "airport",
       "transitIn": "plane",
@@ -2494,8 +2496,8 @@
       "outcome": {
         "result": "win",
         "reason": "JAPA_APPROVED",
-        "title": "You japa",
-        "lesson": "A visa in the passport is permission to travel, not to stay. The officer at the Canadian port of entry still decides, and your status is only as good as the reason you gave."
+        "title": "Visa in hand",
+        "lesson": "A visitor visa lets you travel to Canada to visit, not to work or stay, and the officer at Pearson still decides. Since 28 August 2024 visitors can't apply for a work permit from inside Canada: a job means a work permit, applied for properly."
       }
     },
     "LAGOS_ENDING_STAY": {
@@ -3813,7 +3815,7 @@
       "stage": "basement",
       "transitIn": "none",
       "speaker": "Toronto",
-      "dialogue": "You graduated, got your post-graduation work permit and found a full-time job in supply chain. Express Entry counts Canadian work in full years.",
+      "dialogue": "You graduated, got your post-graduation work permit and found a full-time job {canadaJob}. Express Entry counts Canadian work in full years.",
       "choices": [
         {
           "text": "Work a full year, then create your Express Entry profile",
@@ -3926,7 +3928,7 @@
       "dialogue": "The most common route to Canada starts with a classroom. Your inbox has offers. Choose carefully: the program decides your tuition, your funds and whether you get a post-graduation work permit (PGWP).",
       "choices": [
         {
-          "text": "Master's in Engineering Management, public university (16 months, CAD 32,000 for year one)",
+          "text": "{mastersProgram}, public university (16 months, CAD 32,000 for year one)",
           "label": "MASTERS",
           "nextSceneId": "ST_LOA",
           "effects": {
@@ -3957,7 +3959,7 @@
           "feedback": "A Canadian bachelor's counts as 3+ years of Canadian education: the most CRS points for study in Canada."
         },
         {
-          "text": "Two-year Supply Chain diploma, public college (CAD 18,000 a year)",
+          "text": "{diplomaProgram}, public college (CAD 18,000 a year)",
           "label": "COLLEGE",
           "nextSceneId": "ST_LOA",
           "effects": {},
@@ -4352,7 +4354,7 @@
       "dialogue": "The officer will read one document to understand you: your study plan. Why this program, why Canada, and what happens after.",
       "choices": [
         {
-          "text": "Write a specific plan: how the program builds on three years in logistics, and your career path",
+          "text": "Write a specific plan: how the program builds on {sopBackground}, and your career path",
           "label": "SPECIFIC_PLAN",
           "nextSceneId": "ST_VFS",
           "effects": {
@@ -7252,13 +7254,13 @@
         {
           "text": "Apply quietly to the nursing council and keep doing nights",
           "label": "QUIET_VERIFY",
-          "nextSceneId": "NURSE_UK_OR_CANADA",
+          "nextSceneId": "NURSE_TWO_TESTS",
           "effects": {
             "walletCad": -60,
             "energy": -12,
             "desperation": 4
           },
-          "feedback": "Verification goes from the council straight to the Canadian assessor. Slow, but clean.",
+          "feedback": "Verification goes from the council straight to the Canadian assessor: NNAS for most provinces, while BC's college assesses you directly. Slow, but clean.",
           "set": {
             "nursePath": 1
           }
@@ -7266,7 +7268,7 @@
         {
           "text": "Tell Matron and ask for a reference letter",
           "label": "TOLD_MATRON",
-          "nextSceneId": "NURSE_UK_OR_CANADA",
+          "nextSceneId": "NURSE_TWO_TESTS",
           "effects": {
             "desperation": 8
           },
@@ -7319,7 +7321,7 @@
         "reason": "NURSE_TOUT",
         "title": "Paid the 'man at the council'",
         "subtitle": "There is no fast lane for sale.",
-        "lesson": "Nursing verification goes from the council to the Canadian assessor (NNAS, then the provincial college). Nobody sells a shortcut; touts sell receipts."
+        "lesson": "Nursing verification goes from the council to the Canadian assessor (NNAS for most provinces; BC's college assesses directly), and the provincial college decides when you sit the NCLEX-RN. Nobody sells a shortcut; touts sell receipts."
       }
     },
     "NURSE_UK_OR_CANADA": {
@@ -7331,10 +7333,10 @@
       "stage": "whatsapp",
       "transitIn": "none",
       "speaker": "WhatsApp, after your night shift",
-      "dialogue": "Your set mate Ngozi voice-notes from Manchester: 'CBT, OSCE, I land in eight months. Come UK first, Canada later.' Your Canadian credential file has been 'in review' for a year. Canada pays more. UK is faster.",
+      "dialogue": "Your set mate Ngozi voice-notes from Manchester: 'CBT, OSCE, I land in eight months. Come UK first, Canada later.' Your Canadian assessment has been 'in review' for a year. Canada pays more. UK is faster.",
       "choices": [
         {
-          "text": "Stay the Canada course: book the NCLEX-RN while the assessment runs",
+          "text": "Stay the Canada course: finish the assessment and wait for the provincial college to clear you for the NCLEX-RN",
           "label": "NCLEX",
           "nextSceneId": "EE_PROFILE",
           "effects": {
@@ -7342,7 +7344,7 @@
             "energy": -15,
             "desperation": 6
           },
-          "feedback": "Assessment, then the NCLEX, then the provincial college. Express Entry PR alone doesn't make you an RN in Canada; the licence does.",
+          "feedback": "Assessment first (NNAS, or BC's college directly), then the provincial regulator decides when you can write the NCLEX-RN. Express Entry PR alone doesn't make you an RN in Canada; the licence does.",
           "set": {
             "nursePath": 3
           }
@@ -7381,7 +7383,7 @@
         "reason": "UK_FIRST",
         "title": "Japa'd to the UK",
         "subtitle": "Not Canada, but out. Many nurses do UK first.",
-        "lesson": "Many Nigerian nurses go UK first. Moving on to Canada later means another licensing process (NNAS, the NCLEX-RN and a provincial college), so keep your documents."
+        "lesson": "Many Nigerian nurses go UK first. Moving on to Canada later means Canadian licensing: an assessment (NNAS, or BC's college directly), then the NCLEX-RN when the provincial college clears you. Keep your documents."
       }
     },
     "TR_CASH_SHIFT": {
@@ -8017,6 +8019,40 @@
             "scalabilityScore": 4
           },
           "feedback": "Kemi is brilliant and terrified. The committee will ask about her experience."
+        }
+      ]
+    },
+    "NURSE_TWO_TESTS": {
+      "id": "NURSE_TWO_TESTS",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Two tests, one nurse.",
+      "location": "IELTS centre, {city}",
+      "stage": "ielts-centre",
+      "transitIn": "none",
+      "speaker": "IELTS centre, {city}",
+      "dialogue": "The nursing college wants IELTS Academic or CELBAN. Express Entry wants IELTS General, CELPIP or PTE Core, and won't take Academic. The group chat argues about it for 300 messages.",
+      "choices": [
+        {
+          "text": "Write both: IELTS Academic for the college, PTE Core for Express Entry",
+          "label": "BOTH_TESTS",
+          "nextSceneId": "NURSE_UK_OR_CANADA",
+          "effects": {
+            "walletCad": -650,
+            "energy": -15,
+            "desperation": 4
+          },
+          "feedback": "Two receipts, two score reports, zero confusion later. Each one does a different job."
+        },
+        {
+          "text": "Write only IELTS Academic and hope it covers both",
+          "label": "ONE_TEST",
+          "nextSceneId": "NURSE_UK_OR_CANADA",
+          "effects": {
+            "walletCad": -320,
+            "desperation": 10
+          },
+          "feedback": "The college is happy. Express Entry isn't: Academic doesn't count there, so you'll be booking again."
         }
       ]
     }
