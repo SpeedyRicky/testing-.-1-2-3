@@ -80,6 +80,10 @@ export interface RouteStats {
   saidNoHome?: number;
   /** Nurse licensing progress (Express Entry, healthcare). */
   nursePath?: number;
+  /** Posted the boarding pass online (Student; a scam call follows). */
+  postedPass?: number;
+  /** Warned the family group chat about a scam (Tourist; a blessing can follow). */
+  warnedFamily?: number;
   kwAtAirport?: number;
   kwCredibility?: number;
   kwEvidence?: number;

@@ -10,7 +10,7 @@ Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · lucide-react.
 ```bash
 npm install
 npm run dev          # open http://localhost:3000 once the terminal says "Ready"
-npm test             # 160 engine tests, including seeded balance checks
+npm test             # 166 engine tests, including seeded balance checks
 npm run simulate     # balance report: thousands of simulated playthroughs per route
 npm run lint
 npm run build
@@ -175,6 +175,12 @@ What changed:
   customs, first tax season (the group-chat tax guy is fraud), the gig-driver year, a December callback if you said
   no to family, the cash shift (a gamble, not a free CAD 150), the couch getting tight, an honest flight home with a
   clean record, and a regulation question in the Startup pitch.
+- **Right answers cost something (v0.17):** the honest study plan costs a week of nights (an editor is the middle
+  option), GCMS notes cost an intake, the honest reference letter is a gamble when the boss has moved to Dubai, and
+  hearing prep costs sleep. Year One adds a schedule clash with `{faithDay}` (Jumu'ah or Sunday service).
+- **Callbacks:** saying no to family money comes back in December; a posted boarding pass brings a gift-card "IRCC"
+  scam call; warning the group chat about a scam can bring a job lead; Matron's signed reference helps the Express
+  Entry letter later.
 - **Feel:** characters have faces (brows, blinking, a mouth that follows your stats), stat bars flash and pop on
   change and pulse **Danger** near a collapse line, and the sound chip is a mixer.
 

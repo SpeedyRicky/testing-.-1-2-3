@@ -550,6 +550,7 @@
           "goal": "Land in January, find a safe room, and keep your status.",
           "scenes": [
             "ST_ARRIVAL",
+            "ST_SCAM_CALL",
             "ST_HOUSING",
             "ST_SPOUSE",
             "ST_TERM"
@@ -1056,7 +1057,8 @@
           "goal": "Defend the tech. He has read your GitHub.",
           "scenes": [
             "SUV_PITCH_CHEN",
-            "SUV_CHEN_DEMO"
+            "SUV_CHEN_DEMO",
+            "SUV_COFOUNDER"
           ],
           "stars": [
             {
@@ -1492,6 +1494,22 @@
             },
             "when": {
               "kwBasis": [
+                ">=",
+                1
+              ]
+            }
+          },
+          {
+            "id": "warned",
+            "kicker": "Blessing",
+            "title": "The aunty you warned",
+            "body": "The aunty who nearly paid the scammer sends a voice note: her son's manager is hiring, and she has already sent your CV.",
+            "effects": {
+              "networkScore": 10,
+              "desperation": -6
+            },
+            "when": {
+              "warnedFamily": [
                 ">=",
                 1
               ]
@@ -4523,7 +4541,7 @@
         {
           "text": "New parka and boots from the mall (CAD 350; rent is tight)",
           "label": "BOUGHT_PARKA",
-          "nextSceneId": "ST_HOUSING",
+          "nextSceneId": "ST_PASS_CHECK",
           "effects": {
             "walletCad": -350,
             "desperation": -4
@@ -4533,7 +4551,7 @@
         {
           "text": "Value Village thrift run: CAD 60 for a parka with a suspicious zip",
           "label": "THRIFTED",
-          "nextSceneId": "ST_HOUSING",
+          "nextSceneId": "ST_PASS_CHECK",
           "effects": {
             "walletCad": -60
           },
@@ -4559,7 +4577,7 @@
         {
           "text": "The hoodie will do",
           "label": "HOODIE",
-          "nextSceneId": "ST_HOUSING",
+          "nextSceneId": "ST_PASS_CHECK",
           "effects": {
             "energy": -20,
             "desperation": 8
@@ -6469,6 +6487,10 @@
               {
                 "key": "networkScore",
                 "per": 0.004
+              },
+              {
+                "key": "nursePath",
+                "per": 0.1
               }
             ],
             "max": 0.9,
@@ -6619,7 +6641,10 @@
             "streetCred": 5,
             "desperation": -2
           },
-          "feedback": "Two cousins thank you. One forwards it anyway."
+          "feedback": "Two cousins thank you. One forwards it anyway.",
+          "set": {
+            "warnedFamily": 1
+          }
         }
       ]
     },
@@ -6733,7 +6758,7 @@
         {
           "text": "Run the live demo on your own laptop",
           "label": "LIVE_DEMO",
-          "nextSceneId": "SUV_PITCH_ROSS",
+          "nextSceneId": "SUV_COFOUNDER",
           "effects": {
             "energy": -10
           },
@@ -6767,7 +6792,7 @@
         {
           "text": "Play the pre-recorded walkthrough, and offer sandbox access after the call",
           "label": "RECORDED_DEMO",
-          "nextSceneId": "SUV_PITCH_ROSS",
+          "nextSceneId": "SUV_COFOUNDER",
           "effects": {
             "technicalCredibility": 10
           },
@@ -6776,7 +6801,7 @@
         {
           "text": "Show the clickable Figma prototype and call it 'the live system'",
           "label": "FAKE_DEMO",
-          "nextSceneId": "SUV_PITCH_ROSS",
+          "nextSceneId": "SUV_COFOUNDER",
           "effects": {
             "technicalCredibility": -30,
             "investorInterest": -15
@@ -7081,7 +7106,10 @@
           "effects": {
             "streetCred": 4
           },
-          "feedback": "Somebody's aunty was about to pay. She thanks you with a voice note."
+          "feedback": "Somebody's aunty was about to pay. She thanks you with a voice note.",
+          "set": {
+            "warnedFamily": 1
+          }
         }
       ]
     },
@@ -7802,7 +7830,10 @@
             "desperation": -6,
             "streetCred": 6
           },
-          "feedback": "Two hundred likes. Never post a boarding pass or visa page: the barcode and numbers are personal data scammers love."
+          "feedback": "Two hundred likes. Never post a boarding pass or visa page: the barcode and numbers are personal data scammers love.",
+          "set": {
+            "postedPass": 1
+          }
         }
       ]
     },
@@ -7868,6 +7899,124 @@
             "desperation": 8
           },
           "feedback": "Your record is spotless. Your weeks feel longer."
+        }
+      ]
+    },
+    "ST_PASS_CHECK": {
+      "id": "ST_PASS_CHECK",
+      "route": "STUDY_PERMIT",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "postedPass": [
+              ">=",
+              1
+            ]
+          },
+          "nextSceneId": "ST_SCAM_CALL"
+        },
+        {
+          "nextSceneId": "ST_HOUSING"
+        }
+      ]
+    },
+    "ST_SCAM_CALL": {
+      "id": "ST_SCAM_CALL",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "'This is IRCC.'",
+      "location": "Unknown number, week one",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "Unknown number, week one",
+      "dialogue": "'Your study permit has an error. Pay CAD 900 in gift cards today or you will be deported.' He knows your flight number and your seat. Your bestie's post had both.",
+      "choices": [
+        {
+          "text": "Hang up and check your IRCC account yourself",
+          "label": "HUNG_UP",
+          "nextSceneId": "ST_HOUSING",
+          "effects": {
+            "desperation": 6,
+            "energy": -4
+          },
+          "feedback": "Nothing wrong. IRCC never phones to demand payment, and never in gift cards. You delete the post."
+        },
+        {
+          "text": "Pay. You can't risk deportation in week one",
+          "label": "PAID_SCAMMER",
+          "nextSceneId": "ST_HOUSING",
+          "effects": {
+            "walletCad": -900,
+            "desperation": 15
+          },
+          "feedback": "The number stops working an hour later. The post that started it still has 200 likes."
+        }
+      ]
+    },
+    "SUV_COFOUNDER": {
+      "id": "SUV_COFOUNDER",
+      "route": "STARTUP_VISA",
+      "layoutType": "STORY_STAGE",
+      "title": "Between rounds.",
+      "location": "Home office, Lekki, midnight",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "Home office, Lekki, midnight",
+      "dialogue": "The committee breaks until tomorrow. At midnight your CTO Dayo calls: a Manchester fintech offered him £70k and a visa. 'Guy, I no fit wait for Canada forever.' Mr. Ross asks about the team next.",
+      "choices": [
+        {
+          "text": "Give him 5% more equity and a seat on the founders' agreement",
+          "label": "MORE_EQUITY",
+          "nextSceneId": "SUV_PITCH_ROSS",
+          "effects": {
+            "scalabilityScore": 10,
+            "desperation": 6
+          },
+          "feedback": "He stays. Your own share is smaller, and the cap table finally looks like a team."
+        },
+        {
+          "text": "Ask him to give you two weeks: the Letter decides",
+          "label": "TWO_WEEKS",
+          "nextSceneId": "SUV_PITCH_ROSS",
+          "effects": {},
+          "gamble": {
+            "odds": 0.5,
+            "bonus": [
+              {
+                "key": "investorInterest",
+                "per": 0.004
+              }
+            ],
+            "max": 0.85,
+            "success": {
+              "feedback": "'Two weeks. Then I'm gone.' He joins the call tomorrow and answers Mr. Ross himself.",
+              "effects": {
+                "technicalCredibility": 6
+              },
+              "label": "DAYO_STAYS"
+            },
+            "fail": {
+              "feedback": "He signs with Manchester on Monday and sends you his notes. 'No vex.'",
+              "effects": {
+                "technicalCredibility": -15,
+                "desperation": 10
+              },
+              "label": "DAYO_LEFT"
+            }
+          }
+        },
+        {
+          "text": "Let him go and promote Kemi, the junior dev who built the queue",
+          "label": "PROMOTED_KEMI",
+          "nextSceneId": "SUV_PITCH_ROSS",
+          "effects": {
+            "technicalCredibility": -6,
+            "scalabilityScore": 4
+          },
+          "feedback": "Kemi is brilliant and terrified. The committee will ask about her experience."
         }
       ]
     }

@@ -116,7 +116,7 @@ describe("scenarios.json integrity", () => {
       "papers", "ageYears", "educationLevel", "ecaComplete", "clbFirst", "nclcFrench", "foreignWorkYears",
       "canadianWorkYears", "canadianEducation", "pnpNomination", "siblingInCanada", "crsScore", "programType",
       "academicStanding", "officerConfidence", "scholarshipTried", "familyAsked", "landSold", "crowdfunded",
-      "loanTaken", "hasDegree", "careerScore", "community", "pflRisk", "conflictRegion", "kwBasis", "kwAtAirport", "kwCredibility", "kwEvidence", "eeCategory", "kwTruth", "officeJob", "saidNoHome", "nursePath",
+      "loanTaken", "hasDegree", "careerScore", "community", "pflRisk", "conflictRegion", "kwBasis", "kwAtAirport", "kwCredibility", "kwEvidence", "eeCategory", "kwTruth", "officeJob", "saidNoHome", "nursePath", "postedPass", "warnedFamily",
     ]);
     const bad: string[] = [];
     for (const s of Object.values(DB.scenes)) {
@@ -148,19 +148,19 @@ describe("Startup Visa pitch (same paths as the Godot tests)", () => {
   });
 
   it("best pitch earns the Letter of Support", () => {
-    const s = play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven", "pre-recorded walkthrough",
+    const s = play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven", "pre-recorded walkthrough", "5% more equity",
       "Key-person clause", "Twelve months of runway", "FINTRAC"]);
     expect(s.outcome).toMatchObject({ result: "win", reason: "SUV_LOS_ISSUED", decidedBy: "SUV_PITCH_RESOLVE" });
     expect(s.energy).toBe(90);
   });
 
   it("one weak answer is survivable if the rest is strong", () => {
-    expect(play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven", "pre-recorded walkthrough",
+    expect(play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven", "pre-recorded walkthrough", "5% more equity",
       "best friends", "Twelve months of runway", "FINTRAC"]).outcome?.result).toBe("win");
   });
 
   it("a vague technical answer and a fake demo sink it, and the resolution explains why", () => {
-    const s = play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "advanced cloud", "Figma prototype",
+    const s = play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "advanced cloud", "Figma prototype", "5% more equity",
       "Key-person clause", "Twelve months of runway", "FINTRAC"]);
     expect(s.outcome).toMatchObject({ result: "fail", reason: "SUV_REJECTED" });
     expect(s.walletNgn).toBe(29500000);
@@ -169,17 +169,17 @@ describe("Startup Visa pitch (same paths as the Godot tests)", () => {
   });
 
   it("the arrogance trap plus inflated numbers fail the pitch", () => {
-    const s = play("STARTUP_VISA", ["simply superior", "Ten thousand", "event-driven", "pre-recorded walkthrough",
+    const s = play("STARTUP_VISA", ["simply superior", "Ten thousand", "event-driven", "pre-recorded walkthrough", "5% more equity",
       "Key-person clause", "Twelve months of runway", "FINTRAC"]);
     expect(s.outcome?.result).toBe("fail");
-    expect(s.desperation).toBe(30 + 15 + 10 + 20);
+    expect(s.desperation).toBe(30 + 15 + 10 + 6 + 20);
   });
 
   it("a live demo is a gamble; offering to buy the letter is the end", () => {
     const at = play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven"]);
     const live = presentChoices(DB, at).find((c) => c.label === "LIVE_DEMO")!;
     expect(live.odds).toBeGreaterThan(0.5);
-    expect(play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven", "pre-recorded walkthrough",
+    expect(play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven", "pre-recorded walkthrough", "5% more equity",
       "Key-person clause", "CAD 50,000 'fee'"]).outcome?.reason).toBe("PAY_TO_PLAY");
   });
 
@@ -1430,7 +1430,7 @@ describe("v0.16: playtest fixes", () => {
   });
 
   it("the Startup pitch ends on regulation, and a Lagos angel's money doesn't count", () => {
-    const at = play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven", "pre-recorded walkthrough",
+    const at = play("STARTUP_VISA", ["We don't compete with banks", "Four paying pilots", "event-driven", "pre-recorded walkthrough", "5% more equity",
       "Key-person clause", "Twelve months of runway"]);
     expect(at.currentSceneId).toBe("SUV_COMPLIANCE");
     const angel = DB.scenes.SUV_ROSS_MONEY.choices!.find((c) => c.text.includes("Lagos angel"))!;
@@ -1474,5 +1474,28 @@ describe("v0.17: right answers cost something", () => {
     expect(fillText(DB.scenes.FY_FAITH.title!, profileVars(masjid))).toBe("Every Jumu'ah.");
     const at = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days", "bridging program"]);
     expect(at.currentSceneId).toBe("FY_FAITH");
+  });
+});
+
+describe("callbacks: earlier choices come back", () => {
+  it("posting the boarding pass brings a gift-card 'IRCC' call in week one", () => {
+    const silence = { ...newRun(DB, "STUDY_PERMIT"), currentSceneId: "ST_SILENCE" };
+    const posted = play2(silence, ["post the boarding pass", "New parka"]);
+    expect(posted.currentSceneId).toBe("ST_SCAM_CALL");
+    expect(play2(posted, ["Hang up"]).currentSceneId).toBe("ST_HOUSING");
+    expect(play2(silence, ["close family only", "New parka"]).currentSceneId).toBe("ST_HOUSING");
+  });
+
+  it("warning the family about the LMIA seller unlocks a blessing later", () => {
+    const seller = takeAction(DB, landed(), "lmia_whatsapp", [0.99, 0]).state;
+    const warned = play2(seller, ["Report the ad"]);
+    expect(warned.routeStats.warnedFamily).toBe(1);
+    expect(DB.routes.TOURIST_GAMBLE.blessings!.items.find((b) => b.id === "warned")?.when).toEqual({ warnedFamily: [">=", 1] });
+  });
+
+  it("Matron's signed reference makes the Dubai signature likelier", () => {
+    const at = { ...newRun(DB, "EXPRESS_ENTRY"), currentSceneId: "EE_REFERENCE" };
+    const odds = (s: GameState) => presentChoices(DB, s)[0].odds!;
+    expect(odds({ ...at, routeStats: { ...at.routeStats, nursePath: 2 } })).toBeGreaterThan(odds(at));
   });
 });
