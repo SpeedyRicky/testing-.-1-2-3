@@ -22,6 +22,7 @@ import { faceFor } from "./face";
 import { careerVars, trackFor } from "./careers";
 import { GROOVES, STYLES, STYLE_IDS, grooveFor, moodFor, type Mood } from "./music";
 import { makeSave, readSave } from "./save";
+import { LANDINGS, earnedBy, eligibility } from "./eligibility";
 import { PLAYABLE_ROUTES, simulate } from "./simulate";
 import {
   ACHIEVEMENTS, DAILY_MODIFIERS, NEW_META, applyBundle, newAchievements, bundleFor, buy, dailyFor, grant, runAward, titleFor, toggleEquip, touchStreak,
@@ -955,7 +956,9 @@ describe("family in Canada", () => {
 function profileWithTruth(t: number): PlayerProfile {
   for (let i = 0; i < 500; i++) {
     const p = { version: 1, username: `Tobi${i}`, avatar: DEFAULT_AVATAR, role: "worker", age: 30, stateCode: "LA",
-      worker: { occupation: "logistics", years: 4, qualification: "bachelors", salary: "150k-400k" } } as PlayerProfile;
+      worker: { occupation: "logistics", years: 4, qualification: "bachelors", salary: "150k-400k" },
+      // Enough money to show for a visitor visa, so the Tourist Gamble is open.
+      situation: { marital: "single", savings: "1m-5m", startup: false } } as PlayerProfile;
     if (kwTruthOf(p) === t) return p;
   }
   throw new Error("no profile with that backstory");
@@ -1725,5 +1728,97 @@ describe("Gist feed", () => {
     expect(today.filter((p) => p.routes?.includes("TOURIST_GAMBLE")).length).toBeGreaterThanOrEqual(3);
     expect(gistFor("TOURIST_GAMBLE", 101).map((p) => p.id)).not.toEqual(today.map((p) => p.id));
     expect(new Set(today.map((p) => p.id)).size).toBe(6);
+  });
+});
+
+describe("v0.25: pathways follow the profile", () => {
+  const base = { version: 1, username: "Ada", avatar: DEFAULT_AVATAR, age: 28, stateCode: "LA" } as const;
+  const who = (extra: Partial<PlayerProfile>): PlayerProfile => ({ ...base, role: "worker",
+    worker: { occupation: "accountant", years: 3, qualification: "bachelors", salary: "150k-400k" }, ...extra } as PlayerProfile);
+  const open = (p: PlayerProfile | null, unlocked: RouteId[] = []) =>
+    (Object.entries(eligibility(p, unlocked)) as [RouteId, { ok: boolean }][]).filter(([, a]) => a.ok).map(([r]) => r).sort();
+
+  it("no profile opens everything (previews and tests)", () => {
+    expect(open(null)).toHaveLength(PLAYABLE_ROUTES.length);
+  });
+
+  it("a fresh student with little money gets only Nigeria and the Student route", () => {
+    const s = who({ role: "student", worker: undefined, age: 20,
+      student: { institution: "university", course: "Economics", level: "300", cgpa: "2-1" } });
+    expect(open(s)).toEqual(["NIGERIA_LIFE", "STUDY_PERMIT"]);
+    expect(eligibility(s).EXPRESS_ENTRY.viaPlay).toMatch(/Student route/);
+  });
+
+  it("an accountant with a degree and 3 years opens Express Entry and PNP, not Trades, Startup or Split Family", () => {
+    const o = open(who({}));
+    expect(o).toEqual(expect.arrayContaining(["EXPRESS_ENTRY", "PNP_RURAL", "STUDY_PERMIT"]));
+    for (const r of ["TARGETED_TRADE", "STARTUP_VISA", "SPLIT_FAMILY", "TOURIST_GAMBLE", "FIRST_YEAR", "CAREGIVER_LMIA"]) expect(o).not.toContain(r);
+  });
+
+  it("each situation answer opens its own route", () => {
+    const sit = (x: Partial<NonNullable<PlayerProfile["situation"]>>) => who({ situation: { marital: "single", savings: "under-1m", startup: false, ...x } });
+    expect(open(sit({ marital: "married-kids" }))).toContain("SPLIT_FAMILY");
+    expect(open(sit({ startup: true }))).toContain("STARTUP_VISA");
+    expect(open(sit({ savings: "5m-20m" }))).toContain("TOURIST_GAMBLE");
+    expect(open(who({ worker: { occupation: "accountant", years: 3, qualification: "bachelors", salary: "over-1m" } }))).toContain("TOURIST_GAMBLE");
+  });
+
+  it("trades need a trade job and two years; SSCE or no work keeps Express Entry shut", () => {
+    const trade = (occupation: string, years: number) => who({ worker: { occupation, years, qualification: "ond", salary: "150k-400k" } });
+    expect(open(trade("welder", 2))).toContain("TARGETED_TRADE");
+    expect(eligibility(trade("plumber", 1)).TARGETED_TRADE.reason).toMatch(/you have 1/);
+    expect(open(trade("software", 5))).not.toContain("TARGETED_TRADE");
+    expect(open(who({ worker: { occupation: "banker", years: 4, qualification: "ssce", salary: "150k-400k" } }))).not.toContain("EXPRESS_ENTRY");
+    expect(open(who({ worker: { occupation: "banker", years: 0, qualification: "masters", salary: "150k-400k" } }))).not.toContain("EXPRESS_ENTRY");
+  });
+
+  it("other trades get their own words, and count for the trades draw", () => {
+    const v = profileVars(who({ worker: { occupation: "welder", years: 6, qualification: "ond", salary: "150k-400k" } }));
+    expect(v.gigWork).toMatch(/weld/);
+    expect(v.track).toBe("trades");
+    expect(initialState(DB, who({ worker: { occupation: "plumber", years: 3, qualification: "ond", salary: "150k-400k" } })).runs.EXPRESS_ENTRY!.routeStats.eeCategory).toBe(3);
+  });
+
+  it("the declared savings band sets the starting money", () => {
+    const rich = deriveGameProfile(who({ situation: { marital: "single", savings: "5m-20m", startup: false } }));
+    expect(rich.savingsNgn).toBe(10000000);
+  });
+
+  it("locked routes can't be selected, played as the daily, or loaded", () => {
+    let app = reducer(initialState(), { type: "SET_PROFILE", profile: who({}) });
+    app = reducer(app, { type: "SELECT_ROUTE", route: "SPLIT_FAMILY" });
+    expect(app.activeRoute).toBe("NIGERIA_LIFE");
+    app = reducer(app, { type: "START_DAILY", route: "STARTUP_VISA", bundle: { effects: {} } });
+    expect(app.activeRoute).toBe("NIGERIA_LIFE");
+    app = reducer(app, { type: "SELECT_ROUTE", route: "EXPRESS_ENTRY" });
+    expect(app.activeRoute).toBe("EXPRESS_ENTRY");
+  });
+
+  it("winning opens routes the profile alone can't: landings open Year One, the PGWP opens Express Entry", () => {
+    for (const id of LANDINGS) expect(DB.scenes[id]?.outcome?.result, id).toBe("win");
+    const student = who({ role: "student", worker: undefined, age: 22,
+      student: { institution: "university", course: "Economics", level: "graduated", cgpa: "2-1" } });
+    let app = reducer(initialState(), { type: "SET_PROFILE", profile: student });
+    expect(app.unlocked).toEqual([]);
+    // Jump the student run to a PGWP win, as if played.
+    const won = { ...app.runs.STUDY_PERMIT!, currentSceneId: "ST_PGWP_MASTERS", outcome: DB.scenes.ST_PGWP_MASTERS.outcome! };
+    expect(earnedBy(DB, won).sort()).toEqual(["EXPRESS_ENTRY", "FIRST_YEAR"]);
+    app = reducer(app, { type: "SELECT_ROUTE", route: "STUDY_PERMIT" });
+    app = reducer(app, { type: "LOAD_RUN", run: won });
+    expect(app.unlocked.sort()).toEqual(["EXPRESS_ENTRY", "FIRST_YEAR"]);
+    expect(eligibility(student, app.unlocked).EXPRESS_ENTRY).toMatchObject({ ok: true, earned: true });
+    // Kept through the save, and through editing the profile.
+    const saved = readSave(DB, JSON.parse(JSON.stringify(makeSave(DB, app))), student.username);
+    expect(saved?.unlocked.sort()).toEqual(["EXPRESS_ENTRY", "FIRST_YEAR"]);
+    app = reducer(app, { type: "SET_PROFILE", profile: { ...student, age: 23 } });
+    expect(app.unlocked.sort()).toEqual(["EXPRESS_ENTRY", "FIRST_YEAR"]);
+    app = reducer(app, { type: "SET_PROFILE", profile: { ...student, username: "Someone" } });
+    expect(app.unlocked).toEqual([]);
+  });
+
+  it("a save restored for a route the edited profile no longer allows falls back to Nigeria", () => {
+    let app = reducer(initialState(), { type: "SET_PROFILE", profile: who({}) });
+    app = reducer(app, { type: "RESTORE_RUNS", activeRoute: "SPLIT_FAMILY", runs: {} });
+    expect(app.activeRoute).toBe("NIGERIA_LIFE");
   });
 });

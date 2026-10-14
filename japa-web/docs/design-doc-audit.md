@@ -71,3 +71,12 @@ out on purpose (reason given).
 | Downloadable project zip | **Built** | `deliverables/japa-game-v0.24.zip` |
 | Android memory bug-hunting strategy | **Adapted** | `docs/ANDROID.md`, rewritten for a WebView app on Tecno/Infinix/itel phones |
 | Custom UI button themes | **Already in** | Tailwind theme with route colours; not reworked this round |
+
+## Follow-up request: pathways depend on the profile (v0.25)
+
+| Idea | Status | Where / notes |
+|---|---|---|
+| Sign-up asks questions that decide your pathways | **Built** | New "Your situation" step (marital status, money you could show, startup) plus trade jobs (plumber, welder, carpenter, mechanic) |
+| Only show what the player qualifies for | **Built / Adapted** | `game/eligibility.ts`. Locked routes stay visible with a padlock and the exact reason, rather than hidden, so players learn who each route is for and what to change |
+| Real criteria | **Adapted** | Simplified: FSW 1 year skilled work, FST 2 years in a trade, visitor visa funds and ties, spousal route for married players. Not an eligibility check; the modal points to IRCC's "Come to Canada" tool |
+| Progression unlocks | **Built** | Student PGWP win opens Express Entry; any landing opens Year One; Tourist win opens the LMIA interview |

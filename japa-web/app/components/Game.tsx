@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useReducer, useRef, useState } from "react";
-import { LogOut, Pencil, Plane, RotateCcw } from "lucide-react";
+import { Lock, LogOut, Map as MapIcon, Pencil, Plane, RotateCcw } from "lucide-react";
 import { DB } from "@/game/engine";
 import { activeRun, initialState, reducer } from "@/game/machine";
 import type { RouteId } from "@/game/types";
@@ -26,6 +26,8 @@ import { Onboarding } from "./Onboarding";
 import { PlayerProvider } from "./Player";
 import type { PlayerProfile } from "@/game/profile";
 import { makeSave, readSave } from "@/game/save";
+import { eligibility } from "@/game/eligibility";
+import { LockedModal, PLAYABLE_COUNT, PathwaysProvider, openCount } from "./Pathways";
 
 const PROFILE_KEY = "japa.profile.v1";
 const SAVE_KEY = "japa.save.v1";
@@ -133,6 +135,7 @@ export function Game() {
         <LagosBackdrop />
         <Onboarding
           initial={screen === "edit" ? state.profile : null}
+          unlocked={screen === "edit" ? state.unlocked : []}
           onDone={finish}
           onCancel={screen === "edit" ? () => setScreen("playing") : undefined}
         />
@@ -176,8 +179,11 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
     play(lost ? "fail" : "win");
   }, [ending, lost, playing, play]);
   const profile = state.profile;
+  const access = eligibility(profile, state.unlocked);
+  const [why, setWhy] = useState<RouteId | "all" | null>(null);
 
   return (
+    <PathwaysProvider value={access}>
     <YouFaceProvider value={faceFor(run)}>
     <div className="relative min-h-screen w-full">
       {/* Route backdrop sits behind everything, outside main's stacking context. */}
@@ -196,6 +202,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
             {ROUTES.map((r) => {
               const route = DB.routes[r];
               const soon = route.status !== "playable";
+              const locked = !soon && !access[r].ok;
               const active = state.activeRoute === r;
               return (
                 <button
@@ -203,11 +210,13 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
                   role="tab"
                   aria-selected={active}
                   disabled={soon}
-                  title={soon ? `${route.title}: coming soon` : route.title}
-                  onClick={() => dispatch({ type: "SELECT_ROUTE", route: r })}
+                  data-locked={locked ? "yes" : undefined}
+                  title={soon ? `${route.title}: coming soon` : locked ? `${route.title}: locked. ${access[r].reason}` : route.title}
+                  onClick={() => (locked ? setWhy(r) : dispatch({ type: "SELECT_ROUTE", route: r }))}
                   className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
-                    active ? "bg-white/10 text-white shadow-sm" : soon ? "cursor-not-allowed text-zinc-600" : "text-zinc-400 hover:text-zinc-200"}`}
+                    active ? "bg-white/10 text-white shadow-sm" : soon ? "cursor-not-allowed text-zinc-600" : locked ? "text-zinc-600 hover:text-zinc-400" : "text-zinc-400 hover:text-zinc-200"}`}
                 >
+                  {locked && <Lock className="h-3 w-3" aria-label="Locked" />}
                   {route.short}
                   {soon && <span className="rounded bg-white/5 px-1 py-px text-[9px] uppercase tracking-wider text-zinc-500">Soon</span>}
                 </button>
@@ -235,6 +244,12 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
             ) : null}
           </div>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
+          {profile ? (
+            <button type="button" onClick={() => setWhy("all")} title="Which pathways your profile qualifies for"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:-translate-y-0.5 hover:border-amber-300/60 hover:text-white">
+              <MapIcon className="h-3.5 w-3.5 text-emerald-300" /> Pathways {openCount(access)}/{PLAYABLE_COUNT}
+            </button>
+          ) : null}
           <InstallButton />
           <LanguageToggle />
           <HelpButton onClick={() => setHelpOpen(true)} />
@@ -270,7 +285,9 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
         cutoffs change often, so check IRCC (canada.ca) before you act. We count plays anonymously (routes and endings,
         never your name or profile) to improve the game.
       </footer>
+      {why ? <LockedModal route={why} access={access} onClose={() => setWhy(null)} onEdit={() => { setWhy(null); onEdit(); }} /> : null}
     </div>
     </YouFaceProvider>
+    </PathwaysProvider>
   );
 }

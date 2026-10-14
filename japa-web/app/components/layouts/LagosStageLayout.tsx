@@ -10,6 +10,7 @@ import { describeChoice } from "@/game/cinematic";
 import { useCinematic } from "../Cinematic";
 import { useChoiceKeys } from "../useChoiceKeys";
 import { usePlayer } from "../Player";
+import { usePathways } from "../Pathways";
 import { chance, rolls as rollDice } from "@/game/rng";
 import type { BarSpec, GameState, RouteId, Transit } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
@@ -268,6 +269,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
   const bestStars = useBestStars(run.activeRoute);
   useChoiceKeys(choices, pick, !moving && !run.popup && !playing && !run.outcome);
   const { t } = usePlayer();
+  const pathways = usePathways();
 
   /** Choice -> cutscene -> travel ribbon -> next scene. The meters update at once underneath. */
   function pick(index: number) {
@@ -293,7 +295,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
   }
 
   const rank = ended ? rankFor(DB, run) : null;
-  const nextRoutes = (cfg.nextRoutes ?? []).filter((r) => DB.routes[r]?.status === "playable");
+  const nextRoutes = (cfg.nextRoutes ?? []).filter((r) => DB.routes[r]?.status === "playable" && (pathways?.[r].ok ?? true));
   // A scene that unlocks a route carries the player's profile into it; otherwise offer fresh starts.
   const unlock = ended && scene?.unlocksRoute && run.outcome?.result !== "fail" ? scene.unlocksRoute : undefined;
   const next = unlock

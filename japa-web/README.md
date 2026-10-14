@@ -192,6 +192,32 @@ What changed:
 - **Feel:** characters have faces (brows, blinking, a mouth that follows your stats), stat bars flash and pop on
   change and pulse **Danger** near a collapse line, and the sound chip is a mixer.
 
+## Pathways follow your profile (v0.25)
+
+Sign-up asks the questions that decide which routes you can play (a new **Your situation** step: marital status,
+money you could show, whether you're building a startup; plus your job, years and qualification from before).
+`game/eligibility.ts` turns the profile into open / locked for every route, using simplified versions of who each real
+pathway is for:
+
+| Route | Opens when |
+|---|---|
+| Nigeria | Always |
+| Student | Age 17+ |
+| Express Entry | Worker with 1+ year of skilled work and a post-secondary credential; or earned by a PGWP win on the Student route |
+| Startup pitch | You're building a startup (or run a small business) |
+| Tourist Gamble | 18+ with ₦1m+ to show, or a ₦400k+/month income |
+| LMIA interview | Earned by winning the Tourist Gamble |
+| Year One | Earned by any win that lands you in Canada with status |
+| Pilot & Passenger | Married |
+| Targeted Trade | Electrician, plumber, welder, carpenter or mechanic with 2+ years |
+| PNP Rural | Worker with 1+ year of experience |
+
+Locked tabs show a padlock; tapping one explains what's missing, how to earn it by playing (if you can), and offers
+**Update my profile**. A header chip shows "Pathways x/10". The daily challenge and the "next route" buttons only offer
+open routes, and the state machine refuses locked routes. Earned routes are saved, survive profile edits by the same
+player, and are rebuilt from finished runs in older saves. The savings answer now also sets your starting money.
+Plumbers, welders, carpenters and mechanics are new jobs with their own scene wording.
+
 ## From the design docs (v0.22–v0.24)
 Both design documents were checked line by line; `docs/design-doc-audit.md` lists every idea as built, adapted,
 corrected or left out (with reasons). Highlights:

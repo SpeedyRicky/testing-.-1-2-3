@@ -31,6 +31,18 @@ export type SalaryBand = "under-150k" | "150k-400k" | "400k-1m" | "over-1m";
 export interface StudentDetails { institution: Institution; course: string; level: Level; cgpa: Cgpa }
 export interface WorkerDetails { occupation: string; years: number; qualification: Qualification; salary: SalaryBand }
 
+export type Marital = "single" | "married" | "married-kids";
+export type SavingsBand = "under-1m" | "1m-5m" | "5m-20m" | "over-20m";
+
+/** The questions that decide which pathways are open (see game/eligibility.ts). */
+export interface Situation {
+  marital: Marital;
+  /** Money the player could show, including family support they can document. */
+  savings: SavingsBand;
+  /** Runs, or is building, an innovative business with co-founders. */
+  startup: boolean;
+}
+
 export interface PlayerProfile {
   version: 1;
   username: string;
@@ -42,6 +54,8 @@ export interface PlayerProfile {
   worker?: WorkerDetails;
   /** The relative in Canada; profiles saved before it existed get one from their username. */
   family?: Relative;
+  /** Missing on profiles saved before v0.25; those get defaults from `situationOf`. */
+  situation?: Situation;
 }
 
 // --- Options shown in the sign-up flow -----------------------------------------------
@@ -89,6 +103,10 @@ export const OCCUPATIONS: { id: string; label: string; article: string }[] = [
   { id: "engineer", label: "engineer", article: "an" },
   { id: "teacher", label: "teacher", article: "a" },
   { id: "electrician", label: "electrician", article: "an" },
+  { id: "plumber", label: "plumber", article: "a" },
+  { id: "welder", label: "welder", article: "a" },
+  { id: "carpenter", label: "carpenter", article: "a" },
+  { id: "mechanic", label: "auto mechanic", article: "an" },
   { id: "marketing", label: "sales and marketing executive", article: "a" },
   { id: "civil-servant", label: "civil servant", article: "a" },
   { id: "entrepreneur", label: "small business owner", article: "a" },
@@ -111,6 +129,26 @@ export const SALARY_BANDS: { id: SalaryBand; label: string; monthly: number }[] 
   { id: "400k-1m", label: "₦400k – ₦1m", monthly: 700000 },
   { id: "over-1m", label: "Over ₦1m", monthly: 1500000 },
 ];
+
+export const MARITAL: { id: Marital; label: string }[] = [
+  { id: "single", label: "Single" }, { id: "married", label: "Married" }, { id: "married-kids", label: "Married with kids" },
+];
+
+export const SAVINGS_BANDS: { id: SavingsBand; label: string; naira: number }[] = [
+  { id: "under-1m", label: "Under ₦1m", naira: 600000 },
+  { id: "1m-5m", label: "₦1m – ₦5m", naira: 2500000 },
+  { id: "5m-20m", label: "₦5m – ₦20m", naira: 10000000 },
+  { id: "over-20m", label: "Over ₦20m", naira: 30000000 },
+];
+
+/** Skilled trades with a Red Seal or provincial certificate in Canada. */
+export const TRADE_JOBS: ReadonlySet<string> = new Set(["electrician", "plumber", "welder", "carpenter", "mechanic"]);
+
+/** The player's situation; older profiles get a guess from what they already told us. */
+export function situationOf(p: Pick<PlayerProfile, "situation" | "role" | "worker" | "student">): Situation {
+  if (p.situation) return p.situation;
+  return { marital: "single", savings: "under-1m", startup: p.role === "worker" && p.worker?.occupation === "entrepreneur" };
+}
 
 export const CGPAS: { id: Cgpa; label: string; standing: number }[] = [
   { id: "first", label: "First class", standing: 85 },
@@ -149,6 +187,9 @@ const QUAL_PHRASE: Record<Qualification, string> = {
   masters: "a master's degree", phd: "a PhD",
 };
 
+/** What the player said they could raise, when they answered the question. */
+const declaredSavings = (p: PlayerProfile) => (p.situation ? SAVINGS_BANDS.find((b) => b.id === p.situation!.savings)?.naira : undefined);
+
 export function deriveGameProfile(p: PlayerProfile): GameProfile {
   if (p.role === "student" && p.student) {
     const s = p.student;
@@ -156,7 +197,7 @@ export function deriveGameProfile(p: PlayerProfile): GameProfile {
     // HND and NCE holders are usually assessed as diplomas rather than degrees.
     const level = !graduated ? 1 : s.institution === "university" ? 4 : 3;
     const credential = s.institution === "university" ? "a B.Sc." : s.institution === "polytechnic" ? "an HND" : "an NCE";
-    const savingsNgn = graduated ? 600000 : 400000;
+    const savingsNgn = declaredSavings(p) ?? (graduated ? 600000 : 400000);
     return {
       educationLevel: level,
       hasDegree: level >= 4,
@@ -174,7 +215,7 @@ export function deriveGameProfile(p: PlayerProfile): GameProfile {
   const occ = OCCUPATIONS.find((o) => o.id === w.occupation) ?? OCCUPATIONS[OCCUPATIONS.length - 1];
   const monthly = SALARY_BANDS.find((b) => b.id === w.salary)?.monthly ?? 275000;
   // Rough savings: a few months of pay plus a little more for each year worked.
-  const savingsNgn = Math.round(monthly * (4 + Math.min(w.years, 10) * 1.2));
+  const savingsNgn = declaredSavings(p) ?? Math.round(monthly * (4 + Math.min(w.years, 10) * 1.2));
   const years = Math.max(0, Math.round(w.years));
   return {
     educationLevel: QUAL_LEVEL[w.qualification],
@@ -217,7 +258,8 @@ export const CONFLICT_STATES: ReadonlySet<string> = new Set(["BO", "YO", "AD", "
 
 /** Express Entry 2026 category for the player's job: 1 healthcare, 2 STEM, 3 trades, 4 education. */
 const EE_CATEGORY: Record<string, number> = {
-  nurse: 1, doctor: 1, pharmacist: 1, software: 2, data: 2, engineer: 2, electrician: 3, teacher: 4,
+  nurse: 1, doctor: 1, pharmacist: 1, software: 2, data: 2, engineer: 2, electrician: 3,
+  plumber: 3, welder: 3, carpenter: 3, mechanic: 3, teacher: 4,
 };
 
 /** Fields with a licence wall in Canada. */
@@ -267,7 +309,7 @@ export function routePatches(p: PlayerProfile): Partial<Record<RouteId, Partial<
 export function profileVars(p: PlayerProfile | null): Record<string, string> {
   const home = homeFor(p);
   const where = placeVars(placeFor(p?.stateCode ?? "LA"));
-  const career = careerVars(trackFor(p?.role, p?.worker?.occupation, p?.student?.course));
+  const career = careerVars(trackFor(p?.role, p?.worker?.occupation, p?.student?.course), p?.role === "worker" ? p.worker?.occupation : undefined);
   const place = {
     ...where, ...relativeVars(familyFor(p)), ...homeVars(home.heritage, home.faith),
     kwStory: fillText(kwStory(kwTruthOf(p)), where),

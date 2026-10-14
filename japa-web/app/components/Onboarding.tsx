@@ -7,18 +7,22 @@ import { STATES, placeFor, placeVars, transportFor } from "@/game/nigeria";
 import {
   BODY_SIZES, CGPAS, COURSES, DEFAULT_AVATAR, HAIRSTYLES, HAIR_COLORS, HEADWEAR, LEVELS, OCCUPATIONS, OUTFITS,
   OUTFIT_COLORS, QUALIFICATIONS, SALARY_BANDS, SKIN_TONES, deriveGameProfile, familyFor, profileProblem, usernameProblem,
-  type Avatar, type PlayerProfile, type StudentDetails, type WorkerDetails,
+  MARITAL, SAVINGS_BANDS, TRADE_JOBS, situationOf,
+  type Avatar, type PlayerProfile, type Situation, type StudentDetails, type WorkerDetails,
 } from "@/game/profile";
 import {
   HERITAGES, RELATIONS, detectHeritage, isSibling, makeRelative, provinceFor, relativeVars,
   type Heritage, type Relation, type Relative,
 } from "@/game/family";
 import { pickFrom, random } from "@/game/rng";
+import type { RouteId } from "@/game/types";
 import { LagosStage } from "./LagosStage";
 import { Person } from "./Person";
 import { PlayerProvider } from "./Player";
+import { PathwayList, PLAYABLE_COUNT, openCount } from "./Pathways";
+import { eligibility } from "@/game/eligibility";
 
-const STEPS = ["Sign in", "Avatar", "Who you are", "Your state", "Your profile"];
+const STEPS = ["Sign in", "Avatar", "Who you are", "Your situation", "Your state", "Your profile"];
 
 const DEFAULT_STUDENT: StudentDetails = { institution: "university", course: "Computer Science", level: "300", cgpa: "2-1" };
 const DEFAULT_WORKER: WorkerDetails = { occupation: "software", years: 3, qualification: "bachelors", salary: "150k-400k" };
@@ -84,8 +88,10 @@ function AvatarStage({ avatar, name, pose = "wave" }: { avatar: Avatar; name: st
 
 // --- the flow ---------------------------------------------------------------------
 
-export function Onboarding({ initial, onDone, onCancel }: {
+export function Onboarding({ initial, unlocked = [], onDone, onCancel }: {
   initial: PlayerProfile | null;
+  /** Routes the player already earned in play (they stay open whatever the profile says). */
+  unlocked?: RouteId[];
   onDone: (p: PlayerProfile) => void;
   onCancel?: () => void;
 }) {
@@ -98,18 +104,20 @@ export function Onboarding({ initial, onDone, onCancel }: {
   const [worker, setWorker] = useState<WorkerDetails>(initial?.worker ?? DEFAULT_WORKER);
   const [stateCode, setStateCode] = useState(initial?.stateCode ?? "LA");
   const [touched, setTouched] = useState(false);
+  const [situation, setSituation] = useState<Situation>(() => situationOf(initial ?? { role: "student" }));
+  const setSit = <K extends keyof Situation>(k: K, v: Situation[K]) => setSituation((x) => ({ ...x, [k]: v }));
   // null = follow the username and state; set once the player picks or shuffles.
   const [family, setFamily] = useState<Relative | null>(initial?.family ?? null);
   const relative = family ?? familyFor({ username: username.trim() || "Tolu", stateCode });
 
   const draft: PlayerProfile = useMemo(() => ({
-    version: 1, username: username.trim(), avatar, role, age, stateCode, family: relative,
+    version: 1, username: username.trim(), avatar, role, age, stateCode, family: relative, situation,
     ...(role === "student" ? { student } : { worker }),
-  }), [username, avatar, role, age, stateCode, student, worker, relative]);
+  }), [username, avatar, role, age, stateCode, student, worker, relative, situation]);
 
   const nameError = usernameProblem(username);
   const ageError = !age || age < 16 || age > 60 ? "Enter an age between 16 and 60." : null;
-  const stepError = step === 0 ? nameError : step === 2 ? ageError : step === 4 ? profileProblem(draft) : null;
+  const stepError = step === 0 ? nameError : step === 2 ? ageError : step === 5 ? profileProblem(draft) : null;
   const set = <K extends keyof Avatar>(k: K, v: Avatar[K]) => setAvatar((a) => ({ ...a, [k]: v }));
 
   function next() {
@@ -146,8 +154,10 @@ export function Onboarding({ initial, onDone, onCancel }: {
     ageYears: age, educationLevel: game.educationLevel, ecaComplete: 1, clbFirst: 9, foreignWorkYears: game.foreignWorkYears,
     siblingInCanada: sibling,
   }).total : 0;
-  const suggested = role === "student" && !game.hasDegree ? "Student pathway"
-    : game.foreignWorkYears >= 1 && game.educationLevel >= 3 ? "Express Entry" : "Student pathway";
+  const access = eligibility(draft, unlocked);
+  // The best fit among the routes this profile opens.
+  const fit = (["TARGETED_TRADE", "EXPRESS_ENTRY", "STUDY_PERMIT", "NIGERIA_LIFE"] as RouteId[]).find((r) => access[r].ok) ?? "NIGERIA_LIFE";
+  const suggested = DB.routes[fit].title;
 
   return (
     <PlayerProvider profile={draft}>
@@ -162,7 +172,7 @@ export function Onboarding({ initial, onDone, onCancel }: {
         </div>
 
         {/* Stepper */}
-        <ol className="mb-6 grid grid-cols-5 gap-1.5" aria-label="Sign-up steps">
+        <ol className="mb-6 grid grid-cols-6 gap-1.5" aria-label="Sign-up steps">
           {STEPS.map((s, i) => (
             <li key={s} className="min-w-0">
               <div className={`h-1.5 rounded-full transition-colors ${i <= step ? "bg-amber-300" : "bg-white/10"}`} />
@@ -272,6 +282,46 @@ export function Onboarding({ initial, onDone, onCancel }: {
           )}
 
           {step === 3 && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-xl font-black text-white">Your situation</h2>
+                <p className="mt-1 text-sm leading-6 text-zinc-400">
+                  These answers decide which pathways you can play. Each real route is built for a certain kind of person:
+                  the game only opens the ones your profile could actually use.
+                </p>
+              </div>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field label="Marital status" hint="Opens Pilot & Passenger">
+                  <Chips name="Marital status" options={MARITAL} value={situation.marital} onChange={(v) => setSit("marital", v)} />
+                </Field>
+                <Field label="Money you could show" hint="Savings + documented family support">
+                  <Chips name="Money you could show" options={SAVINGS_BANDS} value={situation.savings} onChange={(v) => setSit("savings", v)} />
+                </Field>
+                <Field label="Are you building a startup?" hint="Opens the Startup pitch">
+                  <Chips name="Startup" value={situation.startup ? "yes" : "no"} onChange={(v) => setSit("startup", v === "yes")}
+                    options={[{ id: "no", label: "No" }, { id: "yes", label: "Yes, an innovative business with co-founders" }]} />
+                </Field>
+                {role === "worker" ? (
+                  <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-zinc-300">
+                    Job: <b className="text-white">{OCCUPATIONS.find((o) => o.id === worker.occupation)?.label}</b>, {worker.years} yr{worker.years === 1 ? "" : "s"}.
+                    {TRADE_JOBS.has(worker.occupation) ? " Skilled trade: Targeted Trade opens at 2 years." : " Electricians, plumbers, welders, carpenters and mechanics also get the Trades route."}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-zinc-300">
+                    Students start with Nigeria and the Student route. Graduate in Canada to unlock Express Entry.
+                  </div>
+                )}
+              </div>
+              <section aria-labelledby="open-title" className="rounded-2xl border border-emerald-300/20 bg-emerald-300/5 p-4">
+                <h3 id="open-title" className="text-sm font-black text-white">
+                  {openCount(access)} of {PLAYABLE_COUNT} pathways open for you
+                </h3>
+                <div className="mt-3"><PathwayList access={access} compact /></div>
+              </section>
+            </div>
+          )}
+
+          {step === 4 && (
             <div className="space-y-5">
               <Field label="Which state are you playing from?">
                 <select id="state" className={inputCls} value={stateCode} onChange={(e) => setStateCode(e.target.value)}>
@@ -323,7 +373,7 @@ export function Onboarding({ initial, onDone, onCancel }: {
             </div>
           )}
 
-          {step === 4 && (
+          {step === 5 && (
             <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
               <div className="space-y-3">
                 <AvatarStage avatar={avatar} name={username.trim()} pose="cheer" />
@@ -350,6 +400,10 @@ export function Onboarding({ initial, onDone, onCancel }: {
                     </div>
                   ))}
                 </dl>
+                <p className="rounded-xl border border-emerald-300/25 bg-emerald-300/5 px-3 py-2.5 text-sm text-emerald-100/90">
+                  <b>{openCount(access)} of {PLAYABLE_COUNT} pathways</b> open for this profile. Locked ones show what&apos;s missing;
+                  some open when you win another route.
+                </p>
                 <p className="rounded-xl border border-amber-300/25 bg-amber-300/5 px-3 py-2.5 text-sm text-amber-100/90">
                   Suggested first route: <b>{suggested}</b>. Every route uses this profile: your age, education, work years and savings.
                 </p>

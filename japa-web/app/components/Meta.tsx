@@ -16,6 +16,7 @@ import { useCinematic } from "./Cinematic";
 import { foundCount, recordEnding } from "./Endings";
 import { threeStarCount } from "./Levels";
 import { usePlayer } from "./Player";
+import { usePathways } from "./Pathways";
 import { useSfxOnMount } from "./Sound";
 
 // --- store: one MetaState per player, plus the last award to show ---------------------------------
@@ -177,7 +178,9 @@ function Hub({ dispatch, run, onClose }: { dispatch: React.Dispatch<AppEvent>; r
   const { meta, update } = useMeta();
   const [tab, setTab] = useState<Tab>("daily");
   const day = today();
-  const daily = dailyFor(day, PLAYABLE);
+  // Today's challenge is picked from the pathways this player can open.
+  const pathways = usePathways();
+  const daily = dailyFor(day, PLAYABLE.filter((r) => pathways?.[r].ok ?? true));
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);

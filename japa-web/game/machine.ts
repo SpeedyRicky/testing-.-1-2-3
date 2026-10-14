@@ -5,6 +5,7 @@ import type { Effects, GameState, RouteId, RunMods, ScenarioDatabase, Toast } fr
 import { applyBundle } from "./meta";
 import { deriveGameProfile, familyFor, routePatches, type PlayerProfile } from "./profile";
 import { isSibling } from "./family";
+import { canPlay, earnedBy } from "./eligibility";
 
 export interface AppState {
   profile: PlayerProfile | null;
@@ -13,6 +14,8 @@ export interface AppState {
   toast: Toast | null;
   /** Equipped perks, applied to each new run. */
   bundle?: Bundle | null;
+  /** Routes opened by winning in play (e.g. Year One after landing), on top of what the profile allows. */
+  unlocked: RouteId[];
 }
 
 export type AppEvent =
@@ -29,7 +32,7 @@ export type AppEvent =
   /** Replay a level: restore the run as it was when the level started. */
   | { type: "LOAD_RUN"; run: GameState }
   /** Continue where the player left off (from a save). */
-  | { type: "RESTORE_RUNS"; activeRoute: RouteId; runs: Partial<Record<RouteId, GameState>> }
+  | { type: "RESTORE_RUNS"; activeRoute: RouteId; runs: Partial<Record<RouteId, GameState>>; unlocked?: RouteId[] }
   /** Equipped perks: applied to every run started from now on. */
   | { type: "SET_BUNDLE"; bundle: Bundle | null }
   /** Today's challenge: a fresh run of the route with the daily modifier on top of the perks. */
@@ -45,11 +48,14 @@ export function startRoute(db: ScenarioDatabase, route: RouteId, profile: Player
   return bundle ? applyBundle(run, bundle) : run;
 }
 
-export function initialState(db: ScenarioDatabase = DB, profile: PlayerProfile | null = null, bundle: Bundle | null = null): AppState {
+export function initialState(db: ScenarioDatabase = DB, profile: PlayerProfile | null = null, bundle: Bundle | null = null, unlocked: RouteId[] = []): AppState {
   const runs: Partial<Record<RouteId, GameState>> = {};
   for (const r of PLAYABLE) runs[r] = startRoute(db, r, profile, bundle);
-  return { profile, activeRoute: PLAYABLE[0], runs, toast: null, bundle };
+  return { profile, activeRoute: PLAYABLE[0], runs, toast: null, bundle, unlocked };
 }
+
+/** Can the player open this route now (profile plus wins)? */
+export const routeOpen = (state: AppState, route: RouteId) => canPlay(state.profile, state.unlocked ?? [], route);
 
 export function activeRun(state: AppState): GameState | undefined {
   return state.runs[state.activeRoute];
@@ -59,11 +65,21 @@ const withRun = (state: AppState, run: GameState): AppState =>
   run === state.runs[state.activeRoute] ? state : { ...state, runs: { ...state.runs, [state.activeRoute]: run } };
 
 export function makeReducer(db: ScenarioDatabase = DB) {
+  const step = makeStep(db);
+  // After every event, a finished run may have earned a new route.
   return function reducer(state: AppState, event: AppEvent): AppState {
+    const next = step(state, event);
+    const fresh = earnedBy(db, activeRun(next)).filter((r) => !(next.unlocked ?? []).includes(r));
+    return fresh.length ? { ...next, unlocked: [...(next.unlocked ?? []), ...fresh] } : next;
+  };
+}
+
+function makeStep(db: ScenarioDatabase) {
+  return function step(state: AppState, event: AppEvent): AppState {
     const run = activeRun(state);
     switch (event.type) {
       case "SELECT_ROUTE":
-        if (event.route === state.activeRoute || db.routes[event.route]?.status !== "playable") return state;
+        if (event.route === state.activeRoute || db.routes[event.route]?.status !== "playable" || !routeOpen(state, event.route)) return state;
         return { ...state, activeRoute: event.route, toast: null };
       case "CHOOSE":
         return run ? withRun(state, choose(db, run, event.index, event.rolls)) : state;
@@ -84,14 +100,23 @@ export function makeReducer(db: ScenarioDatabase = DB) {
       case "SET_BUNDLE":
         return { ...state, bundle: event.bundle };
       case "START_DAILY":
-        if (db.routes[event.route]?.status !== "playable") return state;
+        if (db.routes[event.route]?.status !== "playable" || !routeOpen(state, event.route)) return state;
         return { ...state, activeRoute: event.route, runs: { ...state.runs, [event.route]: startRoute(db, event.route, state.profile, event.bundle) }, toast: null };
-      case "SET_PROFILE":
-        return initialState(db, event.profile, state.bundle);
-      case "RESTORE_RUNS":
-        return { ...state, activeRoute: event.activeRoute, runs: { ...state.runs, ...event.runs }, toast: null };
+      case "SET_PROFILE": {
+        // Wins stay earned when the same player edits their profile; a new player starts with none.
+        const same = state.profile && event.profile && state.profile.username === event.profile.username;
+        return initialState(db, event.profile, state.bundle, same ? state.unlocked ?? [] : []);
+      }
+      case "RESTORE_RUNS": {
+        // Finished runs in the save count too (saves from before unlocks were stored).
+        const won = Object.values(event.runs).flatMap((r) => earnedBy(db, r));
+        const restored: AppState = { ...state, unlocked: [...new Set([...(state.unlocked ?? []), ...(event.unlocked ?? []), ...won])] };
+        // A route the edited profile no longer qualifies for can't be the one on screen.
+        const activeRoute = routeOpen(restored, event.activeRoute) ? event.activeRoute : PLAYABLE[0];
+        return { ...restored, activeRoute, runs: { ...state.runs, ...event.runs }, toast: null };
+      }
       case "LOAD_RUN":
-        if (!db.routes[event.run.activeRoute] || !db.scenes[event.run.currentSceneId]) return state;
+        if (!db.routes[event.run.activeRoute] || !db.scenes[event.run.currentSceneId] || !routeOpen(state, event.run.activeRoute)) return state;
         return { ...state, activeRoute: event.run.activeRoute, runs: { ...state.runs, [event.run.activeRoute]: event.run }, toast: null };
       case "DISMISS_TOAST":
         return state.toast ? { ...state, toast: null } : state;

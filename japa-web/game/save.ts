@@ -13,6 +13,8 @@ export interface SaveFile {
   runs: Partial<Record<RouteId, GameState>>;
   /** Checksum of the runs, so a half-written or hand-edited save is detected and ignored instead of crashing the game. */
   sum?: string;
+  /** Routes opened by wins (outside the checksum: losing it only re-locks routes until a finished run is replayed). */
+  unlocked?: RouteId[];
 }
 
 /** FNV-1a, 32-bit: a fast integrity check (not security: anything stored on the player's device can be edited). */
@@ -29,6 +31,7 @@ export function makeSave(db: ScenarioDatabase, state: AppState): SaveFile | null
   return {
     version: SAVE_VERSION, content: db.meta.version, username: state.profile.username,
     activeRoute: state.activeRoute, runs: state.runs, sum: sumOf(state.activeRoute, state.runs),
+    unlocked: state.unlocked ?? [],
   };
 }
 
@@ -40,7 +43,7 @@ function sane(run: GameState): boolean {
 }
 
 /** The runs from a save that still make sense with today's content; anything else starts fresh. */
-export function readSave(db: ScenarioDatabase, raw: unknown, username: string): { activeRoute: RouteId; runs: Partial<Record<RouteId, GameState>> } | null {
+export function readSave(db: ScenarioDatabase, raw: unknown, username: string): { activeRoute: RouteId; runs: Partial<Record<RouteId, GameState>>; unlocked: RouteId[] } | null {
   const s = raw as Partial<SaveFile> | null;
   if (!s || s.version !== SAVE_VERSION || s.username !== username || typeof s.runs !== "object" || !s.runs) return null;
   if (s.sum !== undefined && s.activeRoute && s.sum !== sumOf(s.activeRoute, s.runs)) return null;
@@ -54,5 +57,6 @@ export function readSave(db: ScenarioDatabase, raw: unknown, username: string): 
   }
   if (!Object.keys(runs).length) return null;
   const activeRoute = s.activeRoute && runs[s.activeRoute] ? s.activeRoute : (Object.keys(runs)[0] as RouteId);
-  return { activeRoute, runs };
+  const unlocked = Array.isArray(s.unlocked) ? s.unlocked.filter((r): r is RouteId => typeof r === "string" && db.routes[r as RouteId]?.status === "playable") : [];
+  return { activeRoute, runs, unlocked };
 }

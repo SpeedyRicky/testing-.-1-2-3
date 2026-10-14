@@ -5,7 +5,7 @@ export type Track = "default" | "tech" | "health" | "teach" | "eng" | "trades" |
 
 const BY_OCCUPATION: Record<string, Track> = {
   software: "tech", data: "tech", nurse: "health", doctor: "health", pharmacist: "health", teacher: "teach",
-  engineer: "eng", electrician: "trades", accountant: "business", banker: "business", logistics: "business",
+  engineer: "eng", electrician: "trades", plumber: "trades", welder: "trades", carpenter: "trades", mechanic: "trades", accountant: "business", banker: "business", logistics: "business",
   marketing: "business", "civil-servant": "business", entrepreneur: "business", other: "business",
 };
 
@@ -91,4 +91,37 @@ const WORDS: Record<Track, Words> = {
   },
 };
 
-export const careerVars = (t: Track): Record<string, string> => ({ ...WORDS[t], track: t });
+/** The electrician's words fit the trades track; other trades swap in their own tools and tickets. */
+const TRADE_WORDS: Record<string, Partial<Words>> = {
+  plumber: {
+    jobPlace: "the plumbing materials market",
+    jobListing: "A Calgary contractor wants a journeyperson plumber. You have years of fitting Lagos estates and no Canadian ticket",
+    interviewStory: "the burst riser you fixed in a six-storey block", interviewHook: "the burst-riser story",
+    gigWork: "You replumb a duplex bathroom in {gigArea} for cash",
+    diplomaProgram: "Plumbing Techniques diploma", canadaJob: "as a plumbing apprentice logging hours",
+  },
+  welder: {
+    jobPlace: "the welding yard",
+    jobListing: "An Edmonton fabrication shop wants a certified welder. You have years of pipe and gate work and no Canadian ticket",
+    interviewStory: "the pipeline joint that passed the X-ray test", interviewHook: "the X-ray story",
+    gigWork: "You weld a burglary-proof gate in {gigArea} for cash",
+    diplomaProgram: "Welding Techniques diploma", canadaJob: "as a welding apprentice logging hours",
+  },
+  carpenter: {
+    jobPlace: "the timber market",
+    jobListing: "A Winnipeg builder wants a journeyperson carpenter. You have years of roofing and formwork and no Canadian ticket",
+    interviewStory: "the roof you framed before the rains", interviewHook: "the roof story",
+    gigWork: "You hang doors and fit wardrobes in {gigArea} for cash",
+    diplomaProgram: "Carpentry and Renovation diploma", canadaJob: "as a carpentry apprentice logging hours",
+  },
+  mechanic: {
+    jobPlace: "the auto spare-parts market",
+    jobListing: "A Regina dealership wants an automotive service technician. You have years at a Lagos workshop and no Canadian ticket",
+    interviewStory: "the gearbox you rebuilt with no manual", interviewHook: "the gearbox story",
+    gigWork: "You fix a Corolla's AC in {gigArea} for cash",
+    diplomaProgram: "Automotive Service Technician diploma", canadaJob: "as an apprentice technician logging hours",
+  },
+};
+
+export const careerVars = (t: Track, occupation?: string): Record<string, string> =>
+  ({ ...WORDS[t], ...(t === "trades" && occupation ? TRADE_WORDS[occupation] : undefined), track: t });
