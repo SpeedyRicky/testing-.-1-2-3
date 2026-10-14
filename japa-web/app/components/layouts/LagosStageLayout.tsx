@@ -58,8 +58,14 @@ const BACKDROP: Record<string, string> = {
 
 const naira = (v: number) =>
   new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(v);
-const cad = (v: number) => `CAD $${Math.round(v).toLocaleString("en-CA")}`;
+const cad = (v: number) => `CAD ${Math.round(v).toLocaleString("en-CA")}`;
 const money = (spec: BarSpec, v: number) => (spec.format === "ngn" ? naira(v) : spec.format === "cad" ? cad(v) : null);
+/** Short money for the HUD so big balances fit a 360px phone: ₦1.8M, CAD 3.5k. */
+const compactMoney = (spec: BarSpec, v: number) => {
+  if (spec.format === "ngn") return Math.abs(v) >= 1_000_000 ? shortNaira(v) : naira(v);
+  if (spec.format === "cad") return Math.abs(v) >= 10_000 ? `CAD ${(v / 1000).toFixed(1)}k` : cad(v);
+  return null;
+};
 
 function valueOf(run: GameState, key: BarSpec["key"]): number {
   return key in run.routeStats ? run.routeStats[key as keyof GameState["routeStats"]] ?? 0 : (run[key as keyof GameState] as number);
@@ -74,7 +80,8 @@ function ChoiceTimer({ seconds, paused, onTimeout }: { seconds: number; paused: 
   useEffect(() => {
     if (paused) return;
     const id = window.setInterval(() => {
-      if (document.hidden) return;
+      // Pause while the tab is hidden or any window (tutorial, Gist, Hub, help) covers the question.
+      if (document.hidden || document.querySelector('[aria-modal="true"]')) return;
       setLeft((l) => Math.max(0, l - 1));
     }, 100);
     return () => window.clearInterval(id);
@@ -112,7 +119,7 @@ function HudMeter({ spec, value }: { spec: BarSpec; value: number }) {
   const theme = HUD[spec.key] ?? HUD.energy;
   const Icon = theme.icon;
   const pct = Math.max(0, Math.min(100, (value / (spec.max ?? 100)) * 100));
-  const shown = money(spec, value) ?? `${Math.round(value)}${spec.suffix ?? ""}`;
+  const shown = compactMoney(spec, value) ?? `${Math.round(value)}${spec.suffix ?? ""}`;
   // For invert meters (interference), a rise is bad news.
   const good = (delta.n > 0) !== !!spec.invert;
   const flash = delta.n === 0 ? "" : good ? "hud-flash-up" : "hud-flash-down";

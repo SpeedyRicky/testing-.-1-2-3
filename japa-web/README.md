@@ -10,7 +10,7 @@ Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · lucide-react.
 ```bash
 npm install
 npm run dev          # open http://localhost:3000 once the terminal says "Ready"
-npm test             # 178 engine tests, including seeded balance checks
+npm test             # 203 engine and stress tests, including seeded balance checks
 npm run simulate     # balance report: thousands of simulated playthroughs per route
 npm run lint
 npm run build
@@ -191,6 +191,22 @@ What changed:
   Entry letter later.
 - **Feel:** characters have faces (brows, blinking, a mouth that follows your stats), stat bars flash and pop on
   change and pulse **Danger** near a collapse line, and the sound chip is a mixer.
+
+## From the design docs (v0.22–v0.24)
+Both design documents were checked line by line; `docs/design-doc-audit.md` lists every idea as built, adapted,
+corrected or left out (with reasons). Highlights:
+- **Village People crises with choices** (trap `options`): devaluation, fuel surge, freeze-thaw, black tax, donors,
+  SOWP backlog, P.A. Day. `resolvePopup` applies the choice and shows what happened.
+- **Rapid-fire scenes** (`timer` on a scene): answer in time or freeze. The Student file-review boss uses it, and the
+  timer pauses while any window covers the question.
+- **New scenes:** the Agent Room (Alhaji), sneaking out for biometrics, passport touts, Jiji fake alert, family
+  meeting, crowdfund, FX volatility and loan apps, the scholarship branch, Mr. Henderson's landlord screening.
+- **New routes:** Targeted Trade, PNP Rural, and Pilot & Passenger (split family, two wallets, Family Strain).
+- **Pidgin:** English/Pidgin toggle; `game/i18n/pcm.json` maps English sentences to Pidgin (1,406 lines).
+- **Gist** feed (`game/gist.ts`), dual ambience beds, "≈ ₦" equivalents, FX shock on landing, runway days.
+- **Production:** save checksums + flush on background, the stress engine (`game/fuzz.test.ts`), Capacitor Android
+  (`docs/ANDROID.md`), GitHub Actions (`.github/workflows/japa-ci.yml`), Supabase analytics schema
+  (`docs/analytics-schema.sql`), store assets and corrected copy (`store/`).
 
 ## Your job shapes the story (v0.18–v0.19)
 `game/careers.ts` maps the sign-up occupation (or course) to a track: tech, health, teaching, engineering, trades or
