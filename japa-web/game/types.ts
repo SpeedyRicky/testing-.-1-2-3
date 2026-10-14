@@ -7,6 +7,7 @@ export type RouteId =
   | "EXPRESS_ENTRY"
   | "STARTUP_VISA"
   | "CAREGIVER_LMIA"
+  | "SPLIT_FAMILY"
   | "TARGETED_TRADE"
   | "TOURIST_GAMBLE"
   | "FIRST_YEAR"
@@ -98,6 +99,17 @@ export interface RouteStats {
   employed?: number;
   /** Student: has landed in Canada (Canada-side events only after this). */
   arrived?: number;
+  /** Targeted Trade: documented full-time years, language level, and a certificate or job offer. */
+  tradeYears?: number;
+  clbTrade?: number;
+  tradeCert?: number;
+  tradeKind?: number;
+  /** PNP Rural: ties to the chosen province, and which province. */
+  provinceTies?: number;
+  pnpProvince?: number;
+  /** Split Family: strain on the family across two countries, and whether the kids came along. */
+  familyStrain?: number;
+  kidsWithYou?: number;
   /** Year One: the player's field is regulated (licence, bridging) rather than resume-and-referral. */
   regulated?: number;
   kwAtAirport?: number;

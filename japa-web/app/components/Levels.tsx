@@ -141,13 +141,13 @@ function BannerCard({ banner }: { banner: Banner }) {
       <div className="pointer-events-auto w-full max-w-md rounded-3xl border border-amber-300/50 bg-zinc-950/95 p-5 text-center shadow-[0_20px_80px_-20px_rgba(251,191,36,0.6)]">
         {done ? (
           <p className="flex items-center justify-center gap-2 text-xs font-semibold text-emerald-200">
-            <Check className="h-3.5 w-3.5" /> {done.title} complete <Stars n={banner.completed!.stars} />
+            <Check className="h-3.5 w-3.5" /> {t(done.title)} complete <Stars n={banner.completed!.stars} />
           </p>
         ) : null}
         {level ? (
           <>
             <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.3em] text-amber-300">Level {banner.index + 1} of {levels.length}</p>
-            <p className="mt-1 text-2xl font-black tracking-tight text-white">{level.title}</p>
+            <p className="mt-1 text-2xl font-black tracking-tight text-white">{t(level.title)}</p>
             <p className="mt-2 text-sm leading-6 text-zinc-300">{t(level.goal)}</p>
           </>
         ) : null}
@@ -159,7 +159,7 @@ function BannerCard({ banner }: { banner: Banner }) {
 
 /** The route's levels as a row of chips, plus a map to replay any level reached. */
 export function LevelStrip({ run, dispatch }: { run: GameState; dispatch: React.Dispatch<AppEvent> }) {
-  const { profile } = usePlayer();
+  const { profile, t } = usePlayer();
   const { progress } = useSyncExternalStore(store.subscribe, store.get, store.server);
   const [open, setOpen] = useState(false);
   const levels = levelsFor(DB, run.activeRoute);
@@ -176,7 +176,7 @@ export function LevelStrip({ run, dispatch }: { run: GameState; dispatch: React.
             <span key={l.id} className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold ${
               here ? "border-amber-300 bg-amber-300/15 text-amber-100" : reached ? "border-white/15 bg-white/5 text-zinc-300" : "border-white/5 text-zinc-600"}`}>
               {reached ? null : <Lock className="h-3 w-3" />}
-              L{i + 1} {l.title}
+              L{i + 1} {t(l.title)}
               {p.best[i] ? <Stars n={p.best[i]} size="h-3 w-3" /> : null}
             </span>
           );
@@ -225,7 +225,7 @@ function LevelMap({ run, progress, current, onClose, onPlay }: {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-200/80">Level {i + 1}</p>
-                    <p className="text-lg font-black text-white">{l.title}</p>
+                    <p className="text-lg font-black text-white">{t(l.title)}</p>
                     <p className="mt-1 text-sm leading-6 text-zinc-400">{t(l.goal)}</p>
                   </div>
                   <div className="flex flex-col items-end gap-2">

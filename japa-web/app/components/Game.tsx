@@ -12,6 +12,7 @@ import { faceFor } from "@/game/face";
 import { useAnalytics } from "../launch/useAnalytics";
 import { track, visitSource } from "../launch/analytics";
 import { InstallButton, useServiceWorker } from "../launch/Install";
+import { LanguageToggle } from "./Language";
 import { CinematicProvider, SpeedToggle, useCinematic } from "./Cinematic";
 import { EndingsButton, RealityCheck } from "./Endings";
 import { AwardToast, MetaChip, RunModsChip, useRunRewards } from "./Meta";
@@ -220,6 +221,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
           </div>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
           <InstallButton />
+          <LanguageToggle />
           <HelpButton onClick={() => setHelpOpen(true)} />
           <MetaChip dispatch={dispatch} run={run} />
           <EndingsButton />

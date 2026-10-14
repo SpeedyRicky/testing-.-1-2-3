@@ -121,7 +121,7 @@ describe("scenarios.json integrity", () => {
       "papers", "ageYears", "educationLevel", "ecaComplete", "clbFirst", "nclcFrench", "foreignWorkYears",
       "canadianWorkYears", "canadianEducation", "pnpNomination", "siblingInCanada", "crsScore", "programType",
       "academicStanding", "officerConfidence", "scholarshipTried", "familyAsked", "landSold", "crowdfunded",
-      "loanTaken", "hasDegree", "careerScore", "community", "pflRisk", "conflictRegion", "kwBasis", "kwAtAirport", "kwCredibility", "kwEvidence", "eeCategory", "kwTruth", "officeJob", "saidNoHome", "nursePath", "postedPass", "warnedFamily", "dayoLeft", "healthTrack", "regulated", "familyPledge", "donorTrust", "loanApp", "employed", "arrived",
+      "loanTaken", "hasDegree", "careerScore", "community", "pflRisk", "conflictRegion", "kwBasis", "kwAtAirport", "kwCredibility", "kwEvidence", "eeCategory", "kwTruth", "officeJob", "saidNoHome", "nursePath", "postedPass", "warnedFamily", "dayoLeft", "healthTrack", "regulated", "familyPledge", "donorTrust", "loanApp", "employed", "arrived", "tradeYears", "clbTrade", "tradeCert", "tradeKind", "provinceTies", "pnpProvince", "familyStrain", "kidsWithYou",
     ]);
     const bad: string[] = [];
     for (const s of Object.values(DB.scenes)) {
@@ -274,9 +274,9 @@ describe("state machine", () => {
   it("lists only playable routes and opens on Lagos Life", () => {
     const app = initialState();
     expect(Object.keys(app.runs).sort()).toEqual(
-      ["CAREGIVER_LMIA", "EXPRESS_ENTRY", "FIRST_YEAR", "NIGERIA_LIFE", "STARTUP_VISA", "STUDY_PERMIT", "TOURIST_GAMBLE"]);
+      ["CAREGIVER_LMIA", "EXPRESS_ENTRY", "FIRST_YEAR", "NIGERIA_LIFE", "PNP_RURAL", "SPLIT_FAMILY", "STARTUP_VISA", "STUDY_PERMIT",
+        "TARGETED_TRADE", "TOURIST_GAMBLE"]);
     expect(app.activeRoute).toBe("NIGERIA_LIFE");
-    expect(reducer(app, { type: "SELECT_ROUTE", route: "PNP_RURAL" })).toBe(app);
   });
 
   it("keeps each route's progress when switching", () => {
@@ -1684,5 +1684,34 @@ describe("v0.22: design-doc scenes and mechanics", () => {
   it("Mr. Henderson: a guarantor and a quiet lifestyle get the lease", () => {
     const s = play2(at("FIRST_YEAR", "FY_LANDLORD"), ["co-sign", "full-time and study"]);
     expect(s.currentSceneId).toBe("FY_JOBS");
+  });
+});
+
+describe("v0.23: Trades, PNP Rural and Split Family routes", () => {
+  it("Trades: documented years, the lower language bar and a certificate win; fake letters and bought Red Seals fail", () => {
+    const win = playR("TARGETED_TRADE", ["Electrician", "register your own business", "Another year", ["Prepare for a month", 0], ["provincial trade assessment", 0],
+      "Report to the site", "winter work gear"]);
+    expect(win.outcome).toMatchObject({ result: "win", reason: "TRADES_PR" });
+    expect(play("TARGETED_TRADE", ["Plumber", "cyber cafe"]).outcome?.reason).toBe("FAKE_EXPERIENCE");
+    const noCert = playR("TARGETED_TRADE", ["Welder", "registered contractor", "Another year", ["Prepare for a month", 0], ["Cold-message", 0.99]]);
+    expect(noCert.outcome?.reason).toBe("TRADES_NOT_YET");
+  });
+
+  it("PNP: ties earn +600; saying you'd settle while planning to leave is misrepresentation", () => {
+    const nominated = playR("PNP_RURAL", ["Saskatchewan", "Read the stream rules", "exploratory visit", ["I'm here to stay", 0]]);
+    expect(nominated.currentSceneId).toBe("PN_NOMINATED");
+    const settled = play2(nominated, ["Accept the nomination"]);
+    expect(settled.routeStats.crsScore).toBe(455 + 600);
+    expect(play2(settled, ["Settle in the province"]).outcome?.reason).toBe("PNP_SETTLED");
+    expect(play2(settled, ["Move to Toronto in month one"]).outcome?.reason).toBe("PNP_INTENT_LIE");
+    expect(play("PNP_RURAL", ["Nova Scotia", "Ask {relName}", "Join the province", "eventually"]).outcome?.reason).toBe("PNP_NOT_SELECTED");
+  });
+
+  it("Split Family: two wallets; routine and remittances reunite the family, neglect breaks it", () => {
+    const s = play("SPLIT_FAMILY", ["You go alone", "Pay for the overweight", "Send CAD 400", "Fix a call time", "Send CAD 260", "Help prepare it properly"]);
+    expect(s.outcome).toMatchObject({ result: "win", reason: "SF_REUNITED" });
+    const kids = play("SPLIT_FAMILY", ["You take the kids", "Repack", "Ask your spouse to cover", "too tired"]);
+    expect(kids.currentSceneId).toBe("SF_KIDS");
+    expect(DB.routes.SPLIT_FAMILY.bars.map((b) => b.key)).toEqual(["walletCad", "walletNgn", "familyStrain", "desperation"]);
   });
 });

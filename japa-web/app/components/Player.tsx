@@ -4,6 +4,7 @@ import { createContext, useContext, useMemo } from "react";
 import type { GameState } from "@/game/types";
 import { fillText, profileVars, type PlayerProfile } from "@/game/profile";
 import { placeFor, transportFor, type LocalTransport } from "@/game/nigeria";
+import { useLang } from "./Language";
 
 interface PlayerCtx {
   profile: PlayerProfile | null;
@@ -21,15 +22,17 @@ const PlayerContext = createContext<PlayerCtx>({
 export const usePlayer = () => useContext(PlayerContext);
 
 export function PlayerProvider({ profile, children }: { profile: PlayerProfile | null; children: React.ReactNode }) {
+  const { tr } = useLang();
   const value = useMemo<PlayerCtx>(() => {
     const vars = profileVars(profile);
     return {
       profile,
       transport: profile ? transportFor(placeFor(profile.stateCode)) : "danfo",
-      t: (text, run) => fillText(text ?? "", run?.routeStats.crsScore !== undefined
+      // Translate the English sentence first (the dictionary is keyed by it), then fill the placeholders.
+      t: (text, run) => fillText(tr(text ?? ""), run?.routeStats.crsScore !== undefined
         ? { ...vars, crs: String(run.routeStats.crsScore) }
         : vars),
     };
-  }, [profile]);
+  }, [profile, tr]);
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;
 }

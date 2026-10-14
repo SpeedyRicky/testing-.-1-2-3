@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.22.0",
+    "version": "0.23.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -2212,17 +2212,664 @@
         ]
       }
     },
+    "SPLIT_FAMILY": {
+      "title": "Pilot & Passenger",
+      "short": "Split Family",
+      "status": "playable",
+      "tagline": "One of you flies first. Both of you carry the weight.",
+      "startSceneId": "SF_START",
+      "initialState": {
+        "currentLocation": "Home, Nigeria",
+        "energy": 85,
+        "walletCad": 4000,
+        "walletNgn": 1500000,
+        "desperation": 40,
+        "routeStats": {
+          "familyStrain": 40,
+          "kidsWithYou": 0
+        }
+      },
+      "bars": [
+        {
+          "key": "walletCad",
+          "label": "Canada wallet",
+          "max": 8000,
+          "format": "cad"
+        },
+        {
+          "key": "walletNgn",
+          "label": "Home wallet",
+          "max": 3000000,
+          "format": "ngn"
+        },
+        {
+          "key": "familyStrain",
+          "label": "Family strain %",
+          "suffix": "%",
+          "invert": true
+        },
+        {
+          "key": "desperation",
+          "label": "Village People %",
+          "suffix": "%",
+          "invert": true
+        }
+      ],
+      "collapse": {
+        "any": {
+          "familyStrain": [
+            ">=",
+            100
+          ],
+          "walletCad": [
+            "<=",
+            0
+          ],
+          "energy": [
+            "<=",
+            0
+          ],
+          "desperation": [
+            ">=",
+            100
+          ]
+        },
+        "sceneId": "SF_BREAKDOWN"
+      },
+      "levels": [
+        {
+          "id": "departure",
+          "title": "Departure",
+          "goal": "Decide who flies first, and get everyone through the airport.",
+          "scenes": [
+            "SF_START",
+            "SF_AIRPORT"
+          ]
+        },
+        {
+          "id": "two-households",
+          "title": "Two Households",
+          "goal": "Run a home in Canada and a home in Nigeria at the same time.",
+          "scenes": [
+            "SF_REMIT",
+            "SF_CALLS",
+            "SF_KIDS",
+            "SF_HOME_CRISIS"
+          ],
+          "stars": [
+            {
+              "label": "Family strain under 50%",
+              "when": {
+                "familyStrain": [
+                  "<",
+                  50
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "reunion",
+          "title": "The Reunion",
+          "goal": "Get your spouse's open work permit and bring the family back together.",
+          "scenes": [
+            "SF_SOWP"
+          ],
+          "stars": [
+            {
+              "label": "Canada wallet above CAD 2,000",
+              "when": {
+                "walletCad": [
+                  ">=",
+                  2000
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "ranks": [
+        {
+          "id": "reunited",
+          "reason": "SF_REUNITED",
+          "title": "Reunited at Pearson",
+          "blurb": "Two wallets, two time zones, one family again."
+        },
+        {
+          "id": "home",
+          "reason": "SF_WENT_HOME",
+          "title": "Flew home to the family",
+          "blurb": "The program can wait. Some things can't."
+        },
+        {
+          "id": "breakdown",
+          "reason": "SF_BREAKDOWN",
+          "title": "The strain won",
+          "blurb": "Distance found every crack."
+        }
+      ],
+      "traps": {
+        "base": 0.08,
+        "scale": 0.6,
+        "exponent": 1.5,
+        "items": [
+          {
+            "id": "sowp",
+            "kicker": "Village People attack!",
+            "title": "The SOWP backlog",
+            "body": "Processing times for your spouse's open work permit just doubled. Six more months apart.",
+            "effects": {},
+            "options": [
+              {
+                "label": "Fly home for two weeks to steady things",
+                "effects": {
+                  "walletCad": -1800,
+                  "familyStrain": -30,
+                  "energy": -10
+                },
+                "feedback": "Jet lag, jollof and long talks. Your bank account will remember it."
+              },
+              {
+                "label": "Push through on video calls and save the cash",
+                "effects": {
+                  "familyStrain": 25,
+                  "desperation": 10
+                },
+                "feedback": "Rent is safe. The calls get shorter."
+              }
+            ]
+          },
+          {
+            "id": "paday",
+            "kicker": "Village People attack!",
+            "title": "The daycare dilemma",
+            "body": "It's a P.A. Day: no school today. Your warehouse shift starts in two hours.",
+            "effects": {},
+            "when": {
+              "kidsWithYou": [
+                ">=",
+                1
+              ]
+            },
+            "options": [
+              {
+                "label": "Call out of your shift and stay with the kids",
+                "effects": {
+                  "walletCad": -140,
+                  "desperation": 6
+                },
+                "feedback": "Pancakes and cartoons. Your supervisor's 'okay' had a full stop."
+              },
+              {
+                "label": "Pay a babysitter from the {faithHub} group",
+                "effects": {
+                  "walletCad": -120,
+                  "energy": -15
+                },
+                "feedback": "Cash upfront, and a long shift worrying about them."
+              }
+            ]
+          },
+          {
+            "id": "fuel",
+            "kicker": "Village People attack!",
+            "title": "Fuel price surge at home",
+            "body": "Petrol tripled in Lagos. School runs and the generator now eat half of the home wallet.",
+            "effects": {},
+            "options": [
+              {
+                "label": "Send CAD 400 home now",
+                "effects": {
+                  "walletCad": -400,
+                  "walletNgn": 450000,
+                  "familyStrain": -15
+                },
+                "feedback": "Remittance lands, minus the exchange spread. Your spouse sends a heart."
+              },
+              {
+                "label": "Ask them to cut back for a month",
+                "effects": {
+                  "familyStrain": 15,
+                  "walletNgn": -200000
+                },
+                "feedback": "They manage. The resentment is quiet but it's there."
+              }
+            ]
+          }
+        ]
+      },
+      "blessings": {
+        "base": 0.05,
+        "scale": 0.1,
+        "items": [
+          {
+            "id": "aunties",
+            "kicker": "Blessing",
+            "title": "The aunties step in",
+            "body": "Your mother-in-law moves in for a month to help with the kids in Lagos.",
+            "effects": {
+              "familyStrain": -15,
+              "walletNgn": -50000
+            }
+          }
+        ]
+      },
+      "lessons": {
+        "SF_BREAKDOWN": "Since January 2025, a student's spouse can get an open work permit only if the student is in a master's of 16+ months, a doctorate, or certain professional programs. Split families should plan the timeline and the money for both homes before the first flight."
+      }
+    },
     "TARGETED_TRADE": {
       "title": "Targeted Trade",
       "short": "Trades",
-      "status": "coming_soon",
-      "bars": []
+      "status": "playable",
+      "tagline": "Your hands built half of {city}. Now prove it on paper.",
+      "startSceneId": "TT_START",
+      "initialState": {
+        "currentLocation": "Electrical market, Nigeria",
+        "energy": 90,
+        "walletNgn": 900000,
+        "desperation": 35,
+        "routeStats": {
+          "tradeYears": 0,
+          "clbTrade": 0,
+          "tradeCert": 0
+        }
+      },
+      "bars": [
+        {
+          "key": "tradeYears",
+          "label": "Documented years",
+          "max": 4
+        },
+        {
+          "key": "clbTrade",
+          "label": "Language (CLB)",
+          "max": 10
+        },
+        {
+          "key": "walletNgn",
+          "label": "Savings",
+          "max": 3000000,
+          "format": "ngn"
+        },
+        {
+          "key": "desperation",
+          "label": "Village People %",
+          "suffix": "%",
+          "invert": true
+        }
+      ],
+      "collapse": {
+        "any": {
+          "energy": [
+            "<=",
+            0
+          ],
+          "desperation": [
+            ">=",
+            100
+          ],
+          "walletNgn": [
+            "<=",
+            0
+          ]
+        },
+        "sceneId": "TT_BURNOUT"
+      },
+      "levels": [
+        {
+          "id": "the-workshop",
+          "title": "The Workshop",
+          "goal": "Turn years of cash jobs into experience Canada can verify.",
+          "scenes": [
+            "TT_START",
+            "TT_PAPERWORK",
+            "TT_MORE_YEARS"
+          ],
+          "stars": [
+            {
+              "label": "Two documented years",
+              "when": {
+                "tradeYears": [
+                  ">=",
+                  2
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "the-tests",
+          "title": "The Tests",
+          "goal": "Pass the language bar and get a Canadian trade qualification or offer.",
+          "scenes": [
+            "TT_LANGUAGE",
+            "TT_CERT"
+          ],
+          "stars": [
+            {
+              "label": "CLB 7 or better",
+              "when": {
+                "clbTrade": [
+                  ">=",
+                  7
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "the-cold",
+          "title": "The Cold",
+          "goal": "Get invited, land, and survive your first outdoor winter.",
+          "scenes": [
+            "TT_ITA",
+            "TT_WINTER"
+          ],
+          "stars": [
+            {
+              "label": "Kept your energy above 40",
+              "when": {
+                "energy": [
+                  ">=",
+                  40
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "ranks": [
+        {
+          "id": "journeyperson",
+          "reason": "TRADES_PR",
+          "title": "Journeyperson",
+          "blurb": "Wired half of {city}, now wiring Edmonton. Red Seal next."
+        },
+        {
+          "id": "fakeletter",
+          "reason": "FAKE_EXPERIENCE",
+          "title": "Paper experience",
+          "blurb": "The letter said ten years. The company didn't exist."
+        },
+        {
+          "id": "redsealscam",
+          "reason": "RED_SEAL_SCAM",
+          "title": "Bought a 'Red Seal'",
+          "blurb": "Gold foil, no exam, no value."
+        },
+        {
+          "id": "notyet",
+          "reason": "TRADES_NOT_YET",
+          "title": "Not yet",
+          "blurb": "The trade is real. The paperwork isn't there yet."
+        },
+        {
+          "id": "burnout",
+          "reason": "TRADES_BURNOUT",
+          "title": "Burnt out",
+          "blurb": "Two jobs, one generator, zero rest."
+        }
+      ],
+      "traps": {
+        "base": 0.04,
+        "scale": 0.5,
+        "exponent": 1.6,
+        "items": [
+          {
+            "id": "nepa",
+            "kicker": "Village People attack!",
+            "title": "Transformer blew",
+            "body": "The estate transformer is gone for three weeks. Every client wants you now, and your own house is dark.",
+            "effects": {},
+            "options": [
+              {
+                "label": "Take every emergency job: cash is cash",
+                "effects": {
+                  "walletNgn": 150000,
+                  "energy": -25
+                },
+                "feedback": "Good money, no sleep, and none of it on paper."
+              },
+              {
+                "label": "Take only jobs that give you a receipt",
+                "effects": {
+                  "walletNgn": 60000,
+                  "desperation": 4
+                },
+                "feedback": "Less money, but every receipt is evidence of your trade."
+              }
+            ]
+          },
+          {
+            "id": "devalue",
+            "kicker": "Village People attack!",
+            "title": "The sudden devaluation",
+            "body": "The naira lost 18% overnight. Your exam fees are in dollars.",
+            "effects": {},
+            "options": [
+              {
+                "label": "Pay now before it falls further",
+                "effects": {
+                  "walletNgn": -180000,
+                  "desperation": 8
+                },
+                "feedback": "Ouch. But booked."
+              },
+              {
+                "label": "Wait a month and work extra",
+                "effects": {
+                  "energy": -15,
+                  "desperation": 6
+                },
+                "feedback": "Tired, but the plan holds."
+              }
+            ]
+          }
+        ]
+      },
+      "blessings": {
+        "base": 0.05,
+        "scale": 0.1,
+        "items": [
+          {
+            "id": "client",
+            "kicker": "Blessing",
+            "title": "The Canadian client",
+            "body": "A returnee you rewired for last year sends a LinkedIn intro to a contractor in Calgary.",
+            "effects": {
+              "desperation": -6
+            }
+          }
+        ]
+      },
+      "lessons": {
+        "TRADES_BURNOUT": "Federal Skilled Trades needs two years of full-time trade experience in the last five, CLB 5 speaking and listening (CLB 4 reading and writing), and a Canadian job offer or a provincial certificate of qualification. Pace the grind."
+      }
     },
     "PNP_RURAL": {
       "title": "PNP Rural Stream",
       "short": "PNP Rural",
-      "status": "coming_soon",
-      "bars": []
+      "status": "playable",
+      "tagline": "Toronto is full. Saskatoon is calling.",
+      "startSceneId": "PN_START",
+      "initialState": {
+        "currentLocation": "Home, Nigeria",
+        "energy": 90,
+        "walletCad": 14000,
+        "desperation": 35,
+        "routeStats": {
+          "crsScore": 455,
+          "provinceTies": 0,
+          "pnpProvince": 0
+        }
+      },
+      "bars": [
+        {
+          "key": "crsScore",
+          "label": "CRS score",
+          "max": 1200
+        },
+        {
+          "key": "provinceTies",
+          "label": "Ties to the province",
+          "max": 100
+        },
+        {
+          "key": "walletCad",
+          "label": "Savings",
+          "max": 20000,
+          "format": "cad"
+        },
+        {
+          "key": "desperation",
+          "label": "Village People %",
+          "suffix": "%",
+          "invert": true
+        }
+      ],
+      "collapse": {
+        "any": {
+          "energy": [
+            "<=",
+            0
+          ],
+          "desperation": [
+            ">=",
+            100
+          ],
+          "walletCad": [
+            "<=",
+            0
+          ]
+        },
+        "sceneId": "PN_BURNOUT"
+      },
+      "levels": [
+        {
+          "id": "pick-a-province",
+          "title": "Pick a Province",
+          "goal": "Choose where you'd honestly build a life.",
+          "scenes": [
+            "PN_START",
+            "PN_RESEARCH"
+          ]
+        },
+        {
+          "id": "build-ties",
+          "title": "Build Ties",
+          "goal": "Show the province you belong: a job, a connection, a visit.",
+          "scenes": [
+            "PN_TIES",
+            "PN_OFFER"
+          ],
+          "stars": [
+            {
+              "label": "Ties of 60 or more",
+              "when": {
+                "provinceTies": [
+                  ">=",
+                  60
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "plus-600",
+          "title": "+600",
+          "goal": "Get nominated, get invited, and settle where you said you would.",
+          "scenes": [
+            "PN_NOMINATED",
+            "PN_INTENT"
+          ],
+          "stars": [
+            {
+              "label": "CRS over 1,000",
+              "when": {
+                "crsScore": [
+                  ">=",
+                  1000
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "ranks": [
+        {
+          "id": "settled",
+          "reason": "PNP_SETTLED",
+          "title": "Prairie resident",
+          "blurb": "The snow is real. So is the house you can afford."
+        },
+        {
+          "id": "intentlie",
+          "reason": "PNP_INTENT_LIE",
+          "title": "Toronto in disguise",
+          "blurb": "You told the province one thing and your group chat another."
+        },
+        {
+          "id": "notselected",
+          "reason": "PNP_NOT_SELECTED",
+          "title": "Not selected",
+          "blurb": "No ties, no nomination. Yet."
+        },
+        {
+          "id": "burnout",
+          "reason": "PNP_BURNOUT",
+          "title": "Burnt out",
+          "blurb": "Too many portals, not enough sleep."
+        }
+      ],
+      "traps": {
+        "base": 0.04,
+        "scale": 0.5,
+        "exponent": 1.6,
+        "items": [
+          {
+            "id": "stream",
+            "kicker": "Village People attack!",
+            "title": "The stream closed",
+            "body": "The province paused your stream for 'program review'. The group chat is in shambles.",
+            "effects": {},
+            "options": [
+              {
+                "label": "Wait it out and keep building ties",
+                "effects": {
+                  "desperation": 8,
+                  "provinceTies": 4
+                },
+                "feedback": "It reopens in six weeks. You're still in the queue."
+              },
+              {
+                "label": "Pay for a second province's application too",
+                "effects": {
+                  "walletCad": -500,
+                  "desperation": 2
+                },
+                "feedback": "Expensive insurance."
+              }
+            ]
+          }
+        ]
+      },
+      "blessings": {
+        "base": 0.05,
+        "scale": 0.1,
+        "items": [
+          {
+            "id": "community",
+            "kicker": "Blessing",
+            "title": "The prairie Naija association",
+            "body": "The Nigerian association in the province adds you to their WhatsApp. Somebody's cousin is hiring.",
+            "effects": {
+              "provinceTies": 10,
+              "desperation": -6
+            }
+          }
+        ]
+      }
     }
   },
   "scenes": {
@@ -9430,6 +10077,1160 @@
           "feedback": "He likes that. The Ontario standard lease has room for exactly this."
         }
       ]
+    },
+    "TT_START": {
+      "id": "TT_START",
+      "route": "TARGETED_TRADE",
+      "layoutType": "STORY_STAGE",
+      "title": "Ten years, no payslip.",
+      "location": "Electrical market, {city}",
+      "stage": "gig",
+      "transitIn": "none",
+      "speaker": "Electrical market, {city}",
+      "dialogue": "You can wire a duplex blindfolded. Canada's trades draws want electricians, plumbers, carpenters and welders. But every naira you ever earned came in cash, and immigration counts what it can verify.",
+      "choices": [
+        {
+          "text": "Electrician: you've done estates, solar and industrial wiring",
+          "label": "ELECTRICIAN",
+          "nextSceneId": "TT_PAPERWORK",
+          "effects": {},
+          "set": {
+            "tradeKind": 1
+          }
+        },
+        {
+          "text": "Plumber: boreholes, pumps, and every leaking soak-away in {area}",
+          "label": "PLUMBER",
+          "nextSceneId": "TT_PAPERWORK",
+          "effects": {},
+          "set": {
+            "tradeKind": 2
+          }
+        },
+        {
+          "text": "Welder and fabricator: gates, frames and a few tanker repairs",
+          "label": "WELDER",
+          "nextSceneId": "TT_PAPERWORK",
+          "effects": {},
+          "set": {
+            "tradeKind": 3
+          }
+        }
+      ]
+    },
+    "TT_PAPERWORK": {
+      "id": "TT_PAPERWORK",
+      "route": "TARGETED_TRADE",
+      "layoutType": "STORY_STAGE",
+      "title": "Proof of the hands.",
+      "location": "Your oga's workshop, {area}",
+      "stage": "gig",
+      "transitIn": "none",
+      "speaker": "Your oga's workshop, {area}",
+      "dialogue": "You need letters on letterhead: dates, hours, duties, pay. Your oga writes nothing down, and his 'company' is a kiosk.",
+      "choices": [
+        {
+          "text": "Ask oga for a reference letter, and register your own business with CAC so new jobs have invoices",
+          "label": "REAL_RECORDS",
+          "nextSceneId": "TT_MORE_YEARS",
+          "effects": {
+            "walletNgn": -60000,
+            "energy": -10,
+            "tradeYears": 1
+          },
+          "feedback": "Slow and boring. Every invoice from now on is evidence."
+        },
+        {
+          "text": "Join a registered contractor with payslips and tax deductions, for less money",
+          "label": "PAYSLIP_JOB",
+          "nextSceneId": "TT_MORE_YEARS",
+          "effects": {
+            "walletNgn": -120000,
+            "tradeYears": 1,
+            "desperation": 4
+          },
+          "feedback": "Smaller pay, real payslips. Officers love payslips."
+        },
+        {
+          "text": "Buy a 'ten years experience' letter from a man in a cyber cafe",
+          "label": "FAKE_LETTER",
+          "nextSceneId": "TT_FAKE_LETTER",
+          "effects": {
+            "walletNgn": -80000
+          }
+        }
+      ]
+    },
+    "TT_MORE_YEARS": {
+      "id": "TT_MORE_YEARS",
+      "route": "TARGETED_TRADE",
+      "layoutType": "STORY_STAGE",
+      "title": "Keep building the file.",
+      "location": "Construction site, {city}",
+      "stage": "gig",
+      "transitIn": "none",
+      "speaker": "Construction site, {city}",
+      "dialogue": "One documented year isn't enough: Federal Skilled Trades wants two years of full-time experience in the last five.",
+      "choices": [
+        {
+          "text": "Another year of documented work, every receipt filed",
+          "label": "SECOND_YEAR",
+          "nextSceneId": "TT_LANGUAGE",
+          "effects": {
+            "tradeYears": 1,
+            "walletNgn": 250000,
+            "energy": -15
+          },
+          "feedback": "Two documented years. The file finally looks like your life."
+        },
+        {
+          "text": "Count your old cash jobs too; you'll explain them if asked",
+          "label": "CASH_YEARS",
+          "nextSceneId": "TT_LANGUAGE",
+          "effects": {
+            "tradeYears": 1
+          },
+          "gamble": {
+            "odds": 0.45,
+            "success": {
+              "feedback": "Two old clients sign sworn statements with their phone numbers. It might be enough.",
+              "effects": {
+                "tradeYears": 0
+              },
+              "label": "SWORN"
+            },
+            "fail": {
+              "feedback": "Nobody can confirm those years. Only your documented year counts.",
+              "effects": {
+                "tradeYears": -1,
+                "desperation": 8
+              },
+              "label": "UNVERIFIABLE"
+            }
+          }
+        }
+      ]
+    },
+    "TT_LANGUAGE": {
+      "id": "TT_LANGUAGE",
+      "route": "TARGETED_TRADE",
+      "layoutType": "STORY_STAGE",
+      "title": "The lower bar.",
+      "location": "Test centre, {city}",
+      "stage": "ielts-centre",
+      "transitIn": "none",
+      "speaker": "Test centre, {city}",
+      "dialogue": "Good news: the trades program asks for CLB 5 in speaking and listening, and CLB 4 in reading and writing. Higher scores still add points.",
+      "choices": [
+        {
+          "text": "Prepare for a month, then write CELPIP or IELTS General",
+          "label": "PREPARED",
+          "nextSceneId": "TT_CERT",
+          "effects": {
+            "walletNgn": -180000,
+            "energy": -10
+          },
+          "gamble": {
+            "odds": 0.75,
+            "success": {
+              "feedback": "CLB 7. Above the bar, and more points.",
+              "effects": {
+                "clbTrade": 7
+              },
+              "label": "CLB7"
+            },
+            "fail": {
+              "feedback": "CLB 5. Just enough.",
+              "effects": {
+                "clbTrade": 5
+              },
+              "label": "CLB5"
+            }
+          }
+        },
+        {
+          "text": "Write it next week; how hard can it be?",
+          "label": "WINGED_IT",
+          "nextSceneId": "TT_CERT",
+          "effects": {
+            "walletNgn": -180000
+          },
+          "gamble": {
+            "odds": 0.45,
+            "success": {
+              "feedback": "CLB 5. You scraped through.",
+              "effects": {
+                "clbTrade": 5
+              },
+              "label": "SCRAPED"
+            },
+            "fail": {
+              "feedback": "Reading came in at CLB 3. Below the bar; you'll have to rebook.",
+              "effects": {
+                "clbTrade": 3,
+                "desperation": 10
+              },
+              "label": "BELOW_BAR"
+            }
+          }
+        }
+      ]
+    },
+    "TT_CERT": {
+      "id": "TT_CERT",
+      "route": "TARGETED_TRADE",
+      "layoutType": "STORY_STAGE",
+      "title": "Certificate or job offer.",
+      "location": "Video call with Alberta",
+      "stage": "video-job",
+      "transitIn": "none",
+      "speaker": "Video call with Alberta",
+      "dialogue": "The program also needs either a Canadian job offer or a certificate of qualification from a province, which means an assessment of your experience and a trade exam.",
+      "choices": [
+        {
+          "text": "Apply for a provincial trade assessment and book the exam",
+          "label": "TRADE_EXAM",
+          "nextSceneId": "TT_DRAW",
+          "effects": {
+            "walletNgn": -300000,
+            "energy": -12
+          },
+          "gamble": {
+            "odds": 0.55,
+            "bonus": [
+              {
+                "key": "tradeYears",
+                "per": 0.08
+              }
+            ],
+            "max": 0.9,
+            "success": {
+              "feedback": "Passed. A provincial certificate of qualification with your name on it.",
+              "set": {
+                "tradeCert": 1
+              },
+              "label": "CERTIFIED"
+            },
+            "fail": {
+              "feedback": "Failed the code section by four marks. You can rewrite in 90 days.",
+              "effects": {
+                "desperation": 10
+              },
+              "label": "FAILED_EXAM"
+            }
+          }
+        },
+        {
+          "text": "Cold-message 40 contractors on LinkedIn with photos of your work",
+          "label": "LINKEDIN",
+          "nextSceneId": "TT_DRAW",
+          "effects": {
+            "energy": -10
+          },
+          "gamble": {
+            "odds": 0.3,
+            "bonus": [
+              {
+                "key": "clbTrade",
+                "per": 0.03
+              }
+            ],
+            "max": 0.7,
+            "success": {
+              "feedback": "A Calgary contractor offers a one-year job, subject to your PR. A real offer.",
+              "set": {
+                "tradeCert": 1
+              },
+              "label": "OFFER"
+            },
+            "fail": {
+              "feedback": "Two 'interested', zero offers.",
+              "effects": {
+                "desperation": 6
+              },
+              "label": "GHOSTED"
+            }
+          }
+        },
+        {
+          "text": "Pay an agent ₦900k for a 'Red Seal certificate, no exam'",
+          "label": "RED_SEAL_SCAM",
+          "nextSceneId": "TT_RED_SEAL_SCAM",
+          "effects": {
+            "walletNgn": -900000
+          }
+        }
+      ]
+    },
+    "TT_DRAW": {
+      "id": "TT_DRAW",
+      "route": "TARGETED_TRADE",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "tradeYears": [
+              ">=",
+              2
+            ],
+            "clbTrade": [
+              ">=",
+              5
+            ],
+            "tradeCert": [
+              ">=",
+              1
+            ]
+          },
+          "nextSceneId": "TT_ITA"
+        },
+        {
+          "nextSceneId": "TT_NOT_YET"
+        }
+      ]
+    },
+    "TT_ITA": {
+      "id": "TT_ITA",
+      "route": "TARGETED_TRADE",
+      "layoutType": "STORY_STAGE",
+      "title": "Trades draw.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "plane",
+      "speaker": "IRCC portal",
+      "dialogue": "'Invitation to apply.' The trades draw cutoff sat far below the general rounds. Four months later, you land in Edmonton in January.",
+      "choices": [
+        {
+          "text": "Report to the site on Monday",
+          "label": "LANDED",
+          "nextSceneId": "TT_WINTER",
+          "effects": {
+            "desperation": -15
+          }
+        }
+      ]
+    },
+    "TT_WINTER": {
+      "id": "TT_WINTER",
+      "route": "TARGETED_TRADE",
+      "layoutType": "STORY_STAGE",
+      "title": "−27°C on the scaffold.",
+      "location": "Construction site, Edmonton",
+      "stage": "toronto-street",
+      "transitIn": "none",
+      "speaker": "Construction site, Edmonton",
+      "dialogue": "Your first outdoor shift. Your fingers stop working after twenty minutes. The foreman says 'You'll get used to it' and doesn't look convinced.",
+      "choices": [
+        {
+          "text": "Spend your first paycheque on proper winter work gear",
+          "label": "GEAR",
+          "nextSceneId": "TT_WIN",
+          "effects": {
+            "energy": 10,
+            "desperation": -6
+          },
+          "feedback": "Insulated boots, liners, a balaclava. You stop counting your toes."
+        },
+        {
+          "text": "Tough it out in your Lagos jacket",
+          "label": "TOUGH_IT",
+          "nextSceneId": "TT_WIN",
+          "effects": {
+            "energy": -40
+          },
+          "gamble": {
+            "odds": 0.5,
+            "success": {
+              "feedback": "You survive the week and buy gear on Friday.",
+              "label": "SURVIVED"
+            },
+            "fail": {
+              "feedback": "Frostnip on two fingers. Three days off, unpaid.",
+              "effects": {
+                "energy": -20,
+                "desperation": 15
+              },
+              "label": "FROSTNIP"
+            }
+          }
+        }
+      ]
+    },
+    "TT_WIN": {
+      "id": "TT_WIN",
+      "route": "TARGETED_TRADE",
+      "layoutType": "STORY_STAGE",
+      "title": "Journeyperson.",
+      "location": "Edmonton",
+      "stage": "pr-landing",
+      "transitIn": "none",
+      "speaker": "Edmonton",
+      "dialogue": "Your Alberta ticket, your union card, and an apprentice who calls you 'boss'. Red Seal is the next exam.",
+      "outcome": {
+        "result": "win",
+        "reason": "TRADES_PR",
+        "title": "Permanent resident, working your trade",
+        "subtitle": "Your hands, finally on paper.",
+        "lesson": "Federal Skilled Trades and trades category draws reward documented, full-time trade experience. Most trades are regulated by provinces: you work under a provincial certificate, and Red Seal lets you work across Canada."
+      }
+    },
+    "TT_NOT_YET": {
+      "id": "TT_NOT_YET",
+      "route": "TARGETED_TRADE",
+      "layoutType": "STORY_STAGE",
+      "title": "Not yet.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "Your profile is missing something: two documented years, CLB 5, or a certificate or job offer.",
+      "outcome": {
+        "result": "fail",
+        "reason": "TRADES_NOT_YET",
+        "title": "Not eligible yet",
+        "subtitle": "The trade is real. The paperwork isn't there yet.",
+        "lesson": "Federal Skilled Trades needs all three: two years of full-time trade experience in the last five, the language minimums, and a Canadian job offer or a provincial certificate of qualification."
+      }
+    },
+    "TT_FAKE_LETTER": {
+      "id": "TT_FAKE_LETTER",
+      "route": "TARGETED_TRADE",
+      "layoutType": "STORY_STAGE",
+      "title": "The company didn't exist.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "IRCC phoned the number on your letter. It belongs to a cyber cafe.",
+      "outcome": {
+        "result": "fail",
+        "reason": "FAKE_EXPERIENCE",
+        "title": "Fake experience letter",
+        "subtitle": "Refused, with a five-year ban.",
+        "lesson": "Fake experience letters are misrepresentation: refusal and a five-year ban. Officers verify employers by phone, address and tax records."
+      }
+    },
+    "TT_RED_SEAL_SCAM": {
+      "id": "TT_RED_SEAL_SCAM",
+      "route": "TARGETED_TRADE",
+      "layoutType": "STORY_STAGE",
+      "title": "Gold foil.",
+      "location": "Agent's office, {city}",
+      "stage": "agent",
+      "transitIn": "none",
+      "speaker": "Agent's office, {city}",
+      "dialogue": "The 'Red Seal' certificate has gold foil and a spelling mistake. Red Seal is an exam you write in Canada, not a document you buy.",
+      "outcome": {
+        "result": "fail",
+        "reason": "RED_SEAL_SCAM",
+        "title": "Bought a 'Red Seal'",
+        "subtitle": "₦900k, no exam, no value.",
+        "lesson": "Red Seal endorsements come from passing the interprovincial exam after you qualify in a province. Nobody sells one."
+      }
+    },
+    "TT_BURNOUT": {
+      "id": "TT_BURNOUT",
+      "route": "TARGETED_TRADE",
+      "layoutType": "STORY_STAGE",
+      "title": "Burnt out.",
+      "location": "{area}, {city}",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "Two jobs, one generator, no rest. Your body made the decision for you.",
+      "outcome": {
+        "result": "fail",
+        "reason": "TRADES_BURNOUT",
+        "title": "Burnt out",
+        "subtitle": "Rest, then rebuild the file.",
+        "lesson": "Pace the grind: the file takes years, and it waits for you."
+      }
+    },
+    "PN_START": {
+      "id": "PN_START",
+      "route": "PNP_RURAL",
+      "layoutType": "STORY_STAGE",
+      "title": "Toronto is full.",
+      "location": "{area}, {city}",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "Your CRS is {crs}. General draws need 500+. A provincial nomination adds 600 points. The catch: provinces nominate people who will actually live there.",
+      "choices": [
+        {
+          "text": "Saskatchewan: in-demand jobs list and lower rent",
+          "label": "SASKATCHEWAN",
+          "nextSceneId": "PN_RESEARCH",
+          "effects": {},
+          "set": {
+            "pnpProvince": 1
+          }
+        },
+        {
+          "text": "Manitoba: they favour people with a real connection to the province",
+          "label": "MANITOBA",
+          "nextSceneId": "PN_RESEARCH",
+          "effects": {},
+          "set": {
+            "pnpProvince": 2
+          }
+        },
+        {
+          "text": "Nova Scotia: healthcare and trades priorities, and the ocean",
+          "label": "NOVA_SCOTIA",
+          "nextSceneId": "PN_RESEARCH",
+          "effects": {},
+          "set": {
+            "pnpProvince": 3
+          }
+        }
+      ]
+    },
+    "PN_RESEARCH": {
+      "id": "PN_RESEARCH",
+      "route": "PNP_RURAL",
+      "layoutType": "STORY_STAGE",
+      "title": "Read the stream.",
+      "location": "Provincial website",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "Provincial website",
+      "dialogue": "Every province runs its own streams, and they change. Some are linked to Express Entry (+600 CRS); others are separate paper applications.",
+      "choices": [
+        {
+          "text": "Read the stream rules properly and match your job to their in-demand list",
+          "label": "READ_RULES",
+          "nextSceneId": "PN_TIES",
+          "effects": {
+            "energy": -8,
+            "provinceTies": 10
+          },
+          "feedback": "Boring and decisive. Half the group chat applies to streams they don't qualify for."
+        },
+        {
+          "text": "Ask {relName} in {relCity} what they know",
+          "label": "ASK_RELATIVE",
+          "nextSceneId": "PN_TIES",
+          "effects": {
+            "provinceTies": 6
+          },
+          "feedback": "A relative living in the province can count as a connection for some streams."
+        }
+      ]
+    },
+    "PN_TIES": {
+      "id": "PN_TIES",
+      "route": "PNP_RURAL",
+      "layoutType": "STORY_STAGE",
+      "title": "Build real ties.",
+      "location": "Video calls, job boards, the Naija association",
+      "stage": "video-job",
+      "transitIn": "none",
+      "speaker": "Video calls, job boards, the Naija association",
+      "dialogue": "Provinces want proof you'll stay: a job offer, past study or work there, family, or an exploratory visit.",
+      "choices": [
+        {
+          "text": "Apply to employers in smaller towns, not just the big cities",
+          "label": "SMALL_TOWNS",
+          "nextSceneId": "PN_OFFER",
+          "effects": {
+            "energy": -12,
+            "provinceTies": 15
+          },
+          "feedback": "Moose Jaw, Brandon, Truro. Less competition, more replies."
+        },
+        {
+          "text": "Book an exploratory visit on a visitor visa: meet employers and the community",
+          "label": "EXPLORATORY",
+          "nextSceneId": "PN_OFFER",
+          "effects": {
+            "walletCad": -3500,
+            "provinceTies": 25,
+            "energy": -10
+          },
+          "feedback": "Some streams count an exploratory visit. You interview in person and walk the town in −20°C."
+        },
+        {
+          "text": "Join the province's Nigerian association online and volunteer remotely",
+          "label": "ASSOCIATION",
+          "nextSceneId": "PN_OFFER",
+          "effects": {
+            "provinceTies": 10,
+            "desperation": -4
+          }
+        }
+      ]
+    },
+    "PN_OFFER": {
+      "id": "PN_OFFER",
+      "route": "PNP_RURAL",
+      "layoutType": "STORY_STAGE",
+      "title": "The rural employer.",
+      "location": "Video call, Moose Jaw",
+      "stage": "video-job",
+      "transitIn": "none",
+      "speaker": "Video call, Moose Jaw",
+      "dialogue": "A trucking firm's HR manager likes you. 'We need people who'll stay. Most newcomers leave for Toronto in a year.'",
+      "choices": [
+        {
+          "text": "'I'm here to stay. My budget, my {faithHub}, my kids' school: I've looked them up.'",
+          "label": "STAY_PLAN",
+          "nextSceneId": "PN_DECIDE",
+          "effects": {
+            "provinceTies": 20
+          },
+          "gamble": {
+            "odds": 0.55,
+            "bonus": [
+              {
+                "key": "provinceTies",
+                "per": 0.005
+              }
+            ],
+            "max": 0.9,
+            "success": {
+              "feedback": "A one-year offer, conditional on your nomination.",
+              "effects": {
+                "provinceTies": 15
+              },
+              "label": "OFFER"
+            },
+            "fail": {
+              "feedback": "'We'll keep your file.' No offer, but the call counts as a contact.",
+              "effects": {
+                "desperation": 6
+              },
+              "label": "NO_OFFER"
+            }
+          }
+        },
+        {
+          "text": "'Honestly, I'd move to Toronto eventually.'",
+          "label": "HONEST_TORONTO",
+          "nextSceneId": "PN_DECIDE",
+          "effects": {
+            "provinceTies": -10
+          },
+          "feedback": "Honest. It also tells them you're the person they just described."
+        }
+      ]
+    },
+    "PN_DECIDE": {
+      "id": "PN_DECIDE",
+      "route": "PNP_RURAL",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "provinceTies": [
+              ">=",
+              45
+            ]
+          },
+          "nextSceneId": "PN_NOMINATED"
+        },
+        {
+          "nextSceneId": "PN_NOT_SELECTED"
+        }
+      ]
+    },
+    "PN_NOMINATED": {
+      "id": "PN_NOMINATED",
+      "route": "PNP_RURAL",
+      "layoutType": "STORY_STAGE",
+      "title": "+600.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "Provincial nomination. Your Express Entry profile jumps by 600 points. The next draw invites you within weeks.",
+      "choices": [
+        {
+          "text": "Accept the nomination",
+          "label": "ACCEPTED",
+          "nextSceneId": "PN_INTENT",
+          "effects": {
+            "crsScore": 600,
+            "desperation": -15
+          },
+          "feedback": "+600 CRS. An invitation is almost guaranteed."
+        }
+      ]
+    },
+    "PN_INTENT": {
+      "id": "PN_INTENT",
+      "route": "PNP_RURAL",
+      "layoutType": "STORY_STAGE",
+      "title": "'Come to Toronto, bro.'",
+      "location": "WhatsApp, after landing",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "WhatsApp, after landing",
+      "dialogue": "You're a PR now. Your cousin in Brampton: 'Why you dey that cold village? Come Toronto, jobs dey here.'",
+      "choices": [
+        {
+          "text": "Settle in the province, as you told them, and build there",
+          "label": "SETTLED",
+          "nextSceneId": "PN_SETTLED",
+          "effects": {
+            "desperation": -6
+          },
+          "feedback": "You meant it. Your rent is half of Brampton's."
+        },
+        {
+          "text": "Move to Toronto in month one; you only said the province to get the points",
+          "label": "INTENT_LIE",
+          "nextSceneId": "PN_INTENT_LIE",
+          "effects": {}
+        }
+      ]
+    },
+    "PN_SETTLED": {
+      "id": "PN_SETTLED",
+      "route": "PNP_RURAL",
+      "layoutType": "STORY_STAGE",
+      "title": "Prairie resident.",
+      "location": "Saskatoon",
+      "stage": "pr-landing",
+      "transitIn": "none",
+      "speaker": "Saskatoon",
+      "dialogue": "A two-bedroom for the price of a Brampton basement. The Naija association brings jollof to your housewarming.",
+      "outcome": {
+        "result": "win",
+        "reason": "PNP_SETTLED",
+        "title": "Nominated, landed, settled",
+        "subtitle": "The +600 was the easy part.",
+        "lesson": "Provincial nominees are expected to intend to live in the province. Permanent residents have mobility rights, but saying you'd settle when you never meant to can be treated as misrepresentation."
+      }
+    },
+    "PN_INTENT_LIE": {
+      "id": "PN_INTENT_LIE",
+      "route": "PNP_RURAL",
+      "layoutType": "STORY_STAGE",
+      "title": "Toronto in disguise.",
+      "location": "Brampton",
+      "stage": "toronto-street",
+      "transitIn": "none",
+      "speaker": "Brampton",
+      "dialogue": "A year later your citizenship file asks where you've lived. The province flagged you: you never even took the job they nominated you for.",
+      "outcome": {
+        "result": "fail",
+        "reason": "PNP_INTENT_LIE",
+        "title": "Misrepresented your intent",
+        "subtitle": "The province remembers.",
+        "lesson": "Permanent residents can live anywhere in Canada, but your intent when you applied matters. Telling a province you'd settle while planning to leave can be treated as misrepresentation, with serious consequences for your status."
+      }
+    },
+    "PN_NOT_SELECTED": {
+      "id": "PN_NOT_SELECTED",
+      "route": "PNP_RURAL",
+      "layoutType": "STORY_STAGE",
+      "title": "Not selected.",
+      "location": "Provincial portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "Provincial portal",
+      "dialogue": "No nomination this intake. Your ties to the province were too thin.",
+      "outcome": {
+        "result": "fail",
+        "reason": "PNP_NOT_SELECTED",
+        "title": "Not selected",
+        "subtitle": "Build real ties and try again.",
+        "lesson": "Provinces nominate people likely to stay: a job offer, past study or work there, family, or an exploratory visit all help."
+      }
+    },
+    "PN_BURNOUT": {
+      "id": "PN_BURNOUT",
+      "route": "PNP_RURAL",
+      "layoutType": "STORY_STAGE",
+      "title": "Burnt out.",
+      "location": "{area}, {city}",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "Too many portals, not enough sleep.",
+      "outcome": {
+        "result": "fail",
+        "reason": "PNP_BURNOUT",
+        "title": "Burnt out",
+        "subtitle": "Rest first.",
+        "lesson": "Streams reopen. Your health doesn't."
+      }
+    },
+    "SF_START": {
+      "id": "SF_START",
+      "route": "SPLIT_FAMILY",
+      "layoutType": "STORY_STAGE",
+      "title": "Who flies first?",
+      "location": "Your parlour, {area}",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "Your parlour, {area}",
+      "dialogue": "Your admission is for a 16-month master's, so your spouse can apply for an open work permit later. Today you decide: who goes now, and where do the kids stay?",
+      "choices": [
+        {
+          "text": "You go alone. The kids stay with your spouse, who keeps the job and the naira income",
+          "label": "SOLO_VANGUARD",
+          "nextSceneId": "SF_AIRPORT",
+          "effects": {
+            "familyStrain": 10,
+            "walletNgn": 300000
+          },
+          "feedback": "The 'pilot-passenger' plan: your spouse funds the transition from home."
+        },
+        {
+          "text": "You take the kids. Your spouse stays to work and follows later",
+          "label": "SINGLE_PARENT_PILOT",
+          "nextSceneId": "SF_AIRPORT",
+          "effects": {
+            "walletCad": -1500,
+            "desperation": 6
+          },
+          "feedback": "In many provinces, children of study-permit holders can attend public school; check the school board.",
+          "set": {
+            "kidsWithYou": 1
+          }
+        }
+      ]
+    },
+    "SF_AIRPORT": {
+      "id": "SF_AIRPORT",
+      "route": "SPLIT_FAMILY",
+      "layoutType": "STORY_STAGE",
+      "title": "Departures, {airportCode}.",
+      "location": "Departure hall, {airportCode}",
+      "stage": "airport",
+      "transitIn": "none",
+      "speaker": "Departure hall, {airportCode}",
+      "dialogue": "Four Ghana Must Go bags, a carry-on of foodstuff, and a goodbye in the car park that nobody rehearsed.",
+      "choices": [
+        {
+          "text": "Pay for the overweight bags; everything comes",
+          "label": "PAID_OVERWEIGHT",
+          "nextSceneId": "SF_REMIT",
+          "effects": {
+            "walletCad": -450,
+            "familyStrain": -4
+          },
+          "feedback": "Expensive, but your spouse packed every bag with love and pepper."
+        },
+        {
+          "text": "Repack on the floor and leave the stockfish behind",
+          "label": "REPACKED",
+          "nextSceneId": "SF_REMIT",
+          "effects": {
+            "energy": -10,
+            "desperation": 4
+          },
+          "feedback": "Saved CAD 350. The stockfish will be missed."
+        }
+      ]
+    },
+    "SF_REMIT": {
+      "id": "SF_REMIT",
+      "route": "SPLIT_FAMILY",
+      "layoutType": "STORY_STAGE",
+      "title": "Two currencies.",
+      "location": "Your basement room, Winnipeg",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "Your basement room, Winnipeg",
+      "dialogue": "Rent is due here in four days. At home, school fees are due in two weeks. Your Canada wallet and your home wallet both look worried.",
+      "choices": [
+        {
+          "text": "Send CAD 400 home now",
+          "label": "SENT_HOME",
+          "nextSceneId": "SF_CALLS",
+          "effects": {
+            "walletCad": -400,
+            "walletNgn": 450000,
+            "familyStrain": -10
+          },
+          "feedback": "The rate eats a little. Your spouse sends a voice note: 'Thank you, darling.'"
+        },
+        {
+          "text": "Take an extra 6 hours of delivery shifts, within your 24-hour limit, then send it",
+          "label": "EXTRA_SHIFTS",
+          "nextSceneId": "SF_CALLS",
+          "effects": {
+            "walletCad": 120,
+            "energy": -20,
+            "familyStrain": -6
+          },
+          "feedback": "Study permits allow up to 24 hours a week off-campus during classes."
+        },
+        {
+          "text": "Ask your spouse to cover it from home this month",
+          "label": "HOME_COVERS",
+          "nextSceneId": "SF_CALLS",
+          "effects": {
+            "walletNgn": -350000,
+            "familyStrain": 12
+          },
+          "feedback": "It's covered. The tone of the next call isn't."
+        }
+      ]
+    },
+    "SF_CALLS": {
+      "id": "SF_CALLS",
+      "route": "SPLIT_FAMILY",
+      "layoutType": "STORY_STAGE",
+      "title": "Time zones.",
+      "location": "Video call, 6 a.m. your time",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "Video call, 6 a.m. your time",
+      "dialogue": "Lagos is five hours ahead. Your calls keep landing when one of you is asleep. Last week your spouse asked who you were 'always out with'. The answer is the library and the warehouse, but distance doesn't hear answers.",
+      "choices": [
+        {
+          "text": "Fix a call time every day, and share your shift schedule",
+          "label": "FIXED_CALLS",
+          "nextSceneId": "SF_KIDS_CHECK",
+          "effects": {
+            "familyStrain": -10,
+            "energy": -6
+          },
+          "feedback": "Boring, predictable, and it works. Trust needs routine."
+        },
+        {
+          "text": "Send a surprise: data bundle, flowers and the kids' favourite snacks",
+          "label": "SURPRISE",
+          "nextSceneId": "SF_KIDS_CHECK",
+          "effects": {
+            "walletCad": -120,
+            "familyStrain": -8
+          },
+          "feedback": "It lands on a bad day and makes it a good one."
+        },
+        {
+          "text": "You're too tired to explain; you'll talk on the weekend",
+          "label": "TOO_TIRED",
+          "nextSceneId": "SF_KIDS_CHECK",
+          "effects": {
+            "familyStrain": 18,
+            "energy": 10
+          },
+          "feedback": "You slept. The silence filled itself in."
+        }
+      ]
+    },
+    "SF_KIDS_CHECK": {
+      "id": "SF_KIDS_CHECK",
+      "route": "SPLIT_FAMILY",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "kidsWithYou": [
+              ">=",
+              1
+            ]
+          },
+          "nextSceneId": "SF_KIDS"
+        },
+        {
+          "nextSceneId": "SF_HOME_CRISIS"
+        }
+      ]
+    },
+    "SF_KIDS": {
+      "id": "SF_KIDS",
+      "route": "SPLIT_FAMILY",
+      "layoutType": "STORY_STAGE",
+      "title": "'When is Daddy coming?'",
+      "location": "Your basement room, Winnipeg",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "Your basement room, Winnipeg",
+      "dialogue": "Your youngest won't sleep. She asks the same question every night and draws Lagos with crayons.",
+      "choices": [
+        {
+          "text": "Book a weekly video storytime with your spouse",
+          "label": "STORYTIME",
+          "nextSceneId": "SF_SOWP",
+          "effects": {
+            "familyStrain": -8,
+            "energy": -6
+          },
+          "feedback": "Bedtime stories from Lagos, every Sunday. She sleeps."
+        },
+        {
+          "text": "Find a newcomer family program at the library",
+          "label": "LIBRARY_PROGRAM",
+          "nextSceneId": "SF_SOWP",
+          "effects": {
+            "desperation": -8,
+            "energy": -8
+          },
+          "feedback": "Free, warm, and full of kids who also miss someone."
+        },
+        {
+          "text": "Keep busy; she'll adjust",
+          "label": "SHE_WILL_ADJUST",
+          "nextSceneId": "SF_SOWP",
+          "effects": {
+            "familyStrain": 12
+          },
+          "feedback": "Children adjust. They also remember."
+        }
+      ]
+    },
+    "SF_HOME_CRISIS": {
+      "id": "SF_HOME_CRISIS",
+      "route": "SPLIT_FAMILY",
+      "layoutType": "STORY_STAGE",
+      "title": "The generator died.",
+      "location": "WhatsApp from Lagos",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "WhatsApp from Lagos",
+      "dialogue": "Your spouse: 'Gen don die. Mechanic says ₦280k. Kids have exams this week.' Your shift starts in an hour.",
+      "choices": [
+        {
+          "text": "Send CAD 260 for the repair",
+          "label": "FIXED_GEN",
+          "nextSceneId": "SF_SOWP",
+          "effects": {
+            "walletCad": -260,
+            "walletNgn": 0,
+            "familyStrain": -8
+          }
+        },
+        {
+          "text": "Tell them to use the home wallet; you're stretched",
+          "label": "HOME_WALLET",
+          "nextSceneId": "SF_SOWP",
+          "effects": {
+            "walletNgn": -280000,
+            "familyStrain": 8
+          },
+          "feedback": "Fair, and it still feels like you weren't there."
+        }
+      ]
+    },
+    "SF_SOWP": {
+      "id": "SF_SOWP",
+      "route": "SPLIT_FAMILY",
+      "layoutType": "STORY_STAGE",
+      "title": "The open work permit.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "Your spouse applies for an open work permit, based on your 16-month master's. Now everything you've held together gets tested.",
+      "choices": [
+        {
+          "text": "Help prepare it properly: your enrolment letter, marriage certificate, photos, funds",
+          "label": "PROPER_SOWP",
+          "nextSceneId": "SF_REUNION_CHECK",
+          "effects": {
+            "energy": -10,
+            "familyStrain": -6
+          },
+          "feedback": "A clean application. The wait is still the wait."
+        },
+        {
+          "text": "Leave it to an unlicensed 'agent' to save time",
+          "label": "AGENT_SOWP",
+          "nextSceneId": "SF_REUNION_CHECK",
+          "effects": {
+            "walletCad": -600,
+            "familyStrain": 10
+          },
+          "feedback": "He uploads the wrong certificate. A request for documents adds months."
+        },
+        {
+          "text": "Quit the program and fly home to the family",
+          "label": "WENT_HOME",
+          "nextSceneId": "SF_WENT_HOME",
+          "effects": {}
+        }
+      ]
+    },
+    "SF_REUNION_CHECK": {
+      "id": "SF_REUNION_CHECK",
+      "route": "SPLIT_FAMILY",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "familyStrain": [
+              "<",
+              50
+            ],
+            "walletCad": [
+              ">=",
+              1500
+            ]
+          },
+          "nextSceneId": "SF_REUNITED"
+        },
+        {
+          "nextSceneId": "SF_BREAKDOWN"
+        }
+      ]
+    },
+    "SF_REUNITED": {
+      "id": "SF_REUNITED",
+      "route": "SPLIT_FAMILY",
+      "layoutType": "STORY_STAGE",
+      "title": "Arrivals, Pearson.",
+      "location": "Toronto Pearson, Terminal 3",
+      "stage": "pearson-arrivals",
+      "transitIn": "plane",
+      "speaker": "Toronto Pearson, Terminal 3",
+      "dialogue": "Your spouse walks out with a work permit and two bags of foodstuff. The kids scream. Strangers clap.",
+      "outcome": {
+        "result": "win",
+        "reason": "SF_REUNITED",
+        "title": "Reunited",
+        "subtitle": "Two wallets, two time zones, one family again.",
+        "lesson": "A spouse's open work permit depends on the student's program (16+ month master's, doctorate, or certain professional programs since 2025). Split families that budget for both homes and talk every day are the ones that make it to arrivals."
+      }
+    },
+    "SF_WENT_HOME": {
+      "id": "SF_WENT_HOME",
+      "route": "SPLIT_FAMILY",
+      "layoutType": "STORY_STAGE",
+      "title": "Flew home.",
+      "location": "{airportCode}",
+      "stage": "airport",
+      "transitIn": "none",
+      "speaker": "{airportCode}",
+      "dialogue": "You chose the family over the program. Nobody at home calls it failure.",
+      "outcome": {
+        "result": "fail",
+        "reason": "SF_WENT_HOME",
+        "title": "Went home to the family",
+        "subtitle": "The program can wait. Some things can't.",
+        "lesson": "Leaving your program ends your study permit's purpose. You can apply again later, and a clean history helps."
+      }
+    },
+    "SF_BREAKDOWN": {
+      "id": "SF_BREAKDOWN",
+      "route": "SPLIT_FAMILY",
+      "layoutType": "STORY_STAGE",
+      "title": "The strain won.",
+      "location": "Video call, 3 a.m.",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "Video call, 3 a.m.",
+      "dialogue": "The call ends without goodbye. Distance found every crack the money and the hours had covered.",
+      "outcome": {
+        "result": "fail",
+        "reason": "SF_BREAKDOWN",
+        "title": "The strain won",
+        "subtitle": "Distance found every crack.",
+        "lesson": "Split-family moves are some of the hardest. Plan both budgets, a daily call routine and the work-permit timeline before anyone flies."
+      }
     }
   },
   "crs": {
