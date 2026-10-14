@@ -62,7 +62,7 @@ jobs:
       - uses: android-actions/setup-android@v3
       - run: npm ci
       - run: npm run android:sync
-      - name: Decode the upload keystore (secrets: ANDROID_KEYSTORE_BASE64 and passwords)
+      - name: Decode the upload keystore from repository secrets
         if: env.KEYSTORE_B64 != ''
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
