@@ -20,7 +20,7 @@ import { levelIndexOf, levelProgress, levelsFor, starsFor } from "./levels";
 import { blessingChance, dangerStats, gambleOdds } from "./engine";
 import { faceFor } from "./face";
 import { careerVars, trackFor } from "./careers";
-import { GROOVES, moodFor } from "./music";
+import { GROOVES, STYLES, STYLE_IDS, grooveFor, moodFor, type Mood } from "./music";
 import { makeSave, readSave } from "./save";
 import { PLAYABLE_ROUTES, simulate } from "./simulate";
 import {
@@ -1586,5 +1586,36 @@ describe("v0.19: round-3 fixes", () => {
     expect(k.currentSceneId).toBe("TR_KUNLE");
     expect(play2(k, ["agent's number"]).outcome?.reason).toBe("LMIA_SCAM");
     expect(play2(k, ["open work permit for vulnerable workers"]).currentSceneId).toBe("TOURIST_HUB");
+  });
+});
+
+describe("soundtrack styles", () => {
+  const MOODS = Object.keys(GROOVES) as Mood[];
+  it("offers five Naija styles, each restyling at least three moods", () => {
+    expect(STYLE_IDS).toEqual(["afrobeat", "amapiano", "highlife", "fuji", "nollywood"]);
+    for (const id of STYLE_IDS) expect(Object.keys(STYLES[id].grooves).length, id).toBeGreaterThanOrEqual(3);
+  });
+
+  it("every groove in every style is a playable 16-step pattern", () => {
+    for (const id of STYLE_IDS) {
+      for (const mood of MOODS) {
+        const g = grooveFor(id, mood);
+        const where = `${id}/${mood}`;
+        expect(g.bpm, where).toBeGreaterThanOrEqual(60);
+        expect(g.bpm, where).toBeLessThanOrEqual(140);
+        expect(g.chords.length, where).toBeGreaterThan(0);
+        for (const lane of [g.kick, g.clap, g.shaker, g.talk, g.bass, g.arp, g.log, g.keys, g.horns, g.boom]) {
+          if (lane) expect(lane.length, where).toBe(16);
+        }
+      }
+    }
+  });
+
+  it("moods a style doesn't restyle fall back to Afrobeats, and Nollywood brings the drama", () => {
+    expect(grooveFor("highlife", "tension")).toBe(GROOVES.tension);
+    expect(grooveFor("afrobeat", "lagos")).toBe(GROOVES.lagos);
+    expect(grooveFor("nollywood", "tension").strings).toBe(true);
+    expect(grooveFor("nollywood", "lagos").boom?.some(Boolean)).toBe(true);
+    expect(grooveFor("fuji", "lagos").talk.filter((x) => x !== null).length).toBeGreaterThan(6);
   });
 });

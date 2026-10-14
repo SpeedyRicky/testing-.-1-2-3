@@ -2,12 +2,12 @@
 // horns and pads, playing the grooves in game/music.ts, plus the game's sound effects. Everything is synthesized,
 // so there are no audio files to license or download. Optional licensed tracks can replace a mood's groove
 // (see public/music/README.md).
-import { GROOVES, PENTATONIC, hz, type Groove, type Mood, type Sfx } from "@/game/music";
+import { grooveFor, type Style, PENTATONIC, hz, type Groove, type Mood, type Sfx } from "@/game/music";
 
 const LOOKAHEAD = 0.14;
 const TICK_MS = 30;
 
-export interface AudioStats { notes: number; sfx: number; mood: Mood | null; running: boolean }
+export interface AudioStats { notes: number; sfx: number; mood: Mood | null; running: boolean; style: Style }
 
 export class AudioEngine {
   private ctx: AudioContext;
@@ -22,7 +22,8 @@ export class AudioEngine {
   private bar = 0;
   private files: Partial<Record<Mood, string>> = {};
   private track: HTMLAudioElement | null = null;
-  readonly stats: AudioStats = { notes: 0, sfx: 0, mood: null, running: false };
+  private style: Style = "afrobeat";
+  readonly stats: AudioStats = { notes: 0, sfx: 0, mood: null, running: false, style: "afrobeat" };
 
   constructor() {
     const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -79,6 +80,15 @@ export class AudioEngine {
     this.sfxBus.gain.setTargetAtTime(this.sfxOn ? 0.6 * this.sfxVol : 0, this.ctx.currentTime, 0.05);
   }
 
+  /** Switches the soundtrack style; the current mood re-plays in the new style. */
+  setStyle(style: Style) {
+    if (this.style === style) return;
+    this.style = style;
+    this.stats.style = style;
+    const mood = this.stats.mood;
+    if (mood) { this.stats.mood = null; this.setMood(mood); }
+  }
+
   /** Switches the groove with a short fade, keeping time. */
   setMood(mood: Mood) {
     if (this.stats.mood === mood) return;
@@ -101,7 +111,7 @@ export class AudioEngine {
     g.setValueAtTime(level, now);
     g.linearRampToValueAtTime(level * 0.2, now + 0.35);
     g.linearRampToValueAtTime(level, now + 1.2);
-    this.groove = GROOVES[mood];
+    this.groove = grooveFor(this.style, mood);
     this.step = 0;
     this.bar = 0;
     this.nextTime = Math.max(this.nextTime, now + 0.38);
@@ -156,6 +166,9 @@ export class AudioEngine {
     if (g.keys?.[i]) this.keys(t, chord.map((n) => hz(n)), sixteenth * 1.6, out);
     if (g.horns?.[i] && g.hornBars?.includes(bar % g.chords.length)) this.horns(t, chord.map((n) => hz(n)), 0.22, out);
     if (g.pad && i === 0) this.pad(t, chord.map((n) => hz(n - 12)), sixteenth * 16, out);
+    if (g.strings && i === 0) this.strings(t, chord.map((n) => hz(n + 12)), sixteenth * 16, out);
+    if (g.boom?.[i]) this.boom(t, g.boom[i], out);
+    if (g.riserEvery && i === 8 && bar % g.riserEvery === g.riserEvery - 1) this.riser(t, sixteenth * 8, out);
     this.stats.notes++;
   }
 
@@ -283,6 +296,60 @@ export class AudioEngine {
       this.osc("sawtooth", f, t, dur, lp);
       this.osc("sawtooth", f * 1.008, t, dur, lp);
     }
+  }
+
+  /** Film strings: detuned saws, slow swell, gentle vibrato. */
+  private strings(t: number, freqs: number[], dur: number, out: AudioNode) {
+    const vib = this.ctx.createOscillator();
+    vib.frequency.value = 5.2;
+    const depth = this.ctx.createGain();
+    depth.gain.value = 3;
+    vib.connect(depth);
+    vib.start(t);
+    vib.stop(t + dur + 0.1);
+    for (const f of freqs) {
+      const lp = this.ctx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.setValueAtTime(900, t);
+      lp.frequency.linearRampToValueAtTime(2400, t + dur * 0.5);
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(0.045, t + dur * 0.4);
+      g.gain.linearRampToValueAtTime(0.0001, t + dur);
+      g.connect(out);
+      lp.connect(g);
+      for (const detune of [0.997, 1.003]) {
+        const o = this.osc("sawtooth", f * detune, t, dur, lp);
+        depth.connect(o.frequency);
+      }
+    }
+  }
+
+  /** A dramatic low impact: a pitched-down sine thump with a noise tail. */
+  private boom(t: number, v: number, out: AudioNode) {
+    const g = this.env(t, 0.75 * v, 0.004, 1.1, out);
+    const o = this.osc("sine", 95, t, 1.2, g);
+    o.frequency.exponentialRampToValueAtTime(34, t + 0.5);
+    this.noiseBurst(t, 0.5, "lowpass", 400, 0.18 * v, out);
+  }
+
+  /** A rising noise sweep that pulls the ear into the next phrase. */
+  private riser(t: number, dur: number, out: AudioNode) {
+    const src = this.ctx.createBufferSource();
+    src.buffer = this.noise;
+    src.loop = true;
+    const f = this.ctx.createBiquadFilter();
+    f.type = "bandpass";
+    f.Q.value = 2;
+    f.frequency.setValueAtTime(300, t);
+    f.frequency.exponentialRampToValueAtTime(5000, t + dur);
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.1, t + dur * 0.95);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.05);
+    src.connect(f).connect(g).connect(out);
+    src.start(t);
+    src.stop(t + dur + 0.1);
   }
 
   // --- sound effects ---------------------------------------------------------------

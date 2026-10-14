@@ -10,7 +10,7 @@ Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · lucide-react.
 ```bash
 npm install
 npm run dev          # open http://localhost:3000 once the terminal says "Ready"
-npm test             # 175 engine tests, including seeded balance checks
+npm test             # 178 engine tests, including seeded balance checks
 npm run simulate     # balance report: thousands of simulated playthroughs per route
 npm run lint
 npm run build
@@ -127,7 +127,15 @@ Original Naija-style music, composed live in the browser with Web Audio (no audi
 Sound effects play on taps, each cutscene (by tone, plus coins in or out), danfo horns, okada engines, phone rings,
 planes, wind, random events ("wahala?" on the talking drum), level-ups, and the ending fanfare or "dun dun DUN".
 Browsers only allow sound after a tap, so the music starts on your first click. The header chip opens a small
-mixer: **Music on / Effects only / Muted**, plus music and effects volume sliders, all remembered. Grooves are data in `game/music.ts`; the synth is `app/audio/engine.ts`.
+mixer: **Music on / Effects only / Muted**, music and effects volume sliders, and a **Soundtrack** picker, all
+remembered:
+- **Afrobeats** (default): the grooves above.
+- **Amapiano Vibes**: log drums and off-beat keys for every scene, slowed down for tension and loss.
+- **Highlife Gold**: palmwine guitars that swing.
+- **Fuji Drums**: talking drums lead, shekere drives, film-style booms under the tension.
+- **Nollywood Drama**: big detuned strings, low "boom" impacts and risers into each phrase.
+Styles are data (`STYLES` and `grooveFor` in `game/music.ts`); a mood a style doesn't restyle falls back to
+Afrobeats. The strings, booms and risers are new instruments in `app/audio/engine.ts`. Grooves are data in `game/music.ts`; the synth is `app/audio/engine.ts`.
 To use licensed recordings for a mood, see `public/music/README.md`.
 
 ## Endings cabinet and Reality checks
