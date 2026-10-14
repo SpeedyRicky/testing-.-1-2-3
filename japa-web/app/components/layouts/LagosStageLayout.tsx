@@ -57,6 +57,38 @@ function valueOf(run: GameState, key: BarSpec["key"]): number {
   return key in run.routeStats ? run.routeStats[key as keyof GameState["routeStats"]] ?? 0 : (run[key as keyof GameState] as number);
 }
 
+/** Rapid-fire countdown: the bar drains; at zero you "freeze" and the timeout answer is given for you. */
+function ChoiceTimer({ seconds, paused, onTimeout }: { seconds: number; paused: boolean; onTimeout: () => void }) {
+  const [left, setLeft] = useState(seconds * 10);
+  const fired = useRef(false);
+  const cb = useRef(onTimeout);
+  useEffect(() => { cb.current = onTimeout; });
+  useEffect(() => {
+    if (paused) return;
+    const id = window.setInterval(() => {
+      if (document.hidden) return;
+      setLeft((l) => Math.max(0, l - 1));
+    }, 100);
+    return () => window.clearInterval(id);
+  }, [paused]);
+  useEffect(() => {
+    if (left === 0 && !fired.current) { fired.current = true; cb.current(); }
+  }, [left]);
+  const pct = (left / (seconds * 10)) * 100;
+  const urgent = left <= 50;
+  return (
+    <div className="mt-5" role="timer" aria-label={`${Math.ceil(left / 10)} seconds to answer`}>
+      <div className="flex justify-between text-[11px] font-bold uppercase tracking-[0.18em]">
+        <span className={urgent ? "animate-pulse text-rose-300" : "text-amber-200"}>Rapid fire: answer now</span>
+        <span className={`font-mono ${urgent ? "text-rose-300" : "text-zinc-400"}`}>{Math.ceil(left / 10)}s</span>
+      </div>
+      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
+        <div className={`h-full rounded-full transition-[width] duration-100 ease-linear ${urgent ? "bg-rose-500" : "bg-amber-300"}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
 function HudMeter({ spec, value }: { spec: BarSpec; value: number }) {
   const prev = useRef(value);
   const [delta, setDelta] = useState({ n: 0, key: 0 });
@@ -270,6 +302,10 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
             </p>
           )}
 
+          {scene?.timer && !ended ? (
+            <ChoiceTimer key={`${run.currentSceneId}:${run.history.length}`} seconds={scene.timer.seconds}
+              paused={moving || !!run.popup} onTimeout={() => pick(scene.timer!.timeoutIndex)} />
+          ) : null}
           <div className="mt-8 flex flex-col gap-3">
             {choices.map((c, i) => (
               <button
@@ -292,7 +328,9 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
         </article>
       </div>
 
-      {run.popup && !run.outcome && !moving && <PopupModal popup={{ ...run.popup, title: t(run.popup.title, run), body: t(run.popup.body, run) }} onDismiss={() => dispatch({ type: "DISMISS_POPUP" })} />}
+      {run.popup && !run.outcome && !moving && <PopupModal popup={{ ...run.popup, title: t(run.popup.title, run), body: t(run.popup.body, run),
+        options: run.popup.options?.map((o) => ({ ...o, label: t(o.label, run), feedback: t(o.feedback, run) })) }} onDismiss={() => dispatch({ type: "DISMISS_POPUP" })}
+        onChoose={(index) => dispatch({ type: "RESOLVE_POPUP", index })} />}
       {ended && rank && (
         <GameOverModal
           rank={{ ...rank, title: t(rank.title), blurb: t(rank.blurb) }}

@@ -250,7 +250,7 @@ export function routePatches(p: PlayerProfile): Partial<Record<RouteId, Partial<
     STUDY_PERMIT: {
       currentLocation: where,
       walletCad: clamp(g.savingsCad, 1000, 40000),
-      routeStats: { academicStanding: g.academicStanding, hasDegree: g.hasDegree ? 1 : 0 },
+      routeStats: { academicStanding: g.academicStanding, hasDegree: g.hasDegree ? 1 : 0, employed: p.role === "worker" ? 1 : 0 },
     },
     FIRST_YEAR: {
       walletCad: clamp(g.savingsCad, 6000, 15000),

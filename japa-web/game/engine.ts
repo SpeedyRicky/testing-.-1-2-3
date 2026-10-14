@@ -250,7 +250,8 @@ export function choose(db: ScenarioDatabase, state: GameState, index: number, ro
   if (items.length && !endingMove && (rolls[0] ?? 1) < trapChance(db, s)) {
     const trap = items[Math.floor((rolls[1] ?? 0) * items.length) % items.length];
     s = applyEffects(s, trap.effects);
-    s = { ...s, popup: { kind: "trap", id: trap.id, kicker: trap.kicker, title: trap.title, body: trap.body } };
+    s = { ...s, popup: { kind: "trap", id: trap.id, kicker: trap.kicker, title: trap.title, body: trap.body,
+      ...(trap.options?.length ? { options: trap.options, button: undefined } : {}) } };
   } else if (!endingMove && route.blessings && (rolls[3] ?? 1) < blessingChance(db, s)) {
     const pool = route.blessings.items.filter((b) => !b.when || evaluate(s, b.when));
     if (pool.length) {
@@ -297,7 +298,21 @@ export function applyMarketShock(db: ScenarioDatabase, state: GameState): GameSt
 }
 
 export function dismissPopup(state: GameState): GameState {
+  if (state.popup?.options?.length) return dismissPopup(resolvePopup(DB, state, 0));
   return state.popup ? { ...state, popup: null } : state;
+}
+
+/** Answers a Village People crisis: applies the option, then shows what happened (a plain pop-up to dismiss). */
+export function resolvePopup(db: ScenarioDatabase, state: GameState, index: number): GameState {
+  const p = state.popup;
+  const opt = p?.options?.[index];
+  if (!p || !opt) return state;
+  let s = applySet(applyEffects(state, opt.effects), opt.set);
+  s = { ...s, popup: { kind: "trap", id: `${p.id}:${index}`, kicker: p.kicker, title: opt.label, body: opt.feedback, button: "Continue" },
+    history: [...s.history, { sceneId: s.currentSceneId, answer: `${p.id}:${index}` }] };
+  const route = db.routes[db.scenes[s.currentSceneId]?.route ?? s.activeRoute];
+  if (route.collapse && evaluateAny(s, route.collapse.any)) return enterScene(db, { ...s, popup: null }, route.collapse.sceneId);
+  return s;
 }
 
 /** The end-of-run rank for routes that define ranks (first match wins). */

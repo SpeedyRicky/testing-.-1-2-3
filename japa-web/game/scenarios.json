@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.19.0",
+    "version": "0.22.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -125,6 +125,31 @@
               "walletNgn": 400000,
               "desperation": 8
             }
+          },
+          {
+            "id": "fuel",
+            "kicker": "Village People attack!",
+            "title": "Fuel price triples",
+            "body": "Petrol jumped overnight. Your generator and your {bus} fares just tripled. The biometrics trip is next week.",
+            "effects": {},
+            "options": [
+              {
+                "label": "Pay it and keep studying with light",
+                "effects": {
+                  "walletNgn": -60000,
+                  "desperation": 6
+                },
+                "feedback": "Your savings bleed, your prep doesn't."
+              },
+              {
+                "label": "Switch off the gen and study at the cyber cafe",
+                "effects": {
+                  "energy": -15,
+                  "desperation": 4
+                },
+                "feedback": "Cheaper, louder, slower. Somebody's playing Asake at full volume."
+              }
+            ]
           }
         ]
       },
@@ -175,6 +200,30 @@
           },
           "title": "Village People Took the Call",
           "blurb": "Interference hit critical. IELTS, landlords, and a cousin in the group chat finished the route for you."
+        },
+        {
+          "id": "alhaji",
+          "reason": "AGENT_ROOM_SCAM",
+          "title": "Alhaji's customer",
+          "blurb": "₦1.5M commitment fee, one Photoshop letter, zero visas."
+        },
+        {
+          "id": "facilitation",
+          "reason": "AGENT_SCAM",
+          "title": "Facilitation fee",
+          "blurb": "The office has a new signboard. The money has a new owner."
+        },
+        {
+          "id": "tout",
+          "reason": "PASSPORT_TOUT",
+          "title": "Tout's best customer",
+          "blurb": "The passport came. Your details didn't."
+        },
+        {
+          "id": "fakealert",
+          "reason": "FAKE_ALERT",
+          "title": "Fake alert victim",
+          "blurb": "The Corolla is on the bridge. The alert was an SMS."
         },
         {
           "id": "hustle",
@@ -386,6 +435,12 @@
           "blurb": "Cash shifts felt like a shortcut. The study permit had conditions."
         },
         {
+          "id": "fakeref",
+          "reason": "FAKE_REFERENCE",
+          "title": "Self-referenced",
+          "blurb": "Comma for comma. They noticed."
+        },
+        {
           "id": "hustle",
           "title": "Back to the plan",
           "blurb": "Not this term. The library still knows your name."
@@ -470,6 +525,101 @@
               "walletCad": 120,
               "desperation": 4
             }
+          },
+          {
+            "id": "donors",
+            "kicker": "Trust tracker",
+            "title": "The donors want an update",
+            "body": "Your crowdfund donors are asking where the money went. Somebody saw you buy a new phone.",
+            "effects": {},
+            "when": {
+              "donorTrust": [
+                ">=",
+                1
+              ]
+            },
+            "options": [
+              {
+                "label": "Post receipts, grades and a thank-you video",
+                "effects": {
+                  "energy": -6,
+                  "streetCred": 6,
+                  "desperation": -4
+                },
+                "feedback": "Trust restored. Two donors send a little more for books."
+              },
+              {
+                "label": "Ignore it; it's your life",
+                "effects": {
+                  "desperation": 10,
+                  "streetCred": -8
+                },
+                "feedback": "The group chat goes cold. 'Some people sha.'"
+              }
+            ]
+          },
+          {
+            "id": "freeze",
+            "kicker": "Village People attack!",
+            "title": "Freeze-thaw shock",
+            "body": "You left your winter jacket on the subway. A blizzard warning just dropped it to −18°C, and you have a shift.",
+            "effects": {},
+            "when": {
+              "arrived": [
+                ">=",
+                1
+              ]
+            },
+            "options": [
+              {
+                "label": "Buy a real parka on your new credit card",
+                "effects": {
+                  "walletCad": -350,
+                  "desperation": 4
+                },
+                "feedback": "Warm and in debt. Pay the card in full and it starts building your credit history."
+              },
+              {
+                "label": "Push through the delivery shift anyway",
+                "effects": {
+                  "energy": -35,
+                  "academicStanding": -5
+                },
+                "feedback": "You make the money and lose two days to a fever."
+              }
+            ]
+          },
+          {
+            "id": "devalue",
+            "kicker": "Village People attack!",
+            "title": "The sudden devaluation",
+            "body": "The naira just lost 18% overnight against the dollar. Your tuition savings shrank while you slept.",
+            "effects": {},
+            "when": {
+              "arrived": [
+                "<",
+                1
+              ]
+            },
+            "options": [
+              {
+                "label": "Panic-buy dollars at a terrible black-market rate",
+                "effects": {
+                  "walletCad": -900,
+                  "desperation": 15
+                },
+                "feedback": "Locked in, at a price that hurts."
+              },
+              {
+                "label": "Delay your intake by one semester and re-hustle",
+                "effects": {
+                  "walletCad": 2500,
+                  "desperation": 8,
+                  "energy": -10
+                },
+                "feedback": "Six more months of Lagos. The plan survives."
+              }
+            ]
           }
         ]
       },
@@ -480,7 +630,10 @@
           "goal": "Choose a program that leads somewhere, and a real letter of acceptance.",
           "scenes": [
             "ST_START",
-            "ST_LOA"
+            "ST_LOA",
+            "ST_PROF_EMAIL",
+            "ST_REF_CHASE",
+            "ST_FUNDED"
           ]
         },
         {
@@ -489,7 +642,9 @@
           "goal": "Prove tuition plus CAD 23,448 to live on, with a history behind every naira.",
           "scenes": [
             "ST_FUNDS",
-            "ST_FUNDS_SHORT"
+            "ST_FUNDS_SHORT",
+            "ST_FAMILY_MEETING",
+            "ST_CROWDFUND"
           ],
           "stars": [
             {
@@ -521,7 +676,11 @@
             "ST_VFS",
             "ST_REFUSED",
             "ST_APPROVED",
-            "ST_SILENCE"
+            "ST_SILENCE",
+            "ST_FX",
+            "ST_REVIEW_1",
+            "ST_REVIEW_2",
+            "ST_REVIEW_3"
           ],
           "stars": [
             {
@@ -822,6 +981,31 @@
               "desperation": 6,
               "energy": -4
             }
+          },
+          {
+            "id": "devalue",
+            "kicker": "Village People attack!",
+            "title": "The sudden devaluation",
+            "body": "The naira just lost 18% overnight. Your settlement funds, saved in naira, are suddenly short of the CAD figure.",
+            "effects": {},
+            "options": [
+              {
+                "label": "Top up with overtime and sell the generator",
+                "effects": {
+                  "energy": -20,
+                  "desperation": 6
+                },
+                "feedback": "Back above the line, and very tired."
+              },
+              {
+                "label": "Convert to dollars now at a bad rate",
+                "effects": {
+                  "walletCad": -900,
+                  "desperation": 10
+                },
+                "feedback": "Painful, but at least the number stops moving."
+              }
+            ]
           }
         ]
       },
@@ -1783,6 +1967,56 @@
               "careerScore": 2,
               "desperation": -2
             }
+          },
+          {
+            "id": "blacktax",
+            "kicker": "Black tax",
+            "title": "A message from home",
+            "body": "'Your aunty in {city} needs ₦50,000 for hospital bills. We know you're doing well over there.'",
+            "effects": {},
+            "options": [
+              {
+                "label": "Send CAD 45 now",
+                "effects": {
+                  "walletCad": -45,
+                  "community": 3,
+                  "desperation": -3
+                },
+                "feedback": "A voice note full of prayers arrives within the hour."
+              },
+              {
+                "label": "Explain you can't this month",
+                "effects": {
+                  "desperation": 8
+                },
+                "feedback": "'Okay o.' Two words, and they follow you all week."
+              }
+            ]
+          },
+          {
+            "id": "freeze",
+            "kicker": "Village People attack!",
+            "title": "Freeze-thaw shock",
+            "body": "You left your budget jacket on the TTC. A blizzard warning drops it to −18°C, and your delivery shift starts soon.",
+            "effects": {},
+            "options": [
+              {
+                "label": "Buy a real parka on your credit card",
+                "effects": {
+                  "walletCad": -350,
+                  "desperation": 4
+                },
+                "feedback": "Warm, and the card paid in full next month starts your credit history."
+              },
+              {
+                "label": "Do the shift anyway",
+                "effects": {
+                  "energy": -35,
+                  "walletCad": 120
+                },
+                "feedback": "CAD 120 and a cold that lasts a week."
+              }
+            ]
           }
         ]
       },
@@ -1823,7 +2057,9 @@
           "scenes": [
             "FY_LANDING",
             "FY_CUSTOMS",
-            "FY_HOUSING"
+            "FY_HOUSING",
+            "FY_LANDLORD",
+            "FY_LANDLORD_2"
           ],
           "stars": [
             {
@@ -2103,6 +2339,14 @@
             "desperation": 8,
             "papers": 6
           }
+        },
+        {
+          "text": "Sell your Corolla on Jiji to fund your own proof of funds",
+          "label": "SELL_CAR",
+          "nextSceneId": "LAGOS_JIJI",
+          "effects": {
+            "energy": -6
+          }
         }
       ]
     },
@@ -2164,6 +2408,15 @@
                 "per": -0.004
               }
             ]
+          }
+        },
+        {
+          "text": "Answer the Facebook ad: 'Canada Caregiver Visa in 4 Weeks. Office in {city}'",
+          "label": "AGENT_ROOM_AD",
+          "nextSceneId": "AR_PITCH",
+          "effects": {
+            "energy": -6,
+            "walletNgn": -2000
           }
         }
       ]
@@ -2280,7 +2533,7 @@
         {
           "text": "Book the appointment: CAD 185 in visa and biometrics fees. {Bus} to the visa centre",
           "label": "",
-          "nextSceneId": "LAGOS_EMBASSY_QUEUE",
+          "nextSceneId": "LAGOS_OGA",
           "effects": {
             "walletNgn": -120000,
             "papers": 18,
@@ -2294,6 +2547,14 @@
           "nextSceneId": "LAGOS_WEEKEND_GIG",
           "effects": {
             "energy": -4
+          }
+        },
+        {
+          "text": "Pay the tout at the gate who promises your new passport 'tomorrow' for ₦250k",
+          "label": "PASSPORT_TOUT",
+          "nextSceneId": "LAGOS_PASSPORT_TOUT",
+          "effects": {
+            "walletNgn": -250000
           }
         }
       ]
@@ -4072,6 +4333,21 @@
           "label": "FRAUD",
           "nextSceneId": "ST_FAKE_LOA",
           "effects": {}
+        },
+        {
+          "text": "Chase a fully funded research master's: email professors directly",
+          "label": "SCHOLARSHIP_ROUTE",
+          "nextSceneId": "ST_PROF_EMAIL",
+          "effects": {
+            "energy": -5
+          },
+          "requires": {
+            "hasDegree": [
+              ">=",
+              1
+            ]
+          },
+          "lockedHint": "You need a first degree for a research master's"
         }
       ]
     },
@@ -4148,13 +4424,11 @@
         {
           "text": "Family sponsorship: Daddy and {uncle} sign letters with their statements and source of funds",
           "label": "FAMILY_SPONSOR",
-          "nextSceneId": "ST_FUNDS",
+          "nextSceneId": "ST_FAMILY_MEETING",
           "effects": {
-            "walletCad": 20000,
-            "desperation": 6,
-            "familyAsked": 1
+            "familyAsked": 1,
+            "energy": -5
           },
-          "feedback": "CAD 20,000 with a paper trail. The family WhatsApp group will want updates.",
           "requires": {
             "familyAsked": [
               "<",
@@ -4184,11 +4458,8 @@
         {
           "text": "Crowdfund on X and WhatsApp",
           "label": "CROWDFUNDED",
-          "nextSceneId": "ST_FUNDS",
+          "nextSceneId": "ST_CROWDFUND",
           "effects": {
-            "walletCad": 3000,
-            "streetCred": 5,
-            "desperation": 2,
             "crowdfunded": 1
           },
           "requires": {
@@ -4197,27 +4468,7 @@
               1
             ]
           },
-          "lockedHint": "You already ran the campaign",
-          "gamble": {
-            "odds": 0.35,
-            "success": {
-              "feedback": "It went small-viral. Strangers sent CAD 3,000 and a lot of prayer emojis.",
-              "label": "WENT_VIRAL"
-            },
-            "fail": {
-              "feedback": "Your uncles shared it with 'God will do it'. CAD 400 arrived. God is still working on the rest.",
-              "effects": {
-                "walletCad": -2600
-              },
-              "label": "PRAYER_EMOJIS"
-            },
-            "bonus": [
-              {
-                "key": "streetCred",
-                "per": 0.02
-              }
-            ]
-          }
+          "lockedHint": "You already ran the campaign"
         },
         {
           "text": "Education loan from a lender that funds international students (approved for your school)",
@@ -4246,7 +4497,7 @@
         {
           "text": "The funds are ready: book biometrics and submit (CAD 57,448 for the master's)",
           "label": "",
-          "nextSceneId": "ST_SOP",
+          "nextSceneId": "ST_FX",
           "effects": {},
           "requires": {
             "programType": [
@@ -4269,7 +4520,7 @@
         {
           "text": "The funds are ready: book biometrics and submit (CAD 60,448 for the bachelor's)",
           "label": "",
-          "nextSceneId": "ST_SOP",
+          "nextSceneId": "ST_FX",
           "effects": {},
           "requires": {
             "programType": [
@@ -4292,7 +4543,7 @@
         {
           "text": "The funds are ready: book biometrics and submit (CAD 43,448 for the college diploma)",
           "label": "",
-          "nextSceneId": "ST_SOP",
+          "nextSceneId": "ST_FX",
           "effects": {},
           "requires": {
             "programType": [
@@ -4315,7 +4566,7 @@
         {
           "text": "The funds are ready: book biometrics and submit (CAD 34,448 for the private certificate)",
           "label": "",
-          "nextSceneId": "ST_SOP",
+          "nextSceneId": "ST_FX",
           "effects": {},
           "requires": {
             "programType": [
@@ -4443,7 +4694,7 @@
         {
           "text": "Write a specific plan: how the program builds on {sopBackground}, and your career path",
           "label": "SPECIFIC_PLAN",
-          "nextSceneId": "ST_VFS",
+          "nextSceneId": "ST_REVIEW_1",
           "effects": {
             "officerConfidence": 45,
             "energy": -25,
@@ -4454,7 +4705,7 @@
         {
           "text": "Pay an editor in the group chat to polish your draft (CAD 120)",
           "label": "EDITOR",
-          "nextSceneId": "ST_VFS",
+          "nextSceneId": "ST_REVIEW_1",
           "effects": {
             "walletCad": -120,
             "officerConfidence": 25,
@@ -4465,7 +4716,7 @@
         {
           "text": "Download a template and change the names",
           "label": "TEMPLATE",
-          "nextSceneId": "ST_VFS",
+          "nextSceneId": "ST_REVIEW_1",
           "effects": {
             "officerConfidence": 10
           },
@@ -4474,7 +4725,7 @@
         {
           "text": "Say plainly that the plan is permanent residence",
           "label": "DUAL_INTENT",
-          "nextSceneId": "ST_VFS",
+          "nextSceneId": "ST_REVIEW_1",
           "effects": {
             "officerConfidence": 20
           },
@@ -4635,7 +4886,10 @@
             "walletCad": -350,
             "desperation": -4
           },
-          "feedback": "Warm, and slightly poorer."
+          "feedback": "Warm, and slightly poorer.",
+          "set": {
+            "arrived": 1
+          }
         },
         {
           "text": "Value Village thrift run: CAD 60 for a parka with a suspicious zip",
@@ -4661,6 +4915,9 @@
               },
               "label": "ZIP_DIED"
             }
+          },
+          "set": {
+            "arrived": 1
           }
         },
         {
@@ -4687,6 +4944,9 @@
                 "energy": -5
               }
             }
+          },
+          "set": {
+            "arrived": 1
           }
         }
       ]
@@ -6005,7 +6265,7 @@
         {
           "text": "Offer a bank letter, a job-search plan and a guarantor from the {faithHub}",
           "label": "GUARANTOR",
-          "nextSceneId": "FY_JOBS",
+          "nextSceneId": "FY_LANDLORD",
           "effects": {
             "walletCad": -2000,
             "community": 12,
@@ -8197,6 +8457,977 @@
             "streetCred": -4
           },
           "feedback": "He texts 'thanks' at 2 a.m. You don't reply."
+        }
+      ]
+    },
+    "AR_PITCH": {
+      "id": "AR_PITCH",
+      "route": "NIGERIA_LIFE",
+      "layoutType": "STORY_STAGE",
+      "title": "The Agent Room.",
+      "location": "Alhaji Travel Consultant, {city}",
+      "stage": "agent",
+      "transitIn": "none",
+      "speaker": "Alhaji (Travel Consultant)",
+      "dialogue": "'Ah, my brother! You are in luck. A wealthy family in Calgary needs an urgent nanny. They already have an approved LMIA. No IELTS, no experience. Just pay ₦4.5M and you land in Canada in 4 weeks. Guaranteed.'",
+      "choices": [
+        {
+          "text": "'Wow, 4 weeks? That is exactly what I need! Where do I make the deposit?'",
+          "label": "EAGER",
+          "nextSceneId": "AR_EAGER",
+          "effects": {
+            "desperation": 6
+          },
+          "feedback": "Red flag meter +1. He smiles like a man who has seen this movie."
+        },
+        {
+          "text": "'An approved LMIA? Give me the LMIA number and the employer's legal name so I can verify it.'",
+          "label": "ASKED_LMIA_NUMBER",
+          "nextSceneId": "AR_PUSHBACK",
+          "effects": {
+            "streetCred": 6
+          },
+          "feedback": "Skepticism +1. Real job offers come with a real employer you can check."
+        },
+        {
+          "text": "'No IELTS for a caregiver stream? I thought IRCC requires a minimum language level.'",
+          "label": "KNEW_THE_RULE",
+          "nextSceneId": "AR_PUSHBACK",
+          "effects": {
+            "streetCred": 9
+          },
+          "feedback": "Skepticism +1.5. The home care worker pilots require a language test (CLB 4) and they're not taking new applications."
+        }
+      ]
+    },
+    "AR_EAGER": {
+      "id": "AR_EAGER",
+      "route": "NIGERIA_LIFE",
+      "layoutType": "STORY_STAGE",
+      "title": "'Smart man!'",
+      "location": "Alhaji Travel Consultant, {city}",
+      "stage": "agent",
+      "transitIn": "none",
+      "speaker": "Alhaji (Travel Consultant)",
+      "dialogue": "'You see? You are serious. Pay the ₦1.5M commitment fee today, the rest when the visa comes. Someone from Abuja wants this slot.' He slides an account number across the desk. It's a personal account.",
+      "choices": [
+        {
+          "text": "Borrow from three loan apps and transfer the ₦1.5M today",
+          "label": "PAID_COMMITMENT",
+          "nextSceneId": "AR_SCAM",
+          "effects": {}
+        },
+        {
+          "text": "Pause. 'Let me see the job offer letter and verify the employer first.'",
+          "label": "LATE_DOUBT",
+          "nextSceneId": "AR_PUSHBACK",
+          "effects": {
+            "desperation": 4
+          },
+          "feedback": "Late, but not too late."
+        }
+      ]
+    },
+    "AR_PUSHBACK": {
+      "id": "AR_PUSHBACK",
+      "route": "NIGERIA_LIFE",
+      "layoutType": "STORY_STAGE",
+      "title": "'Trust the process.'",
+      "location": "Alhaji Travel Consultant, {city}",
+      "stage": "agent",
+      "transitIn": "none",
+      "speaker": "Alhaji (Travel Consultant)",
+      "dialogue": "He frowns, shuffling papers. 'Why are you asking for the number? That is proprietary. You will bypass me and steal the job. I have sent over 50 Nigerians this year. If you don't pay ₦1.5M commitment today, someone else takes the slot.'",
+      "choices": [
+        {
+          "text": "'Okay, sorry sir. I don't want to lose the slot.' Transfer the ₦1.5M",
+          "label": "PAID_COMMITMENT",
+          "nextSceneId": "AR_SCAM",
+          "effects": {}
+        },
+        {
+          "text": "'No upfront fee without a job offer I can verify myself. Canadian employers pay the LMIA costs, not the applicant.'",
+          "label": "SAFE_ESCAPE",
+          "nextSceneId": "AR_SAFE",
+          "effects": {}
+        },
+        {
+          "text": "'Can we sign a legally binding contract drafted by my lawyer before any money moves?'",
+          "label": "LAWYER_CONTRACT",
+          "nextSceneId": "AR_RETALIATION",
+          "effects": {}
+        }
+      ]
+    },
+    "AR_SAFE": {
+      "id": "AR_SAFE",
+      "route": "NIGERIA_LIFE",
+      "layoutType": "STORY_STAGE",
+      "title": "Scam avoided!",
+      "location": "Outside the office, {city}",
+      "stage": "agent",
+      "transitIn": "none",
+      "speaker": "Outside the office, Ikeja",
+      "dialogue": "He tells you to leave if you don't trust him. You do, gladly. Real LMIAs can't be bought or sold, a real offer names the employer, and applicants never pay the employer's LMIA fee.",
+      "choices": [
+        {
+          "text": "Walk to the bus stop with your ₦4.5M plan still in your pocket",
+          "label": "WALKED_AWAY",
+          "nextSceneId": "LAGOS_DOCUMENT_GRIND",
+          "effects": {
+            "streetCred": 20,
+            "desperation": -10
+          },
+          "feedback": "Street Cred +20. Stress −10. Funds unchanged."
+        }
+      ]
+    },
+    "AR_RETALIATION": {
+      "id": "AR_RETALIATION",
+      "route": "NIGERIA_LIFE",
+      "layoutType": "STORY_STAGE",
+      "title": "Agent retaliation.",
+      "location": "Facebook, that evening",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "Facebook, that evening",
+      "dialogue": "Alhaji blocks you, then posts your photo in the group as 'a time waster who wants free things'. Three people message you privately: 'Thank you. He took my sister's money.'",
+      "choices": [
+        {
+          "text": "Report the page, then start your own file the honest way",
+          "label": "REPORTED_AGENT",
+          "nextSceneId": "LAGOS_DOCUMENT_GRIND",
+          "effects": {
+            "streetCred": 12,
+            "desperation": 6
+          },
+          "feedback": "Embarrassing for a day. Your money is safe, and you warned three families."
+        }
+      ]
+    },
+    "AR_SCAM": {
+      "id": "AR_SCAM",
+      "route": "NIGERIA_LIFE",
+      "layoutType": "STORY_STAGE",
+      "title": "'Visa Approval.'",
+      "location": "The airport, {city}",
+      "stage": "airport",
+      "transitIn": "none",
+      "speaker": "Murtala Muhammed Airport, Lagos",
+      "dialogue": "Two weeks later Alhaji hands you a printed 'Visa Approval' letter. At check-in, the airline system can't find it. The letter was made in Photoshop. Alhaji has blocked your number.",
+      "outcome": {
+        "result": "fail",
+        "reason": "AGENT_ROOM_SCAM",
+        "title": "Section 40: misrepresentation",
+        "subtitle": "Alhaji has blocked your number on WhatsApp.",
+        "lesson": "LMIAs can't be bought. Fake job offers and fake approvals are scams, and submitting a fake document to IRCC is misrepresentation under section 40 of IRPA: refusal and a five-year ban. Verify the employer and the LMIA yourself."
+      }
+    },
+    "LAGOS_OGA": {
+      "id": "LAGOS_OGA",
+      "route": "NIGERIA_LIFE",
+      "layoutType": "STORY_STAGE",
+      "title": "Oga at the top.",
+      "location": "Your office, {area}",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "Your office, {area}",
+      "dialogue": "Biometrics is Thursday, 10 a.m., in {vacCity}. Your manager approves leave only for 'death or wedding', and he checks the office WhatsApp group every 20 minutes.",
+      "choices": [
+        {
+          "text": "Ask HR for a day's leave in writing, and a letter confirming your job",
+          "label": "ASKED_HR",
+          "nextSceneId": "LAGOS_EMBASSY_QUEUE",
+          "effects": {
+            "energy": -4
+          },
+          "gamble": {
+            "odds": 0.6,
+            "bonus": [
+              {
+                "key": "papers",
+                "per": 0.004
+              }
+            ],
+            "max": 0.9,
+            "success": {
+              "feedback": "Approved. HR's letter confirms your role, salary and return date: real home ties for a visitor visa.",
+              "effects": {
+                "papers": 10,
+                "desperation": -4
+              },
+              "label": "LEAVE_LETTER"
+            },
+            "fail": {
+              "feedback": "Approved, but Oga makes you 'cover' Saturday. No letter yet.",
+              "effects": {
+                "energy": -15,
+                "desperation": 4
+              },
+              "label": "WORK_SATURDAY"
+            }
+          }
+        },
+        {
+          "text": "Sneak out at lunch and be back before 2 p.m.",
+          "label": "SNEAKED_OUT",
+          "nextSceneId": "LAGOS_EMBASSY_QUEUE",
+          "effects": {
+            "energy": -10
+          },
+          "gamble": {
+            "odds": 0.5,
+            "success": {
+              "feedback": "Back at 1:58 with suya for the team. Nobody asks.",
+              "effects": {
+                "desperation": -4
+              },
+              "label": "CLEAN_ESCAPE"
+            },
+            "fail": {
+              "feedback": "Surprise meeting at 12:30. A query letter is waiting on your desk.",
+              "effects": {
+                "desperation": 12,
+                "papers": -4
+              },
+              "label": "QUERY_LETTER"
+            }
+          }
+        },
+        {
+          "text": "Call in sick. Malaria, the national excuse",
+          "label": "CALLED_IN_SICK",
+          "nextSceneId": "LAGOS_EMBASSY_QUEUE",
+          "effects": {},
+          "gamble": {
+            "odds": 0.65,
+            "success": {
+              "feedback": "'Get well soon.' You feel guilty for about four minutes.",
+              "effects": {
+                "desperation": -2
+              },
+              "label": "GOT_AWAY"
+            },
+            "fail": {
+              "feedback": "A colleague posts your visa-centre selfie on her status. HR saw it. Final warning.",
+              "effects": {
+                "desperation": 14,
+                "papers": -6
+              },
+              "label": "STATUS_SNITCH"
+            }
+          }
+        }
+      ]
+    },
+    "LAGOS_PASSPORT_TOUT": {
+      "id": "LAGOS_PASSPORT_TOUT",
+      "route": "NIGERIA_LIFE",
+      "layoutType": "STORY_STAGE",
+      "title": "'Tomorrow. Trust me.'",
+      "location": "Passport office gate, {city}",
+      "stage": "annex",
+      "transitIn": "none",
+      "speaker": "Passport office gate, {city}",
+      "dialogue": "Tomorrow becomes next week. The booklet he finally brings has your photo and someone else's NIN. The real queue was inside, with the official fee and a receipt.",
+      "outcome": {
+        "result": "fail",
+        "reason": "PASSPORT_TOUT",
+        "title": "The tout's passport",
+        "subtitle": "Your money, and maybe your identity, are gone.",
+        "lesson": "Apply through the Nigeria Immigration Service's official portal and pay the official fee. Touts sell delays and fakes, and travelling on a passport with false details is document fraud everywhere."
+      }
+    },
+    "LAGOS_JIJI": {
+      "id": "LAGOS_JIJI",
+      "route": "NIGERIA_LIFE",
+      "layoutType": "STORY_STAGE",
+      "title": "Tokunbo, first body.",
+      "location": "Car park, {area}",
+      "stage": "outside",
+      "transitIn": "none",
+      "speaker": "Car park, {area}",
+      "dialogue": "A buyer agrees ₦4.2M, no haggling. His phone buzzes; he shows you an SMS: 'Credit Alert: ₦4,200,000.00'. 'Oya, give me the keys and papers, I have another meeting.'",
+      "choices": [
+        {
+          "text": "Hand over the keys. The alert is right there",
+          "label": "FAKE_ALERT",
+          "nextSceneId": "LAGOS_JIJI_SCAM",
+          "effects": {}
+        },
+        {
+          "text": "'Let me check my bank app first.' Make him wait",
+          "label": "CHECKED_APP",
+          "nextSceneId": "LAGOS_YABA_DUSK",
+          "effects": {},
+          "gamble": {
+            "odds": 0.55,
+            "success": {
+              "feedback": "Your app shows the money. You sign a sale agreement: a paper trail for your proof of funds.",
+              "effects": {
+                "walletNgn": 1800000,
+                "papers": 8,
+                "desperation": -10
+              },
+              "label": "SOLD_PROPERLY"
+            },
+            "fail": {
+              "feedback": "Nothing in the app. He 'remembers' a meeting and drives off in his friend's car. Your Corolla stays.",
+              "effects": {
+                "desperation": 8
+              },
+              "label": "BUYER_VANISHED"
+            }
+          }
+        },
+        {
+          "text": "Meet only at the police-station car park, bank to bank, for a lower price",
+          "label": "SAFE_SALE",
+          "nextSceneId": "LAGOS_YABA_DUSK",
+          "effects": {
+            "walletNgn": 1500000,
+            "papers": 8,
+            "energy": -8
+          },
+          "feedback": "Slower and ₦300k cheaper. The money is real and the sale agreement is stamped."
+        }
+      ]
+    },
+    "LAGOS_JIJI_SCAM": {
+      "id": "LAGOS_JIJI_SCAM",
+      "route": "NIGERIA_LIFE",
+      "layoutType": "STORY_STAGE",
+      "title": "Fake alert.",
+      "location": "Car park, {area}",
+      "stage": "outside",
+      "transitIn": "none",
+      "speaker": "Car park, {area}",
+      "dialogue": "Your bank app never moves. The 'alert' was an SMS anyone can send. The Corolla is already on the Third Mainland Bridge.",
+      "outcome": {
+        "result": "fail",
+        "reason": "FAKE_ALERT",
+        "title": "Fake credit alert",
+        "subtitle": "The car is gone and so is your proof of funds.",
+        "lesson": "Fake credit alerts are an old Lagos trick: an SMS proves nothing. Confirm money in your own bank app before you hand over anything, and keep a signed sale agreement: it's also how you show where your funds came from."
+      }
+    },
+    "ST_FAMILY_MEETING": {
+      "id": "ST_FAMILY_MEETING",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "The family meeting.",
+      "location": "{uncle}'s parlour",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "{uncle}'s parlour",
+      "dialogue": "Malt on the table, everyone in their seats. {uncle} clears his throat. An aunty asks, 'When you reach there, you go remember us?' A cousin says nothing very loudly.",
+      "choices": [
+        {
+          "text": "Present a budget sheet and promise a fixed monthly remittance once you're working",
+          "label": "PLEDGED",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {
+            "walletCad": 18000,
+            "desperation": 6
+          },
+          "feedback": "Gift deeds signed, source of funds documented. The family group now expects updates.",
+          "set": {
+            "familyPledge": 1
+          }
+        },
+        {
+          "text": "Ask {uncle} privately for a written gift deed with his bank statements",
+          "label": "PRIVATE_ASK",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {},
+          "gamble": {
+            "odds": 0.55,
+            "bonus": [
+              {
+                "key": "academicStanding",
+                "per": 0.004
+              }
+            ],
+            "max": 0.85,
+            "success": {
+              "feedback": "He signs a gift deed and gives you six months of statements. Clean, documented, quiet.",
+              "effects": {
+                "walletCad": 20000
+              },
+              "label": "GIFT_DEED"
+            },
+            "fail": {
+              "feedback": "'Next year.' By Sunday, everybody knows you asked.",
+              "effects": {
+                "desperation": 10
+              },
+              "label": "NEXT_YEAR"
+            }
+          }
+        },
+        {
+          "text": "Ask for a loan you'll repay double once you land",
+          "label": "FAMILY_LOAN",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {
+            "walletCad": 20000,
+            "officerConfidence": -10
+          },
+          "feedback": "A loan isn't a gift. Officers ask whether funds must be repaid, and a big debt weakens your file."
+        }
+      ]
+    },
+    "ST_CROWDFUND": {
+      "id": "ST_CROWDFUND",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Go viral or go home.",
+      "location": "Your phone, ring light on",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "Your phone, ring light on",
+      "dialogue": "One video, your whole future. Too dramatic and X will drag you. Too boring and nobody donates.",
+      "choices": [
+        {
+          "text": "Honest video: admission letter, grades, budget, receipts",
+          "label": "HONEST_CROWDFUND",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {
+            "walletCad": 3500,
+            "streetCred": 8
+          },
+          "feedback": "Modest, steady donations. People trust receipts.",
+          "set": {
+            "donorTrust": 2
+          }
+        },
+        {
+          "text": "Dramatic video: tears, slow music, 'my last hope'",
+          "label": "DRAMATIC_CROWDFUND",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {},
+          "gamble": {
+            "odds": 0.45,
+            "success": {
+              "feedback": "It goes viral. CAD 9,000 in a weekend, and 400 new followers who want updates.",
+              "effects": {
+                "walletCad": 9000,
+                "desperation": -6
+              },
+              "set": {
+                "donorTrust": 1
+              },
+              "label": "WENT_VIRAL"
+            },
+            "fail": {
+              "feedback": "Someone finds your brunch photos from last month. The quote-tweets are brutal.",
+              "effects": {
+                "walletCad": 500,
+                "desperation": 15
+              },
+              "label": "DRAGGED"
+            }
+          }
+        },
+        {
+          "text": "Delete the draft. Pride",
+          "label": "NO_CROWDFUND",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {
+            "desperation": 3
+          }
+        }
+      ]
+    },
+    "ST_FX": {
+      "id": "ST_FX",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "The rate moved again.",
+      "location": "Bureau de change, {city}",
+      "stage": "bank-hall",
+      "transitIn": "none",
+      "speaker": "Bureau de change, {city}",
+      "dialogue": "Your tuition deposit is due in Canadian dollars. The parallel market jumped this week, and every day your naira buys less.",
+      "choices": [
+        {
+          "text": "Convert now through your bank, with receipts",
+          "label": "CONVERTED_NOW",
+          "nextSceneId": "ST_SOP",
+          "effects": {
+            "walletCad": -1200,
+            "desperation": 4
+          },
+          "feedback": "A bad rate, but documented: receipts are part of your proof of funds."
+        },
+        {
+          "text": "Wait one more week for the rate to calm down",
+          "label": "WAITED_FX",
+          "nextSceneId": "ST_SOP",
+          "effects": {},
+          "gamble": {
+            "odds": 0.45,
+            "success": {
+              "feedback": "The naira steadies. You convert CAD 2,500 better off.",
+              "effects": {
+                "walletCad": 2500
+              },
+              "label": "RATE_EASED"
+            },
+            "fail": {
+              "feedback": "It slides another 12%. Your buffer shrinks by CAD 4,500.",
+              "effects": {
+                "walletCad": -4500,
+                "desperation": 10
+              },
+              "label": "RATE_CRASHED"
+            }
+          }
+        },
+        {
+          "text": "Top up the gap with an instant loan app",
+          "label": "LOAN_APP",
+          "nextSceneId": "ST_SOP",
+          "effects": {
+            "walletCad": 3000,
+            "desperation": 16
+          },
+          "feedback": "30% a month, and they text your contacts the day you're late. It's legal-ish. It's also a trap.",
+          "set": {
+            "loanApp": 1
+          }
+        }
+      ]
+    },
+    "ST_REVIEW_1": {
+      "id": "ST_REVIEW_1",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "The officer opens your file.",
+      "location": "IRCC, file review",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "Visa officer (file review)",
+      "dialogue": "Typing, fast, barely looking up. 'Study permit. Why this specific program, and why now?' Canada rarely interviews study-permit applicants: the officer 'asks' by reading your file. Answer the way your documents would.",
+      "choices": [
+        {
+          "text": "'The economy in Nigeria is bad, and Canada has great opportunities for international students.'",
+          "label": "CLICHE",
+          "nextSceneId": "ST_REVIEW_2",
+          "effects": {
+            "officerConfidence": -25
+          },
+          "feedback": "Every refused file says this. It explains why you want to leave, not why this program."
+        },
+        {
+          "text": "'This program adds a specialization my degree doesn't have, and it builds directly on {sopBackground}.'",
+          "label": "ACADEMIC_PITCH",
+          "nextSceneId": "ST_REVIEW_2",
+          "effects": {
+            "officerConfidence": 15
+          },
+          "feedback": "A logical career step. The officer stops typing."
+        },
+        {
+          "text": "Freeze. Say nothing useful",
+          "label": "FROZE_1",
+          "nextSceneId": "ST_REVIEW_2",
+          "effects": {
+            "officerConfidence": -10,
+            "desperation": 6
+          },
+          "feedback": "Your study plan left that question blank."
+        }
+      ],
+      "timer": {
+        "seconds": 15,
+        "timeoutIndex": 2
+      }
+    },
+    "ST_REVIEW_2": {
+      "id": "ST_REVIEW_2",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "'Where did this money come from?'",
+      "location": "IRCC, file review",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "Visa officer (file review)",
+      "dialogue": "'I see a lump sum of ₦15,000,000 deposited three weeks ago. Where did these funds come from?'",
+      "choices": [
+        {
+          "text": "'My uncle pooled it from his friends to meet the requirement. I'll return it when I land.'",
+          "label": "POOLED_FUNDS",
+          "nextSceneId": "ST_REVIEW_3",
+          "effects": {
+            "officerConfidence": -40,
+            "desperation": 10
+          },
+          "feedback": "Honest, but fatal to the file: money you must give back isn't yours to study on. Borrowed or pooled funds don't count."
+        },
+        {
+          "text": "'A gift deed from my mother, from the sale of her shop, with the sale deed and tax receipts on page 14.'",
+          "label": "PAPER_TRAIL",
+          "nextSceneId": "ST_REVIEW_3",
+          "effects": {
+            "officerConfidence": 25
+          },
+          "feedback": "Clear, verifiable origin. The officer nods slowly."
+        },
+        {
+          "text": "Freeze",
+          "label": "FROZE_2",
+          "nextSceneId": "ST_REVIEW_3",
+          "effects": {
+            "officerConfidence": -15,
+            "desperation": 6
+          },
+          "feedback": "A big recent deposit with no explanation is the classic refusal reason."
+        }
+      ],
+      "timer": {
+        "seconds": 15,
+        "timeoutIndex": 2
+      }
+    },
+    "ST_REVIEW_3": {
+      "id": "ST_REVIEW_3",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "'What brings you back?'",
+      "location": "IRCC, file review",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "Visa officer (file review)",
+      "dialogue": "'Everything is in order on paper. But you're young, single and selling assets. What brings you back to Nigeria after your program?'",
+      "choices": [
+        {
+          "text": "'My whole family is here! I love Nigeria, my parents are old, I have to come back.'",
+          "label": "EMOTIONAL_TIES",
+          "nextSceneId": "ST_VFS",
+          "effects": {
+            "officerConfidence": 3
+          },
+          "feedback": "Sincere, and weak on its own. Officers weigh things they can verify."
+        },
+        {
+          "text": "Your employer's signed study-leave letter, with a senior role waiting when you return",
+          "label": "STUDY_LEAVE",
+          "nextSceneId": "ST_VFS",
+          "effects": {
+            "officerConfidence": 20
+          },
+          "feedback": "A verifiable tie. The strongest answer, if it's real.",
+          "requires": {
+            "employed": [
+              ">=",
+              1
+            ]
+          },
+          "lockedHint": "Only if you really have a job to go back to"
+        },
+        {
+          "text": "'I may apply to stay after graduating, legally. If I return, this is the career I'd build here.'",
+          "label": "DUAL_INTENT_HONEST",
+          "nextSceneId": "ST_VFS",
+          "effects": {
+            "officerConfidence": 10
+          },
+          "feedback": "Dual intent is allowed: wanting to stay later is fine if you'd follow the rules either way."
+        },
+        {
+          "text": "Freeze",
+          "label": "FROZE_3",
+          "nextSceneId": "ST_VFS",
+          "effects": {
+            "officerConfidence": -10,
+            "desperation": 6
+          },
+          "feedback": "Silence reads as no plan."
+        }
+      ],
+      "timer": {
+        "seconds": 15,
+        "timeoutIndex": 3
+      }
+    },
+    "ST_PROF_EMAIL": {
+      "id": "ST_PROF_EMAIL",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "The cold email.",
+      "location": "Your laptop, 2 a.m.",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "Your laptop, 2 a.m.",
+      "dialogue": "Funded research master's in Canada usually start with a professor who agrees to supervise you. Most applicants never get a reply. Your draft is open.",
+      "choices": [
+        {
+          "text": "Tailored: three lines on their 2024 paper, your thesis data, one clear question",
+          "label": "TAILORED_EMAIL",
+          "nextSceneId": "ST_REF_CHASE",
+          "effects": {
+            "energy": -12
+          },
+          "set": {
+            "programType": 2
+          },
+          "gamble": {
+            "odds": 0.35,
+            "bonus": [
+              {
+                "key": "academicStanding",
+                "per": 0.006
+              }
+            ],
+            "max": 0.8,
+            "success": {
+              "feedback": "'Interesting. Send your CV and transcript.' A professor in Edmonton replied.",
+              "label": "PROF_REPLIED"
+            },
+            "fail": {
+              "feedback": "Silence. You send five more tailored emails over two weeks.",
+              "nextSceneId": "ST_PROF_EMAIL",
+              "effects": {
+                "desperation": 6
+              },
+              "label": "NO_REPLY"
+            }
+          }
+        },
+        {
+          "text": "Mass-mail 200 professors: 'Dear Sir/Ma, I am interested in your esteemed research'",
+          "label": "MASS_EMAIL",
+          "nextSceneId": "ST_PROF_EMAIL",
+          "effects": {
+            "desperation": 8,
+            "energy": -4
+          },
+          "feedback": "Straight to the trash folder. Generic emails are the easiest to ignore."
+        },
+        {
+          "text": "Give up on funding and go back to the regular offers",
+          "label": "BACK_TO_OFFERS",
+          "nextSceneId": "ST_START",
+          "effects": {
+            "desperation": 4
+          }
+        }
+      ]
+    },
+    "ST_REF_CHASE": {
+      "id": "ST_REF_CHASE",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "The analog professor.",
+      "location": "Your old department, {city}",
+      "stage": "university-registry",
+      "transitIn": "none",
+      "speaker": "Your old department, {city}",
+      "dialogue": "Your referee forgot his portal password and won't use 'these online things'. The application portal closes in 48 hours.",
+      "choices": [
+        {
+          "text": "Buy a carton of malt, brave the traffic and sit him down at a PC yourself",
+          "label": "MALT_DIPLOMACY",
+          "nextSceneId": "ST_FUNDED",
+          "effects": {
+            "walletCad": -40,
+            "energy": -30,
+            "desperation": 10
+          },
+          "feedback": "He types with one finger and calls you 'my best student'. Submitted with 3 hours left."
+        },
+        {
+          "text": "Write the letter yourself and ask him to just upload it",
+          "label": "SELF_WRITTEN_REF",
+          "nextSceneId": "ST_REF_FAKE",
+          "effects": {}
+        },
+        {
+          "text": "Ask your project supervisor, who actually answers email, instead",
+          "label": "SECOND_REFEREE",
+          "nextSceneId": "ST_FUNDED",
+          "effects": {
+            "energy": -10
+          },
+          "gamble": {
+            "odds": 0.55,
+            "bonus": [
+              {
+                "key": "academicStanding",
+                "per": 0.005
+              }
+            ],
+            "max": 0.85,
+            "success": {
+              "feedback": "She uploads a strong letter the same evening.",
+              "label": "SUPERVISOR_UPLOADED"
+            },
+            "fail": {
+              "feedback": "She's at a conference. The portal closes. Back to regular offers.",
+              "nextSceneId": "ST_START",
+              "effects": {
+                "desperation": 12
+              },
+              "label": "PORTAL_CLOSED"
+            }
+          }
+        }
+      ]
+    },
+    "ST_REF_FAKE": {
+      "id": "ST_REF_FAKE",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "The letter in your own words.",
+      "location": "University admissions office",
+      "stage": "university-registry",
+      "transitIn": "none",
+      "speaker": "University admissions office",
+      "dialogue": "The admissions officer notices the reference reads exactly like your statement of purpose, comma for comma. They call your referee.",
+      "outcome": {
+        "result": "fail",
+        "reason": "FAKE_REFERENCE",
+        "title": "Self-written reference",
+        "subtitle": "The offer is withdrawn.",
+        "lesson": "A reference must be the referee's own words. Writing your own and submitting it as theirs is academic fraud: offers are withdrawn, and a fraudulent document in a visa file is misrepresentation."
+      }
+    },
+    "ST_FUNDED": {
+      "id": "ST_FUNDED",
+      "route": "STUDY_PERMIT",
+      "layoutType": "STORY_STAGE",
+      "title": "Fully funded.",
+      "location": "Your inbox",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "Your inbox",
+      "dialogue": "Offer of admission: research master's, tuition covered, CAD 26,000 a year from a research assistantship. You read it eleven times.",
+      "choices": [
+        {
+          "text": "Accept, and build the rest of your funds file",
+          "label": "ACCEPTED_FUNDING",
+          "nextSceneId": "ST_FUNDS",
+          "effects": {
+            "walletCad": 44000,
+            "academicStanding": 10,
+            "desperation": -15
+          },
+          "feedback": "Funding counts in your proof of funds. Most Canadian programs don't need the GRE; your supervisor's yes matters more.",
+          "set": {
+            "scholarshipTried": 1
+          }
+        }
+      ]
+    },
+    "FY_LANDLORD": {
+      "id": "FY_LANDLORD",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "Mr. Henderson's basement.",
+      "location": "Basement apartment, Brampton",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "Mr. Henderson (Landlord)",
+      "dialogue": "The furnace clanks. Mr. Henderson flips your papers. 'I ran your name through Equifax: no Canadian credit. No Canadian job reference either. How do I know you'll pay on the first of every month?'",
+      "choices": [
+        {
+          "text": "'I just landed last week! How can I have Canadian credit? Look at my bank statement!'",
+          "label": "DEFENSIVE",
+          "nextSceneId": "FY_LANDLORD_2",
+          "effects": {
+            "desperation": 8
+          },
+          "gamble": {
+            "odds": 0.3,
+            "success": {
+              "feedback": "He shrugs. 'Fine, fair point.'",
+              "label": "HE_SHRUGGED"
+            },
+            "fail": {
+              "feedback": "His face closes. 'I'll let you know.' He won't.",
+              "nextSceneId": "FY_JOBS",
+              "effects": {
+                "walletCad": -600,
+                "desperation": 6
+              },
+              "label": "REJECTED"
+            }
+          }
+        },
+        {
+          "text": "'I understand. While my credit builds, I can pay the last month's deposit now and show my savings.'",
+          "label": "PREPAY_OFFER",
+          "nextSceneId": "FY_LANDLORD_2",
+          "effects": {
+            "walletCad": -1200,
+            "community": 2
+          },
+          "feedback": "In Ontario a landlord can't demand more than a last-month deposit, but showing savings reassures them. Don't hand over extra months under pressure."
+        },
+        {
+          "text": "'{relName} in {relCity} will co-sign as guarantor, with an employment letter and strong credit.'",
+          "label": "GUARANTOR_RELATIVE",
+          "nextSceneId": "FY_LANDLORD_2",
+          "effects": {
+            "community": 4
+          },
+          "feedback": "Your network's credit history stands in for yours. That's what guarantors are for."
+        }
+      ]
+    },
+    "FY_LANDLORD_2": {
+      "id": "FY_LANDLORD_2",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "'This is a quiet house.'",
+      "location": "Basement apartment, Brampton",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "Mr. Henderson (Landlord)",
+      "dialogue": "'My family lives upstairs. Am I going to hear loud parties, or people coming in and out?'",
+      "choices": [
+        {
+          "text": "'I work full-time and study for my licence at night. I'll mostly be here to sleep.'",
+          "label": "QUIET_TENANT",
+          "nextSceneId": "FY_JOBS",
+          "effects": {
+            "desperation": -6
+          },
+          "feedback": "Exactly what a landlord wants to hear. Lease signed."
+        },
+        {
+          "text": "'Friends from the {faithHub} might come by sometimes, but we're good people.'",
+          "label": "SOCIAL_TENANT",
+          "nextSceneId": "FY_JOBS",
+          "effects": {},
+          "gamble": {
+            "odds": 0.6,
+            "success": {
+              "feedback": "'That's fine, just keep it down after ten.' Lease signed.",
+              "effects": {
+                "community": 4
+              },
+              "label": "SIGNED"
+            },
+            "fail": {
+              "feedback": "He 'has another applicant'. Back to the listings for a week.",
+              "effects": {
+                "walletCad": -500,
+                "desperation": 8
+              },
+              "label": "OTHER_APPLICANT"
+            }
+          }
+        },
+        {
+          "text": "'Could we put the house rules in the lease so we're both clear?'",
+          "label": "RULES_IN_LEASE",
+          "nextSceneId": "FY_JOBS",
+          "effects": {
+            "community": 2
+          },
+          "feedback": "He likes that. The Ontario standard lease has room for exactly this."
         }
       ]
     }

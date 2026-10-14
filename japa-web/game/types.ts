@@ -88,6 +88,16 @@ export interface RouteStats {
   dayoLeft?: number;
   /** Nigeria Life: the player works in healthcare (registration comes before a job offer). */
   healthTrack?: number;
+  /** Student: family pledged support (they'll expect remittances). */
+  familyPledge?: number;
+  /** Student: crowdfund donors' trust (1 viral, 2 receipts); they'll ask for updates. */
+  donorTrust?: number;
+  /** Student: borrowed from an instant loan app. */
+  loanApp?: number;
+  /** Student: has a job in Nigeria to return to (a real home tie). */
+  employed?: number;
+  /** Student: has landed in Canada (Canada-side events only after this). */
+  arrived?: number;
   /** Year One: the player's field is regulated (licence, bridging) rather than resume-and-referral. */
   regulated?: number;
   kwAtAirport?: number;
@@ -153,6 +163,16 @@ export interface Popup {
   title: string;
   body: string;
   button?: string;
+  /** A Village People crisis: the player must pick one (resolvePopup). */
+  options?: CrisisOption[];
+}
+
+/** One answer to a crisis pop-up: its cost, and what happened. */
+export interface CrisisOption {
+  label: string;
+  effects: Effects;
+  set?: Partial<Record<keyof RouteStats, number>>;
+  feedback: string;
 }
 
 /** Numeric GameState fields an effect may change directly. */
@@ -252,6 +272,8 @@ export interface Scene {
   dialogue?: string;
   choices?: Choice[];
   onEnter?: Effects;
+  /** Rapid-fire: answer within `seconds` or the `timeoutIndex` choice is taken for you (you froze). */
+  timer?: { seconds: number; timeoutIndex: number };
   /** RESOLUTION scenes: first branch whose `when` holds wins; last has no `when`. */
   branch?: { when?: Conditions; nextSceneId: string }[];
   outcome?: Omit<Outcome, "decidedBy">;
@@ -283,7 +305,7 @@ export interface TrapConfig {
   scale: number;
   exponent: number;
   /** `when`: the event can only strike while these conditions hold (e.g. after an asylum claim is filed). */
-  items: { id: string; kicker: string; title: string; body: string; effects: Effects; when?: Conditions }[];
+  items: { id: string; kicker: string; title: string; body: string; effects: Effects; when?: Conditions; options?: CrisisOption[] }[];
 }
 
 export interface MarketShockConfig {

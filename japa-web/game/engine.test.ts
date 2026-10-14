@@ -17,7 +17,7 @@ import {
 import { initialState, makeReducer } from "./machine";
 import { allEndings, endingKey, lessonFor } from "./endings";
 import { levelIndexOf, levelProgress, levelsFor, starsFor } from "./levels";
-import { blessingChance, dangerStats, gambleOdds } from "./engine";
+import { blessingChance, dangerStats, gambleOdds, resolvePopup } from "./engine";
 import { faceFor } from "./face";
 import { careerVars, trackFor } from "./careers";
 import { GROOVES, STYLES, STYLE_IDS, grooveFor, moodFor, type Mood } from "./music";
@@ -121,7 +121,7 @@ describe("scenarios.json integrity", () => {
       "papers", "ageYears", "educationLevel", "ecaComplete", "clbFirst", "nclcFrench", "foreignWorkYears",
       "canadianWorkYears", "canadianEducation", "pnpNomination", "siblingInCanada", "crsScore", "programType",
       "academicStanding", "officerConfidence", "scholarshipTried", "familyAsked", "landSold", "crowdfunded",
-      "loanTaken", "hasDegree", "careerScore", "community", "pflRisk", "conflictRegion", "kwBasis", "kwAtAirport", "kwCredibility", "kwEvidence", "eeCategory", "kwTruth", "officeJob", "saidNoHome", "nursePath", "postedPass", "warnedFamily", "dayoLeft", "healthTrack", "regulated",
+      "loanTaken", "hasDegree", "careerScore", "community", "pflRisk", "conflictRegion", "kwBasis", "kwAtAirport", "kwCredibility", "kwEvidence", "eeCategory", "kwTruth", "officeJob", "saidNoHome", "nursePath", "postedPass", "warnedFamily", "dayoLeft", "healthTrack", "regulated", "familyPledge", "donorTrust", "loanApp", "employed", "arrived",
     ]);
     const bad: string[] = [];
     for (const s of Object.values(DB.scenes)) {
@@ -322,7 +322,7 @@ describe("state machine", () => {
 });
 
 describe("Lagos Life (merged from the Cursor build)", () => {
-  const HONEST = ["about the visa story", "Leave the call", "Book the appointment", "Check every upload",
+  const HONEST = ["about the visa story", "Leave the call", "Book the appointment", "Ask HR", "Check every upload",
     "call, then wait", "Open the portal"];
 
   it("starts in the player's area with interference 36 and energy 85 (rebalanced from 72 after simulation)", () => {
@@ -504,33 +504,33 @@ describe("Express Entry route", () => {
 });
 
 describe("Student pathway", () => {
-  const FUND_ALL = ["entrance scholarship", "Family sponsorship", "Sell the plot", "Crowdfund"];
+  const FUND_ALL = ["entrance scholarship", "Family sponsorship", "budget sheet", "Sell the plot", "Crowdfund", "Honest video"];
   it("master's: fund it, write a specific plan, graduate with a PGWP", () => {
     const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", ...FUND_ALL,
-      "funds are ready", "specific plan", "Wait for the decision", "Start packing", "close family only", "New parka and boots",
+      "funds are ready", "Convert now", "specific plan", "adds a specialization", "A gift deed", "My whole family", "Wait for the decision", "Start packing", "close family only", "New parka and boots",
       "host family", "Agree to wait", "Campus cafe", "Library every night", "Book IELTS"]);
     expect(s.outcome).toMatchObject({ result: "win", reason: "PGWP_ISSUED" });
     expect(rankFor(DB, s)?.id).toBe("pgwp");
   });
 
   it("submitting stays locked (with the amount shown) until funds cover tuition + CAD 23,448; only your program's button shows", () => {
-    const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "Family sponsorship"]);
+    const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "Family sponsorship", "budget sheet"]);
     const ready = presentChoices(DB, s).filter((c) => c.text.startsWith("The funds are ready"));
     expect(ready).toHaveLength(1);
     expect(ready[0].enabled).toBe(false);
     expect(ready[0].lockedHint).toContain("57,448");
-    const deferred = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "Family sponsorship", "Defer a year"]);
+    const deferred = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "Family sponsorship", "budget sheet", "Defer a year"]);
     expect(deferred.walletCad).toBe(s.walletCad + 9000);
   });
 
   it("each funding source can only be used once", () => {
-    const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "Family sponsorship"]);
+    const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "Family sponsorship", "budget sheet"]);
     expect(presentChoices(DB, s).find((c) => c.text.startsWith("Family sponsorship"))?.enabled).toBe(false);
   });
 
   it("a template study plan gets refused", () => {
     const steps: (string | [string, number])[] = ["Two-year Supply Chain", "Work out the money", "entrance scholarship",
-      "Family sponsorship", "funds are ready", "template", ["Wait for the decision", 0.5]];
+      "Family sponsorship", "budget sheet", "funds are ready", "Convert now", "template", "economy in Nigeria is bad", "uncle pooled", "My whole family", ["Wait for the decision", 0.5]];
     const s = playR("STUDY_PERMIT", steps);
     expect(s.currentSceneId).toBe("ST_REFUSED");
     expect(s.outcome).toBeFalsy();
@@ -538,15 +538,15 @@ describe("Student pathway", () => {
   });
 
   it("private career college graduates get no PGWP", () => {
-    const s = play("STUDY_PERMIT", ["private career college", "Work out the money", "Family sponsorship",
-      "funds are ready", "specific plan", "Wait for the decision", "Start packing", "close family only", "New parka and boots",
+    const s = play("STUDY_PERMIT", ["private career college", "Work out the money", "Family sponsorship", "budget sheet",
+      "funds are ready", "Convert now", "specific plan", "adds a specialization", "A gift deed", "My whole family", "Wait for the decision", "Start packing", "close family only", "New parka and boots",
       "host family", "Agree to wait", "Campus cafe", "Library every night", "Book IELTS"]);
     expect(s.outcome?.reason).toBe("NOT_PGWP_ELIGIBLE");
   });
 
   it("working 40 cash hours a week breaches study permit conditions", () => {
     const s = play("STUDY_PERMIT", ["Two-year Supply Chain", "Work out the money", "entrance scholarship",
-      "Family sponsorship", "funds are ready", "specific plan", "Wait for the decision", "Start packing", "close family only",
+      "Family sponsorship", "budget sheet", "funds are ready", "Convert now", "specific plan", "adds a specialization", "A gift deed", "My whole family", "Wait for the decision", "Start packing", "close family only",
       "New parka and boots", "host family", "Agree to wait", "Cash shifts"]);
     expect(s.outcome?.reason).toBe("STATUS_BREACH");
   });
@@ -559,7 +559,7 @@ describe("Student pathway", () => {
 
   it("a PGWP carries the graduate into Express Entry with Canadian education", () => {
     let app = reducer(initialState(), { type: "SELECT_ROUTE", route: "STUDY_PERMIT" });
-    const picks = ["Master's in Engineering", "Work out the money", ...FUND_ALL, "funds are ready", "specific plan",
+    const picks = ["Master's in Engineering", "Work out the money", ...FUND_ALL, "funds are ready", "Convert now", "specific plan", "adds a specialization", "A gift deed", "My whole family",
       "Wait for the decision", "Start packing", "close family only", "New parka and boots", "host family", "Agree to wait", "Campus cafe", "Library every night", "Book IELTS"];
     for (const p of picks) {
       const idx = choiceIndex(app.runs.STUDY_PERMIT!, (c) => matches(c.text, p));
@@ -611,7 +611,7 @@ describe("choice cutscenes", () => {
 
   it("the final winning move is a triumph", () => {
     const c = pickAndDescribe("NIGERIA_LIFE", ["about the visa story", "Leave the call", "Book the appointment",
-      "Check every upload", "call, then wait"], "Open the portal");
+      "Ask HR", "Check every upload", "call, then wait"], "Open the portal");
     expect(c.tone).toBe("triumph");
   });
 
@@ -619,7 +619,7 @@ describe("choice cutscenes", () => {
     const loss = pickAndDescribe("NIGERIA_LIFE", ["hunt remote jobs"], "visa consultant");
     expect(loss.money).toBe("loss");
     expect(loss.deltas[0]).toMatchObject({ key: "walletNgn", value: -35000, format: "ngn" });
-    const gain = pickAndDescribe("STUDY_PERMIT", ["Master's in Engineering", "Work out the money"], "Family sponsorship");
+    const gain = pickAndDescribe("STUDY_PERMIT", ["Master's in Engineering", "Work out the money"], "Education loan");
     expect(gain.money).toBe("gain");
   });
 
@@ -693,8 +693,8 @@ describe("player profiles", () => {
 
   it("a bachelor's in Canada carries 3+ years of Canadian education and the real age into Express Entry", () => {
     let app = reducer(initialState(DB, fresher), { type: "SELECT_ROUTE", route: "STUDY_PERMIT" });
-    const picks = ["Four-year bachelor's", "Work out the money", "entrance scholarship", "Family sponsorship",
-      "Sell the plot", "Crowdfund", "Education loan", "funds are ready", "specific plan", "Wait for the decision",
+    const picks = ["Four-year bachelor's", "Work out the money", "entrance scholarship", "Family sponsorship", "budget sheet",
+      "Sell the plot", "Crowdfund", "Honest video", "Education loan", "funds are ready", "Convert now", "specific plan", "adds a specialization", "A gift deed", "My whole family", "Wait for the decision",
       "Start packing", "close family only", "New parka and boots", "host family", "Agree to wait", "Campus cafe", "Library every night", "Book IELTS"];
     for (const p of picks) {
       const idx = choiceIndex(app.runs.STUDY_PERMIT!, (c) => matches(c.text, p));
@@ -870,8 +870,8 @@ describe("2026 rules in Express Entry and the Student pathway", () => {
   });
 
   it("no language test, no PGWP", () => {
-    const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "entrance scholarship", "Family sponsorship",
-      "Sell the plot", "Crowdfund", "Education loan", "funds are ready", "specific plan", "Wait for the decision",
+    const s = play("STUDY_PERMIT", ["Master's in Engineering", "Work out the money", "entrance scholarship", "Family sponsorship", "budget sheet",
+      "Sell the plot", "Crowdfund", "Honest video", "Education loan", "funds are ready", "Convert now", "specific plan", "adds a specialization", "A gift deed", "My whole family", "Wait for the decision",
       "Start packing", "close family only", "New parka and boots", "host family", "Agree to wait", "Campus cafe", "Library every night", "Skip it"]);
     expect(s.outcome).toMatchObject({ result: "fail", reason: "NOT_PGWP_ELIGIBLE" });
   });
@@ -965,17 +965,17 @@ describe("Year One in Canada and community-story scenes", () => {
   const year = (picks: string[]) => play("FIRST_YEAR", picks);
 
   it("networking, bridging and help in winter get you back in your field", () => {
-    const s = year(["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days", "bridging program", "Swap shifts", "fixed share",
+    const s = year(["SIN at the airport", "Declare everything", "guarantor from", "co-sign", "full-time and study", "Volunteer two days", "bridging program", "Swap shifts", "fixed share",
       "Nigerian association", "crisp written summary", "Employment Insurance", "volunteer tax clinic", "Stay. Save"]);
     expect(s.routeStats.careerScore).toBeGreaterThanOrEqual(50);
     expect(s.outcome).toMatchObject({ result: "win", reason: "BACK_IN_FIELD" });
   });
 
   it("a parked career with savings is 'surviving'; going home is 'reverse japa'", () => {
-    const parked = year(["SIN at the airport", "Declare everything", "guarantor from", "warehouse survival job", "Drive Uber", "Swap shifts", "fixed share",
+    const parked = year(["SIN at the airport", "Declare everything", "guarantor from", "co-sign", "full-time and study", "warehouse survival job", "Drive Uber", "Swap shifts", "fixed share",
       "Nigerian association", "Keep driving", "any shift", "volunteer tax clinic", "Stay. Save"]);
     expect(parked.outcome?.reason).toBe("SURVIVING");
-    const home = year(["SIN at the airport", "Declare everything", "guarantor from", "warehouse survival job", "Drive Uber", "Swap shifts", "fixed share",
+    const home = year(["SIN at the airport", "Declare everything", "guarantor from", "co-sign", "full-time and study", "warehouse survival job", "Drive Uber", "Swap shifts", "fixed share",
       "Nigerian association", "Keep driving", "any shift", "volunteer tax clinic", "Go home for good"]);
     expect(home.outcome).toMatchObject({ result: "neutral", reason: "REVERSE_JAPA" });
   });
@@ -1002,10 +1002,10 @@ describe("Year One in Canada and community-story scenes", () => {
 
   it("a refused student who reads the GCMS notes can fix the plan and get approved", () => {
     const s = playR("STUDY_PERMIT", ["Two-year Supply Chain", "Work out the money", "entrance scholarship",
-      "Family sponsorship", "funds are ready", "template", ["Wait for the decision", 0.5], "GCMS notes", "specific plan", ["Wait for the decision", 0.5]]);
+      "Family sponsorship", "budget sheet", "funds are ready", "Convert now", "template", "economy in Nigeria is bad", "uncle pooled", "My whole family", ["Wait for the decision", 0.5], "GCMS notes", "specific plan", "adds a specialization", "A gift deed", "My whole family", ["Wait for the decision", 0.5]]);
     expect(s.currentSceneId).toBe("ST_APPROVED");
     const scam = playR("STUDY_PERMIT", ["Two-year Supply Chain", "Work out the money", "entrance scholarship",
-      "Family sponsorship", "funds are ready", "template", ["Wait for the decision", 0.5], "guaranteed visa"]);
+      "Family sponsorship", "budget sheet", "funds are ready", "Convert now", "template", "economy in Nigeria is bad", "uncle pooled", "My whole family", ["Wait for the decision", 0.5], "guaranteed visa"]);
     expect(scam.outcome?.reason).toBe("MISREPRESENTATION");
   });
 
@@ -1121,13 +1121,13 @@ describe("risky choices", () => {
   });
 
   it("a strong study plan raises the visa odds; the dice can still say no", () => {
-    const base = ["Master's in Engineering", "Work out the money", "entrance scholarship", "Family sponsorship", "Sell the plot",
-      "Crowdfund", "funds are ready"];
-    const strong = playR("STUDY_PERMIT", [...base, "specific plan"]);
-    const weak = playR("STUDY_PERMIT", [...base, "template"]);
+    const base = ["Master's in Engineering", "Work out the money", "entrance scholarship", "Family sponsorship", "budget sheet", "Sell the plot",
+      "Crowdfund", "Honest video", "funds are ready", "Convert now"];
+    const strong = playR("STUDY_PERMIT", [...base, "specific plan", "adds a specialization", "A gift deed", "My whole family"]);
+    const weak = playR("STUDY_PERMIT", [...base, "template", "economy in Nigeria is bad", "uncle pooled", "My whole family"]);
     const oddsAt = (s: GameState) => presentChoices(DB, s).find((c) => c.text.startsWith("Wait for the decision"))!.odds!;
     expect(oddsAt(strong)).toBeGreaterThan(oddsAt(weak) + 0.3);
-    expect(playR("STUDY_PERMIT", [...base, "specific plan", ["Wait for the decision", 0.95]]).currentSceneId).toBe("ST_REFUSED");
+    expect(playR("STUDY_PERMIT", [...base, "specific plan", "adds a specialization", "A gift deed", "My whole family", ["Wait for the decision", 0.95]]).currentSceneId).toBe("ST_REFUSED");
   });
 
   it("a failed gamble can loop back: the ASUU strike", () => {
@@ -1293,8 +1293,8 @@ describe("music", () => {
 
 describe("v0.15 scenes: spouse, caregiver scam, the accent conversation", () => {
   it("only a master's (16+ months) lets a spouse come on an open work permit", () => {
-    const to = (program: string) => play("STUDY_PERMIT", [program, "Work out the money", "entrance scholarship", "Family sponsorship",
-      "Sell the plot", "Crowdfund", "Education loan", "funds are ready", "specific plan", "Wait for the decision", "Start packing", "close family only",
+    const to = (program: string) => play("STUDY_PERMIT", [program, "Work out the money", "entrance scholarship", "Family sponsorship", "budget sheet",
+      "Sell the plot", "Crowdfund", "Honest video", "Education loan", "funds are ready", "Convert now", "specific plan", "adds a specialization", "A gift deed", "My whole family", "Wait for the decision", "Start packing", "close family only",
       "New parka and boots", "host family"]);
     const owp = (s: GameState) => presentChoices(DB, s).find((c) => c.label === "SPOUSAL_OWP")!;
     expect(owp(to("Master's in Engineering")).enabled).toBe(true);
@@ -1309,7 +1309,7 @@ describe("v0.15 scenes: spouse, caregiver scam, the accent conversation", () => 
   });
 
   it("naming the accent comment is a gamble that community makes likelier", () => {
-    const at = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days", "bridging program",
+    const at = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "co-sign", "full-time and study", "Volunteer two days", "bridging program",
       "Swap shifts", "fixed share", "Nigerian association"]);
     expect(at.currentSceneId).toBe("FY_ACCENT");
     const named = presentChoices(DB, at).find((c) => c.label === "NAMED_IT")!;
@@ -1410,19 +1410,19 @@ describe("v0.16: playtest fixes", () => {
   });
 
   it("Year One: drivers get the gig scene, not the office one; saying no to family comes back in December", () => {
-    const start = ["SIN at the airport", "Declare everything", "guarantor from", "warehouse survival job", "Drive Uber"];
+    const start = ["SIN at the airport", "Declare everything", "guarantor from", "co-sign", "full-time and study", "warehouse survival job", "Drive Uber"];
     const gig = play("FIRST_YEAR", [...start, "Swap shifts", "Say no this time", "Nigerian association"]);
     expect(gig.currentSceneId).toBe("FY_GIG_LIFE");
     const dec = play2(gig, ["Keep driving", "any shift", "volunteer tax clinic"]);
     expect(dec.currentSceneId).toBe("FY_SILENCE");
     const fy = newRun(DB, "FIRST_YEAR");
-    const office = play2({ ...fy, routeStats: { ...fy.routeStats, regulated: 0 } }, ["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days",
+    const office = play2({ ...fy, routeStats: { ...fy.routeStats, regulated: 0 } }, ["SIN at the airport", "Declare everything", "guarantor from", "co-sign", "full-time and study", "Volunteer two days",
       "Unregulated field", "Swap shifts", "fixed share", "Nigerian association"]);
     expect(office.currentSceneId).toBe("FY_ACCENT");
   });
 
   it("the group-chat tax guy is fraud; undeclared stockfish is a gamble with a fine", () => {
-    const taxes = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "warehouse survival job",
+    const taxes = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "co-sign", "full-time and study", "warehouse survival job",
       "Drive Uber", "Swap shifts", "fixed share", "Nigerian association", "Keep driving", "any shift"]);
     expect(taxes.currentSceneId).toBe("FY_TAXES");
     expect(play2(taxes, ["expenses you don't have"]).outcome?.reason).toBe("TAX_FRAUD");
@@ -1474,7 +1474,7 @@ describe("v0.17: right answers cost something", () => {
     const masjid = { version: 1, username: "Aisha", avatar: DEFAULT_AVATAR, role: "worker", age: 29, stateCode: "KD",
       worker: { occupation: "data", years: 4, qualification: "bachelors", salary: "150k-400k" } } as PlayerProfile;
     expect(fillText(DB.scenes.FY_FAITH.title!, profileVars(masjid))).toBe("Every Jumu'ah.");
-    const at = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days", "bridging program"]);
+    const at = play("FIRST_YEAR", ["SIN at the airport", "Declare everything", "guarantor from", "co-sign", "full-time and study", "Volunteer two days", "bridging program"]);
     expect(at.currentSceneId).toBe("FY_FAITH");
   });
 });
@@ -1559,7 +1559,7 @@ describe("v0.19: round-3 fixes", () => {
   it("the regulated-field options only show for regulated jobs in Year One", () => {
     const fy = newRun(DB, "FIRST_YEAR");
     const at = (regulated: number) => play2({ ...fy, routeStats: { ...fy.routeStats, regulated } },
-      ["SIN at the airport", "Declare everything", "guarantor from", "Volunteer two days"]);
+      ["SIN at the airport", "Declare everything", "guarantor from", "co-sign", "full-time and study", "Volunteer two days"]);
     expect(presentChoices(DB, at(0)).map((c) => c.label)).not.toContain("BRIDGING");
     expect(presentChoices(DB, at(0)).some((c) => c.label === "CERT_AND_CV")).toBe(true);
     expect(presentChoices(DB, at(1)).some((c) => c.label === "CERT_AND_CV")).toBe(false);
@@ -1617,5 +1617,72 @@ describe("soundtrack styles", () => {
     expect(grooveFor("nollywood", "tension").strings).toBe(true);
     expect(grooveFor("nollywood", "lagos").boom?.some(Boolean)).toBe(true);
     expect(grooveFor("fuji", "lagos").talk.filter((x) => x !== null).length).toBeGreaterThan(6);
+  });
+});
+
+describe("v0.22: design-doc scenes and mechanics", () => {
+  const at = (route: RouteId, scene: string, stats: Record<string, number> = {}) => {
+    const r = newRun(DB, route);
+    return { ...r, currentSceneId: scene, routeStats: { ...r.routeStats, ...stats } };
+  };
+
+  it("every timed scene's timeout answer exists, and every crisis offers at least two choices", () => {
+    for (const s of Object.values(DB.scenes)) {
+      if (s.timer) expect(s.choices?.[s.timer.timeoutIndex], s.id).toBeTruthy();
+    }
+    for (const r of Object.values(DB.routes)) {
+      for (const t of r.traps?.items ?? []) if (t.options) expect(t.options.length, t.id).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it("a Village People crisis waits for your choice, then shows what happened", () => {
+    const fy = newRun(DB, "FIRST_YEAR");
+    const trap = DB.routes.FIRST_YEAR.traps!.items.find((t) => t.id === "blacktax")!;
+    const s = { ...fy, popup: { kind: "trap" as const, id: trap.id, kicker: trap.kicker, title: trap.title, body: trap.body, options: trap.options } };
+    const sent = resolvePopup(DB, s, 0);
+    expect(sent.walletCad).toBe(fy.walletCad - 45);
+    expect(sent.popup?.options).toBeUndefined();
+    expect(sent.popup?.body).toMatch(/prayers/);
+    expect(dismissPopup(s).popup?.options).toBeUndefined();
+  });
+
+  it("the Agent Room: verifying keeps your money, paying is Section 40", () => {
+    const room = at("NIGERIA_LIFE", "AR_PITCH");
+    const safe = play2(room, ["LMIA number", "No upfront fee"]);
+    expect(safe.currentSceneId).toBe("AR_SAFE");
+    expect(play2(safe, ["Walk to the bus stop"]).streetCred).toBe(room.streetCred + 6 + 20);
+    expect(play2(room, ["Where do I make the deposit", "Borrow from three loan apps"]).outcome?.reason).toBe("AGENT_ROOM_SCAM");
+    expect(play2(room, ["minimum language level", "legally binding contract"]).currentSceneId).toBe("AR_RETALIATION");
+  });
+
+  it("a fake credit alert loses the car; checking the app is a fair gamble", () => {
+    const lot = at("NIGERIA_LIFE", "LAGOS_JIJI");
+    expect(play2(lot, ["Hand over the keys"]).outcome?.reason).toBe("FAKE_ALERT");
+    expect(play2(lot, ["police-station car park"]).walletNgn).toBe(lot.walletNgn + 1500000);
+  });
+
+  it("the file review rewards a paper trail and punishes pooled funds and freezing", () => {
+    const review = at("STUDY_PERMIT", "ST_REVIEW_1");
+    const strong = play2(review, ["adds a specialization", "A gift deed", "My whole family"]);
+    const weak = play2(review, ["economy in Nigeria is bad", "uncle pooled", "My whole family"]);
+    expect(strong.routeStats.officerConfidence! - weak.routeStats.officerConfidence!).toBe(105);
+    expect(DB.scenes.ST_REVIEW_1.timer).toEqual({ seconds: 15, timeoutIndex: 2 });
+    const leave = presentChoices(DB, at("STUDY_PERMIT", "ST_REVIEW_3")).find((c) => c.label === "STUDY_LEAVE")!;
+    expect(leave.enabled).toBe(false);
+    expect(presentChoices(DB, at("STUDY_PERMIT", "ST_REVIEW_3", { employed: 1 })).find((c) => c.label === "STUDY_LEAVE")!.enabled).toBe(true);
+  });
+
+  it("the scholarship route: a tailored email and an analog professor lead to full funding; a self-written reference is fraud", () => {
+    const start = at("STUDY_PERMIT", "ST_START");
+    const funded = play2(start, ["fully funded research master's", "Tailored", "carton of malt", "Accept"]);
+    expect(funded.currentSceneId).toBe("ST_FUNDS");
+    expect(funded.routeStats.programType).toBe(2);
+    expect(funded.walletCad).toBeGreaterThan(start.walletCad + 40000);
+    expect(play2(start, ["fully funded research master's", "Tailored", "Write the letter yourself"]).outcome?.reason).toBe("FAKE_REFERENCE");
+  });
+
+  it("Mr. Henderson: a guarantor and a quiet lifestyle get the lease", () => {
+    const s = play2(at("FIRST_YEAR", "FY_LANDLORD"), ["co-sign", "full-time and study"]);
+    expect(s.currentSceneId).toBe("FY_JOBS");
   });
 });

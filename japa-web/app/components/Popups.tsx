@@ -62,6 +62,22 @@ function RankGlyph({ id }: { id: string }) {
   return <span className="block text-center text-4xl">🚌</span>;
 }
 
+const EFFECT_NAMES: Record<string, string> = {
+  walletCad: "CAD", walletNgn: "₦", energy: "Energy", desperation: "Village People", familyStrain: "Family strain",
+  timeRemainingDays: "Days", careerScore: "Career", community: "Community", academicStanding: "Grades",
+};
+/** "₦-850,000 · Village People +15" for a crisis option. */
+function effectLine(e: Record<string, number | undefined>): string {
+  return Object.entries(e).filter(([, v]) => typeof v === "number" && v !== 0).map(([k, v]) => {
+    const n = v as number;
+    const sign = n > 0 ? "+" : "−";
+    const abs = Math.abs(n).toLocaleString("en-NG");
+    if (k === "walletNgn") return `₦${sign}${abs}`;
+    if (k === "walletCad") return `${sign}CAD ${abs}`;
+    return `${EFFECT_NAMES[k] ?? k} ${sign}${abs}`;
+  }).join(" · ");
+}
+
 /** Opens a pre-filled post on X. Works on every route's ending. */
 export function ShareOnX({ text, className = "" }: { text: string; className?: string }) {
   return (
@@ -118,7 +134,7 @@ function Overlay({ className, children }: { className: string; children: React.R
 }
 
 /** Village People trap or parallel-market shock. */
-export function PopupModal({ popup, onDismiss }: { popup: Popup; onDismiss: () => void }) {
+export function PopupModal({ popup, onDismiss, onChoose }: { popup: Popup; onDismiss: () => void; onChoose?: (i: number) => void }) {
   const market = popup.kind === "market";
   const blessing = popup.kind === "blessing";
   useSfxOnMount(market ? "cashOut" : blessing ? "good" : "trap");
@@ -139,6 +155,18 @@ export function PopupModal({ popup, onDismiss }: { popup: Popup; onDismiss: () =
         </p>
         <h3 className="mt-2 text-2xl font-black text-white">{popup.title}</h3>
         <p className="mt-3 text-sm leading-7 text-zinc-300">{popup.body}</p>
+        {popup.options?.length && onChoose ? (
+          <div className="mt-5 space-y-2">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-rose-200/80">Village People attack! Choose:</p>
+            {popup.options.map((o, i) => (
+              <button key={i} type="button" autoFocus={i === 0} onClick={() => onChoose(i)}
+                className="block w-full rounded-2xl border border-white/15 bg-white/[0.04] px-4 py-3 text-left text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-amber-300/60">
+                <span className="mr-2 font-mono text-xs text-amber-300">{i + 1}</span>{o.label}
+                <span className="mt-1 block font-mono text-[11px] font-normal text-zinc-400">{effectLine(o.effects)}</span>
+              </button>
+            ))}
+          </div>
+        ) : (
         <button
           type="button"
           autoFocus
@@ -149,6 +177,7 @@ export function PopupModal({ popup, onDismiss }: { popup: Popup; onDismiss: () =
         >
           {popup.button ?? "Keep moving"}
         </button>
+        )}
       </div>
     </Overlay>
   );

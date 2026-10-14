@@ -1,6 +1,6 @@
 // The app's state machine. One reducer; each route keeps its own GameState,
 // so switching modes never loses progress.
-import { DB, applyMarketShock, choose, dismissPopup, newRun, takeAction } from "./engine";
+import { DB, applyMarketShock, choose, dismissPopup, newRun, resolvePopup, takeAction } from "./engine";
 import type { Effects, GameState, RouteId, RunMods, ScenarioDatabase, Toast } from "./types";
 import { applyBundle } from "./meta";
 import { deriveGameProfile, familyFor, routePatches, type PlayerProfile } from "./profile";
@@ -20,6 +20,7 @@ export type AppEvent =
   | { type: "CHOOSE"; index: number; rolls?: number[] }
   | { type: "MARKET_SHOCK" }
   | { type: "DISMISS_POPUP" }
+  | { type: "RESOLVE_POPUP"; index: number }
   | { type: "TAKE_ACTION"; actionId: string; rolls: number[] }
   | { type: "RESTART" }
   | { type: "DISMISS_TOAST" }
@@ -70,6 +71,8 @@ export function makeReducer(db: ScenarioDatabase = DB) {
         return run ? withRun(state, applyMarketShock(db, run)) : state;
       case "DISMISS_POPUP":
         return run ? withRun(state, dismissPopup(run)) : state;
+      case "RESOLVE_POPUP":
+        return run ? withRun(state, resolvePopup(DB, run, event.index)) : state;
       case "TAKE_ACTION": {
         if (!run) return state;
         const r = takeAction(db, run, event.actionId, event.rolls);

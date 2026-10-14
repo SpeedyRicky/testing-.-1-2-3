@@ -1,6 +1,6 @@
 // Simulated playthroughs for balance: thousands of runs per route with simple player policies.
 // Used by the balance tests and by `npm run simulate` to print a report.
-import { DB, choose, dismissPopup, newRun, presentChoices, takeAction, type PresentedChoice } from "./engine";
+import { DB, choose, dismissPopup, newRun, presentChoices, resolvePopup, takeAction, type PresentedChoice } from "./engine";
 import { allEndings, endingKey } from "./endings";
 import type { GameState, RouteId, ScenarioDatabase } from "./types";
 
@@ -45,6 +45,18 @@ function pick(db: ScenarioDatabase, s: GameState, policy: Policy, rnd: () => num
   return [...pool].sort((a, b) => score(b) - score(a))[0];
 }
 
+/** A sensible crisis answer: the one that hurts desperation and energy least for the money it costs. */
+function bestOption(s: GameState): number {
+  const opts = s.popup?.options ?? [];
+  let best = 0, bestV = -Infinity;
+  opts.forEach((o, i) => {
+    const e = o.effects as Record<string, number>;
+    const v = -(e.desperation ?? 0) + (e.energy ?? 0) * 0.5 + (e.walletCad ?? 0) / 100 + (e.walletNgn ?? 0) / 100000 - (e.familyStrain ?? 0);
+    if (v > bestV) { bestV = v; best = i; }
+  });
+  return best;
+}
+
 const DASH_PLAN = ["job_fair", "cold_message", "mentor_coffee", "resume"];
 
 export interface RunResult {
@@ -76,7 +88,9 @@ export function playOnce(db: ScenarioDatabase, route: RouteId, policy: Policy, r
     if (!c) break;
     const next = choose(db, s, c.index, [rnd(), rnd(), rnd(), rnd()]);
     if (next.popup) traps++;
-    s = dismissPopup(next);
+    s = next.popup?.options?.length
+      ? dismissPopup(resolvePopup(db, next, policy === "random" ? Math.floor(rnd() * next.popup.options.length) : bestOption(next)))
+      : dismissPopup(next);
   }
   const collapse = db.routes[route].collapse?.sceneId;
   return { route, result: s.outcome?.result ?? "stuck", ending: endingKey(db, s), moves, traps,
