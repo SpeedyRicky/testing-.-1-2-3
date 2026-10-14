@@ -9,9 +9,24 @@ export type Props = Record<string, string | number | boolean>;
 const PLAUSIBLE = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
 const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 const POSTHOG_HOST = (process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com").replace(/\/$/, "");
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const ID_KEY = "japa.anon.v1";
 
-export const analyticsEnabled = () => Boolean(PLAUSIBLE || POSTHOG_KEY);
+export const analyticsEnabled = () => Boolean(PLAUSIBLE || POSTHOG_KEY || (SUPABASE_URL && SUPABASE_KEY));
+
+/** Columns the Supabase table has (docs/analytics-schema.sql); everything else goes into props. */
+function supabaseRow(event: string, props: Props = {}) {
+  const { route, node, stress, familyStrain, ...rest } = props;
+  const r = typeof route === "string" ? route : null;
+  return {
+    player_id: anonId(), event, route: r, node: typeof node === "string" ? node : null,
+    current_phase: r === "NIGERIA_LIFE" || r === "EXPRESS_ENTRY" || r === "TARGETED_TRADE" ? 1 : r ? 2 : null,
+    metric_stress: typeof stress === "number" ? Math.round(stress) : null,
+    metric_family_strain: typeof familyStrain === "number" ? Math.round(familyStrain) : null,
+    props: rest,
+  };
+}
 
 function optedOut(): boolean {
   try {
@@ -45,6 +60,13 @@ export function track(event: string, props?: Props): void {
         method: "POST", keepalive: true, headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ api_key: POSTHOG_KEY, event, distinct_id: anonId(),
           properties: { ...props, $current_url: location.origin + location.pathname, $process_person_profile: false } }),
+      }).catch(() => {});
+    }
+    if (SUPABASE_URL && SUPABASE_KEY) {
+      void fetch(`${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/fact_game_analytics`, {
+        method: "POST", keepalive: true,
+        headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Prefer: "return=minimal" },
+        body: JSON.stringify(supabaseRow(event, props)),
       }).catch(() => {});
     }
   } catch { /* stats must never break the game */ }

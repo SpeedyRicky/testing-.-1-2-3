@@ -82,7 +82,7 @@ export function DashboardLayout({ run, dispatch, bars, toast }: LayoutProps) {
             <span className={run.timeRemainingDays <= 45 ? "text-rose-400" : undefined}>{run.timeRemainingDays}</span>
             <span className="text-base text-zinc-500"> days</span>
           </Counter>
-          <Counter icon={Wallet} label="Wallet" sub={`≈ ₦${fmt(run.walletCad * hub.ngnPerCad)} at ₦${fmt(hub.ngnPerCad)}/CAD`}>
+          <Counter icon={Wallet} label="Wallet" sub={`≈ ₦${fmt(run.walletCad * hub.ngnPerCad)} · lasts ~${Math.max(0, Math.floor(run.walletCad / Math.max(1, hub.dailyCostCad)))} days at CAD ${hub.dailyCostCad}/day`}>
             ${fmt(run.walletCad)} <span className="text-base text-zinc-500">CAD</span>
           </Counter>
           <Counter icon={Target} label="Employer leads" sub={`${hub.leadsToWin} unlock the LMIA interview`}>

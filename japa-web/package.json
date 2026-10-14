@@ -9,15 +9,21 @@
     "lint": "eslint",
     "test": "vitest run",
     "standalone": "node scripts/build-standalone.mjs",
-    "simulate": "vitest run --config vitest.sim.config.ts"
+    "simulate": "vitest run --config vitest.sim.config.ts",
+    "android:web": "npm run standalone && node scripts/android-web.mjs",
+    "android:sync": "npm run android:web && npx cap sync android",
+    "android:bundle": "npm run android:sync && cd android && ./gradlew bundleRelease"
   },
   "dependencies": {
+    "@capacitor/core": "^7.6.9",
     "lucide-react": "^1.54.0",
     "next": "16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@capacitor/android": "^7.6.9",
+    "@capacitor/cli": "^7.6.9",
     "@tailwindcss/cli": "^4.3.3",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",

@@ -1715,3 +1715,15 @@ describe("v0.23: Trades, PNP Rural and Split Family routes", () => {
     expect(DB.routes.SPLIT_FAMILY.bars.map((b) => b.key)).toEqual(["walletCad", "walletNgn", "familyStrain", "desperation"]);
   });
 });
+
+describe("Gist feed", () => {
+  it("shows the route's own posts first, changes daily, and every myth or scam has a Community note", async () => {
+    const { GIST, gistFor } = await import("./gist");
+    for (const p of GIST) if (p.kind === "myth" || p.kind === "scam") expect(p.note, p.id).toBeTruthy();
+    const today = gistFor("TOURIST_GAMBLE", 100);
+    expect(today).toHaveLength(6);
+    expect(today.filter((p) => p.routes?.includes("TOURIST_GAMBLE")).length).toBeGreaterThanOrEqual(3);
+    expect(gistFor("TOURIST_GAMBLE", 101).map((p) => p.id)).not.toEqual(today.map((p) => p.id));
+    expect(new Set(today.map((p) => p.id)).size).toBe(6);
+  });
+});

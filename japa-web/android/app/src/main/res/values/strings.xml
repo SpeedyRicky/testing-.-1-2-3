@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Japa: The Great Escape</string>
+    <string name="title_activity_main">Japa: The Great Escape</string>
+    <string name="package_name">ng.japagame.app</string>
+    <string name="custom_url_scheme">ng.japagame.app</string>
+</resources>

@@ -102,3 +102,21 @@ export function placeVars(p: NigeriaPlace): Record<string, string> {
 export function transportFor(p: NigeriaPlace): LocalTransport {
   return p.transport ?? "keke";
 }
+
+/** Naira per Canadian dollar used for the "≈ ₦" equivalents in the game (illustrative; the real rate moves daily). */
+export const NGN_PER_CAD = 1150;
+
+/** Canadian prices that make the exchange rate hurt. */
+export const PRICE_SHOCKS: { item: string; cad: number }[] = [
+  { item: "A Tim Hortons combo", cad: 12 },
+  { item: "A monthly transit pass", cad: 156 },
+  { item: "A basement room, one month", cad: 950 },
+  { item: "A proper winter parka", cad: 350 },
+];
+
+/** "₦4.6M", "₦13,800": short naira for UI chips. */
+export function shortNaira(n: number): string {
+  const a = Math.abs(n);
+  if (a >= 1_000_000) return `₦${(n / 1_000_000).toFixed(a >= 10_000_000 ? 0 : 1)}M`;
+  return `₦${Math.round(n).toLocaleString("en-NG")}`;
+}

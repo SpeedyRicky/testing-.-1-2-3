@@ -32,6 +32,8 @@ export function useAnalytics(run: GameState | null) {
   useEffect(() => {
     if (!ending || ended.current === ending) return;
     ended.current = ending;
-    track("run_end", { route, result, ending, moves, daily });
+    track("run_end", { route, result, ending, moves, daily, node: run?.currentSceneId ?? "", stress: run?.desperation ?? 0,
+      ...(run?.routeStats.familyStrain !== undefined ? { familyStrain: run.routeStats.familyStrain } : {}) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ending, route, result, moves, daily]);
 }

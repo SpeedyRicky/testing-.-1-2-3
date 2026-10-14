@@ -43,6 +43,16 @@ export class AudioEngine {
     this.noise = this.ctx.createBuffer(1, this.ctx.sampleRate, this.ctx.sampleRate);
     const data = this.noise.getChannelData(0);
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    // Ambience: both places play at once on their own buses; the mixer opens one valve and closes the other.
+    this.ambBus = this.ctx.createGain();
+    this.ambBus.gain.value = 0;
+    this.ambBus.connect(this.master);
+    this.lagosAmb = this.ctx.createGain();
+    this.lagosAmb.gain.value = 0;
+    this.lagosAmb.connect(this.ambBus);
+    this.canadaAmb = this.ctx.createGain();
+    this.canadaAmb.gain.value = 0;
+    this.canadaAmb.connect(this.ambBus);
     // Optional licensed tracks, listed in public/music/manifest.json. Not available when opened from a file.
     if (location.protocol.startsWith("http")) {
       fetch("music/manifest.json").then((r) => (r.ok ? r.json() : {})).then((m) => { this.files = m ?? {}; }).catch(() => {});
@@ -53,20 +63,110 @@ export class AudioEngine {
     if (this.ctx.state !== "running") void this.ctx.resume();
   }
 
+  private ambBus!: GainNode;
+  private lagosAmb!: GainNode;
+  private canadaAmb!: GainNode;
+  private ambStarted = false;
+  private ambVol = 0.6;
+  private place: "lagos" | "canada" | null = null;
+  private hornTimer: number | null = null;
+
+  private ambLevel() { return this.musicOn ? 0.5 * this.ambVol : 0; }
+
+  /** Starts the two beds once: generator hum, market chatter and danfo horns; blizzard wind and furnace hum. */
+  private startAmbience() {
+    if (this.ambStarted) return;
+    this.ambStarted = true;
+    const t = this.ctx.currentTime;
+    const loopNoise = (filter: BiquadFilterType, freq: number, q: number, gain: number, dest: AudioNode) => {
+      const src = this.ctx.createBufferSource();
+      src.buffer = this.noise;
+      src.loop = true;
+      const f = this.ctx.createBiquadFilter();
+      f.type = filter; f.frequency.value = freq; f.Q.value = q;
+      const g = this.ctx.createGain();
+      g.gain.value = gain;
+      src.connect(f).connect(g).connect(dest);
+      src.start(t);
+      return { f, g };
+    };
+    const lfo = (rate: number, depth: number, param: AudioParam) => {
+      const o = this.ctx.createOscillator();
+      o.frequency.value = rate;
+      const d = this.ctx.createGain();
+      d.gain.value = depth;
+      o.connect(d).connect(param);
+      o.start(t);
+    };
+    // Lagos: a petrol generator (a low, rough 50 Hz buzz) and market chatter that swells and fades.
+    const gen = this.ctx.createOscillator();
+    gen.type = "sawtooth"; gen.frequency.value = 50;
+    const genLp = this.ctx.createBiquadFilter();
+    genLp.type = "lowpass"; genLp.frequency.value = 180;
+    const genG = this.ctx.createGain();
+    genG.gain.value = 0.05;
+    gen.connect(genLp).connect(genG).connect(this.lagosAmb);
+    gen.start(t);
+    lfo(7, 0.012, genG.gain);
+    const chatter = loopNoise("bandpass", 950, 0.9, 0.05, this.lagosAmb);
+    lfo(0.23, 0.03, chatter.g.gain);
+    // Canada: wind that rises and falls, and a furnace humming in the basement.
+    const wind = loopNoise("bandpass", 500, 1.4, 0.09, this.canadaAmb);
+    lfo(0.07, 260, wind.f.frequency);
+    lfo(0.11, 0.05, wind.g.gain);
+    const hum = this.ctx.createOscillator();
+    hum.frequency.value = 60;
+    const humG = this.ctx.createGain();
+    humG.gain.value = 0.025;
+    hum.connect(humG).connect(this.canadaAmb);
+    hum.start(t);
+    // Danfo horns every so often, only audible while Lagos is up.
+    const horn = () => {
+      if (this.place === "lagos") {
+        const at = this.ctx.currentTime + 0.05;
+        for (const [f, d] of [[415, 0], [523, 0.16]] as const) {
+          const g = this.env(at + d, 0.05, 0.01, 0.14, this.lagosAmb);
+          this.osc("square", f, at + d, 0.15, g);
+        }
+      }
+      this.hornTimer = window.setTimeout(horn, 7000 + Math.random() * 11000);
+    };
+    this.hornTimer = window.setTimeout(horn, 4000);
+  }
+
+  /** Which place you can hear: the scene's mood picks Lagos or Canada; tense and ending moods keep the last place. */
+  private setPlace(mood: Mood) {
+    const next = mood === "lagos" || mood === "pitch" ? "lagos" : mood === "canada" || mood === "hustle" ? "canada" : this.place ?? "lagos";
+    if (next === this.place) return;
+    this.place = next;
+    this.startAmbience();
+    const now = this.ctx.currentTime;
+    for (const [g, on] of [[this.lagosAmb, next === "lagos"], [this.canadaAmb, next === "canada"]] as const) {
+      g.gain.cancelScheduledValues(now);
+      g.gain.setTargetAtTime(on ? 1 : 0, now, 0.6);
+    }
+  }
+
+  private applyAmbience() {
+    this.ambBus.gain.setTargetAtTime(this.ambLevel(), this.ctx.currentTime, 0.3);
+  }
+
   private musicOn = true;
   private sfxOn = true;
   private musicVol = 1;
   private sfxVol = 1;
   private musicLevel() { return this.musicOn ? 0.32 * this.musicVol : 0; }
 
-  setMusicOn(on: boolean) { this.musicOn = on; this.applyMusic(); }
+  setMusicOn(on: boolean) { this.musicOn = on; this.applyMusic(); this.applyAmbience(); }
   setSfxOn(on: boolean) { this.sfxOn = on; this.applySfx(); }
   /** Volume sliders, 0–1. */
-  setVolumes(music: number, sfx: number) {
+  setVolumes(music: number, sfx: number, ambience = this.ambVol) {
     this.musicVol = Math.max(0, Math.min(1, music));
     this.sfxVol = Math.max(0, Math.min(1, sfx));
+    this.ambVol = Math.max(0, Math.min(1, ambience));
     this.applyMusic();
     this.applySfx();
+    this.applyAmbience();
   }
 
   private applyMusic() {
@@ -91,6 +191,8 @@ export class AudioEngine {
 
   /** Switches the groove with a short fade, keeping time. */
   setMood(mood: Mood) {
+    this.setPlace(mood);
+    this.applyAmbience();
     if (this.stats.mood === mood) return;
     this.stats.mood = mood;
     const file = this.files[mood];
@@ -124,6 +226,7 @@ export class AudioEngine {
 
   stop() {
     if (this.timer !== null) window.clearInterval(this.timer);
+    if (this.hornTimer !== null) window.clearTimeout(this.hornTimer);
     this.timer = null;
     this.stats.running = false;
     this.track?.pause();

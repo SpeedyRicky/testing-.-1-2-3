@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FileCheck2, Ghost, GraduationCap, Languages, MapPin, Plane, Sparkles, Trophy, Wallet, Zap } from "lucide-react";
+import { FileCheck2, Ghost, GraduationCap, Hammer, HeartCrack, Languages, MapPin, Plane, Sparkles, Trophy, Wallet, Zap } from "lucide-react";
 import { DB, choose, computeCrs, presentChoices, rankFor } from "@/game/engine";
 import { lessonFor } from "@/game/endings";
 import { OddsChip } from "../OddsChip";
@@ -16,6 +16,7 @@ import type { LayoutProps } from "../LayoutContainer";
 import { SceneStage } from "../Stage2D";
 import { TravelRibbon } from "../TravelRibbon";
 import { CadFloat, GameOverModal, PopupModal } from "../Popups";
+import { NGN_PER_CAD, PRICE_SHOCKS, shortNaira } from "@/game/nigeria";
 
 const STARS = [
   { top: "8%", left: "12%", delay: "0s" },
@@ -37,6 +38,10 @@ const HUD: Record<string, { icon: typeof Wallet; bar: string; tint: string; glow
   crsScore: { icon: Trophy, bar: "from-sky-400 to-indigo-300", tint: "bg-sky-500/20 text-sky-200", glow: "shadow-sky-400/20" },
   clbFirst: { icon: Languages, bar: "from-violet-400 to-fuchsia-300", tint: "bg-violet-500/20 text-violet-200", glow: "shadow-violet-400/20" },
   academicStanding: { icon: GraduationCap, bar: "from-amber-300 to-orange-400", tint: "bg-amber-500/20 text-amber-200", glow: "shadow-amber-400/20" },
+  familyStrain: { icon: HeartCrack, bar: "from-rose-300 to-red-600", tint: "bg-rose-500/20 text-rose-200", glow: "shadow-rose-500/20" },
+  tradeYears: { icon: Hammer, bar: "from-orange-400 to-amber-200", tint: "bg-orange-500/20 text-orange-200", glow: "shadow-orange-400/20" },
+  clbTrade: { icon: Languages, bar: "from-violet-400 to-fuchsia-300", tint: "bg-violet-500/20 text-violet-200", glow: "shadow-violet-400/20" },
+  provinceTies: { icon: MapPin, bar: "from-sky-300 to-emerald-300", tint: "bg-sky-500/20 text-sky-200", glow: "shadow-sky-400/20" },
 };
 
 /** Purple Lagos night for Lagos Life; cooler skies once the story heads for Canada. */
@@ -46,6 +51,9 @@ const BACKDROP: Record<string, string> = {
   EXPRESS_ENTRY: "bg-[radial-gradient(circle_at_top,_#1e3a8a_0%,_#07060c_55%)]",
   TOURIST_GAMBLE: "bg-[radial-gradient(circle_at_top,_#78350f_0%,_#07060c_55%)]",
   FIRST_YEAR: "bg-[radial-gradient(circle_at_top,_#065f46_0%,_#07060c_55%)]",
+  SPLIT_FAMILY: "bg-[radial-gradient(circle_at_top,_#831843_0%,_#07060c_55%)]",
+  TARGETED_TRADE: "bg-[radial-gradient(circle_at_top,_#7c2d12_0%,_#07060c_55%)]",
+  PNP_RURAL: "bg-[radial-gradient(circle_at_top,_#0c4a6e_0%,_#07060c_55%)]",
 };
 
 const naira = (v: number) =>
@@ -119,6 +127,7 @@ function HudMeter({ spec, value }: { spec: BarSpec; value: number }) {
         <div className="min-w-0 flex-1">
           <dt className="text-[11px] uppercase leading-tight tracking-wider text-zinc-400">{spec.label}</dt>
           <dd className="truncate font-mono text-sm font-semibold text-white">{shown}</dd>
+          {spec.format === "cad" ? <dd className="truncate font-mono text-[10px] text-zinc-500">≈ {shortNaira(value * NGN_PER_CAD)}</dd> : null}
         </div>
       </div>
       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-black/40">
@@ -131,6 +140,33 @@ function HudMeter({ spec, value }: { spec: BarSpec; value: number }) {
         </span>
       )}
     </div>
+  );
+}
+
+/** The moment you land: your naira, converted, and what things cost in it. */
+const FX_SCENES = new Set(["FY_LANDING", "ST_ARRIVAL", "SF_REMIT", "TT_WINTER"]);
+function FxShock({ run }: { run: GameState }) {
+  const [open, setOpen] = useState(true);
+  if (!open || !FX_SCENES.has(run.currentSceneId)) return null;
+  const naira = run.walletCad * NGN_PER_CAD;
+  return (
+    <aside className="animate-scene-in mb-4 rounded-2xl border border-sky-300/30 bg-gradient-to-br from-sky-950/80 to-zinc-950/80 p-4 backdrop-blur" aria-label="Exchange rate shock">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-200">Exchange rate shock · ₦{NGN_PER_CAD.toLocaleString("en-NG")} = CAD 1</p>
+        <button type="button" onClick={() => setOpen(false)} className="text-xs text-zinc-400 hover:text-white">Close</button>
+      </div>
+      <p className="mt-2 text-sm text-zinc-200">
+        Your <b className="font-mono">{shortNaira(naira)}</b> is now <b className="font-mono">CAD {Math.round(run.walletCad).toLocaleString("en-CA")}</b>.
+      </p>
+      <ul className="mt-2 grid gap-1.5 sm:grid-cols-2">
+        {PRICE_SHOCKS.map((p) => (
+          <li key={p.item} className="flex justify-between gap-2 rounded-xl bg-black/30 px-3 py-1.5 text-xs">
+            <span className="text-zinc-300">{p.item}</span>
+            <span className="font-mono text-rose-300">CAD {p.cad} = {shortNaira(p.cad * NGN_PER_CAD)}</span>
+          </li>
+        ))}
+      </ul>
+    </aside>
   );
 }
 
@@ -282,6 +318,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
           {travel && <TravelRibbon mode={travel.mode} destination={travel.destination} />}
         </div>
 
+        <FxShock key={run.currentSceneId} run={run} />
         <article
           key={shownId}
           className={`animate-scene-in relative overflow-hidden rounded-[2rem] border p-5 shadow-[0_20px_80px_-30px_rgba(251,191,36,0.55)] sm:p-7 ${

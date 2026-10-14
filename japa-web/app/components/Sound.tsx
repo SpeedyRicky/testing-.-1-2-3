@@ -9,8 +9,8 @@ export type SoundMode = "all" | "sfx" | "off";
 const STORAGE_KEY = "japa.sound.v1";
 const VOLUME_KEY = "japa.volume.v1";
 const STYLE_KEY = "japa.style.v1";
-export interface Volumes { music: number; sfx: number }
-const DEFAULT_VOLUMES: Volumes = { music: 0.8, sfx: 0.9 };
+export interface Volumes { music: number; sfx: number; ambience: number }
+const DEFAULT_VOLUMES: Volumes = { music: 0.8, sfx: 0.9, ambience: 0.6 };
 
 interface SoundCtx {
   mode: SoundMode;
@@ -52,7 +52,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
         if (st && STYLE_IDS.includes(st)) { styleRef.current = st; setStyleState(st); }
         const v = JSON.parse(window.localStorage.getItem(VOLUME_KEY) ?? "null") as Partial<Volumes> | null;
         if (v && typeof v.music === "number" && typeof v.sfx === "number") {
-          volRef.current = { music: v.music, sfx: v.sfx };
+          volRef.current = { music: v.music, sfx: v.sfx, ambience: typeof v.ambience === "number" ? v.ambience : DEFAULT_VOLUMES.ambience };
           setVolumesState(volRef.current);
         }
       } catch { /* storage blocked: keep the default */ }
@@ -61,7 +61,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const apply = useCallback((e: AudioEngine, m: SoundMode) => {
-    e.setVolumes(volRef.current.music, volRef.current.sfx);
+    e.setVolumes(volRef.current.music, volRef.current.sfx, volRef.current.ambience);
     e.setStyle(styleRef.current);
     e.setMusicOn(m === "all");
     e.setSfxOn(m !== "off");
@@ -119,7 +119,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     volRef.current = v;
     setVolumesState(v);
     try { window.localStorage.setItem(VOLUME_KEY, JSON.stringify(v)); } catch { /* ignore */ }
-    engine.current?.setVolumes(v.music, v.sfx);
+    engine.current?.setVolumes(v.music, v.sfx, v.ambience);
   }, []);
 
   const setStyle = useCallback((st: Style) => {
@@ -188,6 +188,7 @@ export function SoundToggle() {
             ))}
           </div>
           <Slider label="Music" value={volumes.music} disabled={mode !== "all"} onChange={(music) => setVolumes({ ...volumes, music })} />
+          <Slider label="Ambience (Lagos / Canada)" value={volumes.ambience} disabled={mode !== "all"} onChange={(ambience) => setVolumes({ ...volumes, ambience })} />
           <Slider label="Effects" value={volumes.sfx} disabled={mode === "off"} onChange={(sfx) => setVolumes({ ...volumes, sfx })}
             onRelease={() => play("good")} />
         </div>

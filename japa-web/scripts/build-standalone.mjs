@@ -25,6 +25,7 @@ createRoot(document.getElementById("root")).render(<SoundProvider><Game /></Soun
     "process.env.NODE_ENV": '"production"', "process.env.NEXT_PUBLIC_SITE_URL": "undefined",
     "process.env.VERCEL_PROJECT_PRODUCTION_URL": "undefined", "process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN": "undefined",
     "process.env.NEXT_PUBLIC_POSTHOG_KEY": "undefined", "process.env.NEXT_PUBLIC_POSTHOG_HOST": "undefined",
+    "process.env.NEXT_PUBLIC_SUPABASE_URL": "undefined", "process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY": "undefined",
   },
   logLevel: "error",
 });

@@ -13,6 +13,7 @@ import { useAnalytics } from "../launch/useAnalytics";
 import { track, visitSource } from "../launch/analytics";
 import { InstallButton, useServiceWorker } from "../launch/Install";
 import { LanguageToggle } from "./Language";
+import { GistButton } from "./Gist";
 import { CinematicProvider, SpeedToggle, useCinematic } from "./Cinematic";
 import { EndingsButton, RealityCheck } from "./Endings";
 import { AwardToast, MetaChip, RunModsChip, useRunRewards } from "./Meta";
@@ -77,6 +78,20 @@ export function Game() {
       track("app_open", { source: visitSource(), returning: Boolean(saved) });
     }, 0);
     return () => window.clearTimeout(t);
+  }, []);
+
+  // When the phone backgrounds or kills the tab, write the save immediately (the debounce below may not get to run).
+  const latest = useRef(state);
+  useEffect(() => { latest.current = state; });
+  useEffect(() => {
+    const flush = () => {
+      if (!latest.current.profile) return;
+      try { window.localStorage.setItem(SAVE_KEY, JSON.stringify(makeSave(DB, latest.current))); } catch { /* storage full or blocked */ }
+    };
+    const onHide = () => { if (document.visibilityState === "hidden") flush(); };
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", onHide);
+    return () => { window.removeEventListener("pagehide", flush); document.removeEventListener("visibilitychange", onHide); };
   }, []);
 
   // Save every run as it changes, so a refresh continues where the player was.
@@ -223,6 +238,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
           <InstallButton />
           <LanguageToggle />
           <HelpButton onClick={() => setHelpOpen(true)} />
+          <GistButton route={state.activeRoute} />
           <MetaChip dispatch={dispatch} run={run} />
           <EndingsButton />
           <SoundToggle />
