@@ -34,6 +34,7 @@ export const ROUTE_THEME: Record<RouteId, { backdrop: string; tones: Tone[]; acc
   SPLIT_FAMILY: { backdrop: "", tones: [], accent: "text-rose-300" },
   TARGETED_TRADE: { backdrop: "", tones: [], accent: "text-orange-300" },
   PNP_RURAL: { backdrop: "", tones: [], accent: "text-sky-300" },
+  ATLANTIC_AIP: { backdrop: "", tones: [], accent: "text-teal-300" },
 };
 
 export interface LayoutProps {

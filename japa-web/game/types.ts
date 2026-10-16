@@ -11,7 +11,8 @@ export type RouteId =
   | "TARGETED_TRADE"
   | "TOURIST_GAMBLE"
   | "FIRST_YEAR"
-  | "PNP_RURAL";
+  | "PNP_RURAL"
+  | "ATLANTIC_AIP";
 
 export type LayoutType = "STORY_STAGE" | "ZOOM_GRID" | "CORPORATE_OFFICE" | "DASHBOARD" | "RESOLUTION";
 
@@ -107,6 +108,17 @@ export interface RouteStats {
   /** PNP Rural: ties to the chosen province, and which province. */
   provinceTies?: number;
   pnpProvince?: number;
+  // v0.27: the working Nigerian's week, nurses abroad, the job back home, and the Atlantic route
+  ieltsPrep?: number;
+  masjid?: number;
+  worker?: number;
+  nclex?: number;
+  homeJob?: number;
+  aipFile?: number;
+  clbAip?: number;
+  aipProvince?: number;
+  aipOffer?: number;
+  workPermit?: number;
   /** Split Family: strain on the family across two countries, and whether the kids came along. */
   familyStrain?: number;
   kidsWithYou?: number;

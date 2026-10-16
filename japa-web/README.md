@@ -211,9 +211,10 @@ pathway is for:
 | Pilot & Passenger | Married |
 | Targeted Trade | Electrician, plumber, welder, carpenter or mechanic with 2+ years |
 | PNP Rural | Worker with 1+ year of experience |
+| Atlantic | Worker with about a year (1,560 hours) of paid work in the last five years |
 
 Locked tabs show a padlock; tapping one explains what's missing, how to earn it by playing (if you can), and offers
-**Update my profile**. A header chip shows "Pathways x/10". The daily challenge and the "next route" buttons only offer
+**Update my profile**. A header chip shows "Pathways x/11". The daily challenge and the "next route" buttons only offer
 open routes, and the state machine refuses locked routes. Earned routes are saved, survive profile edits by the same
 player, and are rebuilt from finished runs in older saves. The savings answer now also sets your starting money.
 Plumbers, welders, carpenters and mechanics are new jobs with their own scene wording.

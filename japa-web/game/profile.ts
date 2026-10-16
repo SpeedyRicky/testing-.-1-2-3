@@ -287,6 +287,7 @@ export function routePatches(p: PlayerProfile): Partial<Record<RouteId, Partial<
         ecaComplete: 0, clbFirst: 0, nclcFrench: 0, canadianWorkYears: 0, canadianEducation: 0,
         pnpNomination: 0, siblingInCanada: isSibling(familyFor(p)) ? 1 : 0,
         eeCategory: p.role === "worker" && p.worker && p.worker.years >= 1 ? EE_CATEGORY[p.worker.occupation] ?? 0 : 0,
+        worker: p.role === "worker" ? 1 : 0, masjid: homeFor(p).faith === "masjid" ? 1 : 0, ieltsPrep: 0,
       },
     },
     STUDY_PERMIT: {
@@ -296,13 +297,20 @@ export function routePatches(p: PlayerProfile): Partial<Record<RouteId, Partial<
     },
     FIRST_YEAR: {
       walletCad: clamp(g.savingsCad, 6000, 15000),
-      routeStats: { careerScore: g.hasDegree ? 15 : 8, community: 10, regulated: REGULATED.has(track) ? 1 : 0 },
+      routeStats: { careerScore: g.hasDegree ? 15 : 8, community: 10, regulated: REGULATED.has(track) ? 1 : 0, homeJob: p.role === "worker" ? 1 : 0 },
     },
+    ATLANTIC_AIP: { currentLocation: where, walletCad: clamp(g.savingsCad, 2500, 15000) },
     TOURIST_GAMBLE: {
       walletCad: clamp(g.savingsCad, 1500, 6000),
       routeStats: { conflictRegion: CONFLICT_STATES.has(p.stateCode) ? 1 : 0, kwTruth: kwTruthOf(p) },
     },
   };
+}
+
+/** Where a fresh run starts for this player, when it differs from the route's default.
+ *  Working players begin Express Entry with the 4 a.m. week: finding time to study is their first battle. */
+export function startScenes(p: PlayerProfile): Partial<Record<RouteId, string>> {
+  return p.role === "worker" ? { EXPRESS_ENTRY: "EE_WEEK" } : {};
 }
 
 /** All words a scene can fill in: place, person and profile. */

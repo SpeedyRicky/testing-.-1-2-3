@@ -13,7 +13,7 @@ Hustle from Lagos to Canada. Beat the scams, the paperwork and the winter.
 Think you have what it takes to japa?
 
 Japa: The Great Escape is a story-strategy game about moving from Nigeria to Canada, and the real rules behind it.
-Pick from 10 routes: Express Entry, Study Permit, a fully funded Scholarship, Trades, PNP Rural, the Startup pitch,
+Pick from 11 routes: Express Entry, Study Permit, a fully funded Scholarship, Trades, PNP Rural, the Atlantic Immigration Program, the Startup pitch,
 the 180-day Tourist Gamble, the hidden LMIA interview, Year One in Canada, and Pilot & Passenger, the split-family
 journey.
 

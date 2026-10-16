@@ -42,6 +42,8 @@ const HUD: Record<string, { icon: typeof Wallet; bar: string; tint: string; glow
   familyStrain: { icon: HeartCrack, bar: "from-rose-300 to-red-600", tint: "bg-rose-500/20 text-rose-200", glow: "shadow-rose-500/20" },
   tradeYears: { icon: Hammer, bar: "from-orange-400 to-amber-200", tint: "bg-orange-500/20 text-orange-200", glow: "shadow-orange-400/20" },
   clbTrade: { icon: Languages, bar: "from-violet-400 to-fuchsia-300", tint: "bg-violet-500/20 text-violet-200", glow: "shadow-violet-400/20" },
+  aipFile: { icon: FileCheck2, bar: "from-teal-300 to-sky-300", tint: "bg-teal-500/20 text-teal-200", glow: "shadow-teal-400/20" },
+  clbAip: { icon: Languages, bar: "from-violet-400 to-fuchsia-300", tint: "bg-violet-500/20 text-violet-200", glow: "shadow-violet-400/20" },
   provinceTies: { icon: MapPin, bar: "from-sky-300 to-emerald-300", tint: "bg-sky-500/20 text-sky-200", glow: "shadow-sky-400/20" },
 };
 
@@ -55,6 +57,7 @@ const BACKDROP: Record<string, string> = {
   SPLIT_FAMILY: "bg-[radial-gradient(circle_at_top,_#831843_0%,_#07060c_55%)]",
   TARGETED_TRADE: "bg-[radial-gradient(circle_at_top,_#7c2d12_0%,_#07060c_55%)]",
   PNP_RURAL: "bg-[radial-gradient(circle_at_top,_#0c4a6e_0%,_#07060c_55%)]",
+  ATLANTIC_AIP: "bg-[radial-gradient(circle_at_top,_#115e59_0%,_#07060c_55%)]",
 };
 
 const naira = (v: number) =>

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.26.0",
+    "version": "0.27.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -1044,11 +1044,17 @@
           "title": "Tests and Transcripts",
           "goal": "Get CLB 9 and your ECA without paying for shortcuts.",
           "scenes": [
+            "EE_WEEK",
+            "EE_WEEKEND",
+            "EE_SUNDAY",
             "EE_START",
             "EE_ECA",
+            "EE_WES_VERIFY",
+            "EE_SECRET",
             "NURSE_VERIFY",
             "NURSE_TWO_TESTS",
-            "NURSE_UK_OR_CANADA"
+            "NURSE_UK_OR_CANADA",
+            "NURSE_NCLEX"
           ],
           "stars": [
             {
@@ -1349,7 +1355,7 @@
       "title": "The 180-Day Tourist Gamble",
       "short": "Tourist Gamble",
       "status": "playable",
-      "startSceneId": "TOURIST_ARRIVAL",
+      "startSceneId": "TOURIST_WHY",
       "initialState": {
         "currentLocation": "Pearson Airport, Terminal 3",
         "timeRemainingDays": 180,
@@ -1469,6 +1475,18 @@
           "id": "couch",
           "title": "Uncle Couch",
           "blurb": "The kids still ask when you are coming back."
+        },
+        {
+          "id": "purposelie",
+          "reason": "PURPOSE_MISREP",
+          "title": "The holiday that wasn't",
+          "blurb": "The real plan was on your phone."
+        },
+        {
+          "id": "arranged",
+          "reason": "ARRANGED_PASSPORT",
+          "title": "The arranged passport",
+          "blurb": "No passport, no identity, no case."
         }
       ],
       "traps": {
@@ -1554,6 +1572,7 @@
           "title": "Primary Inspection",
           "goal": "Get through the CBSA counter at Pearson without a single lie.",
           "scenes": [
+            "TOURIST_WHY",
             "TOURIST_ARRIVAL"
           ]
         },
@@ -2082,6 +2101,7 @@
           "goal": "SIN, bank, a coat, and a room you can actually keep.",
           "scenes": [
             "FY_LANDING",
+            "FY_OLD_JOB",
             "FY_CUSTOMS",
             "FY_HOUSING",
             "FY_LANDLORD",
@@ -2891,6 +2911,268 @@
             "body": "The Nigerian association in the province adds you to their WhatsApp. Somebody's cousin is hiring.",
             "effects": {
               "provinceTies": 10,
+              "desperation": -6
+            }
+          }
+        ]
+      }
+    },
+    "ATLANTIC_AIP": {
+      "title": "Atlantic Immigration Program",
+      "short": "Atlantic",
+      "status": "playable",
+      "tagline": "A designated employer, a settlement plan, and the sea.",
+      "startSceneId": "AIP_START",
+      "initialState": {
+        "currentLocation": "Home, Nigeria",
+        "energy": 90,
+        "walletCad": 6000,
+        "desperation": 35,
+        "routeStats": {
+          "aipFile": 0,
+          "clbAip": 0,
+          "aipProvince": 0,
+          "aipOffer": 0,
+          "workPermit": 0
+        }
+      },
+      "bars": [
+        {
+          "key": "aipFile",
+          "label": "AIP file",
+          "max": 100
+        },
+        {
+          "key": "clbAip",
+          "label": "Language (CLB)",
+          "max": 10
+        },
+        {
+          "key": "walletCad",
+          "label": "Savings",
+          "max": 15000,
+          "format": "cad"
+        },
+        {
+          "key": "desperation",
+          "label": "Village People %",
+          "suffix": "%",
+          "invert": true
+        }
+      ],
+      "collapse": {
+        "any": {
+          "energy": [
+            "<=",
+            0
+          ],
+          "desperation": [
+            ">=",
+            100
+          ],
+          "walletCad": [
+            "<=",
+            0
+          ]
+        },
+        "sceneId": "AIP_BURNOUT"
+      },
+      "levels": [
+        {
+          "id": "the-offer",
+          "title": "The Offer",
+          "goal": "Get a job offer from an employer the province has designated.",
+          "scenes": [
+            "AIP_START",
+            "AIP_JOBHUNT",
+            "AIP_INTERVIEW",
+            "AIP_SECOND",
+            "AIP_OFFER"
+          ],
+          "stars": [
+            {
+              "label": "AIP file at 40 or more",
+              "when": {
+                "aipFile": [
+                  ">=",
+                  40
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "the-plan",
+          "title": "The Plan",
+          "goal": "Clear the language bar, assess your education, and build a real settlement plan.",
+          "scenes": [
+            "AIP_LANGUAGE",
+            "AIP_RETAKE",
+            "AIP_ECA",
+            "AIP_SETTLE"
+          ],
+          "stars": [
+            {
+              "label": "CLB 7 or better",
+              "when": {
+                "clbAip": [
+                  ">=",
+                  7
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "the-endorsement",
+          "title": "The Endorsement",
+          "goal": "Get endorsed, get the work permit, and keep the job until PR.",
+          "scenes": [
+            "AIP_ENDORSED",
+            "AIP_WAIT",
+            "AIP_LANDING"
+          ],
+          "stars": [
+            {
+              "label": "Village People at 50% or less",
+              "when": {
+                "desperation": [
+                  "<=",
+                  50
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "ranks": [
+        {
+          "id": "pr",
+          "reason": "AIP_PR",
+          "title": "Atlantic resident",
+          "blurb": "Fog, fish, and a front door that's yours."
+        },
+        {
+          "id": "recruiter",
+          "reason": "AIP_PAID_RECRUITER",
+          "title": "Paid for a job",
+          "blurb": "The 'recruiter' had no job to sell."
+        },
+        {
+          "id": "feescam",
+          "reason": "AIP_FEE_SCAM",
+          "title": "The employer's fee",
+          "blurb": "You paid a fee only the employer pays."
+        },
+        {
+          "id": "misrep",
+          "reason": "AIP_MISREP",
+          "title": "Printed transcript",
+          "blurb": "The school never sent it."
+        },
+        {
+          "id": "nooffer",
+          "reason": "AIP_NO_OFFER",
+          "title": "No offer yet",
+          "blurb": "Designated employers only. Keep applying."
+        },
+        {
+          "id": "left",
+          "reason": "AIP_LEFT_EMPLOYER",
+          "title": "Jumped too soon",
+          "blurb": "The endorsement was for that job."
+        },
+        {
+          "id": "unauth",
+          "reason": "AIP_UNAUTHORIZED_WORK",
+          "title": "The weekend cash job",
+          "blurb": "Your permit names one employer."
+        },
+        {
+          "id": "funds",
+          "reason": "AIP_FUNDS_SHORT",
+          "title": "Short on settlement funds",
+          "blurb": "The money has to be yours, and there."
+        },
+        {
+          "id": "burnout",
+          "reason": "AIP_BURNOUT",
+          "title": "Burnt out",
+          "blurb": "Too many portals, too little sleep."
+        }
+      ],
+      "traps": {
+        "base": 0.06,
+        "scale": 0.5,
+        "exponent": 1.6,
+        "items": [
+          {
+            "id": "nb-pause",
+            "kicker": "Village People attack!",
+            "title": "The province hit its limit",
+            "body": "New Brunswick has used up this year's AIP allocation and paused new endorsements. Your employer is still keen.",
+            "when": {
+              "aipProvince": [
+                "==",
+                2
+              ]
+            },
+            "effects": {},
+            "options": [
+              {
+                "label": "Wait for next year's allocation and keep in touch with the employer",
+                "effects": {
+                  "desperation": 10,
+                  "aipFile": 4
+                },
+                "feedback": "Months pass. The employer keeps your offer warm."
+              },
+              {
+                "label": "Ask whether the employer can sponsor you through a provincial nominee stream instead",
+                "effects": {
+                  "walletCad": -400,
+                  "desperation": 4
+                },
+                "feedback": "A different queue, a new fee, some hope."
+              }
+            ]
+          },
+          {
+            "id": "fx",
+            "kicker": "Village People attack!",
+            "title": "The naira slips again",
+            "body": "Your savings in dollars just shrank, and the flight hasn't been booked.",
+            "effects": {},
+            "options": [
+              {
+                "label": "Convert what you have now",
+                "effects": {
+                  "walletCad": -500
+                },
+                "feedback": "Painful, but done."
+              },
+              {
+                "label": "Wait and pray",
+                "effects": {
+                  "desperation": 8
+                },
+                "feedback": "It slips again."
+              }
+            ]
+          }
+        ]
+      },
+      "blessings": {
+        "base": 0.05,
+        "scale": 0.1,
+        "items": [
+          {
+            "id": "naija-halifax",
+            "kicker": "Blessing",
+            "title": "The Naija association by the sea",
+            "body": "The Nigerian association in the province adds you to their WhatsApp. Someone's cousin knows your employer.",
+            "effects": {
+              "aipFile": 6,
               "desperation": -6
             }
           }
@@ -4196,6 +4478,10 @@
               {
                 "key": "energy",
                 "per": 0.003
+              },
+              {
+                "key": "ieltsPrep",
+                "per": 0.004
               }
             ],
             "max": 0.9
@@ -4242,7 +4528,13 @@
             },
             "fail": {
               "feedback": "CLB 7. Enough for the pool, not enough to be competitive."
-            }
+            },
+            "bonus": [
+              {
+                "key": "ieltsPrep",
+                "per": 0.004
+              }
+            ]
           }
         },
         {
@@ -4251,6 +4543,80 @@
           "nextSceneId": "EE_FRAUD_IELTS",
           "effects": {
             "walletCad": -900
+          }
+        },
+        {
+          "text": "Book CELPIP-General in Lagos or Ibadan: computer-based, Canadian accents, and the score is the CLB level",
+          "label": "CELPIP",
+          "nextSceneId": "EE_ECA",
+          "effects": {
+            "walletCad": -250,
+            "energy": -10
+          },
+          "feedback": "Myth check: CELPIP doesn't earn fewer points than IELTS. Express Entry converts every test to a CLB level, and CELPIP 9 is CLB 9, the same as IELTS L8, R7, W7, S7.",
+          "gamble": {
+            "odds": 0.5,
+            "max": 0.9,
+            "success": {
+              "feedback": "CELPIP: 9 in every skill. CLB 9, the same CRS points as the IELTS bands everyone fights for.",
+              "label": "CLB_9",
+              "set": {
+                "clbFirst": 9
+              }
+            },
+            "fail": {
+              "feedback": "CELPIP: 8 in listening, 8 in writing. CLB 8 for now.",
+              "label": "CLB_8",
+              "set": {
+                "clbFirst": 8
+              }
+            },
+            "bonus": [
+              {
+                "key": "ieltsPrep",
+                "per": 0.004
+              },
+              {
+                "key": "energy",
+                "per": 0.002
+              }
+            ]
+          }
+        },
+        {
+          "text": "Book a Wednesday date and sneak out of work for the morning",
+          "label": "WEEKDAY_TEST",
+          "nextSceneId": "EE_ECA",
+          "effects": {
+            "walletCad": -320
+          },
+          "gamble": {
+            "odds": 0.35,
+            "max": 0.9,
+            "success": {
+              "feedback": "Oga is in Abuja. You're back by 1 p.m. with a story about the bank. CLB 8.",
+              "label": "SNUCK_OUT",
+              "set": {
+                "clbFirst": 8
+              }
+            },
+            "fail": {
+              "feedback": "Server crash at 8:15. Oga: 'Nobody leaves this office.' You miss the test, lose the fee, and rebook for a Saturday. You write it tired: CLB 7.",
+              "label": "EMERGENCY",
+              "effects": {
+                "walletCad": -320,
+                "desperation": 8
+              },
+              "set": {
+                "clbFirst": 7
+              }
+            },
+            "bonus": [
+              {
+                "key": "ieltsPrep",
+                "per": 0.004
+              }
+            ]
           }
         }
       ]
@@ -4269,7 +4635,7 @@
         {
           "text": "Pay the official express transcript fee and courier",
           "label": "PAID_THE_PROPER_FEE",
-          "nextSceneId": "EE_HEALTH_CHECK",
+          "nextSceneId": "EE_WES_VERIFY",
           "effects": {
             "walletCad": -260,
             "desperation": 4
@@ -4282,7 +4648,7 @@
         {
           "text": "Go back every week and follow up in person",
           "label": "PERSISTENCE",
-          "nextSceneId": "EE_HEALTH_CHECK",
+          "nextSceneId": "EE_WES_VERIFY",
           "effects": {
             "energy": -25,
             "desperation": 10
@@ -6903,7 +7269,7 @@
         {
           "text": "Get your SIN at the airport Service Canada desk, then open a newcomer bank account this week",
           "label": "ADMIN_FIRST",
-          "nextSceneId": "FY_CUSTOMS",
+          "nextSceneId": "FY_JOB_CHECK",
           "effects": {
             "careerScore": 6,
             "energy": -8
@@ -6913,7 +7279,7 @@
         {
           "text": "Buy the best phone plan in the mall so you can call home properly",
           "label": "BIG_PLAN",
-          "nextSceneId": "FY_CUSTOMS",
+          "nextSceneId": "FY_JOB_CHECK",
           "effects": {
             "walletCad": -400,
             "desperation": -5
@@ -6923,7 +7289,7 @@
         {
           "text": "Winter coat and boots first; everything else can wait a day",
           "label": "COAT_FIRST",
-          "nextSceneId": "FY_CUSTOMS",
+          "nextSceneId": "FY_JOB_CHECK",
           "effects": {
             "walletCad": -350,
             "energy": 10
@@ -8291,6 +8657,15 @@
           "nextSceneId": "NURSE_VERIFY"
         },
         {
+          "when": {
+            "worker": [
+              ">=",
+              1
+            ]
+          },
+          "nextSceneId": "EE_SECRET"
+        },
+        {
           "nextSceneId": "EE_PROFILE"
         }
       ]
@@ -8393,7 +8768,7 @@
         {
           "text": "Stay the Canada course: finish the assessment and wait for the provincial college to clear you for the NCLEX-RN",
           "label": "NCLEX",
-          "nextSceneId": "EE_PROFILE",
+          "nextSceneId": "NURSE_NCLEX",
           "effects": {
             "walletCad": -500,
             "energy": -15,
@@ -9074,7 +9449,7 @@
       "stage": "ielts-centre",
       "transitIn": "none",
       "speaker": "IELTS centre, {city}",
-      "dialogue": "The nursing college wants IELTS Academic or CELBAN. Express Entry wants IELTS General, CELPIP or PTE Core, and won't take Academic. The group chat argues about it for 300 messages.",
+      "dialogue": "Your provincial nursing college sets its own English test. Ontario's accepts IELTS General or Academic, or CELBAN; BC's wants IELTS Academic, CELBAN or OET. Express Entry takes IELTS General, CELPIP or PTE Core, never Academic. The group chat argues about it for 300 messages.",
       "choices": [
         {
           "text": "Write both: IELTS Academic for the college, PTE Core for Express Entry",
@@ -9096,6 +9471,16 @@
             "desperation": 10
           },
           "feedback": "The college is happy. Express Entry isn't: Academic doesn't count there, so you'll be booking again."
+        },
+        {
+          "text": "Applying to Ontario: write IELTS General once, which the college and Express Entry both accept",
+          "label": "ONE_TEST",
+          "nextSceneId": "NURSE_UK_OR_CANADA",
+          "effects": {
+            "walletCad": -320,
+            "energy": -10
+          },
+          "feedback": "One test, two uses. Check each one's minimum bands before you book."
         }
       ]
     },
@@ -11346,6 +11731,1433 @@
         "title": "Forged passport",
         "subtitle": "Refused, banned, and your money's gone.",
         "lesson": "A forged passport is document fraud in Nigeria and in Canada. IRCC refuses the application for misrepresentation and bars you for five years, and the record follows your real fingerprints into every future application. The only real passport comes from the Nigeria Immigration Service, at the official fee."
+      }
+    },
+    "EE_WEEK": {
+      "id": "EE_WEEK",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "4:00 a.m. Again.",
+      "location": "{area}, {city}",
+      "stage": "yaba-dawn",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "Alarm at 4:00. Out by 4:40, or {city} traffic eats your morning. At your desk by 7:30, home after 9 p.m. if the road is kind. The IELTS book on your table still has the receipt inside it. When exactly are you supposed to read?",
+      "choices": [
+        {
+          "text": "Study on the {bus}: listening practice in your earphones, one reading test a day",
+          "label": "BUS_STUDY",
+          "nextSceneId": "EE_WEEKEND",
+          "effects": {
+            "ieltsPrep": 25,
+            "energy": -10
+          },
+          "feedback": "Two hours a day in traffic, finally working for you. The conductor now knows the word 'nevertheless'."
+        },
+        {
+          "text": "Wake at 3 a.m. and study before the traffic starts",
+          "label": "THREE_AM",
+          "nextSceneId": "EE_WEEKEND",
+          "effects": {
+            "ieltsPrep": 35,
+            "energy": -22,
+            "desperation": 4
+          },
+          "feedback": "The quietest hour in {city}. Also the sleepiest. Your colleagues ask why your eyes are red."
+        },
+        {
+          "text": "Pay for weekend classes at a prep centre",
+          "label": "PREP_CLASS",
+          "nextSceneId": "EE_WEEKEND",
+          "effects": {
+            "ieltsPrep": 30,
+            "walletCad": -150,
+            "energy": -8
+          },
+          "feedback": "A tutor who has seen a thousand writing tasks. Worth it, if you actually go."
+        },
+        {
+          "text": "Too tired. You'll read when work calms down",
+          "label": "LATER",
+          "nextSceneId": "EE_WEEKEND",
+          "effects": {
+            "ieltsPrep": 5,
+            "desperation": 6
+          },
+          "feedback": "Work does not calm down. Work has never calmed down."
+        }
+      ]
+    },
+    "EE_WEEKEND": {
+      "id": "EE_WEEKEND",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Saturday has three invitations.",
+      "location": "{area}, {city}",
+      "stage": "yaba-street",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "Your cousin's wedding, a colleague's child naming and your neighbour's father's burial, all on Saturday. The {partyCloth} for the wedding is ₦35,000. Your laundry has been waiting since last Saturday.",
+      "choices": [
+        {
+          "text": "Skip the owambe. Send your gift by transfer and study all Saturday",
+          "label": "SKIP_OWAMBE",
+          "nextSceneId": "EE_SUNDAY",
+          "effects": {
+            "ieltsPrep": 20,
+            "walletCad": -30,
+            "desperation": 6
+          },
+          "feedback": "Aunty calls: 'Shebi you don japa already? We no see your face.' You did a full mock test, though."
+        },
+        {
+          "text": "Show face at the wedding for one hour, then home to study",
+          "label": "SHOW_FACE",
+          "nextSceneId": "EE_SUNDAY",
+          "effects": {
+            "ieltsPrep": 10,
+            "walletCad": -30,
+            "energy": -6
+          },
+          "feedback": "You said one hour. It was four. The jollof was worth it; the reading test was not done."
+        },
+        {
+          "text": "Wedding, naming, burial and laundry: do it all",
+          "label": "DO_IT_ALL",
+          "nextSceneId": "EE_SUNDAY",
+          "effects": {
+            "energy": -15,
+            "walletCad": -60,
+            "desperation": -4
+          },
+          "feedback": "Everybody saw you. Nobody saw you study."
+        }
+      ]
+    },
+    "EE_SUNDAY": {
+      "id": "EE_SUNDAY",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "The one day {city} lets you breathe.",
+      "location": "{area}, {city}",
+      "stage": "yaba-dawn",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "{FaithHub} matters to you, and so does this test. The {faithGroup} is expecting you. The exam is in six weeks.",
+      "choices": [
+        {
+          "text": "Tell the {faithGroup} you're on leave for two months. First service, then home to study",
+          "label": "FIRST_SERVICE",
+          "nextSceneId": "EE_START",
+          "effects": {
+            "ieltsPrep": 15,
+            "desperation": 2
+          },
+          "feedback": "The choir master is not happy, but the pastor says 'go and prosper'. You do a writing task before dinner.",
+          "hideUnless": {
+            "masjid": [
+              "<",
+              1
+            ]
+          }
+        },
+        {
+          "text": "Stay for the whole programme: service, thanksgiving, meeting. Four and a half hours",
+          "label": "FULL_PROGRAMME",
+          "nextSceneId": "EE_START",
+          "effects": {
+            "energy": -6,
+            "desperation": -8
+          },
+          "feedback": "Your spirit is full and your notebook is empty.",
+          "hideUnless": {
+            "masjid": [
+              "<",
+              1
+            ]
+          }
+        },
+        {
+          "text": "Jumu'ah was on Friday at lunchtime. Sunday is yours: a full mock test, 9 a.m. to 1 p.m.",
+          "label": "SUNDAY_MOCK",
+          "nextSceneId": "EE_START",
+          "effects": {
+            "ieltsPrep": 20,
+            "energy": -6
+          },
+          "feedback": "Listening, reading, writing, and the speaking part into your phone's recorder. You sound better than you thought.",
+          "hideUnless": {
+            "masjid": [
+              ">=",
+              1
+            ]
+          }
+        },
+        {
+          "text": "Sleep. Your body has filed a formal complaint",
+          "label": "SLEEP",
+          "nextSceneId": "EE_START",
+          "effects": {
+            "energy": 20,
+            "desperation": -4
+          },
+          "feedback": "Twelve hours. You wake up a new person who still hasn't studied."
+        }
+      ]
+    },
+    "EE_WES_VERIFY": {
+      "id": "EE_WES_VERIFY",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "WES has emailed your school.",
+      "location": "University registry",
+      "stage": "university-registry",
+      "transitIn": "none",
+      "speaker": "University registry",
+      "dialogue": "You opened your WES account first, because the registry won't send anything without your WES reference number. The transcript finally reached WES. Now WES wants the school to confirm it's genuine, the registry's official email last replied in March, and WES won't start until its fee is paid. A clerk leans over: 'Drop something for the boys and it will move.'",
+      "choices": [
+        {
+          "text": "Pay the WES fee by card, print WES's request, and follow up at the registry every week, politely",
+          "label": "FOLLOW_UP",
+          "nextSceneId": "EE_HEALTH_CHECK",
+          "effects": {
+            "walletCad": -300,
+            "energy": -5,
+            "desperation": 6
+          },
+          "feedback": "Week five, the registrar signs it off. WES says 'verified'. Tip: WES gives your reference number when you submit the application; you can pay after, but nothing is evaluated until the money lands."
+        },
+        {
+          "text": "Ask whether your school can confirm by its official email, which some Nigerian schools now do",
+          "label": "OFFICIAL_EMAIL",
+          "nextSceneId": "EE_HEALTH_CHECK",
+          "effects": {
+            "walletCad": -300,
+            "energy": -6
+          },
+          "gamble": {
+            "odds": 0.5,
+            "max": 0.9,
+            "success": {
+              "feedback": "Your school is set up for it. The registry emails WES from its official address and you're verified in nine days.",
+              "label": "",
+              "effects": {
+                "desperation": -6
+              }
+            },
+            "fail": {
+              "feedback": "Not your school, not yet. Back to the registry queue for four more weeks.",
+              "label": "",
+              "effects": {
+                "energy": -12,
+                "desperation": 6
+              }
+            }
+          }
+        },
+        {
+          "text": "'Drop something for the boys': ₦50k to the clerk",
+          "label": "BRIBE",
+          "nextSceneId": "EE_HEALTH_CHECK",
+          "effects": {
+            "walletCad": -345,
+            "energy": -15,
+            "desperation": 10
+          },
+          "feedback": "He replies to WES from his personal Gmail. WES only accepts confirmation from the institution itself, so it bounces. The ₦50k is gone, the bribe was a crime, and you're back at the registry."
+        }
+      ]
+    },
+    "EE_SECRET": {
+      "id": "EE_SECRET",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Who told HR?",
+      "location": "Your office, {city}",
+      "stage": "cafe",
+      "transitIn": "none",
+      "speaker": "Your office, {city}",
+      "dialogue": "Somebody saw the IELTS book in your bag. By Friday the office WhatsApp is guessing. In this company, people who 'want to japa' stop getting promotions, or get let go first. And Express Entry will need a reference letter from this same company.",
+      "choices": [
+        {
+          "text": "Say nothing. Work hard, and ask HR for the reference letter after your invitation",
+          "label": "QUIET",
+          "nextSceneId": "EE_PROFILE",
+          "effects": {
+            "desperation": 4
+          },
+          "feedback": "Quiet is normal. Reference letters are routine HR work; you'll ask when you need it, with your current duties on it."
+        },
+        {
+          "text": "Tell your manager you plan to leave in a year, and offer to train your replacement",
+          "label": "TOLD_MANAGER",
+          "nextSceneId": "EE_PROFILE",
+          "effects": {},
+          "gamble": {
+            "odds": 0.45,
+            "max": 0.9,
+            "success": {
+              "feedback": "He japa'd to Leeds and came back. 'I go write you the letter. Just train the new boy well.'",
+              "label": "",
+              "effects": {
+                "desperation": -8
+              }
+            },
+            "fail": {
+              "feedback": "By Monday you're off the big project, and your bonus quietly shrinks. Nobody says why.",
+              "label": "",
+              "effects": {
+                "desperation": 12,
+                "walletCad": -300
+              }
+            }
+          }
+        },
+        {
+          "text": "Post 'Canada, here I come 🇨🇦' on your status",
+          "label": "POSTED",
+          "nextSceneId": "EE_PROFILE",
+          "effects": {
+            "desperation": 15,
+            "walletCad": -500
+          },
+          "feedback": "HR calls you in: 'We are restructuring.' You keep the job, lose the promotion, and your colleague takes your seat by the AC."
+        }
+      ]
+    },
+    "NURSE_NCLEX": {
+      "id": "NURSE_NCLEX",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Authorised to write. Not in Nigeria.",
+      "location": "Your nursing college email",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "Your nursing college email",
+      "dialogue": "Your NNAS report is done (BC no longer requires one), and the provincial college has decided you can write the NCLEX-RN. There's no NCLEX centre in Nigeria. The closest are Nairobi and Johannesburg.",
+      "choices": [
+        {
+          "text": "Nairobi: a short online entry step for Nigerians, a flight and three nights",
+          "label": "NAIROBI",
+          "nextSceneId": "EE_PROFILE",
+          "effects": {
+            "walletCad": -1100,
+            "energy": -10
+          },
+          "feedback": "Many Nigerian nurses pick Nairobi because getting into Kenya is simpler than getting a South African visa.",
+          "gamble": {
+            "odds": 0.6,
+            "max": 0.9,
+            "success": {
+              "feedback": "Pass. The exam shut off early and you didn't know whether that was good until the email came.",
+              "label": "NCLEX_PASS",
+              "effects": {
+                "desperation": -10
+              },
+              "set": {
+                "nclex": 1
+              }
+            },
+            "fail": {
+              "feedback": "Not this time. The college lets you rebook after the waiting period.",
+              "label": "NCLEX_RETAKE",
+              "effects": {
+                "desperation": 12,
+                "walletCad": -400
+              }
+            },
+            "bonus": [
+              {
+                "key": "ieltsPrep",
+                "per": 0.004
+              }
+            ]
+          }
+        },
+        {
+          "text": "Johannesburg: apply for a South African visa first, and hope it comes before your test window closes",
+          "label": "JOBURG",
+          "nextSceneId": "EE_PROFILE",
+          "effects": {
+            "walletCad": -1300,
+            "energy": -12
+          },
+          "gamble": {
+            "odds": 0.45,
+            "max": 0.9,
+            "success": {
+              "feedback": "The visa lands with a week to spare. Pass.",
+              "label": "NCLEX_PASS",
+              "effects": {
+                "desperation": -10
+              },
+              "set": {
+                "nclex": 1
+              }
+            },
+            "fail": {
+              "feedback": "The visa comes two days after your window closed. Rebook, repay.",
+              "label": "VISA_LATE",
+              "effects": {
+                "desperation": 14,
+                "walletCad": -400
+              }
+            },
+            "bonus": [
+              {
+                "key": "ieltsPrep",
+                "per": 0.004
+              }
+            ]
+          }
+        },
+        {
+          "text": "Write it after you land in Canada",
+          "label": "IN_CANADA",
+          "nextSceneId": "EE_PROFILE",
+          "effects": {
+            "desperation": 4
+          },
+          "feedback": "You can sit it in Canada too, but until you pass you can't work as an RN there. Many work as care aides in the meantime."
+        }
+      ]
+    },
+    "FY_JOB_CHECK": {
+      "id": "FY_JOB_CHECK",
+      "route": "FIRST_YEAR",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "homeJob": [
+              ">=",
+              1
+            ]
+          },
+          "nextSceneId": "FY_OLD_JOB"
+        },
+        {
+          "nextSceneId": "FY_CUSTOMS"
+        }
+      ]
+    },
+    "FY_OLD_JOB": {
+      "id": "FY_OLD_JOB",
+      "route": "FIRST_YEAR",
+      "layoutType": "STORY_STAGE",
+      "title": "Your Lagos job is still open on your laptop.",
+      "location": "A rented room, first week",
+      "stage": "basement",
+      "transitIn": "none",
+      "speaker": "A rented room, first week",
+      "dialogue": "You landed, but you never resigned. Plenty of people don't, straight away: Canadian jobs take months, and a salary from home buys time. Managers sometimes negotiate remote months; people close to retirement wait it out. Lagos is five or six hours ahead.",
+      "choices": [
+        {
+          "text": "Ask your boss honestly for three remote months while you hand over",
+          "label": "REMOTE_ASKED",
+          "nextSceneId": "FY_CUSTOMS",
+          "effects": {},
+          "gamble": {
+            "odds": 0.5,
+            "max": 0.9,
+            "success": {
+              "feedback": "He agrees. Your 9 a.m. stand-up is at 3 a.m. here, but the naira salary covers rent. Declare it on your Canadian tax return.",
+              "label": "",
+              "effects": {
+                "walletCad": 2400,
+                "energy": -15,
+                "desperation": -6
+              }
+            },
+            "fail": {
+              "feedback": "He says no, kindly. You resign by email and train your replacement on Zoom for a week.",
+              "label": "",
+              "effects": {
+                "desperation": 4
+              }
+            },
+            "bonus": [
+              {
+                "key": "careerScore",
+                "per": 0.004
+              }
+            ]
+          }
+        },
+        {
+          "text": "Resign properly: notice, handover, goodbye cake",
+          "label": "RESIGNED",
+          "nextSceneId": "FY_CUSTOMS",
+          "effects": {
+            "desperation": -2,
+            "community": 2
+          },
+          "feedback": "Clean exit. Your old boss becomes your best reference."
+        },
+        {
+          "text": "Keep the job and don't tell them you've left Nigeria",
+          "label": "HIDDEN_REMOTE",
+          "nextSceneId": "FY_CUSTOMS",
+          "effects": {
+            "walletCad": 800,
+            "desperation": 15,
+            "careerScore": -10
+          },
+          "feedback": "Camera off, a generator sound playing from YouTube. They find out at the next all-hands. You're fired, and the reference you'll need is gone."
+        }
+      ]
+    },
+    "AIP_START": {
+      "id": "AIP_START",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "Four provinces by the sea.",
+      "location": "{area}, {city}",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "{RelName} forwards a link: 'Atlantic Canada is hiring from abroad.' The Atlantic Immigration Program covers Nova Scotia, New Brunswick, Prince Edward Island, and Newfoundland and Labrador. The catch: only employers the province has designated can hire you through it, each province has a yearly limit, and you need about a year (1,560 hours) of paid work in the last five years.",
+      "choices": [
+        {
+          "text": "Nova Scotia: Halifax hospitals, trucking and tech",
+          "label": "NOVA_SCOTIA",
+          "nextSceneId": "AIP_JOBHUNT",
+          "effects": {
+            "aipFile": 5
+          },
+          "set": {
+            "aipProvince": 1
+          }
+        },
+        {
+          "text": "New Brunswick: Moncton, bilingual and cheaper rent",
+          "label": "NEW_BRUNSWICK",
+          "nextSceneId": "AIP_JOBHUNT",
+          "effects": {
+            "aipFile": 5
+          },
+          "feedback": "Heads up: New Brunswick paused AIP once its 2025 allocation ran out, and paused new employer designations in early 2026.",
+          "set": {
+            "aipProvince": 2
+          }
+        },
+        {
+          "text": "Newfoundland and Labrador: St. John's, healthcare and the windiest city you'll ever love",
+          "label": "NEWFOUNDLAND",
+          "nextSceneId": "AIP_JOBHUNT",
+          "effects": {
+            "aipFile": 5
+          },
+          "set": {
+            "aipProvince": 3
+          }
+        },
+        {
+          "text": "Prince Edward Island: small, friendly, and a few jobs at a time",
+          "label": "PEI",
+          "nextSceneId": "AIP_JOBHUNT",
+          "effects": {
+            "aipFile": 3
+          },
+          "set": {
+            "aipProvince": 4
+          }
+        }
+      ]
+    },
+    "AIP_JOBHUNT": {
+      "id": "AIP_JOBHUNT",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "Designated employers only.",
+      "location": "Job boards, {area}",
+      "stage": "video-job",
+      "transitIn": "none",
+      "speaker": "Job boards, {area}",
+      "dialogue": "The province publishes its list of designated employers. Job boards are full of Atlantic ads, but most of those employers aren't designated. A WhatsApp 'recruiter' says he has an AIP job in Halifax: CAD 3,000 'processing'.",
+      "choices": [
+        {
+          "text": "Apply directly to designated employers in your field, from the province's own list, with a Canadian-style CV",
+          "label": "DESIGNATED",
+          "nextSceneId": "AIP_INTERVIEW",
+          "effects": {
+            "energy": -12,
+            "aipFile": 15
+          }
+        },
+        {
+          "text": "Apply to every Atlantic job ad you see: 200 applications",
+          "label": "SPRAY",
+          "nextSceneId": "AIP_INTERVIEW",
+          "effects": {
+            "energy": -18,
+            "aipFile": 4
+          },
+          "feedback": "Most weren't designated. An offer from them can't be used for AIP."
+        },
+        {
+          "text": "Pay the 'recruiter' CAD 3,000 for the AIP job",
+          "label": "PAID_FOR_JOB",
+          "nextSceneId": "AIP_PAID_RECRUITER",
+          "effects": {}
+        }
+      ]
+    },
+    "AIP_INTERVIEW": {
+      "id": "AIP_INTERVIEW",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "10 a.m. in Halifax. 2 p.m. at your desk.",
+      "location": "Video call",
+      "stage": "video-job",
+      "transitIn": "none",
+      "speaker": "Video call",
+      "dialogue": "A designated employer wants a video interview. Atlantic Canada is four or five hours behind {city}, so it lands in the middle of your workday, and your Oga has a meeting at 2.",
+      "choices": [
+        {
+          "text": "Ask to move it to 7 a.m. their time and take it from your car at lunch",
+          "label": "LUNCH_CALL",
+          "nextSceneId": "AIP_OFFER_CHECK",
+          "effects": {
+            "energy": -6
+          },
+          "gamble": {
+            "odds": 0.45,
+            "max": 0.9,
+            "success": {
+              "feedback": "They move it. You answer about {interviewHook} with a sunshade on the windscreen. They like you.",
+              "label": "",
+              "effects": {
+                "aipFile": 15
+              },
+              "set": {
+                "aipOffer": 1
+              }
+            },
+            "fail": {
+              "feedback": "The car park is loud and the network drops twice. 'We'll be in touch.'",
+              "label": "",
+              "effects": {
+                "aipFile": 5,
+                "desperation": 6
+              }
+            },
+            "bonus": [
+              {
+                "key": "aipFile",
+                "per": 0.004
+              }
+            ]
+          }
+        },
+        {
+          "text": "Take the day off officially for 'personal matters' and prepare properly",
+          "label": "DAY_OFF",
+          "nextSceneId": "AIP_OFFER_CHECK",
+          "effects": {
+            "energy": -4
+          },
+          "gamble": {
+            "odds": 0.52,
+            "max": 0.9,
+            "success": {
+              "feedback": "Quiet room, good light, notes on the wall. You tell the {interviewHook} well. Offer pending.",
+              "label": "",
+              "effects": {
+                "aipFile": 15
+              },
+              "set": {
+                "aipOffer": 1
+              }
+            },
+            "fail": {
+              "feedback": "Good interview. They chose someone already in Halifax.",
+              "label": "",
+              "effects": {
+                "aipFile": 5,
+                "desperation": 6
+              }
+            },
+            "bonus": [
+              {
+                "key": "aipFile",
+                "per": 0.004
+              }
+            ]
+          }
+        },
+        {
+          "text": "Do it at your desk with one earphone in",
+          "label": "AT_DESK",
+          "nextSceneId": "AIP_OFFER_CHECK",
+          "effects": {},
+          "gamble": {
+            "odds": 0.25,
+            "max": 0.9,
+            "success": {
+              "feedback": "Nobody noticed. Somehow. They liked your answers.",
+              "label": "",
+              "effects": {
+                "aipFile": 12
+              },
+              "set": {
+                "aipOffer": 1
+              }
+            },
+            "fail": {
+              "feedback": "Oga walks in mid-answer. You say 'yes sir' to both of them.",
+              "label": "",
+              "effects": {
+                "desperation": 12
+              }
+            }
+          }
+        }
+      ]
+    },
+    "AIP_OFFER_CHECK": {
+      "id": "AIP_OFFER_CHECK",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "aipOffer": [
+              ">=",
+              1
+            ]
+          },
+          "nextSceneId": "AIP_OFFER"
+        },
+        {
+          "nextSceneId": "AIP_SECOND"
+        }
+      ]
+    },
+    "AIP_SECOND": {
+      "id": "AIP_SECOND",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "Another designated employer replies.",
+      "location": "Email",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "Email",
+      "dialogue": "No offer from the first one. A second designated employer, smaller, in a town you had to find on the map, wants to talk.",
+      "choices": [
+        {
+          "text": "Research the town, the employer and the bus routes, then interview",
+          "label": "RESEARCHED",
+          "nextSceneId": "AIP_OFFER_CHECK2",
+          "effects": {
+            "energy": -8
+          },
+          "gamble": {
+            "odds": 0.5,
+            "max": 0.9,
+            "success": {
+              "feedback": "'You've looked us up. Nobody does that.' Offer.",
+              "label": "",
+              "effects": {
+                "aipFile": 15
+              },
+              "set": {
+                "aipOffer": 1
+              }
+            },
+            "fail": {
+              "feedback": "They went with an internal candidate.",
+              "label": ""
+            },
+            "bonus": [
+              {
+                "key": "aipFile",
+                "per": 0.004
+              }
+            ]
+          }
+        },
+        {
+          "text": "Interview as you are; no time to research",
+          "label": "AS_IS",
+          "nextSceneId": "AIP_OFFER_CHECK2",
+          "effects": {},
+          "gamble": {
+            "odds": 0.3,
+            "max": 0.9,
+            "success": {
+              "feedback": "They liked you anyway. Offer.",
+              "label": "",
+              "effects": {
+                "aipFile": 10
+              },
+              "set": {
+                "aipOffer": 1
+              }
+            },
+            "fail": {
+              "feedback": "'We'll keep your CV on file.'",
+              "label": ""
+            }
+          }
+        }
+      ]
+    },
+    "AIP_OFFER_CHECK2": {
+      "id": "AIP_OFFER_CHECK2",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "aipOffer": [
+              ">=",
+              1
+            ]
+          },
+          "nextSceneId": "AIP_OFFER"
+        },
+        {
+          "nextSceneId": "AIP_NO_OFFER"
+        }
+      ]
+    },
+    "AIP_OFFER": {
+      "id": "AIP_OFFER",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "The offer, and the fine print.",
+      "location": "Email",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "Email",
+      "dialogue": "Full-time, at least 30 hours a week, not seasonal, and at least a year after you become a permanent resident. HR writes: 'We'll refer you to a settlement provider and request your endorsement.' Then a second email arrives from a 'partner agency': 'Pay the CAD 230 employer compliance fee and your endorsement fee to this account.'",
+      "choices": [
+        {
+          "text": "Accept the offer. Reply that the employer pays the compliance fee, and check with HR on their official email",
+          "label": "VERIFIED",
+          "nextSceneId": "AIP_LANGUAGE",
+          "effects": {
+            "aipFile": 15,
+            "desperation": -4
+          },
+          "feedback": "Right: the employer pays the compliance fee through IRCC's Employer Portal. HR has never heard of the 'partner agency'."
+        },
+        {
+          "text": "Pay the 'partner agency' to be safe",
+          "label": "PAID_FEE",
+          "nextSceneId": "AIP_FEE_SCAM",
+          "effects": {}
+        }
+      ]
+    },
+    "AIP_LANGUAGE": {
+      "id": "AIP_LANGUAGE",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "CLB 5. Not CLB 9.",
+      "location": "Test centre, {city}",
+      "stage": "ielts-centre",
+      "transitIn": "none",
+      "speaker": "Test centre, {city}",
+      "dialogue": "Your job is TEER 0 to 3, so AIP needs CLB 5 in all four skills (CLB 4 for TEER 4 jobs). No points, no ranking: you clear the bar or you don't. Any IRCC-approved test counts: IELTS General, CELPIP or PTE Core. Pick the one you're most comfortable with.",
+      "choices": [
+        {
+          "text": "CELPIP-General in Lagos or Ibadan: computer-based, Canadian accents",
+          "label": "CELPIP",
+          "nextSceneId": "AIP_LANG_CHECK",
+          "effects": {
+            "walletCad": -250,
+            "energy": -8
+          },
+          "gamble": {
+            "odds": 0.75,
+            "max": 0.9,
+            "success": {
+              "feedback": "CELPIP 8 across the board: CLB 8. Far above the bar.",
+              "label": "",
+              "set": {
+                "clbAip": 8
+              }
+            },
+            "fail": {
+              "feedback": "CELPIP 5 in writing: CLB 5. Just enough.",
+              "label": "",
+              "set": {
+                "clbAip": 5
+              }
+            }
+          }
+        },
+        {
+          "text": "IELTS General, because that's what everyone writes",
+          "label": "IELTS",
+          "nextSceneId": "AIP_LANG_CHECK",
+          "effects": {
+            "walletCad": -320,
+            "energy": -10
+          },
+          "gamble": {
+            "odds": 0.7,
+            "max": 0.9,
+            "success": {
+              "feedback": "IELTS 6.5 overall: CLB 7 or better in every skill.",
+              "label": "",
+              "set": {
+                "clbAip": 7
+              }
+            },
+            "fail": {
+              "feedback": "Writing 5.0: CLB 5. Just over the bar.",
+              "label": "",
+              "set": {
+                "clbAip": 5
+              }
+            }
+          }
+        },
+        {
+          "text": "No time to prepare: book the earliest date and wing it",
+          "label": "WING_IT",
+          "nextSceneId": "AIP_LANG_CHECK",
+          "effects": {
+            "walletCad": -250
+          },
+          "gamble": {
+            "odds": 0.4,
+            "max": 0.9,
+            "success": {
+              "feedback": "CLB 5. You cleared it by the skin of your teeth.",
+              "label": "",
+              "set": {
+                "clbAip": 5
+              }
+            },
+            "fail": {
+              "feedback": "CLB 4 in writing: below the CLB 5 your job needs.",
+              "label": "",
+              "set": {
+                "clbAip": 4
+              }
+            }
+          }
+        }
+      ]
+    },
+    "AIP_LANG_CHECK": {
+      "id": "AIP_LANG_CHECK",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "clbAip": [
+              ">=",
+              5
+            ]
+          },
+          "nextSceneId": "AIP_ECA"
+        },
+        {
+          "nextSceneId": "AIP_RETAKE"
+        }
+      ]
+    },
+    "AIP_RETAKE": {
+      "id": "AIP_RETAKE",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "One band short.",
+      "location": "Test centre, {city}",
+      "stage": "ielts-centre",
+      "transitIn": "none",
+      "speaker": "Test centre, {city}",
+      "dialogue": "CLB 4 won't do for a TEER 0 to 3 job. Your employer says they'll wait a few weeks.",
+      "choices": [
+        {
+          "text": "Rebook, and actually prepare this time",
+          "label": "RETAKE",
+          "nextSceneId": "AIP_ECA",
+          "effects": {
+            "walletCad": -250,
+            "energy": -12,
+            "desperation": 6
+          },
+          "feedback": "CLB 6. Over the bar.",
+          "set": {
+            "clbAip": 6
+          }
+        }
+      ]
+    },
+    "AIP_ECA": {
+      "id": "AIP_ECA",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "Your certificate, assessed.",
+      "location": "University registry",
+      "stage": "university-registry",
+      "transitIn": "none",
+      "speaker": "University registry",
+      "dialogue": "AIP needs at least a Canadian high-school equivalent, so your Nigerian education needs an ECA. Same saga: WES reference number, transcripts sent by the school, verification.",
+      "choices": [
+        {
+          "text": "Do it properly: reference number first, then chase the registry",
+          "label": "PROPER_ECA",
+          "nextSceneId": "AIP_SETTLE",
+          "effects": {
+            "energy": -15,
+            "walletCad": -300,
+            "aipFile": 10
+          }
+        },
+        {
+          "text": "A 'connect' can print the transcripts tonight",
+          "label": "FAKE_TRANSCRIPT",
+          "nextSceneId": "AIP_FRAUD_DOCS",
+          "effects": {}
+        }
+      ]
+    },
+    "AIP_SETTLE": {
+      "id": "AIP_SETTLE",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "The settlement plan.",
+      "location": "Video call with a settlement counsellor",
+      "stage": "video-job",
+      "transitIn": "none",
+      "speaker": "Video call with a settlement counsellor",
+      "dialogue": "Your employer refers you to a designated settlement provider: ISANS in Nova Scotia, the Association for New Canadians in Newfoundland and Labrador, or a local agency in New Brunswick or PEI. A counsellor video-calls you for a needs assessment: family, housing, budget, health, and what worries you. The plan you sign goes with your endorsement.",
+      "choices": [
+        {
+          "text": "Be honest: your budget, the family you send money to, your fear of winter",
+          "label": "HONEST_PLAN",
+          "nextSceneId": "AIP_ENDORSE_CHECK",
+          "effects": {
+            "aipFile": 20,
+            "desperation": -6
+          },
+          "feedback": "A plan for your real life: a room on a bus route, a winter-clothes list, the date of newcomer orientation."
+        },
+        {
+          "text": "Say everything is fine and you need nothing",
+          "label": "THIN_PLAN",
+          "nextSceneId": "AIP_ENDORSE_CHECK",
+          "effects": {
+            "aipFile": 5
+          },
+          "feedback": "The plan is thin. When you land, nobody knows you need help with housing."
+        }
+      ]
+    },
+    "AIP_ENDORSE_CHECK": {
+      "id": "AIP_ENDORSE_CHECK",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "aipFile": [
+              ">=",
+              60
+            ]
+          },
+          "nextSceneId": "AIP_ENDORSED"
+        },
+        {
+          "nextSceneId": "AIP_NO_OFFER"
+        }
+      ]
+    },
+    "AIP_ENDORSED": {
+      "id": "AIP_ENDORSED",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "Endorsement certificate.",
+      "location": "Provincial email",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "Provincial email",
+      "dialogue": "The province endorses your job offer and, because your employer asked, sends a referral letter for a work permit. Your employer submits the offer in IRCC's Employer Portal, pays the compliance fee and sends you the offer of employment number. You can apply for permanent residence, and for a two-year work permit tied to this employer.",
+      "choices": [
+        {
+          "text": "Apply for PR and the work permit together, and fly when the permit comes",
+          "label": "BOTH",
+          "nextSceneId": "AIP_LANDING",
+          "effects": {
+            "walletCad": -1800,
+            "aipFile": 10
+          },
+          "set": {
+            "workPermit": 1
+          }
+        },
+        {
+          "text": "Apply for PR only and wait in Nigeria for the decision",
+          "label": "WAIT",
+          "nextSceneId": "AIP_WAIT",
+          "effects": {
+            "walletCad": -900,
+            "desperation": 15
+          },
+          "feedback": "AIP processing has run well over a year. Your employer needs you this winter, not in two years."
+        },
+        {
+          "text": "A Toronto company DMs you. Drop the Atlantic offer",
+          "label": "DROPPED",
+          "nextSceneId": "AIP_LEFT",
+          "effects": {}
+        }
+      ]
+    },
+    "AIP_WAIT": {
+      "id": "AIP_WAIT",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "Still waiting.",
+      "location": "{area}, {city}",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "Eight months. Your employer emails: 'Any update? We'd love you here by spring.'",
+      "choices": [
+        {
+          "text": "Apply for the work permit after all",
+          "label": "LATE_PERMIT",
+          "nextSceneId": "AIP_LANDING",
+          "effects": {
+            "walletCad": -900,
+            "desperation": -4
+          },
+          "set": {
+            "workPermit": 1
+          }
+        },
+        {
+          "text": "Keep waiting for PR",
+          "label": "KEPT_WAITING",
+          "nextSceneId": "AIP_PR_CHECK",
+          "effects": {
+            "desperation": 12
+          }
+        }
+      ]
+    },
+    "AIP_LANDING": {
+      "id": "AIP_LANDING",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "−8°C and a wet wind.",
+      "location": "Atlantic Canada, week one",
+      "stage": "pr-landing",
+      "transitIn": "none",
+      "speaker": "Atlantic Canada, week one",
+      "dialogue": "The settlement provider that wrote your plan sends a welcome checklist: SIN, bank, health card, bus pass, newcomer orientation. Your work permit names one employer. A cousin in Toronto texts about a better-paid job, and a neighbour offers weekend cash work.",
+      "choices": [
+        {
+          "text": "Stay with your employer, show up early, learn how things work here",
+          "label": "STAYED",
+          "nextSceneId": "AIP_PR_CHECK",
+          "effects": {
+            "desperation": -6,
+            "aipFile": 6
+          }
+        },
+        {
+          "text": "Leave after month two for the Toronto job",
+          "label": "LEFT",
+          "nextSceneId": "AIP_LEFT",
+          "effects": {}
+        },
+        {
+          "text": "Take the weekend cash job too",
+          "label": "CASH_JOB",
+          "nextSceneId": "AIP_UNAUTHORIZED",
+          "effects": {}
+        }
+      ]
+    },
+    "AIP_PR_CHECK": {
+      "id": "AIP_PR_CHECK",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "workPermit": [
+              ">=",
+              1
+            ]
+          },
+          "nextSceneId": "AIP_PR_WIN"
+        },
+        {
+          "when": {
+            "walletCad": [
+              ">=",
+              3000
+            ]
+          },
+          "nextSceneId": "AIP_PR_WIN"
+        },
+        {
+          "nextSceneId": "AIP_FUNDS_SHORT"
+        }
+      ]
+    },
+    "AIP_PR_WIN": {
+      "id": "AIP_PR_WIN",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "Permanent resident, Atlantic edition.",
+      "location": "Atlantic Canada",
+      "stage": "pr-landing",
+      "transitIn": "none",
+      "speaker": "Atlantic Canada",
+      "dialogue": "The confirmation of permanent residence arrives. Your manager brings a cake shaped like a lobster. The settlement counsellor sends a thumbs-up.",
+      "outcome": {
+        "result": "win",
+        "reason": "AIP_PR",
+        "title": "Atlantic resident",
+        "subtitle": "Fog, fish, and a front door that's yours.",
+        "lesson": "The Atlantic Immigration Program runs on three things: a job offer from a designated employer, a settlement plan from a designated provider, and the province's endorsement. Workers never pay to be hired; the employer pays the compliance fee."
+      }
+    },
+    "AIP_PAID_RECRUITER": {
+      "id": "AIP_PAID_RECRUITER",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "The recruiter's number is off.",
+      "location": "{area}, {city}",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "Three weeks, two 'updates' and a forged offer letter later, the number is switched off.",
+      "outcome": {
+        "result": "fail",
+        "reason": "AIP_PAID_RECRUITER",
+        "title": "Paid for a job",
+        "subtitle": "CAD 3,000 gone.",
+        "lesson": "AIP job offers come from designated employers, who you can find on each province's own list. Anyone selling an 'AIP job' is running a scam, and using a fake offer is misrepresentation."
+      }
+    },
+    "AIP_FEE_SCAM": {
+      "id": "AIP_FEE_SCAM",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "The 'partner agency'.",
+      "location": "Email",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "Email",
+      "dialogue": "HR has never heard of them. The money went to a personal account.",
+      "outcome": {
+        "result": "fail",
+        "reason": "AIP_FEE_SCAM",
+        "title": "The employer's fee",
+        "subtitle": "You paid a fee only the employer pays.",
+        "lesson": "The employer compliance fee is paid by the employer through IRCC's Employer Portal. A worker should never be asked to pay it, and requests from 'agencies' are a known scam."
+      }
+    },
+    "AIP_FRAUD_DOCS": {
+      "id": "AIP_FRAUD_DOCS",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "The school never sent it.",
+      "location": "WES email",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "WES email",
+      "dialogue": "WES checks with your school. Your school has no record of sending anything.",
+      "outcome": {
+        "result": "fail",
+        "reason": "AIP_MISREP",
+        "title": "Printed transcript",
+        "subtitle": "Misrepresentation: a five-year ban.",
+        "lesson": "Transcripts must come from the school itself. A printed or altered transcript is document fraud and misrepresentation under section 40 of IRPA."
+      }
+    },
+    "AIP_NO_OFFER": {
+      "id": "AIP_NO_OFFER",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "Not yet.",
+      "location": "{area}, {city}",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "No designated employer has endorsed you this year. Your CV is better than it was.",
+      "outcome": {
+        "result": "fail",
+        "reason": "AIP_NO_OFFER",
+        "title": "No offer yet",
+        "subtitle": "Designated employers only. Keep applying.",
+        "lesson": "Without a job offer from a designated employer and a strong settlement plan, there's no endorsement, and without an endorsement there's no AIP application."
+      }
+    },
+    "AIP_LEFT": {
+      "id": "AIP_LEFT",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "You jumped too soon.",
+      "location": "Brampton",
+      "stage": "toronto-street",
+      "transitIn": "none",
+      "speaker": "Brampton",
+      "dialogue": "The endorsement was for that job, with that employer, in that province. The PR application stalls.",
+      "outcome": {
+        "result": "fail",
+        "reason": "AIP_LEFT_EMPLOYER",
+        "title": "Jumped too soon",
+        "subtitle": "The endorsement was for that job.",
+        "lesson": "An AIP endorsement is tied to the designated employer's job offer. Leaving it before you become a permanent resident can sink your application, and the work permit only covers that employer."
+      }
+    },
+    "AIP_UNAUTHORIZED": {
+      "id": "AIP_UNAUTHORIZED",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "The weekend job.",
+      "location": "A warehouse, Saturday",
+      "stage": "warehouse",
+      "transitIn": "none",
+      "speaker": "A warehouse, Saturday",
+      "dialogue": "Cash, no paperwork. Then a workplace inspection.",
+      "outcome": {
+        "result": "fail",
+        "reason": "AIP_UNAUTHORIZED_WORK",
+        "title": "The weekend cash job",
+        "subtitle": "Your permit names one employer.",
+        "lesson": "An employer-specific work permit lets you work only for the employer named on it. Unauthorized work can cost you your status and your PR application."
+      }
+    },
+    "AIP_FUNDS_SHORT": {
+      "id": "AIP_FUNDS_SHORT",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "Short on settlement funds.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "You waited in Nigeria, and your savings went on rent and black tax. IRCC asks for proof of settlement funds.",
+      "outcome": {
+        "result": "fail",
+        "reason": "AIP_FUNDS_SHORT",
+        "title": "Short on settlement funds",
+        "subtitle": "The money has to be yours, and there.",
+        "lesson": "AIP applicants need proof of settlement funds unless they're already living and working in Canada on a valid work permit. The amount is lower than Express Entry's, but it must be your own money."
+      }
+    },
+    "AIP_BURNOUT": {
+      "id": "AIP_BURNOUT",
+      "route": "ATLANTIC_AIP",
+      "layoutType": "STORY_STAGE",
+      "title": "Burnt out.",
+      "location": "{area}, {city}",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "Too many portals, too little sleep, too much black tax.",
+      "outcome": {
+        "result": "fail",
+        "reason": "AIP_BURNOUT",
+        "title": "Burnt out",
+        "subtitle": "Rest, then start again.",
+        "lesson": "Immigration is a long project. Pace it, budget for it, and protect your sleep."
+      }
+    },
+    "TOURIST_WHY": {
+      "id": "TOURIST_WHY",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Why are you going?",
+      "location": "{area}, {city}",
+      "stage": "whatsapp",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "Everybody who flies on a visitor visa has a reason. Some are going to see their children or {relName}, and coming back. Some have an invitation letter from someone in Canada who has quietly found an employer willing to talk. And some are being offered something else entirely in the group chat.",
+      "choices": [
+        {
+          "text": "Visit {relName} on a real visitor visa: invitation letter, return ticket, savings. See family, then come home",
+          "label": "FAMILY_VISIT",
+          "nextSceneId": "TOURIST_ARRIVAL",
+          "effects": {
+            "desperation": -4
+          },
+          "feedback": "The most common reason, and a perfectly good one. Your ties at home are why the officer said yes."
+        },
+        {
+          "text": "{RelName} found an employer willing to hire. Say so on the application and go meet them in person",
+          "label": "MEET_EMPLOYER",
+          "nextSceneId": "TOURIST_ARRIVAL",
+          "effects": {
+            "employerLeads": 1,
+            "networkScore": 10
+          },
+          "feedback": "Visitors may meet employers and attend interviews; some do it by video instead. They can't work, and since August 2024 they generally can't get a work permit from inside Canada. The LMIA, AIP or PNP offer comes first, and the work permit application follows, usually from home."
+        },
+        {
+          "text": "Tell the visa officer it's a holiday, when the real plan is to stay and find work",
+          "label": "PURPOSE_LIE",
+          "nextSceneId": "TOURIST_PURPOSE_LIE",
+          "effects": {}
+        },
+        {
+          "text": "A 'connect' offers an 'arranged' passport with a Canada visa inside. 'As you land, throw it away and Kawosoke'",
+          "label": "ARRANGED_PASSPORT",
+          "nextSceneId": "TOURIST_ARRANGED_FAIL",
+          "effects": {}
+        }
+      ]
+    },
+    "TOURIST_PURPOSE_LIE": {
+      "id": "TOURIST_PURPOSE_LIE",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "The holiday that wasn't.",
+      "location": "Pearson Airport, Terminal 3",
+      "stage": "cbsa-secondary",
+      "transitIn": "plane",
+      "speaker": "CBSA secondary inspection",
+      "dialogue": "The officer reads your phone's WhatsApp, with your consent: 'Once I land, I'm not coming back.' Your visa application said a two-week holiday.",
+      "outcome": {
+        "result": "fail",
+        "reason": "PURPOSE_MISREP",
+        "title": "The holiday that wasn't",
+        "subtitle": "Refused entry, and a five-year ban.",
+        "lesson": "A visitor visa application must state the real purpose of the trip. Hiding a plan to stay and work is misrepresentation under section 40 of IRPA: a five-year ban. Meeting employers is allowed if you say so."
+      }
+    },
+    "TOURIST_ARRANGED_FAIL": {
+      "id": "TOURIST_ARRANGED_FAIL",
+      "route": "TOURIST_GAMBLE",
+      "layoutType": "STORY_STAGE",
+      "title": "Nobody knows who you are.",
+      "location": "Pearson Airport, Terminal 3",
+      "stage": "cbsa-secondary",
+      "transitIn": "plane",
+      "speaker": "CBSA secondary inspection",
+      "dialogue": "You claim refugee protection with no passport and a story the 'connect' gave you. The officer's first question is who you are, and you can't prove it. You're held at the immigration holding centre while CBSA works out your identity. The person whose passport it was reported it stolen months ago.",
+      "outcome": {
+        "result": "fail",
+        "reason": "ARRANGED_PASSPORT",
+        "title": "The arranged passport",
+        "subtitle": "Detained, no identity, and a claim nobody believes.",
+        "lesson": "Travelling on an arranged or stolen passport is fraud, and throwing it away doesn't help. CBSA can detain you until your identity is established, and the Refugee Board must weigh missing documents against your credibility. People with a genuine fear can claim using their own passport and their own story."
       }
     }
   },

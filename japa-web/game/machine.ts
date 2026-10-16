@@ -3,7 +3,7 @@
 import { DB, applyMarketShock, choose, dismissPopup, newRun, resolvePopup, takeAction } from "./engine";
 import type { Effects, GameState, RouteId, RunMods, ScenarioDatabase, Toast } from "./types";
 import { applyBundle } from "./meta";
-import { deriveGameProfile, familyFor, routePatches, type PlayerProfile } from "./profile";
+import { deriveGameProfile, familyFor, routePatches, startScenes, type PlayerProfile } from "./profile";
 import { isSibling } from "./family";
 import { canPlay, earnedBy } from "./eligibility";
 
@@ -44,7 +44,7 @@ export const PLAYABLE: RouteId[] = (Object.keys(DB.routes) as RouteId[]).filter(
 export type Bundle = RunMods & { effects: Effects };
 
 export function startRoute(db: ScenarioDatabase, route: RouteId, profile: PlayerProfile | null, bundle?: Bundle | null): GameState {
-  const run = newRun(db, route, (profile ? routePatches(profile)[route] : undefined) ?? {});
+  const run = newRun(db, route, (profile ? routePatches(profile)[route] : undefined) ?? {}, profile ? startScenes(profile)[route] : undefined);
   return bundle ? applyBundle(run, bundle) : run;
 }
 
