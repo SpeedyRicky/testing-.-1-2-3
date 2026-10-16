@@ -62,10 +62,11 @@ function shapeQueries(b: BBox, country: "NG" | "CA"): string[] {
   // Nigeria's maps are small towns as well as Lagos: tertiary roads give them shape. Canada's boxes are bigger.
   const minor = country === "NG" ? "tertiary|unclassified" : "tertiary";
   const head = "[out:json][timeout:240][maxsize:536870912];";
+  // out geom(bbox) clips each shape to the map on the server: one huge lake or coastline no longer sinks a city.
   return [
-    `${head}(way["highway"~"^(motorway|trunk|primary|secondary|${minor})$"](${B}););out geom;`,
-    `${head}(way["natural"="coastline"](${B});way["natural"="water"](${B});relation["natural"="water"](${B});way["waterway"~"^(river|canal)$"](${B}););out geom;`,
-    `${head}(way["railway"="rail"](${B});way["aeroway"="aerodrome"](${B}););out geom;`,
+    `${head}(way["highway"~"^(motorway|trunk|primary|secondary|${minor})$"](${B}););out geom(${B});`,
+    `${head}(way["natural"="coastline"](${B});way["natural"="water"](${B});relation["natural"="water"](${B});way["waterway"~"^(river|canal)$"](${B}););out geom(${B});`,
+    `${head}(way["railway"="rail"](${B});way["aeroway"="aerodrome"](${B}););out geom(${B});`,
   ];
 }
 
