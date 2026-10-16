@@ -80,3 +80,11 @@ out on purpose (reason given).
 | Only show what the player qualifies for | **Built / Adapted** | `game/eligibility.ts`. Locked routes stay visible with a padlock and the exact reason, rather than hidden, so players learn who each route is for and what to change |
 | Real criteria | **Adapted** | Simplified: FSW 1 year skilled work, FST 2 years in a trade, visitor visa funds and ties, spousal route for married players. Not an eligibility check; the modal points to IRCC's "Come to Canada" tool |
 | Progression unlocks | **Built** | Student PGWP win opens Express Entry; any landing opens Year One; Tourist win opens the LMIA interview |
+
+## Follow-up: stolen and fake passports (v0.26)
+
+| Idea | Status | Where / notes |
+|---|---|---|
+| Some people travel on stolen or fake passports | **Built (as fraud)** | Nigeria route, passport office: a "travel connect" offers a lookalike passport (someone else's, often stolen) or a forged "fresh one". Both are instant fails with Reality Checks (impostor fraud, misrepresentation, five-year ban, fingerprints checked on arrival). Walking away and reporting him earns Street Cred. No detail on how such documents are made or used |
+| The victim's side | **Built** | New crisis: your passport is stolen at the motor park. Reporting it to the police and the NIS costs money and time but flags the booklet; skipping the report costs more |
+| Gist feed | **Built** | "Lookalike passports, Canada visa already inside" scam post with a Community note |

@@ -1822,3 +1822,35 @@ describe("v0.25: pathways follow the profile", () => {
     expect(app.activeRoute).toBe("NIGERIA_LIFE");
   });
 });
+
+describe("v0.26: stolen and fake passports", () => {
+  const at = (route: RouteId, scene: string) => ({ ...newRun(DB, route), currentSceneId: scene });
+  it("a lookalike or forged passport is an instant fail; walking away and reporting is rewarded", () => {
+    const office = at("NIGERIA_LIFE", "LAGOS_DOCUMENT_GRIND");
+    const offer = play2(office, ["Canada visa already inside"]);
+    expect(offer.currentSceneId).toBe("LAGOS_LOOKALIKE");
+    expect(play2(offer, ["lookalike passport"]).outcome).toMatchObject({ result: "fail", reason: "LOOKALIKE_PASSPORT" });
+    expect(play2(offer, ["fresh one"]).outcome).toMatchObject({ result: "fail", reason: "FAKE_PASSPORT" });
+    const honest = play2(offer, ["Report him"]);
+    expect(honest.currentSceneId).toBe("LAGOS_OGA");
+    expect(honest.streetCred).toBe(offer.streetCred + 10);
+    expect(play2(offer, ["weekend hustle"]).currentSceneId).toBe("LAGOS_WEEKEND_GIG");
+    for (const id of ["LAGOS_LOOKALIKE_FAIL", "LAGOS_FAKE_PASSPORT_FAIL"]) expect(DB.scenes[id].outcome!.lesson).toMatch(/misrepresentation/);
+  });
+
+  it("a stolen passport is a crisis: reporting it costs time and money, skipping the report costs more", () => {
+    const trap = DB.routes.NIGERIA_LIFE.traps!.items.find((t) => t.id === "stolen-passport")!;
+    expect(trap.options).toHaveLength(2);
+    expect(trap.options![0].label).toMatch(/police and the Nigeria Immigration Service/);
+    expect(trap.options![1].effects.desperation!).toBeGreaterThan(trap.options![0].effects.desperation!);
+  });
+
+  it("every new line has a Pidgin translation", async () => {
+    const pcm = (await import("./i18n/pcm.json")).default as Record<string, string>;
+    const s = DB.scenes;
+    const lines = [s.LAGOS_LOOKALIKE.dialogue, ...s.LAGOS_LOOKALIKE.choices!.map((c) => c.text),
+      ...["LAGOS_LOOKALIKE_FAIL", "LAGOS_FAKE_PASSPORT_FAIL"].flatMap((id) => [s[id].dialogue, s[id].outcome?.title, s[id].outcome?.lesson])]
+      .map((l) => l ?? "missing");
+    for (const line of lines) expect(pcm[line], line).toBeTruthy();
+  });
+});

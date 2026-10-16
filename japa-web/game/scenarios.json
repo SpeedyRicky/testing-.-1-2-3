@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.25.0",
+    "version": "0.26.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -148,6 +148,32 @@
                   "desperation": 4
                 },
                 "feedback": "Cheaper, louder, slower. Somebody's playing Asake at full volume."
+              }
+            ]
+          },
+          {
+            "id": "stolen-passport",
+            "kicker": "Village People attack!",
+            "title": "Your passport was stolen",
+            "body": "Your bag was slashed in the {bus} at the motor park. Phone gone, wallet gone, passport gone. Somebody somewhere now has your name and your face.",
+            "effects": {},
+            "options": [
+              {
+                "label": "Report it to the police and the Nigeria Immigration Service today, and apply for a replacement",
+                "effects": {
+                  "walletNgn": -45000,
+                  "energy": -12,
+                  "desperation": 6
+                },
+                "feedback": "Police report, sworn affidavit, a new booklet. Slow and expensive, but the stolen one is now flagged, so nobody can travel on your name."
+              },
+              {
+                "label": "Skip the police. Just quietly sort a new one later",
+                "effects": {
+                  "desperation": 14,
+                  "papers": -6
+                },
+                "feedback": "Without a report, the stolen passport stays valid in someone else's hands, and the replacement office still asks for the police report. You end up doing it anyway, weeks later."
               }
             ]
           }
@@ -3202,6 +3228,14 @@
           "nextSceneId": "LAGOS_PASSPORT_TOUT",
           "effects": {
             "walletNgn": -250000
+          }
+        },
+        {
+          "text": "Follow the man who says he has a passport with a Canada visa already inside. 'The face resemble you well well'",
+          "label": "",
+          "nextSceneId": "LAGOS_LOOKALIKE",
+          "effects": {
+            "energy": -4
           }
         }
       ]
@@ -11230,6 +11264,88 @@
         "title": "The strain won",
         "subtitle": "Distance found every crack.",
         "lesson": "Split-family moves are some of the hardest. Plan both budgets, a daily call routine and the work-permit timeline before anyone flies."
+      }
+    },
+    "LAGOS_LOOKALIKE": {
+      "id": "LAGOS_LOOKALIKE",
+      "route": "NIGERIA_LIFE",
+      "layoutType": "STORY_STAGE",
+      "title": "'The owner no need am again.'",
+      "location": "Behind a shop near the passport office, {city}",
+      "stage": "annex",
+      "transitIn": "none",
+      "speaker": "Behind a shop near the passport office, {city}",
+      "dialogue": "He opens a green booklet. A real Nigerian passport, a real Canadian visa, a stranger's name and a stranger's face that looks a bit like yours. 'The owner no need am again,' he says, and doesn't say why. ₦3.5 million. 'Or I fit do you fresh one, your own picture, another person details.'",
+      "choices": [
+        {
+          "text": "Walk away. Report him at the immigration desk inside, then book the real appointment: CAD 185 in visa and biometrics fees",
+          "label": "",
+          "nextSceneId": "LAGOS_OGA",
+          "effects": {
+            "walletNgn": -120000,
+            "papers": 18,
+            "energy": -14,
+            "desperation": -6,
+            "streetCred": 10
+          }
+        },
+        {
+          "text": "Walk away. You can't afford the real fees yet, so it's the weekend hustle first",
+          "label": "",
+          "nextSceneId": "LAGOS_WEEKEND_GIG",
+          "effects": {
+            "energy": -4,
+            "streetCred": 6
+          }
+        },
+        {
+          "text": "Pay for the lookalike passport. Same face, small difference",
+          "label": "BOUGHT_PASSPORT",
+          "nextSceneId": "LAGOS_LOOKALIKE_FAIL",
+          "effects": {}
+        },
+        {
+          "text": "Ask for the 'fresh one': your photo, someone else's details",
+          "label": "FAKE_PASSPORT",
+          "nextSceneId": "LAGOS_FAKE_PASSPORT_FAIL",
+          "effects": {}
+        }
+      ]
+    },
+    "LAGOS_LOOKALIKE_FAIL": {
+      "id": "LAGOS_LOOKALIKE_FAIL",
+      "route": "NIGERIA_LIFE",
+      "layoutType": "STORY_STAGE",
+      "title": "Someone else's name",
+      "location": "The airport, {city}",
+      "stage": "airport",
+      "transitIn": "none",
+      "speaker": "Departure gate",
+      "dialogue": "At the gate, the officer asks your date of birth. You say the one you memorised, a second too slowly. She looks at the photo, then at you, then calls a colleague. The passport was reported stolen months ago. Its real owner has been fighting to get a new one.",
+      "outcome": {
+        "result": "fail",
+        "reason": "LOOKALIKE_PASSPORT",
+        "title": "Impostor at the gate",
+        "subtitle": "Arrested before boarding. The ₦3.5m is gone.",
+        "lesson": "Travelling on another person's passport is impostor fraud. It's a crime in Nigeria, and in Canada using a false or someone else's document is misrepresentation (a five-year ban) and can be prosecuted. Canada takes fingerprints with most visas and can check them on arrival. 'Lookalike' passports are often stolen from real people."
+      }
+    },
+    "LAGOS_FAKE_PASSPORT_FAIL": {
+      "id": "LAGOS_FAKE_PASSPORT_FAIL",
+      "route": "NIGERIA_LIFE",
+      "layoutType": "STORY_STAGE",
+      "title": "A passport that doesn't exist",
+      "location": "The visa centre, {city}",
+      "stage": "annex",
+      "transitIn": "none",
+      "speaker": "Visa application centre",
+      "dialogue": "The 'fresh' passport looks perfect to you. The visa application asks for its number. The number belongs to nobody, or to somebody else. Your application is flagged, and your real name, face and fingerprints are now on file next to a forged document.",
+      "outcome": {
+        "result": "fail",
+        "reason": "FAKE_PASSPORT",
+        "title": "Forged passport",
+        "subtitle": "Refused, banned, and your money's gone.",
+        "lesson": "A forged passport is document fraud in Nigeria and in Canada. IRCC refuses the application for misrepresentation and bars you for five years, and the record follows your real fingerprints into every future application. The only real passport comes from the Nigeria Immigration Service, at the official fee."
       }
     }
   },
