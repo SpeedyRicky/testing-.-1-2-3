@@ -48,6 +48,7 @@ export const CANADA_CITIES: CityDef[] = [
   ca("winnipeg", "Winnipeg", 49.8951, -97.1384, 10, 8),
   ca("saskatoon", "Saskatoon", 52.1332, -106.67, 8, 6.4),
   ca("edmonton", "Edmonton", 53.5461, -113.4938, 10, 8),
+  ca("thunderbay", "Thunder Bay", 48.3809, -89.2477, 8, 6.4),
 ];
 
 export const CITIES: CityDef[] = [...NIGERIA_CITIES, ...CANADA_CITIES];
