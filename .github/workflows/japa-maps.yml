@@ -1,0 +1,50 @@
+# Japa: The Great Escape — city maps from OpenStreetMap
+# Fetches roads, water, rail and real hotspots for every city from the Overpass API, simplifies them into small
+# drawings (japa-web/game/maps/data/*.json) and commits them to the branch. Runs when the map builder or the city
+# list changes, or by hand. Map data © OpenStreetMap contributors (ODbL).
+name: Japa maps
+
+on:
+  push:
+    branches: ["**"]
+    paths: ["japa-web/scripts/maps/**", "japa-web/game/maps/cities.ts", "japa-web/game/maps/geo.ts", ".github/workflows/japa-maps.yml"]
+  workflow_dispatch:
+    inputs:
+      cities:
+        description: "City ids to rebuild, space-separated (empty = all)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: japa-maps-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: japa-web
+
+jobs:
+  build-maps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build maps from Overpass
+        run: node --experimental-strip-types scripts/maps/build-maps.ts ${{ github.event.inputs.cities }}
+      - name: Commit the maps
+        run: |
+          git config user.name "japa-maps-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add game/maps/data
+          if git diff --cached --quiet; then echo "No map changes"; exit 0; fi
+          git commit -m "Maps: rebuild city maps from OpenStreetMap (ODbL)"
+          for i in 1 2 3; do git pull --rebase origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0; sleep 5; done
+          exit 1

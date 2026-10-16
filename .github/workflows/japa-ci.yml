@@ -5,8 +5,10 @@ name: Japa CI
 
 on:
   push:
-    paths: ["japa-web/**", ".github/workflows/japa-ci.yml"]
+    # Listing tags without branches made GitHub skip branch pushes entirely; both are listed now.
+    branches: ["**"]
     tags: ["v*"]
+    paths: ["japa-web/**", ".github/workflows/japa-ci.yml"]
   pull_request:
     paths: ["japa-web/**"]
   workflow_dispatch:
