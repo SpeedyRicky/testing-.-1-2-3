@@ -17,7 +17,7 @@ import {
 import { initialState, makeReducer } from "./machine";
 import { allEndings, endingKey, lessonFor } from "./endings";
 import { levelIndexOf, levelProgress, levelsFor, starsFor } from "./levels";
-import { blessingChance, dangerStats, gambleOdds, resolvePopup } from "./engine";
+import { blessingChance, dangerStats, gambleOdds, perkScaled, resolvePopup } from "./engine";
 import { faceFor } from "./face";
 import { careerVars, trackFor } from "./careers";
 import { GROOVES, STYLES, STYLE_IDS, grooveFor, moodFor, type Mood } from "./music";
@@ -25,7 +25,7 @@ import { makeSave, readSave } from "./save";
 import { LANDINGS, earnedBy, eligibility } from "./eligibility";
 import { PLAYABLE_ROUTES, simulate } from "./simulate";
 import {
-  ACHIEVEMENTS, DAILY_MODIFIERS, NEW_META, applyBundle, newAchievements, bundleFor, buy, dailyFor, grant, runAward, titleFor, toggleEquip, touchStreak,
+  ACHIEVEMENTS, DAILY_MODIFIERS, NEW_META, PERKS, applyBundle, newAchievements, bundleFor, buy, dailyFor, grant, radarMarks, runAward, titleFor, toggleEquip, touchStreak,
 } from "./meta";
 import type { GameState, RouteId, StatKey } from "./types";
 
@@ -2041,5 +2041,43 @@ describe("v0.29: spousal sponsorship, RCIP, Francophone Mobility, Global Talent 
       for (const c of s.choices ?? []) { need(c.text); need(c.feedback); need(c.gamble?.success.feedback); need(c.gamble?.fail.feedback); }
     }
     expect(missing).toEqual([]);
+  });
+});
+
+describe("v0.29: Oja market additions", () => {
+  const withPerks = (route: RouteId, ids: string[]) => applyBundle(newRun(DB, route), bundleFor(ids));
+
+  it("no perk sells a test score or scam immunity", () => {
+    const names = PERKS.map((p) => `${p.name} ${p.blurb}`).join(" ");
+    expect(names).not.toMatch(/guarantee/i);
+    expect(PERKS.find((p) => p.id === "study-plan")!.effects).toEqual({ ieltsPrep: 35 });
+  });
+
+  it("the study plan raises English-test odds through preparation", () => {
+    const odds = (s: GameState) => presentChoices(DB, s).find((c) => c.label === "PREPARED")!.odds!;
+    const tired = (s: GameState) => ({ ...s, energy: 10 });
+    expect(odds(tired(withPerks("EXPRESS_ENTRY", ["study-plan"])))).toBeCloseTo(odds(tired(newRun(DB, "EXPRESS_ENTRY"))) + 0.14, 2);
+  });
+
+  it("scam radar marks the agent's offer in the first scenes that have one, then goes quiet", () => {
+    const run = { ...withPerks("NIGERIA_LIFE", ["scam-radar"]), currentSceneId: "LAGOS_AGENT_OFFICE" };
+    const marks = radarMarks(DB, run);
+    const scene = DB.scenes.LAGOS_AGENT_OFFICE.choices!;
+    expect([...marks].map((i) => scene[i].nextSceneId)).toEqual(["LAGOS_AGENT_SCAM"]);
+    expect(radarMarks(DB, { ...run, mods: {} }).size).toBe(0);
+    const late = { ...run, history: ["LAGOS_DOCUMENT_GRIND", "LAGOS_JIJI", "AR_EAGER"].map((sceneId) => ({ sceneId })) };
+    expect(radarMarks(DB, late).size).toBe(0);
+  });
+
+  it("boundaries soften family-money stress; the dollar habit halves naira crashes", () => {
+    const base = newRun(DB, "FIRST_YEAR");
+    const calm = withPerks("FIRST_YEAR", ["boundaries"]);
+    expect(perkScaled(calm, "blacktax", { desperation: 10 })).toEqual({ desperation: 6 });
+    expect(perkScaled(base, "blacktax", { desperation: 10 })).toEqual({ desperation: 10 });
+    const hedged = withPerks("EXPRESS_ENTRY", ["dollar-habit"]);
+    expect(perkScaled(hedged, "devalue", { walletCad: -1000 })).toEqual({ walletCad: -500 });
+    const ng = newRun(DB, "NIGERIA_LIFE");
+    const shocked = applyMarketShock(DB, ng), soft = applyMarketShock(DB, applyBundle(ng, bundleFor(["dollar-habit"])));
+    expect(ng.walletNgn - soft.walletNgn).toBeLessThan(ng.walletNgn - shocked.walletNgn);
   });
 });

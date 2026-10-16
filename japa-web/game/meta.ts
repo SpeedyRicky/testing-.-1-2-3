@@ -1,7 +1,7 @@
 // Meta-progression across runs: Japa Points (JP), titles, the Oja market (perks and flair), the daily challenge
 // and the day streak. Pure: the browser store lives in app/components/Meta.tsx.
 import { applyEffects } from "./engine";
-import type { Effects, GameState, RouteId, RunMods } from "./types";
+import type { Effects, GameState, RouteId, RunMods, ScenarioDatabase } from "./types";
 
 export interface Perk {
   id: string;
@@ -12,6 +12,9 @@ export interface Perk {
   moneyFactor?: number;
   trapFactor?: number;
   oddsBonus?: number;
+  familyStress?: number;
+  fxShield?: number;
+  scamRadar?: boolean;
 }
 
 export const PERKS: Perk[] = [
@@ -21,6 +24,11 @@ export const PERKS: Perk[] = [
   { id: "prayer-warrior", name: "Prayer warrior", blurb: "Village People traps strike 30% less often.", cost: 130, trapFactor: 0.7 },
   { id: "night-reader", name: "Night reader", blurb: "+6% on every risky choice: you did the reading.", cost: 150, oddsBonus: 0.06 },
   { id: "wey-sabi-number", name: "Wey Sabi's real number", blurb: "+10 Street Cred: the one mentor who actually sabi.", cost: 70, effects: { streetCred: 10 } },
+  // No perk can buy a test score or immunity from scams: they make the work easier, not the lesson disappear.
+  { id: "study-plan", name: "Study plan: Band 8 track", blurb: "+35 IELTS prep at the start: about +14% on your English test and nursing exam odds. You did the work.", cost: 120, effects: { ieltsPrep: 35 } },
+  { id: "scam-radar", name: "Scam radar", blurb: "A ⚠️ marks choices that lead straight to a scam or fraud ending, in the first 3 scenes that have one each run. You still decide.", cost: 100, scamRadar: true },
+  { id: "boundaries", name: "Boundaries", blurb: "Family-money pop-ups (black tax, land sales, Mummy's calls) add 40% less stress.", cost: 90, familyStress: 0.6 },
+  { id: "dollar-habit", name: "Dollar savings habit", blurb: "Saving in dollars early: naira crashes cost you half as much.", cost: 150, fxShield: 0.5 },
 ];
 export const MAX_EQUIPPED = 2;
 
@@ -73,6 +81,23 @@ export function dailyFor(day: string, routes: RouteId[]): { day: string; route: 
   return { day, route: routes[h % routes.length], modifier: DAILY_MODIFIERS[Math.floor(h / 7) % DAILY_MODIFIERS.length] };
 }
 
+// --- Scam radar ----------------------------------------------------------------------------------------
+
+const SCAM_LABEL = /FRAUD|SCAM|FAKE|BOUGHT|BRIBE|LEAK|MISREP/i;
+
+/** Choice indices the Scam radar marks here: scam or fraud choices, in the first three scenes of a run that have one. */
+export function radarMarks(db: ScenarioDatabase, run: GameState): Set<number> {
+  if (!run.mods?.scamRadar || run.outcome) return new Set();
+  const suspicious = (sceneId: string) => (db.scenes[sceneId]?.choices ?? []).flatMap((c, i) => {
+    const end = db.scenes[c.nextSceneId]?.outcome;
+    const trap = SCAM_LABEL.test(c.label ?? "") || (end?.result === "fail" && !/BURNOUT|EXPIRED|NOT_SELECTED|NO_OFFER|REFUSED/.test(end.reason));
+    return trap ? [i] : [];
+  });
+  const scenes = [...new Set([...run.history.map((h) => h.sceneId), run.currentSceneId])].filter((id) => suspicious(id).length);
+  const pos = scenes.indexOf(run.currentSceneId);
+  return pos >= 0 && pos < 3 ? new Set(suspicious(run.currentSceneId)) : new Set();
+}
+
 // --- Run modifiers -----------------------------------------------------------------------------------
 
 /** Equipped perks plus (optionally) the daily modifier, combined into one set of run modifiers. */
@@ -82,13 +107,17 @@ export function bundleFor(perkIds: string[], daily?: { day: string; modifier: Da
   let moneyFactor = 1;
   let trapFactor = 1;
   let oddsBonus = 0;
+  let familyStress = 1, fxShield = 1, scamRadar = false;
   for (const p of parts) {
+    if ("familyStress" in p) familyStress *= p.familyStress ?? 1;
+    if ("fxShield" in p) fxShield *= p.fxShield ?? 1;
+    if ("scamRadar" in p && p.scamRadar) scamRadar = true;
     for (const [k, v] of Object.entries(p.effects ?? {})) effects[k as keyof Effects] = (effects[k as keyof Effects] ?? 0) + (v ?? 0);
     moneyFactor *= p.moneyFactor ?? 1;
     trapFactor *= p.trapFactor ?? 1;
     oddsBonus += p.oddsBonus ?? 0;
   }
-  return { effects, moneyFactor, trapFactor, oddsBonus, ...(daily ? { daily: daily.day, label: daily.modifier.name } : {}) };
+  return { effects, moneyFactor, trapFactor, oddsBonus, familyStress, fxShield, scamRadar, ...(daily ? { daily: daily.day, label: daily.modifier.name } : {}) };
 }
 
 /** Applies a bundle to a fresh run: starting effects, money factor, and the modifiers the engine reads later. */
@@ -96,7 +125,8 @@ export function applyBundle(run: GameState, b: RunMods & { effects: Effects }): 
   const money = b.moneyFactor ?? 1;
   let s: GameState = { ...run, walletCad: Math.round(run.walletCad * money), walletNgn: Math.round(run.walletNgn * money) };
   s = applyEffects(s, b.effects);
-  const mods: RunMods = { trapFactor: b.trapFactor, oddsBonus: b.oddsBonus, daily: b.daily, label: b.label };
+  const mods: RunMods = { trapFactor: b.trapFactor, oddsBonus: b.oddsBonus, daily: b.daily, label: b.label,
+    familyStress: b.familyStress, fxShield: b.fxShield, scamRadar: b.scamRadar };
   return { ...s, mods };
 }
 

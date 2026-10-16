@@ -183,6 +183,12 @@ export interface RunMods {
   daily?: string;
   label?: string;
   moneyFactor?: number;
+  /** Multiplies the stress that family-money pop-ups add (the "Boundaries" perk). */
+  familyStress?: number;
+  /** Share of a naira crash's losses you still take (the "Dollar savings habit" perk). */
+  fxShield?: number;
+  /** Marks scam and fraud choices in the first three scenes that have one (the "Scam radar" perk). */
+  scamRadar?: boolean;
 }
 
 export interface Popup {

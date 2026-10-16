@@ -487,6 +487,22 @@ export class AudioEngine {
         for (let k = 0; k < 6; k++) o.frequency.setValueAtTime(k % 2 ? 900 : 640, t + k * 0.15);
         break;
       }
+      // The runner: a springy jump, a cartoon bonk, and a little fanfare at the checkpoint gate.
+      case "jump": {
+        const o = this.osc("square", 330, t, 0.16, this.env(t, 0.12, 0.002, 0.16, out));
+        o.frequency.exponentialRampToValueAtTime(900, t + 0.14);
+        break;
+      }
+      case "hurt": {
+        const o = this.osc("sawtooth", 420, t, 0.3, this.env(t, 0.22, 0.002, 0.3, out));
+        o.frequency.exponentialRampToValueAtTime(110, t + 0.28);
+        this.noiseBurst(t, 0.08, "lowpass", 900, 0.3, out);
+        break;
+      }
+      case "clear":
+        [0, 4, 7, 12, 16].forEach((n, k) => this.pluck(t + k * 0.08, hz(n + 12), out));
+        this.horns(t + 0.42, [hz(4), hz(7), hz(12)], 0.6, out);
+        break;
       case "stamp":
         this.kick(t, 1, out);
         this.noiseBurst(t, 0.12, "lowpass", 1200, 0.4, out);

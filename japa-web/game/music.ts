@@ -5,7 +5,7 @@ import type { GameState, ScenarioDatabase } from "./types";
 export type Mood = "lagos" | "hustle" | "tension" | "canada" | "pitch" | "triumph" | "somber";
 export type Sfx =
   | "click" | "good" | "bad" | "danger" | "coin" | "cashOut" | "stamp" | "levelUp" | "win" | "fail"
-  | "trap" | "phone" | "horn" | "okada" | "plane" | "wind";
+  | "trap" | "phone" | "horn" | "okada" | "plane" | "wind" | "jump" | "hurt" | "clear";
 
 type Step<T> = (T | null)[];
 

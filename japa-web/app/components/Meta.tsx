@@ -64,6 +64,13 @@ export function awardStars(player: string, key: string, newStars: number, levelT
   updateMeta(player, (m) => grant(m, award), award);
 }
 
+/** Japa Points from a runner sector. */
+export function awardRunner(player: string, sector: string, jp: number, title: string) {
+  if (jp <= 0) return;
+  const award: Award = { key: `runner|${sector}|${Date.now()}`, total: jp, lines: [{ label: `${title}: run complete`, jp }] };
+  updateMeta(player, (m) => grant(m, award), award);
+}
+
 export function useMeta() {
   const { profile } = usePlayer();
   const player = profile?.username ?? "guest";

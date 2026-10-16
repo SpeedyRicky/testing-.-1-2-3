@@ -249,7 +249,7 @@ export function choose(db: ScenarioDatabase, state: GameState, index: number, ro
   const items = route.traps?.items.filter((t) => !t.when || evaluate(s, t.when)) ?? [];
   if (items.length && !endingMove && (rolls[0] ?? 1) < trapChance(db, s)) {
     const trap = items[Math.floor((rolls[1] ?? 0) * items.length) % items.length];
-    s = applyEffects(s, trap.effects);
+    s = applyEffects(s, perkScaled(s, trap.id, trap.effects));
     s = { ...s, popup: { kind: "trap", id: trap.id, kicker: trap.kicker, title: trap.title, body: trap.body,
       ...(trap.options?.length ? { options: trap.options, button: undefined } : {}) } };
   } else if (!endingMove && route.blessings && (rolls[3] ?? 1) < blessingChance(db, s)) {
@@ -283,11 +283,30 @@ export function blessingChance(db: ScenarioDatabase, state: GameState): number {
 }
 
 /** The parallel market jumps: wallet and papers shrink by the configured factors. */
+/** Village People that are about family money, and those that are about the naira. */
+const FAMILY_TRAPS = new Set(["land", "mummy", "blacktax", "donors", "aunties"]);
+const FX_TRAPS = new Set(["naira", "devalue", "fx"]);
+
+/** Perks soften some crises: Boundaries cuts the stress from family money, the dollar habit halves naira losses. */
+export function perkScaled(state: GameState, trapId: string, effects: Effects): Effects {
+  const id = trapId.split(":")[0];
+  const fam = FAMILY_TRAPS.has(id) ? state.mods?.familyStress ?? 1 : 1;
+  const fx = FX_TRAPS.has(id) ? state.mods?.fxShield ?? 1 : 1;
+  if (fam === 1 && fx === 1) return effects;
+  const out: Effects = { ...effects };
+  if ((out.desperation ?? 0) > 0) out.desperation = Math.round(out.desperation! * fam);
+  for (const k of ["walletNgn", "walletCad"] as const) if ((out[k] ?? 0) < 0) out[k] = Math.round(out[k]! * fx);
+  return out;
+}
+
 export function applyMarketShock(db: ScenarioDatabase, state: GameState): GameState {
   const m = db.routes[state.activeRoute].marketShock;
   if (!m || state.outcome || state.popup) return state;
   const next: GameState = { ...state, routeStats: { ...state.routeStats } };
-  for (const [key, factor] of Object.entries(m.multiply) as [StatKey, number][]) {
+  const shield = state.mods?.fxShield ?? 1;
+  for (const [key, raw] of Object.entries(m.multiply) as [StatKey, number][]) {
+    // The dollar habit keeps more of your money: you only lose `shield` of the crash.
+    const factor = key === "walletNgn" || key === "walletCad" ? 1 - (1 - raw) * shield : raw;
     if (isCore(key)) next[key] = Math.floor(next[key] * factor);
     else {
       const k = key as keyof RouteStats;
@@ -307,7 +326,7 @@ export function resolvePopup(db: ScenarioDatabase, state: GameState, index: numb
   const p = state.popup;
   const opt = p?.options?.[index];
   if (!p || !opt) return state;
-  let s = applySet(applyEffects(state, opt.effects), opt.set);
+  let s = applySet(applyEffects(state, perkScaled(state, p.id, opt.effects)), opt.set);
   s = { ...s, popup: { kind: "trap", id: `${p.id}:${index}`, kicker: p.kicker, title: opt.label, body: opt.feedback, button: "Continue" },
     history: [...s.history, { sceneId: s.currentSceneId, answer: `${p.id}:${index}` }] };
   const route = db.routes[db.scenes[s.currentSceneId]?.route ?? s.activeRoute];

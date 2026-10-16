@@ -1,6 +1,6 @@
 // The app's state machine. One reducer; each route keeps its own GameState,
 // so switching modes never loses progress.
-import { DB, applyMarketShock, choose, dismissPopup, newRun, resolvePopup, takeAction } from "./engine";
+import { DB, applyEffects, applyMarketShock, choose, dismissPopup, newRun, resolvePopup, takeAction } from "./engine";
 import type { Effects, GameState, RouteId, RunMods, ScenarioDatabase, Toast } from "./types";
 import { applyBundle } from "./meta";
 import { deriveGameProfile, familyFor, routePatches, startScenes, type PlayerProfile } from "./profile";
@@ -36,7 +36,9 @@ export type AppEvent =
   /** Equipped perks: applied to every run started from now on. */
   | { type: "SET_BUNDLE"; bundle: Bundle | null }
   /** Today's challenge: a fresh run of the route with the daily modifier on top of the perks. */
-  | { type: "START_DAILY"; route: RouteId; bundle: Bundle };
+  | { type: "START_DAILY"; route: RouteId; bundle: Bundle }
+  /** A runner sector finished or skipped: calm and energy for the story (never money), once per run. */
+  | { type: "RUNNER_REWARD"; sector: string; effects: Effects };
 
 export const PLAYABLE: RouteId[] = (Object.keys(DB.routes) as RouteId[]).filter((r) => DB.routes[r].status === "playable");
 
@@ -83,6 +85,12 @@ function makeStep(db: ScenarioDatabase) {
         return { ...state, activeRoute: event.route, toast: null };
       case "CHOOSE":
         return run ? withRun(state, choose(db, run, event.index, event.rolls)) : state;
+      case "RUNNER_REWARD": {
+        const flag = `runner_${event.sector}`;
+        if (!run || run.outcome || run.flags[flag]) return state;
+        const safe: Effects = { desperation: Math.max(-12, Math.min(0, event.effects.desperation ?? 0)), energy: Math.max(0, Math.min(9, event.effects.energy ?? 0)) };
+        return withRun(state, { ...applyEffects(run, safe), flags: { ...run.flags, [flag]: true } });
+      }
       case "MARKET_SHOCK":
         return run ? withRun(state, applyMarketShock(db, run)) : state;
       case "DISMISS_POPUP":

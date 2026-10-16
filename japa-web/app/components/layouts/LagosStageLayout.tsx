@@ -12,6 +12,8 @@ import { useChoiceKeys } from "../useChoiceKeys";
 import { usePlayer } from "../Player";
 import { usePathways } from "../Pathways";
 import { CityMap } from "../maps/CityMap";
+import { radarMarks } from "@/game/meta";
+import { RunnerGate } from "../runner/Gate";
 import { chance, rolls as rollDice } from "@/game/rng";
 import type { BarSpec, GameState, RouteId, Transit } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
@@ -276,6 +278,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
   useChoiceKeys(choices, pick, !moving && !run.popup && !playing && !run.outcome);
   const { t } = usePlayer();
   const pathways = usePathways();
+  const radar = radarMarks(DB, run);
 
   /** Choice -> cutscene -> travel ribbon -> next scene. The meters update at once underneath. */
   function pick(index: number) {
@@ -334,6 +337,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
         </div>
 
         <FxShock key={run.currentSceneId} run={run} />
+        {!ended && !moving ? <RunnerGate run={run} dispatch={dispatch} /> : null}
         {!ended ? <CityMap run={run} choices={choices} onPick={pick} disabled={moving || !!run.popup} /> : null}
         <article
           key={shownId}
@@ -374,6 +378,9 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
                 </span>
                 {t(c.text, run)}
                 <OddsChip odds={c.odds} />
+                {radar.has(c.index) ? (
+                  <span className="ml-2 inline-flex items-center rounded-full bg-rose-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-200">⚠️ Scam radar</span>
+                ) : null}
                 {!c.enabled && c.lockedHint ? <span className="mt-1 block text-xs font-normal text-zinc-500">Locked: {t(c.lockedHint, run)}</span> : null}
               </button>
             ))}
