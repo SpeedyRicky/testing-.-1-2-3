@@ -50,8 +50,8 @@ interface OsmEl {
   lat?: number; lon?: number;
   center?: { lat: number; lon: number };
   tags?: Record<string, string>;
-  geometry?: { lat: number; lon: number }[];
-  members?: { type: string; role: string; geometry?: { lat: number; lon: number }[] }[];
+  geometry?: ({ lat: number; lon: number } | null)[];
+  members?: { type: string; role: string; geometry?: ({ lat: number; lon: number } | null)[] }[];
 }
 
 const bb = (b: BBox) => `${b.south.toFixed(5)},${b.west.toFixed(5)},${b.north.toFixed(5)},${b.east.toFixed(5)}`;
@@ -87,8 +87,17 @@ function poiQuery(b: BBox) {
 out center tags;`;
 }
 
-const lineOf = (geom: { lat: number; lon: number }[], project: (lat: number, lon: number) => Pt) =>
-  geom.map((g) => project(g.lat, g.lon));
+/** A way's points; with out geom(bbox), points outside the box come back as null, so lines split there. */
+const linesOf = (geom: ({ lat: number; lon: number } | null)[], project: (lat: number, lon: number) => Pt): Pt[][] => {
+  const out: Pt[][] = [];
+  let cur: Pt[] = [];
+  for (const g of geom) {
+    if (g && typeof g.lat === "number") cur.push(project(g.lat, g.lon));
+    else if (cur.length) { out.push(cur); cur = []; }
+  }
+  if (cur.length) out.push(cur);
+  return out.filter((l) => l.length > 1);
+};
 
 /** Joins way fragments of a multipolygon into closed rings where their ends meet. */
 function stitch(parts: Pt[][]): { rings: Pt[][]; open: Pt[][] } {
@@ -209,16 +218,17 @@ async function buildCity(city: CityDef) {
   for (const e of shapes) {
     const t = e.tags ?? {};
     if (e.type === "way" && e.geometry) {
-      const l = lineOf(e.geometry, project);
-      if (/^(motorway|trunk|primary|secondary)$/.test(t.highway ?? "")) major.push(l);
-      else if (t.highway) minor.push(l);
-      else if (t.railway === "rail") rail.push(l);
-      else if (t.waterway) river.push(l);
-      else if (t.natural === "coastline") coast.push(l);
-      else if (t.natural === "water") waterParts.push(l);
-      else if (t.aeroway === "aerodrome") airParts.push(l);
+      for (const l of linesOf(e.geometry, project)) {
+        if (/^(motorway|trunk|primary|secondary)$/.test(t.highway ?? "")) major.push(l);
+        else if (t.highway) minor.push(l);
+        else if (t.railway === "rail") rail.push(l);
+        else if (t.waterway) river.push(l);
+        else if (t.natural === "coastline") coast.push(l);
+        else if (t.natural === "water") waterParts.push(l);
+        else if (t.aeroway === "aerodrome") airParts.push(l);
+      }
     } else if (e.type === "relation" && t.natural === "water") {
-      for (const m of e.members ?? []) if (m.geometry && m.role !== "inner") waterParts.push(lineOf(m.geometry, project));
+      for (const m of e.members ?? []) if (m.geometry && m.role !== "inner") waterParts.push(...linesOf(m.geometry, project));
     }
   }
   const water = stitch(waterParts), air = stitch(airParts);
