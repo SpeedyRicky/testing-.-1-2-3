@@ -10,15 +10,15 @@ import { SITE_URL, shareUrl } from "../launch/site";
 
 /** Gradient backdrop per rank id; unknown ids fall back to the corridor look. */
 const RANK_VIBE: Record<string, string> = {
-  vanier: "from-amber-300/30 via-fuchsia-500/20 to-zinc-950",
-  pearson: "from-red-500/25 via-zinc-900 to-green-900/40",
-  village: "from-emerald-900/40 via-zinc-950 to-rose-950/50",
-  flagged: "from-rose-900/50 via-zinc-950 to-zinc-900",
-  pr: "from-red-600/30 via-zinc-950 to-sky-900/40",
-  pgwp: "from-amber-300/25 via-red-900/30 to-zinc-950",
-  hustle: "from-zinc-800 via-zinc-950 to-amber-950/40",
-  protected: "from-red-600/30 via-zinc-950 to-emerald-900/40",
-  interview: "from-sky-700/30 via-zinc-950 to-amber-900/30",
+  vanier: "bg-[#1a1408]",
+  pearson: "bg-[#140b0b]",
+  village: "bg-[#0b140f]",
+  flagged: "bg-[#160a0c]",
+  pr: "bg-[#140b0b]",
+  pgwp: "bg-[#1a1408]",
+  hustle: "bg-zinc-950",
+  protected: "bg-[#0b140f]",
+  interview: "bg-[#0b1220]",
 };
 
 const RANK_EMOJI: Record<string, string> = {
@@ -143,10 +143,10 @@ export function PopupModal({ popup, onDismiss, onChoose }: { popup: Popup; onDis
       <div
         className={`animate-scene-in relative w-full max-w-md rounded-3xl border p-6 ${
           market
-            ? "border-amber-300/40 bg-gradient-to-b from-zinc-900 to-zinc-950 shadow-[0_0_80px_-20px_rgba(251,191,36,0.7)]"
+            ? "border-amber-300/40 bg-zinc-950"
             : blessing
-              ? "border-emerald-300/50 bg-gradient-to-b from-emerald-950/80 to-zinc-950 shadow-[0_0_80px_-20px_rgba(52,211,153,0.6)]"
-              : "border-rose-400/40 bg-gradient-to-b from-rose-950/80 to-zinc-950"
+              ? "border-emerald-300/50 bg-[#07140f]"
+              : "border-rose-400/40 bg-[#160a0c]"
         }`}
       >
         <p className={`inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] ${market ? "text-amber-300" : blessing ? "text-emerald-300" : "text-rose-300"}`}>
@@ -209,7 +209,7 @@ export function GameOverModal({
   ].filter(Boolean).join("\n");
   return (
     <Overlay className="bg-black/75 backdrop-blur-md">
-      <div className={`animate-scene-in relative w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/15 bg-gradient-to-br p-7 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)] ${RANK_VIBE[rank.id] ?? RANK_VIBE.hustle}`}>
+      <div className={`animate-scene-in relative w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/15 p-7 ${RANK_VIBE[rank.id] ?? RANK_VIBE.hustle}`}>
         <p className="text-center text-[11px] font-bold uppercase tracking-[0.28em] text-amber-200">{won ?? WIN_RANKS.has(rank.id) ? "You made it" : "Game Over"} · {routeName}</p>
         <div className="mt-5"><RankGlyph id={rank.id} /></div>
         <h3 className="mt-4 text-center text-3xl font-black tracking-tight text-white">{rank.title}</h3>

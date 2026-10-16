@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FileCheck2, Ghost, GraduationCap, Hammer, HeartCrack, Languages, MapPin, Plane, Sparkles, Trophy, Wallet, Zap } from "lucide-react";
+import { FileCheck2, Ghost, GraduationCap, Hammer, HeartCrack, Languages, MapPin, Sparkles, Trophy, Wallet, Zap } from "lucide-react";
 import { DB, choose, computeCrs, presentChoices, rankFor } from "@/game/engine";
 import { lessonFor } from "@/game/endings";
 import { OddsChip } from "../OddsChip";
@@ -22,17 +22,6 @@ import { TravelRibbon } from "../TravelRibbon";
 import { CadFloat, GameOverModal, PopupModal } from "../Popups";
 import { NGN_PER_CAD, PRICE_SHOCKS, shortNaira } from "@/game/nigeria";
 
-const STARS = [
-  { top: "8%", left: "12%", delay: "0s" },
-  { top: "18%", left: "78%", delay: "0.4s" },
-  { top: "32%", left: "22%", delay: "1.1s" },
-  { top: "44%", left: "91%", delay: "0.2s" },
-  { top: "62%", left: "8%", delay: "1.6s" },
-  { top: "70%", left: "64%", delay: "0.8s" },
-  { top: "84%", left: "40%", delay: "1.3s" },
-  { top: "14%", left: "48%", delay: "2s" },
-];
-
 const HUD: Record<string, { icon: typeof Wallet; bar: string; tint: string; glow: string }> = {
   walletNgn: { icon: Wallet, bar: "from-emerald-400 to-lime-300", tint: "bg-emerald-500/20 text-emerald-300", glow: "shadow-emerald-500/20" },
   energy: { icon: Zap, bar: "from-amber-400 to-yellow-200", tint: "bg-amber-500/20 text-amber-300", glow: "shadow-amber-400/20" },
@@ -49,20 +38,6 @@ const HUD: Record<string, { icon: typeof Wallet; bar: string; tint: string; glow
   relationshipProof: { icon: HeartCrack, bar: "from-pink-300 to-rose-400", tint: "bg-pink-500/20 text-pink-200", glow: "shadow-pink-400/20" },
   clbAip: { icon: Languages, bar: "from-violet-400 to-fuchsia-300", tint: "bg-violet-500/20 text-violet-200", glow: "shadow-violet-400/20" },
   provinceTies: { icon: MapPin, bar: "from-sky-300 to-emerald-300", tint: "bg-sky-500/20 text-sky-200", glow: "shadow-sky-400/20" },
-};
-
-/** Purple Lagos night for Lagos Life; cooler skies once the story heads for Canada. */
-const BACKDROP: Record<string, string> = {
-  NIGERIA_LIFE: "bg-[radial-gradient(circle_at_top,_#3b1d6e_0%,_#07060c_55%)]",
-  STUDY_PERMIT: "bg-[radial-gradient(circle_at_top,_#7f1d1d_0%,_#07060c_55%)]",
-  EXPRESS_ENTRY: "bg-[radial-gradient(circle_at_top,_#1e3a8a_0%,_#07060c_55%)]",
-  TOURIST_GAMBLE: "bg-[radial-gradient(circle_at_top,_#78350f_0%,_#07060c_55%)]",
-  FIRST_YEAR: "bg-[radial-gradient(circle_at_top,_#065f46_0%,_#07060c_55%)]",
-  SPLIT_FAMILY: "bg-[radial-gradient(circle_at_top,_#831843_0%,_#07060c_55%)]",
-  TARGETED_TRADE: "bg-[radial-gradient(circle_at_top,_#7c2d12_0%,_#07060c_55%)]",
-  PNP_RURAL: "bg-[radial-gradient(circle_at_top,_#0c4a6e_0%,_#07060c_55%)]",
-  ATLANTIC_AIP: "bg-[radial-gradient(circle_at_top,_#115e59_0%,_#07060c_55%)]",
-  SPOUSAL_SPONSOR: "bg-[radial-gradient(circle_at_top,_#9d174d_0%,_#07060c_55%)]",
 };
 
 const naira = (v: number) =>
@@ -166,7 +141,7 @@ function FxShock({ run }: { run: GameState }) {
   if (!open || !FX_SCENES.has(run.currentSceneId)) return null;
   const naira = run.walletCad * NGN_PER_CAD;
   return (
-    <aside className="animate-scene-in mb-4 rounded-2xl border border-sky-300/30 bg-gradient-to-br from-sky-950/80 to-zinc-950/80 p-4 backdrop-blur" aria-label="Exchange rate shock">
+    <aside className="animate-scene-in mb-4 rounded-2xl border border-sky-300/30 bg-[#0b1220] p-4" aria-label="Exchange rate shock">
       <div className="flex items-start justify-between gap-3">
         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-200">Exchange rate shock · ₦{NGN_PER_CAD.toLocaleString("en-NG")} = CAD 1</p>
         <button type="button" onClick={() => setOpen(false)} className="text-xs text-zinc-400 hover:text-white">Close</button>
@@ -198,20 +173,9 @@ function Confetti() {
   );
 }
 
-/** The animated Lagos backdrop: orbs, stars and a plane taxiing across. */
+/** The page backdrop: one plain, flat colour behind every screen. */
 export function LagosBackdrop({ route = "NIGERIA_LIFE" }: { route?: string }) {
-  return (
-    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden>
-      <div className={`absolute inset-0 ${BACKDROP[route] ?? BACKDROP.NIGERIA_LIFE}`} />
-      <div className="bg-orb -left-20 top-10 h-72 w-72 animate-[drift_12s_ease-in-out_infinite] bg-fuchsia-600/30" />
-      <div className="bg-orb right-[-4rem] top-32 h-80 w-80 animate-[drift-alt_14s_ease-in-out_infinite] bg-amber-500/20" />
-      <div className="bg-orb bottom-[-3rem] left-1/3 h-64 w-64 animate-[drift_16s_ease-in-out_infinite] bg-sky-500/20" />
-      {STARS.map((s) => (
-        <span key={`${s.top}-${s.left}`} className="star" style={{ top: s.top, left: s.left, animationDelay: s.delay }} />
-      ))}
-      <div className="animate-plane absolute top-40 text-amber-200/70"><Plane className="h-7 w-7" /></div>
-    </div>
-  );
+  return <div className="pointer-events-none fixed inset-0 z-0 bg-[#07060c]" data-route={route} aria-hidden />;
 }
 
 const TRAVEL_MS: Record<Transit, number> = {
@@ -341,9 +305,9 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
         {!ended ? <CityMap run={run} choices={choices} onPick={pick} disabled={moving || !!run.popup} /> : null}
         <article
           key={shownId}
-          className={`animate-scene-in relative overflow-hidden rounded-[2rem] border p-5 shadow-[0_20px_80px_-30px_rgba(251,191,36,0.55)] sm:p-7 ${
-            isWin ? "border-amber-300/50 bg-gradient-to-br from-amber-500/20 to-zinc-950/80"
-              : ended ? "border-rose-400/40 bg-gradient-to-br from-rose-950/70 to-zinc-950/80"
+          className={`animate-scene-in relative overflow-hidden rounded-[2rem] border p-5 sm:p-7 ${
+            isWin ? "border-amber-300/50 bg-[#1a1408]"
+              : ended ? "border-rose-400/40 bg-[#1a0b0e]"
                 : "border-white/10 bg-zinc-950/55 backdrop-blur-xl"}`}
         >
           <p className="animate-stamp mb-3 inline-flex items-center gap-2 rounded-full border border-dashed border-amber-300/50 px-3 py-1 text-xs uppercase tracking-[0.18em] text-amber-200">

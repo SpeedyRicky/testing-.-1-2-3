@@ -17,17 +17,17 @@ export const ROUTE_THEME: Record<RouteId, { backdrop: string; tones: Tone[]; acc
   EXPRESS_ENTRY: { backdrop: "", tones: [], accent: "text-sky-300" },
   FIRST_YEAR: { backdrop: "", tones: [], accent: "text-emerald-300" },
   STARTUP_VISA: {
-    backdrop: "bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.10),transparent_60%)]",
+    backdrop: "",
     tones: ["emerald", "sky", "violet"],
     accent: "text-emerald-300",
   },
   TOURIST_GAMBLE: {
-    backdrop: "bg-[radial-gradient(ellipse_at_top,rgba(245,158,11,0.10),transparent_60%)]",
+    backdrop: "",
     tones: ["emerald", "sky", "rose"],
     accent: "text-amber-300",
   },
   CAREGIVER_LMIA: {
-    backdrop: "bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.12),transparent_60%)]",
+    backdrop: "",
     tones: ["gold", "sky", "rose"],
     accent: "text-amber-200",
   },

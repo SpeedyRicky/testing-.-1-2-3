@@ -144,7 +144,7 @@ function AwardCard({ award, onClose }: { award: Award; onClose: () => void }) {
   }, [onClose]);
   return (
     <div className="award-toast fixed inset-x-0 top-3 z-[60] flex justify-center px-4 sm:bottom-5 sm:top-auto" role="status">
-      <div className="w-full max-w-sm rounded-2xl border border-amber-300/50 bg-zinc-950/95 p-4 shadow-[0_20px_60px_-20px_rgba(251,191,36,0.7)]">
+      <div className="w-full max-w-sm rounded-2xl border border-amber-300/50 bg-zinc-950/95 p-4">
         <div className="flex items-center justify-between gap-3">
           <p className="flex items-center gap-2 text-lg font-black text-amber-200"><Coins className="h-5 w-5" /> +{award.total} JP</p>
           <button type="button" onClick={onClose} aria-label="Close" className="rounded-full p-1 text-zinc-400 hover:text-white"><X className="h-4 w-4" /></button>

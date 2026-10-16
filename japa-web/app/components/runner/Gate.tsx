@@ -32,7 +32,7 @@ export function RunnerGate({ run, dispatch }: { run: GameState; dispatch: React.
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-3 rounded-[1.6rem] border border-amber-300/30 bg-gradient-to-r from-amber-500/15 via-fuchsia-500/10 to-transparent px-4 py-3">
+      <div className="flex flex-wrap items-center gap-3 rounded-[1.6rem] border border-amber-300/30 bg-[#15120a] px-4 py-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-300 text-zinc-950"><Footprints className="h-5 w-5" /></span>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-200">Optional run · about a minute</p>

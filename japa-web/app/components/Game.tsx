@@ -192,7 +192,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
       <header className="sticky top-0 z-40 border-b border-white/10 bg-zinc-950/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 text-sm font-bold text-zinc-950">J</div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-sm font-bold text-zinc-950">J</div>
             <div className="leading-tight">
               <div className="text-sm font-semibold">Japa: The Great Escape</div>
               <div className="text-[11px] text-zinc-500">Nigeria → Canada simulator</div>

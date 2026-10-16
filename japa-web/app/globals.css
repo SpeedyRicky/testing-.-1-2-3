@@ -261,12 +261,7 @@ body {
 }
 
 .title-shimmer {
-  background: linear-gradient(90deg, #fde68a 0%, #fff 35%, #fb7185 70%, #fde68a 100%);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: shimmer 6s linear infinite;
+  color: #fde68a;
 }
 
 @keyframes cad-float {

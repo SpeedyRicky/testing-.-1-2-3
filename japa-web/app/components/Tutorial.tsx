@@ -46,7 +46,7 @@ export function Tutorial({ forceOpen, onClose }: { forceOpen: boolean; onClose: 
   const card = CARDS[step];
   return createPortal(
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/75 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-labelledby="tour-title">
-      <div className="animate-scene-in w-full max-w-md rounded-[2rem] border border-amber-300/40 bg-zinc-950 p-6 text-center shadow-[0_30px_80px_-20px_rgba(251,191,36,0.5)]">
+      <div className="animate-scene-in w-full max-w-md rounded-[2rem] border border-amber-300/40 bg-zinc-950 p-6 text-center">
         <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-amber-300">How to play · {step + 1} of {CARDS.length}</p>
         <card.Icon className="mx-auto mt-4 h-10 w-10 text-amber-200" aria-hidden />
         <h2 id="tour-title" className="mt-3 text-2xl font-black text-white">{card.title}</h2>

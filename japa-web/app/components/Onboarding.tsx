@@ -181,7 +181,7 @@ export function Onboarding({ initial, unlocked = [], onDone, onCancel }: {
           ))}
         </ol>
 
-        <div key={step} className="animate-scene-in rounded-[2rem] border border-white/10 bg-zinc-950/70 p-5 shadow-[0_20px_80px_-30px_rgba(251,191,36,0.45)] backdrop-blur-xl sm:p-7">
+        <div key={step} className="animate-scene-in rounded-[2rem] border border-white/10 bg-zinc-950 p-5 sm:p-7">
           {step === 0 && (
             <div className="grid items-center gap-6 sm:grid-cols-2">
               <div className="space-y-4">

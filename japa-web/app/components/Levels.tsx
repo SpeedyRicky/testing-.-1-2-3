@@ -138,7 +138,7 @@ function BannerCard({ banner }: { banner: Banner }) {
   if (!level && !done) return null;
   return (
     <div className="level-banner pointer-events-none fixed inset-x-0 top-24 z-40 flex justify-center px-4" role="status">
-      <div className="pointer-events-auto w-full max-w-md rounded-3xl border border-amber-300/50 bg-zinc-950/95 p-5 text-center shadow-[0_20px_80px_-20px_rgba(251,191,36,0.6)]">
+      <div className="pointer-events-auto w-full max-w-md rounded-3xl border border-amber-300/50 bg-zinc-950/95 p-5 text-center">
         {done ? (
           <p className="flex items-center justify-center gap-2 text-xs font-semibold text-emerald-200">
             <Check className="h-3.5 w-3.5" /> {t(done.title)} complete <Stars n={banner.completed!.stars} />

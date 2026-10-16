@@ -32,13 +32,13 @@ export function CorporateOfficeLayout({ run, dispatch, bars }: LayoutProps) {
   const transcript = run.history.filter((h) => h.answer).map((h) => ({ ...h, scene: DB.scenes[h.sceneId] }));
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-slate-900 via-[#0f1622] to-[#0b0f16]">
+    <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#0f1622]">
       <div className="relative border-b border-white/10 px-5 py-5 sm:px-6">
         {/* Glass-wall mullions */}
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,transparent_calc(25%-1px),rgba(255,255,255,.04)_25%,transparent_calc(25%+1px),transparent_calc(50%-1px),rgba(255,255,255,.04)_50%,transparent_calc(50%+1px),transparent_calc(75%-1px),rgba(255,255,255,.04)_75%,transparent_calc(75%+1px))]" />
         <div className="relative flex flex-wrap items-end justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-amber-200/20 bg-gradient-to-br from-slate-700 to-slate-900 font-serif text-lg text-amber-100">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-amber-200/20 bg-slate-800 font-serif text-lg text-amber-100">
               MK
             </div>
             <div className="min-w-0">
