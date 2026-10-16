@@ -2,7 +2,10 @@
 // into small integer drawings (game/maps/data/<id>.json), plus real hotspots (markets, places of worship, bus
 // stations, airports, government offices) where OSM has them.
 //
-//   node --experimental-strip-types scripts/maps/build-maps.ts [cityId ...]
+//   node --experimental-strip-types scripts/maps/build-maps.ts [--force] [--list] [cityId ...]
+//
+// By default only cities without a map are built, so a failed or timed-out run resumes where it stopped.
+// --force rebuilds the named cities (or all). --list prints the ids that would be built.
 //
 // Runs in GitHub Actions (.github/workflows/japa-maps.yml); the Claude sandbox can't reach Overpass.
 // Map data © OpenStreetMap contributors, available under the Open Database Licence (ODbL).
@@ -13,8 +16,8 @@ import { bboxAround, clip, decode, encode, projector, simplify, type BBox, type 
 
 const OUT = "game/maps/data";
 const WIDTH = 1000;
-const ENDPOINTS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
-  "https://overpass.private.coffee/api/interpreter"];
+// The main instance first; kumi as the fallback. (A third mirror returned 500s on every city in the first run.)
+const ENDPOINTS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
 const BUDGET = { NG: 34_000, CA: 44_000 };
 const ATTRIBUTION = "Map data © OpenStreetMap contributors (ODbL)";
 
@@ -24,7 +27,7 @@ async function overpass(query: string): Promise<{ elements: OsmEl[] }> {
   // Offline dry run: MAPS_FIXTURE=file.json answers every query with the same response.
   if (process.env.MAPS_FIXTURE) return JSON.parse(readFileSync(process.env.MAPS_FIXTURE, "utf8"));
   let last = "";
-  for (let attempt = 0; attempt < 6; attempt++) {
+  for (let attempt = 0; attempt < 8; attempt++) {
     const url = ENDPOINTS[attempt % ENDPOINTS.length];
     try {
       const res = await fetch(url, {
@@ -36,7 +39,7 @@ async function overpass(query: string): Promise<{ elements: OsmEl[] }> {
     } catch (e) {
       last = `${url} ${(e as Error).message}`;
     }
-    await sleep(4000 * (attempt + 1));
+    await sleep(5000 * (attempt + 1));
   }
   throw new Error(`Overpass failed: ${last}`);
 }
@@ -234,6 +237,9 @@ async function buildCity(city: CityDef) {
     for (const l of [...map.major, ...map.minor]) roadPoints.push(...decode(l));
     map.spots = pickSpots(city, pois, project, w, h, roadPoints);
     const json = JSON.stringify(map);
+    // Quality gate: a city with almost no roads means Overpass returned a partial answer. Refuse it, keep the old file.
+    const roads = map.major.length + map.minor.length;
+    if (roads < 25 || json.length < 2500) throw new Error(`too little data (${roads} roads, ${json.length} bytes): not saved`);
     if (json.length <= BUDGET[city.country] || tol > 12) {
       if (tol > 1) map.minor = map.minor.filter((l) => l.length > 6);
       writeFileSync(`${OUT}/${city.id}.json`, JSON.stringify(map));
@@ -244,8 +250,14 @@ async function buildCity(city: CityDef) {
 }
 
 mkdirSync(OUT, { recursive: true });
-const only = process.argv.slice(2);
-const todo = CITIES.filter((c) => !only.length || only.includes(c.id));
+const args = process.argv.slice(2);
+const force = args.includes("--force");
+const only = args.filter((a) => !a.startsWith("--"));
+const todo = CITIES.filter((c) => (!only.length || only.includes(c.id)) && (force || !existsSync(`${OUT}/${c.id}.json`)));
+if (args.includes("--list")) {
+  console.log(todo.map((c) => c.id).join(" "));
+  process.exit(0);
+}
 const failed: string[] = [];
 for (const city of todo) {
   try {
@@ -260,4 +272,4 @@ for (const city of todo) {
 const built = CITIES.filter((c) => existsSync(`${OUT}/${c.id}.json`)).map((c) => c.id);
 writeFileSync(`${OUT}/index.json`, JSON.stringify({ built, attribution: ATTRIBUTION, builtAt: new Date().toISOString().slice(0, 10) }));
 console.log(`built ${built.length}/${CITIES.length}${failed.length ? `; failed: ${failed.join(", ")}` : ""}`);
-if (failed.length === todo.length) process.exit(1);
+if (todo.length && failed.length === todo.length) process.exit(1);
