@@ -56,22 +56,17 @@ interface OsmEl {
 
 const bb = (b: BBox) => `${b.south.toFixed(5)},${b.west.toFixed(5)},${b.north.toFixed(5)},${b.east.toFixed(5)}`;
 
-function shapeQuery(b: BBox, country: "NG" | "CA") {
+/** The city's shapes, as three smaller queries: big single queries were answered with 500s under load. */
+function shapeQueries(b: BBox, country: "NG" | "CA"): string[] {
   const B = bb(b);
   // Nigeria's maps are small towns as well as Lagos: tertiary roads give them shape. Canada's boxes are bigger.
   const minor = country === "NG" ? "tertiary|unclassified" : "tertiary";
-  return `[out:json][timeout:180];
-(
-  way["highway"~"^(motorway|trunk|primary|secondary)$"](${B});
-  way["highway"~"^(${minor})$"](${B});
-  way["railway"="rail"](${B});
-  way["waterway"~"^(river|canal)$"](${B});
-  way["natural"="coastline"](${B});
-  way["natural"="water"](${B});
-  relation["natural"="water"](${B});
-  way["aeroway"="aerodrome"](${B});
-);
-out geom;`;
+  const head = "[out:json][timeout:240][maxsize:536870912];";
+  return [
+    `${head}(way["highway"~"^(motorway|trunk|primary|secondary|${minor})$"](${B}););out geom;`,
+    `${head}(way["natural"="coastline"](${B});way["natural"="water"](${B});relation["natural"="water"](${B});way["waterway"~"^(river|canal)$"](${B}););out geom;`,
+    `${head}(way["railway"="rail"](${B});way["aeroway"="aerodrome"](${B}););out geom;`,
+  ];
 }
 
 function poiQuery(b: BBox) {
@@ -200,7 +195,11 @@ function pickSpots(city: CityDef, pois: OsmEl[], project: (lat: number, lon: num
 async function buildCity(city: CityDef) {
   const box = bboxAround(city.lat, city.lon, city.halfW, city.halfH);
   const { width: w, height: h, project } = projector(box, WIDTH);
-  const shapes = (await overpass(shapeQuery(box, city.country))).elements;
+  const shapes: OsmEl[] = [];
+  for (const q of shapeQueries(box, city.country)) {
+    shapes.push(...(await overpass(q)).elements);
+    if (!process.env.MAPS_FIXTURE) await sleep(1500);
+  }
   if (!process.env.MAPS_FIXTURE) await sleep(1500);
   const pois = (await overpass(poiQuery(bboxAround(city.lat, city.lon, city.halfW * 1.15, city.halfH * 1.15)))).elements;
 
