@@ -183,7 +183,8 @@ export function CityMap({ run, choices, onPick, disabled }: {
 
   if (!shown || !map || !here) return null;
   const country = map.id.startsWith("ng-") ? "NG" : "CA";
-  const s = size.w / VIEW_W;
+  // Phones see about 430 map pixels across; wider screens see more of the city at a similar zoom.
+  const s = size.w / Math.max(VIEW_W, Math.min(map.width, size.w * 0.7));
   const cam = pos ?? here;
   const cx = Math.min(map.width - size.w / s / 2, Math.max(size.w / s / 2, cam[0]));
   const cy = Math.min(map.height - size.h / s / 2, Math.max(size.h / s / 2, cam[1]));
@@ -214,9 +215,11 @@ export function CityMap({ run, choices, onPick, disabled }: {
             {(Object.entries(spots) as [SpotId, MapSpot][]).map(([id, sp]) => {
               const go = targets.get(id);
               const isHere = id === shown.spot;
+              // Off screen: the edge badge is the button; this pin is just drawing.
+              const off = !!go && (sp.x * s + tx < 26 || sp.y * s + ty < 26 || sp.x * s + tx > size.w - 26 || sp.y * s + ty > size.h - 26);
               return (
                 <div key={id} className="absolute" style={{ left: sp.x, top: sp.y, transform: `translate(-50%, -50%) scale(${1 / s})`, zIndex: go ? 30 : isHere ? 20 : 10 }}>
-                  <button type="button" disabled={!go || disabled}
+                  <button type="button" disabled={!go || disabled || off} aria-hidden={off || undefined} tabIndex={off ? -1 : undefined}
                     onClick={() => (go!.length === 1 ? onPick(go![0].index) : setMenu(menu === id ? null : id))}
                     aria-label={go ? `Go to ${sp.label}: ${go.map((c) => t(c.text, run)).join(" or ")}` : sp.label}
                     className={`group flex flex-col items-center gap-0.5 ${go ? "cursor-pointer" : "cursor-default"}`}>
@@ -256,6 +259,25 @@ export function CityMap({ run, choices, onPick, disabled }: {
               </div>
             ) : null}
           </div>
+          {/* Destinations outside the view: an arrow badge on the edge, pointing at the place. Tapping it still goes there. */}
+          {(Object.entries(spots) as [SpotId, MapSpot][]).map(([id, sp]) => {
+            const go = targets.get(id);
+            if (!go) return null;
+            const px = sp.x * s + tx, py = sp.y * s + ty, m = 26;
+            if (px >= m && py >= m && px <= size.w - m && py <= size.h - m) return null;
+            const ex = Math.min(size.w - m, Math.max(m, px)), ey = Math.min(size.h - m - 12, Math.max(m + 12, py));
+            const angle = (Math.atan2(py - ey, px - ex) * 180) / Math.PI;
+            return (
+              <button key={`edge-${id}`} type="button" disabled={disabled}
+                onClick={() => (go.length === 1 ? onPick(go[0].index) : setMenu(menu === id ? null : id))}
+                aria-label={`Go to ${sp.label}: ${go.map((c) => t(c.text, run)).join(" or ")}`}
+                className="map-pin-go absolute z-40 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full border-2 border-rose-500 bg-white px-2 py-1 text-[10px] font-bold text-rose-700 shadow-lg"
+                style={{ left: ex, top: ey }}>
+                <span style={{ transform: `rotate(${angle}deg)` }} aria-hidden>➜</span>
+                {ICON[id]} {go.map((c) => choices.indexOf(c) + 1).join(", ")}
+              </button>
+            );
+          })}
           {targets.size ? (
             <p className="pointer-events-none absolute left-2 top-2 rounded-full bg-zinc-950/80 px-2.5 py-1 text-[10px] font-semibold text-amber-100">
               Tap a red pin to go there

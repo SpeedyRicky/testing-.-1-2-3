@@ -192,6 +192,24 @@ What changed:
 - **Feel:** characters have faces (brows, blinking, a mouth that follows your stats), stat bars flash and pop on
   change and pulse **Danger** near a collapse line, and the sound chip is a mixer.
 
+## Runner, Oja additions and new pathways (v0.29)
+
+- **Runner (Sector 1: Yaba Night Dash).** An optional, about-a-minute 2D run before the Oga's office (Nigeria route).
+  Jump sparking NEPA cables, dodge or slide under Village People ghosts, land on danfo roofs, collect ₦ coins and
+  passport stamps. Coins become Japa Points and calm, never money (capped), so the game's proof-of-funds lesson
+  stands. Keyboard (A/D or arrows, Space/W, S/Down, Esc) and a touch bar below the play area; pause, retry, skip.
+  Pure physics in `game/runner/engine.ts` (coyote time, jump buffering, variable jump, squash and stretch), with a
+  bot test that finishes the level. Sectors 2-4 follow after play-testing on real phones.
+- **Oja market:** Study plan (+35 IELTS prep), Scam radar (marks scam choices in the first 3 scenes that have one),
+  Boundaries (40% less stress from family-money pop-ups), Dollar savings habit (halves naira crashes). No perk sells
+  a test score or scam immunity.
+- **Spousal Sponsorship** (new route, opens when your spouse is a Canadian citizen or PR): genuine history, outland
+  or inland with an open work permit, matching questionnaires, the wait, an interview, PPR and COPR. Paid marriages
+  and invented evidence fail. Fiancés don't qualify.
+- **Rural Community Immigration Pilot** (RNIP's 2025 replacement) inside PNP Rural; **Francophone Mobility** inside
+  Express Entry; the **Global Talent Stream** for tech job offers in the Nigeria route; the Start-up Visa's 2026
+  status.
+
 ## City maps and the journey (v0.28)
 
 Every player gets a storybook map of their own city, drawn from real OpenStreetMap streets: one for each of the 37
@@ -232,9 +250,10 @@ pathway is for:
 | Targeted Trade | Electrician, plumber, welder, carpenter or mechanic with 2+ years |
 | PNP Rural | Worker with 1+ year of experience |
 | Atlantic | Worker with about a year (1,560 hours) of paid work in the last five years |
+| Spousal | Married to a Canadian citizen or permanent resident |
 
 Locked tabs show a padlock; tapping one explains what's missing, how to earn it by playing (if you can), and offers
-**Update my profile**. A header chip shows "Pathways x/11". The daily challenge and the "next route" buttons only offer
+**Update my profile**. A header chip shows "Pathways x/12". The daily challenge and the "next route" buttons only offer
 open routes, and the state machine refuses locked routes. Earned routes are saved, survive profile edits by the same
 player, and are rebuilt from finished runs in older saves. The savings answer now also sets your starting money.
 Plumbers, welders, carpenters and mechanics are new jobs with their own scene wording.
