@@ -4,7 +4,7 @@ import type { GameState, RouteId, ScenarioDatabase, Scene } from "../types";
 import { placeFor, vacCityFor } from "../nigeria";
 import { levelIndexOf, levelsFor } from "../levels";
 import { FAR_PLACES, type SpotId } from "./cities";
-import { projector, type BBox, type MapSpot } from "./geo";
+import { decode, projector, type BBox, type CityMap, type MapSpot, type Pt } from "./geo";
 
 /** Stages that only exist on one side of the Atlantic, and the hotspot they belong to. */
 const NG_STAGE: Record<string, SpotId> = {
@@ -103,4 +103,33 @@ export function journeyProgress(db: ScenarioDatabase, run: GameState): number {
   const reached = Math.max(levelIndexOf(db, run.activeRoute, run.currentSceneId),
     ...run.history.map((h) => levelIndexOf(db, run.activeRoute, h.sceneId)), 0);
   return Math.min(0.95, (reached + 0.5) / levels.length);
+}
+
+// --- Keeping invented places on dry land ------------------------------------------------------------------------
+
+function inRing(p: Pt, ring: Pt[]): boolean {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if (yi > p[1] !== yj > p[1] && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+/** Moves invented places (your room, the café) that landed on water, such as a bridge over the lagoon, to the
+ *  nearest street on dry land. Real places from OpenStreetMap stay exactly where they are. */
+export function dryLandSpots(map: CityMap): Record<string, MapSpot> {
+  const rings = map.water.map(decode);
+  if (!rings.length) return map.spots;
+  const wet = (p: Pt) => rings.some((r) => inRing(p, r));
+  let dry: Pt[] | null = null;
+  const out: Record<string, MapSpot> = {};
+  for (const [id, sp] of Object.entries(map.spots)) {
+    if (sp.real || !wet([sp.x, sp.y])) { out[id] = sp; continue; }
+    dry ??= [...map.minor, ...map.major].flatMap(decode).filter((p) => p[0] >= 0 && p[1] >= 0 && p[0] <= map.width && p[1] <= map.height && !wet(p));
+    let best: Pt | null = null, bestD = Infinity;
+    for (const p of dry) { const d = Math.hypot(p[0] - sp.x, p[1] - sp.y); if (d < bestD) { bestD = d; best = p; } }
+    out[id] = best ? { ...sp, x: Math.round(best[0]), y: Math.round(best[1]) } : sp;
+  }
+  return out;
 }

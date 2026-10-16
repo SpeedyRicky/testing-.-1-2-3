@@ -8,7 +8,7 @@ import { ChevronDown, ChevronUp, Map as MapIcon } from "lucide-react";
 import { DB, type PresentedChoice } from "@/game/engine";
 import type { GameState } from "@/game/types";
 import { along, pathD, pathLength, route, type CityMap as MapData, type MapSpot, type Pt } from "@/game/maps/geo";
-import { farSpots, mapIdFor, whereIs, type Where } from "@/game/maps/places";
+import { dryLandSpots, farSpots, mapIdFor, whereIs, type Where } from "@/game/maps/places";
 import type { SpotId } from "@/game/maps/cities";
 import { homeFor } from "@/game/profile";
 import { usePlayer } from "../Player";
@@ -106,7 +106,7 @@ export function CityMap({ run, choices, onPick, disabled }: {
   // Hotspots: the map's own, the visa centre and airport for Nigerian maps, and only the player's place of worship.
   const spots = useMemo(() => {
     if (!map) return {} as Partial<Record<SpotId, MapSpot>>;
-    const all: Partial<Record<SpotId, MapSpot>> = { ...map.spots };
+    const all: Partial<Record<SpotId, MapSpot>> = { ...dryLandSpots(map) };
     if (map.id.startsWith("ng-")) {
       const far = farSpots(profile?.stateCode, map.bbox, map.width);
       if (!all.vac?.real) all.vac = far.vac;

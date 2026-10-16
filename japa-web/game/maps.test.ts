@@ -101,3 +101,17 @@ describe("cities and places", () => {
     expect(journeyProgress(DB, { ...run, outcome: { result: "win", reason: "X", title: "X" } })).toBe(1);
   });
 });
+
+describe("invented places stay on dry land", () => {
+  it("a made-up place on a bridge over water moves to the nearest dry street; real places don't move", async () => {
+    const { dryLandSpots } = await import("./maps/places");
+    const lake = encode([[40, 40], [60, 40], [60, 60], [40, 60], [40, 40]])!;
+    const map = { id: "t", name: "t", width: 100, height: 100, bbox: bboxAround(0, 0, 1, 1), major: [encode([[0, 50], [100, 50]])!], minor: [],
+      rail: [], river: [], coast: [], water: [lake], airfield: [], attribution: "",
+      spots: { home: { x: 50, y: 50, label: "Your place", real: false }, market: { x: 50, y: 50, label: "Real market", real: true } } };
+    const out = dryLandSpots(map);
+    expect(out.market).toEqual(map.spots.market);
+    expect(out.home.x < 40 || out.home.x > 60).toBe(true);
+    expect(out.home.y).toBe(50);
+  });
+});
