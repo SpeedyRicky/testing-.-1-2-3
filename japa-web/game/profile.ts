@@ -41,6 +41,8 @@ export interface Situation {
   savings: SavingsBand;
   /** Runs, or is building, an innovative business with co-founders. */
   startup: boolean;
+  /** Married to a Canadian citizen or permanent resident (opens spousal sponsorship). */
+  spouseInCanada?: boolean;
 }
 
 export interface PlayerProfile {
@@ -277,7 +279,7 @@ export function routePatches(p: PlayerProfile): Partial<Record<RouteId, Partial<
     NIGERIA_LIFE: {
       currentLocation: where,
       walletNgn: clamp(g.savingsNgn, 200000, 2000000),
-      routeStats: { papers: g.hasDegree ? 24 : 18, healthTrack: track === "health" ? 1 : 0 },
+      routeStats: { papers: g.hasDegree ? 24 : 18, healthTrack: track === "health" ? 1 : 0, techTrack: track === "tech" ? 1 : 0 },
     },
     EXPRESS_ENTRY: {
       currentLocation: where,

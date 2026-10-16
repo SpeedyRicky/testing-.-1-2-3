@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "0.27.0",
+    "version": "0.29.0",
     "note": "Illustrative game content, not immigration advice. Lagos Life from the Cursor build; pitch, tourist and LMIA routes from the Japa engine."
   },
   "routes": {
@@ -2798,7 +2798,8 @@
           "goal": "Choose where you'd honestly build a life.",
           "scenes": [
             "PN_START",
-            "PN_RESEARCH"
+            "PN_RESEARCH",
+            "PN_RCIP"
           ]
         },
         {
@@ -2827,7 +2828,8 @@
           "goal": "Get nominated, get invited, and settle where you said you would.",
           "scenes": [
             "PN_NOMINATED",
-            "PN_INTENT"
+            "PN_INTENT",
+            "PN_RCIP_RECOMMENDED"
           ],
           "stars": [
             {
@@ -2866,6 +2868,12 @@
           "reason": "PNP_BURNOUT",
           "title": "Burnt out",
           "blurb": "Too many portals, not enough sleep."
+        },
+        {
+          "id": "rcipscam",
+          "reason": "RCIP_SCAM",
+          "title": "Bought recommendation",
+          "blurb": "Communities don't sell them."
         }
       ],
       "traps": {
@@ -3173,6 +3181,206 @@
             "body": "The Nigerian association in the province adds you to their WhatsApp. Someone's cousin knows your employer.",
             "effects": {
               "aipFile": 6,
+              "desperation": -6
+            }
+          }
+        ]
+      }
+    },
+    "SPOUSAL_SPONSOR": {
+      "title": "Spousal Sponsorship",
+      "short": "Spousal",
+      "status": "playable",
+      "tagline": "Love is real. Now prove it on paper.",
+      "startSceneId": "SP_START",
+      "initialState": {
+        "currentLocation": "Home, Nigeria",
+        "energy": 90,
+        "walletCad": 4000,
+        "desperation": 30,
+        "routeStats": {
+          "relationshipProof": 0,
+          "inland": 0
+        }
+      },
+      "bars": [
+        {
+          "key": "relationshipProof",
+          "label": "Relationship proof",
+          "max": 100
+        },
+        {
+          "key": "walletCad",
+          "label": "Savings",
+          "max": 10000,
+          "format": "cad"
+        },
+        {
+          "key": "energy",
+          "label": "Energy",
+          "max": 100
+        },
+        {
+          "key": "desperation",
+          "label": "Village People %",
+          "suffix": "%",
+          "invert": true
+        }
+      ],
+      "collapse": {
+        "any": {
+          "energy": [
+            "<=",
+            0
+          ],
+          "desperation": [
+            ">=",
+            100
+          ],
+          "walletCad": [
+            "<=",
+            0
+          ]
+        },
+        "sceneId": "SP_BURNOUT"
+      },
+      "levels": [
+        {
+          "id": "the-proof",
+          "title": "The Proof",
+          "goal": "Show IRCC the marriage is genuine.",
+          "scenes": [
+            "SP_START",
+            "SP_STREAM"
+          ],
+          "stars": [
+            {
+              "label": "Relationship proof of 30 or more",
+              "when": {
+                "relationshipProof": [
+                  ">=",
+                  30
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "the-forms",
+          "title": "The Forms",
+          "goal": "File together, with stories that match.",
+          "scenes": [
+            "SP_FORMS",
+            "SP_WAIT"
+          ],
+          "stars": [
+            {
+              "label": "Relationship proof of 60 or more",
+              "when": {
+                "relationshipProof": [
+                  ">=",
+                  60
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "the-decision",
+          "title": "The Decision",
+          "goal": "Answer the officer, then land.",
+          "scenes": [
+            "SP_INTERVIEW",
+            "SP_APPROVED"
+          ],
+          "stars": [
+            {
+              "label": "Village People at 50% or less",
+              "when": {
+                "desperation": [
+                  "<=",
+                  50
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "ranks": [
+        {
+          "id": "pr",
+          "reason": "SPOUSAL_PR",
+          "title": "Together in Canada",
+          "blurb": "Two names on one lease."
+        },
+        {
+          "id": "convenience",
+          "reason": "MARRIAGE_FRAUD",
+          "title": "Marriage of convenience",
+          "blurb": "It was never a marriage."
+        },
+        {
+          "id": "fakestory",
+          "reason": "FAKE_RELATIONSHIP_EVIDENCE",
+          "title": "Polished story",
+          "blurb": "The visits never happened."
+        },
+        {
+          "id": "refused",
+          "reason": "SPOUSAL_REFUSED",
+          "title": "Not convinced",
+          "blurb": "A real marriage, a thin file."
+        },
+        {
+          "id": "burnout",
+          "reason": "SPOUSAL_BURNOUT",
+          "title": "Burnt out",
+          "blurb": "Two years of waiting is long."
+        }
+      ],
+      "traps": {
+        "base": 0.04,
+        "scale": 0.5,
+        "exponent": 1.6,
+        "items": [
+          {
+            "id": "aunties",
+            "kicker": "Village People attack!",
+            "title": "'So when is the white wedding?'",
+            "body": "The family group chat has opinions about your marriage, your spouse and your passport.",
+            "effects": {},
+            "options": [
+              {
+                "label": "Mute the group and call your spouse instead",
+                "effects": {
+                  "desperation": -2,
+                  "relationshipProof": 3
+                },
+                "feedback": "One more call log, one less headache."
+              },
+              {
+                "label": "Argue with Aunty for two hours",
+                "effects": {
+                  "desperation": 8,
+                  "energy": -6
+                },
+                "feedback": "Aunty wins. Aunty always wins."
+              }
+            ]
+          }
+        ]
+      },
+      "blessings": {
+        "base": 0.05,
+        "scale": 0.1,
+        "items": [
+          {
+            "id": "anniversary",
+            "kicker": "Blessing",
+            "title": "Anniversary video call",
+            "body": "Your spouse plans a surprise call with both families. Screenshots for the file, joy for you.",
+            "effects": {
+              "relationshipProof": 6,
               "desperation": -6
             }
           }
@@ -3653,6 +3861,22 @@
             "desperation": 12,
             "energy": 6
           }
+        },
+        {
+          "text": "Ask if they'll hire you through the Global Talent Stream: for tech roles the LMIA can take about two weeks",
+          "label": "GLOBAL_TALENT",
+          "nextSceneId": "LAGOS_EMBASSY_QUEUE",
+          "effects": {
+            "papers": 16,
+            "desperation": -6
+          },
+          "feedback": "They're a Global Talent Stream employer: the LMIA targets about 10 business days for in-demand tech jobs, at the going wage, with a plan to train Canadians. Then your work permit application.",
+          "hideUnless": {
+            "techTrack": [
+              ">=",
+              1
+            ]
+          }
         }
       ]
     },
@@ -3985,7 +4209,7 @@
         "reason": "SUV_LOS_ISSUED",
         "title": "LETTER OF SUPPORT ISSUED",
         "subtitle": "The committee backs your startup. Now the real paperwork begins.",
-        "lesson": "A Letter of Support is only step one: IRCC still assesses the business, the founders' funds and admissibility. Heads-up: IRCC has paused new Start-up Visa applications; this route shows how the pitch worked. Check canada.ca for the current entrepreneur programs."
+        "lesson": "A Letter of Support is only step one: IRCC still assesses the business, the founders' funds and admissibility. Heads-up: the Start-up Visa stopped taking new commitment certificates on 1 January 2026, and founders with a 2025 certificate had until 30 June 2026 to apply. A replacement entrepreneur program has been announced but not launched. Check canada.ca."
       },
       "title": "Letter of Support.",
       "location": "Zoom, {area}"
@@ -4968,6 +5192,12 @@
           "text": "Update your profile with the TEF Canada results",
           "label": "",
           "nextSceneId": "EE_PROFILE_UPDATE",
+          "effects": {}
+        },
+        {
+          "text": "Use your French for a Francophone Mobility work permit: a job outside Quebec, no LMIA needed",
+          "label": "FRANCO_MOBILITY",
+          "nextSceneId": "EE_FRANCO",
           "effects": {}
         }
       ]
@@ -11004,6 +11234,15 @@
           "set": {
             "pnpProvince": 3
           }
+        },
+        {
+          "text": "A Rural Community Immigration Pilot town: Thunder Bay, Sudbury, Brandon, North Okanagan Shuswap and others",
+          "label": "RCIP",
+          "nextSceneId": "PN_RCIP",
+          "effects": {},
+          "set": {
+            "pnpProvince": 4
+          }
         }
       ]
     },
@@ -11143,6 +11382,19 @@
       "speaker": "",
       "dialogue": "",
       "branch": [
+        {
+          "when": {
+            "pnpProvince": [
+              "==",
+              4
+            ],
+            "provinceTies": [
+              ">=",
+              45
+            ]
+          },
+          "nextSceneId": "PN_RCIP_RECOMMENDED"
+        },
         {
           "when": {
             "provinceTies": [
@@ -13158,6 +13410,471 @@
         "title": "The arranged passport",
         "subtitle": "Detained, no identity, and a claim nobody believes.",
         "lesson": "Travelling on an arranged or stolen passport is fraud, and throwing it away doesn't help. CBSA can detain you until your identity is established, and the Refugee Board must weigh missing documents against your credibility. People with a genuine fear can claim using their own passport and their own story."
+      }
+    },
+    "EE_FRANCO": {
+      "id": "EE_FRANCO",
+      "route": "EXPRESS_ENTRY",
+      "layoutType": "STORY_STAGE",
+      "title": "Bienvenue à Moncton.",
+      "location": "Video call, Moncton",
+      "stage": "video-job",
+      "transitIn": "none",
+      "speaker": "Video call, Moncton",
+      "dialogue": "Francophone Mobility lets an employer outside Quebec hire a French speaker without an LMIA: NCLC 5 in speaking and listening is enough. The employer submits the offer in IRCC's Employer Portal and pays the compliance fee; you apply for the work permit. A year of Canadian work then counts in Express Entry.",
+      "choices": [
+        {
+          "text": "Take the job, work a year in Moncton, then update your profile",
+          "label": "FRANCO_YEAR",
+          "nextSceneId": "EE_PROFILE_UPDATE",
+          "effects": {
+            "canadianWorkYears": 1,
+            "ageYears": 1,
+            "walletCad": 5000,
+            "energy": -10,
+            "desperation": -4
+          },
+          "feedback": "A year of Canadian experience, in French and English. Your CRS climbs, and the French draws want you."
+        },
+        {
+          "text": "Stay in Nigeria and wait for a French draw instead",
+          "label": "WAIT_FRENCH",
+          "nextSceneId": "EE_PROFILE_UPDATE",
+          "effects": {}
+        }
+      ]
+    },
+    "PN_RCIP": {
+      "id": "PN_RCIP",
+      "route": "PNP_RURAL",
+      "layoutType": "STORY_STAGE",
+      "title": "The community decides.",
+      "location": "Community website, Thunder Bay",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "Community website, Thunder Bay",
+      "dialogue": "The Rural Community Immigration Pilot replaced the old RNIP in 2025, in 14 communities. You need a job offer from an employer the community has designated, then the community's recommendation, then you apply for permanent residence directly: no Express Entry, no +600. And you must mean to live there.",
+      "choices": [
+        {
+          "text": "Find the community's designated employers and apply to the ones in your field",
+          "label": "RCIP_APPLY",
+          "nextSceneId": "PN_TIES",
+          "effects": {
+            "provinceTies": 12,
+            "energy": -8
+          }
+        },
+        {
+          "text": "Pay an agent who sells 'community recommendations'",
+          "label": "PAID_RECOMMENDATION",
+          "nextSceneId": "PN_RCIP_SCAM",
+          "effects": {}
+        }
+      ]
+    },
+    "PN_RCIP_SCAM": {
+      "id": "PN_RCIP_SCAM",
+      "route": "PNP_RURAL",
+      "layoutType": "STORY_STAGE",
+      "title": "The recommendation that wasn't.",
+      "location": "WhatsApp",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "WhatsApp",
+      "dialogue": "The 'recommendation letter' has a logo copied from the city website. The community has no record of you.",
+      "outcome": {
+        "result": "fail",
+        "reason": "RCIP_SCAM",
+        "title": "Bought recommendation",
+        "subtitle": "Money gone; a fake document on your name.",
+        "lesson": "Community recommendations come only from the community's own committee, after a job offer from a designated employer. They can't be bought, and submitting a fake one is misrepresentation."
+      }
+    },
+    "PN_RCIP_RECOMMENDED": {
+      "id": "PN_RCIP_RECOMMENDED",
+      "route": "PNP_RURAL",
+      "layoutType": "STORY_STAGE",
+      "title": "Recommended.",
+      "location": "Email from the community",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "Email from the community",
+      "dialogue": "A designated employer in Thunder Bay offered you the job, and the community's committee recommends you. You apply for permanent residence with the recommendation, your job offer and your language and education results.",
+      "choices": [
+        {
+          "text": "Apply for PR, and plan to live in Thunder Bay",
+          "label": "RCIP_PR",
+          "nextSceneId": "PN_INTENT",
+          "effects": {
+            "desperation": -12
+          }
+        }
+      ]
+    },
+    "SP_START": {
+      "id": "SP_START",
+      "route": "SPOUSAL_SPONSOR",
+      "layoutType": "STORY_STAGE",
+      "title": "Your spouse can sponsor you.",
+      "location": "{area}, {city}",
+      "stage": "whatsapp",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "Your spouse became a permanent resident in {relCity} last year, and a citizen or PR can sponsor a spouse, common-law or conjugal partner (not a fiancé). The sponsor promises to support you for three years. IRCC needs to believe one thing: the marriage is genuine and not mainly for immigration.",
+      "choices": [
+        {
+          "text": "Gather your real history: traditional and court wedding photos with family, years of chats, visits, money sent both ways",
+          "label": "REAL_HISTORY",
+          "nextSceneId": "SP_STREAM",
+          "effects": {
+            "relationshipProof": 25,
+            "energy": -8
+          }
+        },
+        {
+          "text": "Your wedding was last month at the registry; traditional rites come later",
+          "label": "RECENT_MARRIAGE",
+          "nextSceneId": "SP_STREAM",
+          "effects": {
+            "relationshipProof": 10,
+            "desperation": 4
+          },
+          "feedback": "A new marriage isn't refused for being new, but expect questions. Show how the relationship grew, not just the certificate."
+        },
+        {
+          "text": "A 'connect' offers a Canadian to marry you for CAD 15,000",
+          "label": "PAID_MARRIAGE",
+          "nextSceneId": "SP_CONVENIENCE",
+          "effects": {}
+        }
+      ]
+    },
+    "SP_STREAM": {
+      "id": "SP_STREAM",
+      "route": "SPOUSAL_SPONSOR",
+      "layoutType": "STORY_STAGE",
+      "title": "Outland or inland?",
+      "location": "IRCC website",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC website",
+      "dialogue": "Outland: you apply from Nigeria and wait here. Inland: you must already be living with your spouse in Canada, and you can get an open work permit while you wait, but a visitor visa to get there isn't guaranteed.",
+      "choices": [
+        {
+          "text": "Outland: apply from Nigeria, keep your job, visit when you can",
+          "label": "OUTLAND",
+          "nextSceneId": "SP_FORMS",
+          "effects": {
+            "relationshipProof": 5
+          }
+        },
+        {
+          "text": "Inland: apply for a visitor visa, move in with your spouse, then apply with an open work permit",
+          "label": "INLAND",
+          "nextSceneId": "SP_FORMS",
+          "effects": {
+            "walletCad": -900
+          },
+          "gamble": {
+            "odds": 0.45,
+            "max": 0.9,
+            "success": {
+              "feedback": "Visitor visa approved. You land and move in. The inland application goes in with an open work permit request.",
+              "label": "",
+              "effects": {
+                "relationshipProof": 10
+              },
+              "set": {
+                "inland": 1,
+                "arrived": 1
+              }
+            },
+            "fail": {
+              "feedback": "Visitor visa refused: the officer wasn't sure you'd leave. You apply outland instead.",
+              "label": "",
+              "effects": {
+                "desperation": 8
+              }
+            },
+            "bonus": [
+              {
+                "key": "relationshipProof",
+                "per": 0.004
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "SP_FORMS": {
+      "id": "SP_FORMS",
+      "route": "SPOUSAL_SPONSOR",
+      "layoutType": "STORY_STAGE",
+      "title": "Two people, one story.",
+      "location": "Video call with your spouse",
+      "stage": "video-job",
+      "transitIn": "none",
+      "speaker": "Video call with your spouse",
+      "dialogue": "The sponsor's undertaking, the relationship questionnaire, police certificates, a medical. Officers compare your answers with your spouse's: dates, places, who proposed, which church or masjid.",
+      "choices": [
+        {
+          "text": "Fill the questionnaire together on video, so every date matches",
+          "label": "TOGETHER",
+          "nextSceneId": "SP_WAIT",
+          "effects": {
+            "relationshipProof": 15,
+            "energy": -6
+          }
+        },
+        {
+          "text": "Each of you fills yours alone, fast",
+          "label": "ALONE",
+          "nextSceneId": "SP_WAIT",
+          "effects": {
+            "relationshipProof": -5
+          },
+          "feedback": "Your dates for the engagement differ by a year. Mismatched answers are one of the commonest reasons for an interview."
+        },
+        {
+          "text": "Pay an agent to 'polish' the story with visits that never happened",
+          "label": "FAKE_EVIDENCE",
+          "nextSceneId": "SP_FAKE_STORY",
+          "effects": {}
+        }
+      ]
+    },
+    "SP_WAIT": {
+      "id": "SP_WAIT",
+      "route": "SPOUSAL_SPONSOR",
+      "layoutType": "STORY_STAGE",
+      "title": "The long wait.",
+      "location": "{area}, {city}",
+      "stage": "phone-text",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "Spousal applications can take a year or more. Your spouse sends the rent screenshot; you send the generator one.",
+      "choices": [
+        {
+          "text": "Keep the relationship visible: weekly calls, a visit, both families involved",
+          "label": "VISIBLE",
+          "nextSceneId": "SP_DECIDE",
+          "effects": {
+            "relationshipProof": 12,
+            "walletCad": -1200,
+            "desperation": -4
+          }
+        },
+        {
+          "text": "Work full-time on your open work permit and save",
+          "label": "OWP_WORK",
+          "nextSceneId": "SP_DECIDE",
+          "effects": {
+            "walletCad": 4000,
+            "relationshipProof": 6,
+            "energy": -10
+          },
+          "hideUnless": {
+            "inland": [
+              ">=",
+              1
+            ]
+          }
+        },
+        {
+          "text": "Go quiet. The forms speak for themselves",
+          "label": "QUIET",
+          "nextSceneId": "SP_DECIDE",
+          "effects": {
+            "relationshipProof": -5,
+            "desperation": 6
+          }
+        }
+      ]
+    },
+    "SP_DECIDE": {
+      "id": "SP_DECIDE",
+      "route": "SPOUSAL_SPONSOR",
+      "layoutType": "RESOLUTION",
+      "speaker": "",
+      "dialogue": "",
+      "branch": [
+        {
+          "when": {
+            "relationshipProof": [
+              ">=",
+              55
+            ]
+          },
+          "nextSceneId": "SP_APPROVED"
+        },
+        {
+          "when": {
+            "relationshipProof": [
+              ">=",
+              35
+            ]
+          },
+          "nextSceneId": "SP_INTERVIEW"
+        },
+        {
+          "nextSceneId": "SP_REFUSED"
+        }
+      ]
+    },
+    "SP_INTERVIEW": {
+      "id": "SP_INTERVIEW",
+      "route": "SPOUSAL_SPONSOR",
+      "layoutType": "STORY_STAGE",
+      "title": "'Tell me how you met.'",
+      "location": "Interview with an IRCC officer",
+      "stage": "embassy",
+      "transitIn": "none",
+      "speaker": "Interview with an IRCC officer",
+      "dialogue": "The officer has both questionnaires open. 'Tell me how you met, and what your spouse did last Sunday.'",
+      "choices": [
+        {
+          "text": "Tell it as it happened, boring parts included",
+          "label": "TRUTHFUL",
+          "nextSceneId": "SP_APPROVED",
+          "effects": {},
+          "gamble": {
+            "odds": 0.45,
+            "max": 0.9,
+            "success": {
+              "feedback": "The officer smiles at the part about the borrowed phone charger. Approved.",
+              "label": ""
+            },
+            "fail": {
+              "feedback": "'I'm not satisfied the relationship is genuine.' Refused, with a right to appeal.",
+              "label": "",
+              "nextSceneId": "SP_REFUSED"
+            },
+            "bonus": [
+              {
+                "key": "relationshipProof",
+                "per": 0.008
+              }
+            ]
+          }
+        },
+        {
+          "text": "Recite the version you rehearsed word for word",
+          "label": "SCRIPTED",
+          "nextSceneId": "SP_REFUSED",
+          "effects": {},
+          "feedback": "Word-perfect and lifeless. The officer asks one follow-up question you can't answer."
+        }
+      ]
+    },
+    "SP_APPROVED": {
+      "id": "SP_APPROVED",
+      "route": "SPOUSAL_SPONSOR",
+      "layoutType": "STORY_STAGE",
+      "title": "PPR for two.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "Passport request. Your passport goes to the visa centre in {vacCity} and comes back with a permanent resident visa and your COPR. Your spouse is already crying on FaceTime.",
+      "choices": [
+        {
+          "text": "Fly to {relCity} and land together",
+          "label": "LAND",
+          "nextSceneId": "SP_PR",
+          "effects": {
+            "desperation": -10
+          }
+        }
+      ]
+    },
+    "SP_PR": {
+      "id": "SP_PR",
+      "route": "SPOUSAL_SPONSOR",
+      "layoutType": "STORY_STAGE",
+      "title": "Together in Canada.",
+      "location": "Pearson arrivals",
+      "stage": "pr-landing",
+      "transitIn": "none",
+      "speaker": "Pearson arrivals",
+      "dialogue": "The officer stamps the COPR. Your spouse holds a sign with your name spelled wrong on purpose. Two names on one lease.",
+      "outcome": {
+        "result": "win",
+        "reason": "SPOUSAL_PR",
+        "title": "Together in Canada",
+        "subtitle": "Sponsored, landed, home.",
+        "lesson": "Spousal sponsorship works when the relationship is genuine and the file shows it: consistent answers, real history, both families. The sponsor's three-year undertaking is a legal promise of support."
+      }
+    },
+    "SP_CONVENIENCE": {
+      "id": "SP_CONVENIENCE",
+      "route": "SPOUSAL_SPONSOR",
+      "layoutType": "STORY_STAGE",
+      "title": "The paid wedding.",
+      "location": "Visa office",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "Visa office",
+      "dialogue": "The officer asks your 'spouse' your mother's name. They don't know it. They don't know your birthday either.",
+      "outcome": {
+        "result": "fail",
+        "reason": "MARRIAGE_FRAUD",
+        "title": "Marriage of convenience",
+        "subtitle": "Refused, banned, and the sponsor is in trouble too.",
+        "lesson": "A marriage entered into mainly to immigrate is a marriage of convenience: refusal, a five-year misrepresentation ban, and the sponsor can be investigated. Paid marriages are a known fraud."
+      }
+    },
+    "SP_FAKE_STORY": {
+      "id": "SP_FAKE_STORY",
+      "route": "SPOUSAL_SPONSOR",
+      "layoutType": "STORY_STAGE",
+      "title": "The visits that never happened.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "Your passport has no Canadian stamps for the 'visits' in the photos. The photos were edited.",
+      "outcome": {
+        "result": "fail",
+        "reason": "FAKE_RELATIONSHIP_EVIDENCE",
+        "title": "Polished story",
+        "subtitle": "Misrepresentation: a five-year ban.",
+        "lesson": "Invented visits or edited photos are false evidence, even in a real marriage. Thin but true beats thick and false."
+      }
+    },
+    "SP_REFUSED": {
+      "id": "SP_REFUSED",
+      "route": "SPOUSAL_SPONSOR",
+      "layoutType": "STORY_STAGE",
+      "title": "Not convinced.",
+      "location": "IRCC portal",
+      "stage": "ircc-portal",
+      "transitIn": "none",
+      "speaker": "IRCC portal",
+      "dialogue": "Refused. The relationship is real, but the file didn't show it.",
+      "outcome": {
+        "result": "fail",
+        "reason": "SPOUSAL_REFUSED",
+        "title": "Not convinced",
+        "subtitle": "A real marriage, a thin file.",
+        "lesson": "Officers decide on evidence. A sponsor can usually appeal a spousal refusal to the Immigration Appeal Division, or you can reapply with a stronger file."
+      }
+    },
+    "SP_BURNOUT": {
+      "id": "SP_BURNOUT",
+      "route": "SPOUSAL_SPONSOR",
+      "layoutType": "STORY_STAGE",
+      "title": "Burnt out.",
+      "location": "{area}, {city}",
+      "stage": "room-night",
+      "transitIn": "none",
+      "speaker": "{area}, {city}",
+      "dialogue": "Two time zones, one portal, no sleep.",
+      "outcome": {
+        "result": "fail",
+        "reason": "SPOUSAL_BURNOUT",
+        "title": "Burnt out",
+        "subtitle": "Rest, then pick it up together.",
+        "lesson": "Long waits are normal. Pace yourselves and keep the relationship, not just the file, alive."
       }
     }
   },

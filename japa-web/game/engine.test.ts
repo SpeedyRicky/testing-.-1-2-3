@@ -123,7 +123,7 @@ describe("scenarios.json integrity", () => {
       "canadianWorkYears", "canadianEducation", "pnpNomination", "siblingInCanada", "crsScore", "programType",
       "academicStanding", "officerConfidence", "scholarshipTried", "familyAsked", "landSold", "crowdfunded",
       "loanTaken", "hasDegree", "careerScore", "community", "pflRisk", "conflictRegion", "kwBasis", "kwAtAirport", "kwCredibility", "kwEvidence", "eeCategory", "kwTruth", "officeJob", "saidNoHome", "nursePath", "postedPass", "warnedFamily", "dayoLeft", "healthTrack", "regulated", "familyPledge", "donorTrust", "loanApp", "employed", "arrived", "tradeYears", "clbTrade", "tradeCert", "tradeKind", "provinceTies", "pnpProvince", "familyStrain", "kidsWithYou",
-      "ieltsPrep", "masjid", "worker", "nclex", "homeJob", "aipFile", "clbAip", "aipProvince", "aipOffer", "workPermit",
+      "ieltsPrep", "masjid", "worker", "nclex", "homeJob", "aipFile", "clbAip", "aipProvince", "aipOffer", "workPermit", "relationshipProof", "inland", "techTrack",
     ]);
     const bad: string[] = [];
     for (const s of Object.values(DB.scenes)) {
@@ -276,7 +276,7 @@ describe("state machine", () => {
   it("lists only playable routes and opens on Lagos Life", () => {
     const app = initialState();
     expect(Object.keys(app.runs).sort()).toEqual(
-      ["ATLANTIC_AIP", "CAREGIVER_LMIA", "EXPRESS_ENTRY", "FIRST_YEAR", "NIGERIA_LIFE", "PNP_RURAL", "SPLIT_FAMILY", "STARTUP_VISA", "STUDY_PERMIT",
+      ["ATLANTIC_AIP", "CAREGIVER_LMIA", "EXPRESS_ENTRY", "FIRST_YEAR", "NIGERIA_LIFE", "PNP_RURAL", "SPLIT_FAMILY", "SPOUSAL_SPONSOR", "STARTUP_VISA", "STUDY_PERMIT",
         "TARGETED_TRADE", "TOURIST_GAMBLE"]);
     expect(app.activeRoute).toBe("NIGERIA_LIFE");
   });
@@ -1581,7 +1581,7 @@ describe("v0.19: round-3 fixes", () => {
     expect(presentChoices(DB, left).find((c) => c.label === "OPERATIONAL FAILSAFE")?.enabled).toBe(false);
     expect(presentChoices(DB, left).some((c) => c.label === "HONEST_GAP")).toBe(true);
     expect(presentChoices(DB, at).some((c) => c.label === "HONEST_GAP")).toBe(false);
-    expect(DB.scenes.SUV_LOS_ISSUED.outcome!.lesson).toMatch(/paused new Start-up Visa applications/);
+    expect(DB.scenes.SUV_LOS_ISSUED.outcome!.lesson).toMatch(/stopped taking new commitment certificates on 1 January 2026/);
   });
 
   it("nurses in Nigeria Life register first instead of taking an LMIA offer", () => {
@@ -1981,6 +1981,63 @@ describe("v0.27: the working Nigerian, the right test, WES, nurses abroad, Atlan
     for (const id of ids) {
       const s = DB.scenes[id];
       need(s.dialogue); need(s.outcome?.title); need(s.outcome?.subtitle); need(s.outcome?.lesson);
+      for (const c of s.choices ?? []) { need(c.text); need(c.feedback); need(c.gamble?.success.feedback); need(c.gamble?.fail.feedback); }
+    }
+    expect(missing).toEqual([]);
+  });
+});
+
+describe("v0.29: spousal sponsorship, RCIP, Francophone Mobility, Global Talent Stream", () => {
+  const married = (spouseInCanada: boolean) => ({ version: 1, username: "Ada", avatar: DEFAULT_AVATAR, role: "worker", age: 30, stateCode: "LA",
+    worker: { occupation: "software", years: 4, qualification: "bachelors", salary: "150k-400k" },
+    situation: { marital: "married", savings: "under-1m", startup: false, spouseInCanada } }) as PlayerProfile;
+
+  it("spousal sponsorship opens only when the spouse is a Canadian citizen or PR", () => {
+    expect(eligibility(married(true)).SPOUSAL_SPONSOR.ok).toBe(true);
+    expect(eligibility(married(false)).SPOUSAL_SPONSOR).toMatchObject({ ok: false });
+    const single = { ...married(true), situation: { marital: "single", savings: "under-1m", startup: false } } as PlayerProfile;
+    expect(eligibility(single).SPOUSAL_SPONSOR.reason).toMatch(/Engaged couples don't qualify/);
+  });
+
+  it("a genuine, consistent file lands both of you; paid marriages and invented visits fail", () => {
+    const win = play("SPOUSAL_SPONSOR", ["Gather your real history", "Outland", "together on video", "Keep the relationship visible", "Fly to"]);
+    expect(win.outcome).toMatchObject({ result: "win", reason: "SPOUSAL_PR" });
+    expect(LANDINGS.has(win.currentSceneId)).toBe(true);
+    expect(play("SPOUSAL_SPONSOR", ["marry you for CAD 15,000"]).outcome?.reason).toBe("MARRIAGE_FRAUD");
+    expect(play("SPOUSAL_SPONSOR", ["Gather your real history", "Outland", "'polish' the story"]).outcome?.reason).toBe("FAKE_RELATIONSHIP_EVIDENCE");
+    const thin = play("SPOUSAL_SPONSOR", ["registry", "Outland", "alone, fast", "Go quiet"]);
+    expect(thin.outcome?.reason).toBe("SPOUSAL_REFUSED");
+    expect(DB.scenes.SP_START.dialogue).toMatch(/not a fiancé/);
+  });
+
+  it("RCIP: a designated employer and the community's recommendation, no +600; bought recommendations fail", () => {
+    expect(play("PNP_RURAL", ["Rural Community Immigration Pilot", "Pay an agent"]).outcome?.reason).toBe("RCIP_SCAM");
+    const rcip = play("PNP_RURAL", ["Rural Community Immigration Pilot", "designated employers"]);
+    expect(rcip.routeStats.pnpProvince).toBe(4);
+    const strong = { ...rcip, currentSceneId: "PN_DECIDE", routeStats: { ...rcip.routeStats, provinceTies: 60 } };
+    expect(enterScene(DB, strong, "PN_DECIDE").currentSceneId).toBe("PN_RCIP_RECOMMENDED");
+    expect(DB.scenes.PN_RCIP.dialogue).toMatch(/no Express Entry, no \+600/);
+  });
+
+  it("Francophone Mobility turns French into a year of Canadian work; GTS shows only for tech workers", () => {
+    const fr = play2({ ...newRun(DB, "EXPRESS_ENTRY"), currentSceneId: "EE_FRENCH" }, ["Francophone Mobility", "Take the job"]);
+    expect(fr.routeStats.canadianWorkYears).toBe(1);
+    const call = (techTrack: number) => presentChoices(DB, { ...newRun(DB, "NIGERIA_LIFE"), currentSceneId: "LAGOS_BERLIN_CALL",
+      routeStats: { ...newRun(DB, "NIGERIA_LIFE").routeStats, techTrack } }).map((c) => c.label);
+    expect(call(1)).toContain("GLOBAL_TALENT");
+    expect(call(0)).not.toContain("GLOBAL_TALENT");
+    expect(initialState(DB, married(true)).runs.NIGERIA_LIFE!.routeStats.techTrack).toBe(1);
+  });
+
+  it("the Start-up Visa lesson gives its 2026 status, and every new line has Pidgin", async () => {
+    expect(DB.scenes.SUV_LOS_ISSUED.outcome!.lesson).toMatch(/30 June 2026/);
+    const pcm = (await import("./i18n/pcm.json")).default as Record<string, string>;
+    const ids = Object.keys(DB.scenes).filter((id) => id.startsWith("SP_") || ["EE_FRANCO", "PN_RCIP", "PN_RCIP_SCAM", "PN_RCIP_RECOMMENDED"].includes(id));
+    const missing: string[] = [];
+    const need = (t?: string) => { if (t && !pcm[t]) missing.push(t); };
+    for (const id of ids) {
+      const s = DB.scenes[id];
+      need(s.dialogue); need(s.outcome?.title); need(s.outcome?.lesson);
       for (const c of s.choices ?? []) { need(c.text); need(c.feedback); need(c.gamble?.success.feedback); need(c.gamble?.fail.feedback); }
     }
     expect(missing).toEqual([]);

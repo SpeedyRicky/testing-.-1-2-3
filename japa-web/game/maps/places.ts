@@ -60,7 +60,7 @@ export function whereIs(db: ScenarioDatabase, sceneId: string, run: GameState): 
 export function canadaCity(run: GameState): string {
   const s = run.routeStats;
   if (run.activeRoute === "ATLANTIC_AIP") return ["ca-halifax", "ca-halifax", "ca-moncton", "ca-stjohns", "ca-charlottetown"][s.aipProvince ?? 0] ?? "ca-halifax";
-  if (run.activeRoute === "PNP_RURAL") return ["ca-winnipeg", "ca-saskatoon", "ca-winnipeg", "ca-halifax"][s.pnpProvince ?? 0] ?? "ca-winnipeg";
+  if (run.activeRoute === "PNP_RURAL") return ["ca-winnipeg", "ca-saskatoon", "ca-winnipeg", "ca-halifax", "ca-thunderbay"][s.pnpProvince ?? 0] ?? "ca-winnipeg";
   if (run.activeRoute === "TARGETED_TRADE") return "ca-edmonton";
   return "ca-gta";
 }

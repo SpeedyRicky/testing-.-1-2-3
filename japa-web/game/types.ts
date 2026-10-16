@@ -12,7 +12,8 @@ export type RouteId =
   | "TOURIST_GAMBLE"
   | "FIRST_YEAR"
   | "PNP_RURAL"
-  | "ATLANTIC_AIP";
+  | "ATLANTIC_AIP"
+  | "SPOUSAL_SPONSOR";
 
 export type LayoutType = "STORY_STAGE" | "ZOOM_GRID" | "CORPORATE_OFFICE" | "DASHBOARD" | "RESOLUTION";
 
@@ -119,6 +120,10 @@ export interface RouteStats {
   aipProvince?: number;
   aipOffer?: number;
   workPermit?: number;
+  // v0.29: spousal sponsorship and the Global Talent Stream
+  relationshipProof?: number;
+  inland?: number;
+  techTrack?: number;
   /** Split Family: strain on the family across two countries, and whether the kids came along. */
   familyStrain?: number;
   kidsWithYou?: number;

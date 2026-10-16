@@ -16,7 +16,7 @@ import { usePlayer } from "../Player";
 const W = world as unknown as { width: number; height: number; land: number[][]; nigeria: number[][]; canada: number[][]; places: Record<string, Pt> };
 const NAMES: Record<string, string> = {
   pearson: "Toronto Pearson", halifax: "Halifax", stjohns: "St. John's", moncton: "Moncton", charlottetown: "Charlottetown",
-  winnipeg: "Winnipeg", saskatoon: "Saskatoon", edmonton: "Edmonton", lagos: "Lagos", abuja: "Abuja",
+  winnipeg: "Winnipeg", saskatoon: "Saskatoon", edmonton: "Edmonton", thunderbay: "Thunder Bay", lagos: "Lagos", abuja: "Abuja",
 };
 
 /** A great-circle-looking arc: a quadratic curve bowed north. */

@@ -16,12 +16,12 @@ export interface Access {
 /** Wins that put the player in Canada with status: each one opens Year One. */
 export const LANDINGS: ReadonlySet<string> = new Set([
   "EE_COPR", "KW_ACCEPTED", "TT_WIN", "PN_SETTLED", "SF_REUNITED", "LMIA_SPONSORSHIP",
-  "AIP_PR_WIN", "ST_PGWP_MASTERS", "ST_PGWP_COLLEGE", "ST_PGWP_BACHELORS",
+  "AIP_PR_WIN", "SP_PR", "ST_PGWP_MASTERS", "ST_PGWP_COLLEGE", "ST_PGWP_BACHELORS",
 ]);
 
 const ROUTE_IDS: RouteId[] = [
   "NIGERIA_LIFE", "STUDY_PERMIT", "EXPRESS_ENTRY", "STARTUP_VISA", "TOURIST_GAMBLE", "CAREGIVER_LMIA", "FIRST_YEAR",
-  "SPLIT_FAMILY", "TARGETED_TRADE", "PNP_RURAL", "ATLANTIC_AIP",
+  "SPLIT_FAMILY", "TARGETED_TRADE", "PNP_RURAL", "ATLANTIC_AIP", "SPOUSAL_SPONSOR",
 ];
 
 const open = (reason: string): Access => ({ ok: true, reason });
@@ -72,6 +72,11 @@ export function eligibility(profile: PlayerProfile | null, unlocked: readonly Ro
     ATLANTIC_AIP: worker && years >= 1
       ? open("About a year (1,560 hours) of paid work in the last five years: you can apply to designated employers in Atlantic Canada.")
       : shut("The Atlantic Immigration Program needs about a year (1,560 hours) of paid work in the last five years, or a degree from a school in Atlantic Canada, plus a job offer from a designated employer."),
+    SPOUSAL_SPONSOR: married && sit.spouseInCanada
+      ? open("Your spouse is a Canadian citizen or permanent resident, so they can sponsor you.")
+      : married
+        ? shut("Spousal sponsorship needs a spouse or partner who is a Canadian citizen or permanent resident. If yours is, tick it in your profile.")
+        : shut("Spousal sponsorship is for married, common-law or conjugal partners of Canadian citizens and permanent residents. Engaged couples don't qualify."),
   };
   for (const r of unlocked) if (rules[r] && !rules[r].ok) rules[r] = { ok: true, earned: true, reason: "Unlocked by your win." };
   return rules;

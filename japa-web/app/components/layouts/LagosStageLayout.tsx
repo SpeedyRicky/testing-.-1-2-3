@@ -44,6 +44,7 @@ const HUD: Record<string, { icon: typeof Wallet; bar: string; tint: string; glow
   tradeYears: { icon: Hammer, bar: "from-orange-400 to-amber-200", tint: "bg-orange-500/20 text-orange-200", glow: "shadow-orange-400/20" },
   clbTrade: { icon: Languages, bar: "from-violet-400 to-fuchsia-300", tint: "bg-violet-500/20 text-violet-200", glow: "shadow-violet-400/20" },
   aipFile: { icon: FileCheck2, bar: "from-teal-300 to-sky-300", tint: "bg-teal-500/20 text-teal-200", glow: "shadow-teal-400/20" },
+  relationshipProof: { icon: HeartCrack, bar: "from-pink-300 to-rose-400", tint: "bg-pink-500/20 text-pink-200", glow: "shadow-pink-400/20" },
   clbAip: { icon: Languages, bar: "from-violet-400 to-fuchsia-300", tint: "bg-violet-500/20 text-violet-200", glow: "shadow-violet-400/20" },
   provinceTies: { icon: MapPin, bar: "from-sky-300 to-emerald-300", tint: "bg-sky-500/20 text-sky-200", glow: "shadow-sky-400/20" },
 };
@@ -59,6 +60,7 @@ const BACKDROP: Record<string, string> = {
   TARGETED_TRADE: "bg-[radial-gradient(circle_at_top,_#7c2d12_0%,_#07060c_55%)]",
   PNP_RURAL: "bg-[radial-gradient(circle_at_top,_#0c4a6e_0%,_#07060c_55%)]",
   ATLANTIC_AIP: "bg-[radial-gradient(circle_at_top,_#115e59_0%,_#07060c_55%)]",
+  SPOUSAL_SPONSOR: "bg-[radial-gradient(circle_at_top,_#9d174d_0%,_#07060c_55%)]",
 };
 
 const naira = (v: number) =>

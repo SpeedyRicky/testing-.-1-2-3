@@ -294,6 +294,12 @@ export function Onboarding({ initial, unlocked = [], onDone, onCancel }: {
                 <Field label="Marital status" hint="Opens Pilot & Passenger">
                   <Chips name="Marital status" options={MARITAL} value={situation.marital} onChange={(v) => setSit("marital", v)} />
                 </Field>
+                {situation.marital !== "single" ? (
+                  <Field label="Is your spouse a Canadian citizen or PR?" hint="Opens spousal sponsorship">
+                    <Chips name="Spouse in Canada" value={situation.spouseInCanada ? "yes" : "no"} onChange={(v) => setSit("spouseInCanada", v === "yes")}
+                      options={[{ id: "no", label: "No" }, { id: "yes", label: "Yes, citizen or PR" }]} />
+                  </Field>
+                ) : null}
                 <Field label="Money you could show" hint="Savings + documented family support">
                   <Chips name="Money you could show" options={SAVINGS_BANDS} value={situation.savings} onChange={(v) => setSit("savings", v)} />
                 </Field>

@@ -29,7 +29,7 @@ const places = {
   lagos: project(3.3212, 6.5774), abuja: project(7.2632, 9.0068), pearson: project(-79.6306, 43.6777),
   halifax: project(-63.5752, 44.6488), stjohns: project(-52.7126, 47.5615), moncton: project(-64.7782, 46.0878),
   charlottetown: project(-63.1311, 46.2382), winnipeg: project(-97.1384, 49.8951), saskatoon: project(-106.67, 52.1332),
-  edmonton: project(-113.4938, 53.5461),
+  edmonton: project(-113.4938, 53.5461), thunderbay: project(-89.2477, 48.3809),
 };
 const round = (p: Pt) => [Math.round(p[0]), Math.round(p[1])];
 writeFileSync("game/maps/world.json", JSON.stringify({ width: W, height: H, land, nigeria, canada,
