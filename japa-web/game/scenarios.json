@@ -3700,7 +3700,7 @@
       "stage": "outside",
       "transitIn": "trek",
       "speaker": "Outside the centre, VI sun",
-      "dialogue": "You step into the heat. {RelName} is already ringing. Your file is a visitor visa on {relPoss} invitation, or a work permit if the job came through. Canada only asks for the passport after a yes: the famous PPR. You go home and live inside a status page.",
+      "dialogue": "You step into the heat. {RelName} is already ringing. Your file is a visitor visa on {relPoss} invitation, or a work permit if the job came through. Canada only asks for your passport after a yes: a 'passport request', so the visa can be stuck inside it. Express Entry people call theirs the famous PPR; yours works the same way. You go home and live inside a status page.",
       "choices": [
         {
           "text": "Pick {relName}'s call, then wait with the phone on loud",
@@ -3722,7 +3722,7 @@
       "stage": "phone-text",
       "transitIn": "none",
       "speaker": "{area} mattress, phone glowing",
-      "dialogue": "{RelName} is typing. The IRCC portal says 'New message'. PPR don land, or a refusal letter? If not, you are still here, which is not the same as finished.",
+      "dialogue": "{RelName} is typing. The IRCC portal says 'New message'. A passport request for your visa sticker, or a refusal letter? If not, you are still here, which is not the same as finished.",
       "choices": [
         {
           "text": "Open the portal. Call {relName} either way.",
@@ -5173,7 +5173,7 @@
       "stage": "pr-landing",
       "transitIn": "plane",
       "speaker": "Toronto Pearson",
-      "dialogue": "Confirmation of Permanent Residence. The officer stamps the papers and says the words: welcome to Canada. You are a permanent resident.",
+      "dialogue": "PPR at last: IRCC's passport request. Your passport goes to the visa centre in {vacCity} and comes back with a permanent resident visa inside, plus your Confirmation of Permanent Residence (COPR). At the airport the officer checks both, stamps the papers and says the words: welcome to Canada. You are a permanent resident.",
       "outcome": {
         "result": "win",
         "reason": "PERMANENT_RESIDENCE",
@@ -5809,7 +5809,7 @@
             "min": 0.1,
             "max": 0.9,
             "success": {
-              "feedback": "The portal says 'Passport request'. PPR don land. That means yes.",
+              "feedback": "The portal says 'Passport request'. That means yes: the visa sticker goes in your passport, then the letter of introduction follows.",
               "nextSceneId": "ST_APPROVED",
               "label": "APPROVED"
             },
@@ -5850,7 +5850,7 @@
       "stage": "airport",
       "transitIn": "call",
       "speaker": "{airport}",
-      "dialogue": "The port of entry letter lands in your inbox. {RelName} screams on the phone from {relCity}. Pack for winter.",
+      "dialogue": "First the passport request: your passport goes to the visa centre in {vacCity} for the visa sticker. Then the port of entry letter of introduction lands in your inbox. Print it: the CBSA officer at the airport prints your actual study permit from it. {RelName} screams on the phone from {relCity}. Pack for winter.",
       "choices": [
         {
           "text": "Start packing",

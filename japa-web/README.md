@@ -192,6 +192,26 @@ What changed:
 - **Feel:** characters have faces (brows, blinking, a mouth that follows your stats), stat bars flash and pop on
   change and pulse **Danger** near a collapse line, and the sound chip is a mixer.
 
+## City maps and the journey (v0.28)
+
+Every player gets a storybook map of their own city, drawn from real OpenStreetMap streets: one for each of the 37
+states (the city the story is set in) and eight Canadian cities (Toronto & Brampton with Pearson, Halifax, St. John's,
+Moncton, Charlottetown, Winnipeg, Saskatoon, Edmonton). Each map is about 30-45 KB and works offline.
+
+- **Hotspots:** the market, the passport office, the visa centre (an arrow to Lagos or Abuja when it's in another city),
+  your church or mosque, the motor park, the airport, the cyber café and more. Real public places use their OSM names;
+  shops and offices the story invents (the agent's office, your room) have made-up names on real streets.
+- **The map is a menu:** red pins mark where each choice goes; tap one to take that choice. The text buttons still work.
+- **Your character walks there** along the real road network (shortest path on the street graph), facing the way
+  they walk, with your face's current mood, and says the scene's title when they arrive.
+- **Journey map** (header button): a plane path from Lagos or Abuja to where the active route ends up in Canada, with
+  how far along you are. Land shapes from Natural Earth (public domain).
+
+How the data is made: `scripts/maps/build-maps.ts` queries the Overpass API, simplifies and clips each city to a
+budget, and writes `game/maps/data/<city>.json`. It runs in GitHub Actions (`.github/workflows/japa-maps.yml`) and
+commits the result, because the development sandbox can't reach Overpass. Rebuild one city by running the workflow by
+hand with its id (e.g. `ng-OY`). Map data © OpenStreetMap contributors, under the ODbL; the credit is shown on every map.
+
 ## Pathways follow your profile (v0.25)
 
 Sign-up asks the questions that decide which routes you can play (a new **Your situation** step: marital status,

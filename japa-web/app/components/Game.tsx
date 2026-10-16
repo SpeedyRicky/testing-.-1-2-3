@@ -28,6 +28,7 @@ import type { PlayerProfile } from "@/game/profile";
 import { makeSave, readSave } from "@/game/save";
 import { eligibility } from "@/game/eligibility";
 import { LockedModal, PLAYABLE_COUNT, PathwaysProvider, openCount } from "./Pathways";
+import { JourneyButton } from "./maps/Journey";
 
 const PROFILE_KEY = "japa.profile.v1";
 const SAVE_KEY = "japa.save.v1";
@@ -250,6 +251,7 @@ function GameScreen({ state, dispatch, onEdit, onSignOut }: {
               <MapIcon className="h-3.5 w-3.5 text-emerald-300" /> Pathways {openCount(access)}/{PLAYABLE_COUNT}
             </button>
           ) : null}
+          <JourneyButton run={run} runs={state.runs} />
           <InstallButton />
           <LanguageToggle />
           <HelpButton onClick={() => setHelpOpen(true)} />

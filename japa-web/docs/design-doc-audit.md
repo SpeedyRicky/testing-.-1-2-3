@@ -103,3 +103,14 @@ out on purpose (reason given).
 | Nurses: NNAS, authorisation to test, IELTS, NCLEX in Nairobi or Johannesburg | **Built / Corrected** | The college sets the English test (Ontario accepts IELTS General; BC wants Academic, CELBAN or OET); NNAS is optional in BC; NCLEX abroad scene with Nairobi (simpler entry) vs Johannesburg (visa) |
 | Visitors: family visits, invite letters, meeting employers | **Built** | New Tourist Gamble opener "Why are you going?": a family visit, or meeting an employer your relative found (allowed if you say so). Hiding the real purpose is misrepresentation |
 | Stolen or arranged passport, thrown away at Pearson, then Kawosoke | **Built (as fraud)** | Instant fail: detained until identity is established, and missing documents weigh against credibility. Genuine claimants can claim with their own passport |
+
+## Follow-up: maps, the animated look, and PPR (v0.28)
+
+| Idea | Status | Where / notes |
+|---|---|---|
+| "Disney format" | **Adapted** | Taken as an art style: an animated, character-driven look. The game doesn't use Disney's name or style marks, and stays 18+ |
+| Google Maps for each location | **Replaced** | Live Google Maps would break offline play, cost money per load, and its terms don't allow restyling it into game art. Instead: storybook maps traced from OpenStreetMap (ODbL, credited on every map), one per state plus eight Canadian cities, built in GitHub Actions |
+| Hotspots; the map as the menu | **Built** | Red pins mark where each choice goes; tap to take it. Real public places keep their OSM names; invented shops and offices have made-up names |
+| Character walks to the scene | **Built** | Shortest path on the real street graph, after the choice's cutscene; mood face; arrival speech bubble. Respects "reduce motion" |
+| Journey map | **Built** | Natural Earth (public domain) map, plane path from Lagos or Abuja to the active route's Canadian city, progress by levels |
+| "PPR is only for Express Entry after ITA" | **Corrected** | PPR means passport request: IRCC sends one for any approval that needs a visa in the passport, so visitor visas and study permits (Nigerians need the visa sticker) get one too. Express Entry: PPR comes after PR approval, then the PR visa and COPR. Study permit: passport request, then the port of entry letter of introduction, and the CBSA officer prints the permit at the airport. The Nigeria route, Student and Express Entry texts now say so |

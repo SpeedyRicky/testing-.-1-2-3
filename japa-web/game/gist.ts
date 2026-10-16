@@ -40,6 +40,8 @@ export const GIST: GistPost[] = [
     text: "Fuel price up AGAIN. Generator owners, we are in this together. 😩" },
   { id: "ppr", handle: "chioma_rn", name: "Chioma RN", kind: "tip", routes: ["STUDY_PERMIT", "NIGERIA_LIFE"],
     text: "PPR DON LAND!!! 74 days after biometrics. They only asked for my passport after approval. Don't lose hope 🙏🏾" },
+  { id: "ppr-meaning", handle: "japa_explainer", name: "Japa Explainer", kind: "tip", routes: ["EXPRESS_ENTRY", "STUDY_PERMIT", "NIGERIA_LIFE"],
+    text: "PPR = passport request. Express Entry people get it after PR approval (PR visa + COPR). Study permit and visitor visa approvals send one too, because Nigerians need the visa sticker. Students then get a letter of introduction, and the officer at the airport prints the actual permit." },
   { id: "winnipeg", handle: "prairie_naija", name: "Prairie Naija", kind: "tip", routes: ["PNP_RURAL", "FIRST_YEAR"],
     text: "My 2-bedroom in Winnipeg costs less than my cousin's basement in Brampton. Just saying. 🌾" },
   { id: "credit", handle: "credit_uncle", name: "Uncle Credit", kind: "tip", routes: ["FIRST_YEAR", "SPLIT_FAMILY"],

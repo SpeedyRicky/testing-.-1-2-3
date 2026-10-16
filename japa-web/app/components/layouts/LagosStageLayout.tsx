@@ -11,6 +11,7 @@ import { useCinematic } from "../Cinematic";
 import { useChoiceKeys } from "../useChoiceKeys";
 import { usePlayer } from "../Player";
 import { usePathways } from "../Pathways";
+import { CityMap } from "../maps/CityMap";
 import { chance, rolls as rollDice } from "@/game/rng";
 import type { BarSpec, GameState, RouteId, Transit } from "@/game/types";
 import type { LayoutProps } from "../LayoutContainer";
@@ -331,6 +332,7 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
         </div>
 
         <FxShock key={run.currentSceneId} run={run} />
+        {!ended ? <CityMap run={run} choices={choices} onPick={pick} disabled={moving || !!run.popup} /> : null}
         <article
           key={shownId}
           className={`animate-scene-in relative overflow-hidden rounded-[2rem] border p-5 shadow-[0_20px_80px_-30px_rgba(251,191,36,0.55)] sm:p-7 ${
