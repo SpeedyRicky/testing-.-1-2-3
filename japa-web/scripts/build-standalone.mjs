@@ -37,7 +37,8 @@ writeFileSync(entry, `@import "tailwindcss" source("${process.cwd()}");\n` +
 const cssOut = join(tmp, "out.css");
 execFileSync("npx", ["@tailwindcss/cli", "-i", entry, "-o", cssOut, "--minify"], { stdio: ["ignore", "ignore", "inherit"] });
 const css = readFileSync(cssOut, "utf8") + readFileSync("app/lagos-2d.css", "utf8") + readFileSync("app/canada-2d.css", "utf8")
-  + readFileSync("app/cinematic.css", "utf8") + readFileSync("app/avatar.css", "utf8") + readFileSync("app/maps.css", "utf8");
+  + readFileSync("app/cinematic.css", "utf8") + readFileSync("app/avatar.css", "utf8") + readFileSync("app/maps.css", "utf8")
+  + readFileSync("app/film.css", "utf8");
 const code = js.outputFiles[0].text.replace(/<\/script/g, "<\\/script");
 
 const html = `<title>Japa: The Great Escape</title>

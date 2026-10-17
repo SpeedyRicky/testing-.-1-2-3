@@ -8,6 +8,7 @@ import "./canada-2d.css";
 import "./cinematic.css";
 import "./avatar.css";
 import "./maps.css";
+import "./film.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

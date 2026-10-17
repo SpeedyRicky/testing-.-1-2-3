@@ -70,7 +70,7 @@ const POSE_CLASS: Record<PersonPose, string> = {
 };
 
 /** How the relative in Canada looks: a sister, a brother or an aunty, dressed for indoors in winter. */
-function relativeAvatar(r: Relative): Avatar {
+export function relativeAvatar(r: Relative): Avatar {
   const base = { skin: "#6d3416", hairColor: "#111827", headwearColor: "#0d9488", glasses: false } as const;
   if (r.relation === "brother") {
     return { ...base, skin: "#5b3410", body: "average", hair: "low-cut", outfit: "hoodie", outfitColor: "#0f766e", headwear: "none" };
