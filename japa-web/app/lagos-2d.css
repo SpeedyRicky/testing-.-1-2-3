@@ -497,6 +497,51 @@
 .person-sit .p-leg-r { height: 14px; top: 58px; }
 .person-sit .person { height: 64px; }
 .person-queue .p-arm-l { transform: rotate(12deg); }
+/* --- Livelier people: a shadow underfoot, breathing, weight shifts, a walking bob, and squash and stretch. --- */
+.person::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  bottom: -3px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.3);
+  z-index: -1;
+}
+.person-idle .p-torso, .person-queue .p-torso, .person-phone .p-torso, .person-sit .p-torso {
+  transform-origin: bottom center;
+  animation: breathe 3.2s ease-in-out infinite;
+}
+.person-idle .p-head, .person-idle .p-hair, .person-queue .p-head, .person-queue .p-hair {
+  animation: breathe-head 3.2s ease-in-out infinite;
+}
+.person-wrap.person-idle .person, .person-wrap.person-queue .person {
+  transform-origin: bottom center;
+  animation: weight-shift 5.5s ease-in-out infinite;
+}
+.person-wrap.person-walk .person { animation: walk-bob 0.4s ease-in-out infinite; }
+.person-wrap.person-talk .person { transform-origin: bottom center; animation: talk-lean 1.8s ease-in-out infinite alternate; }
+.person-wrap.person-cheer .person { transform-origin: bottom center; animation: cheer-jump 0.75s cubic-bezier(0.3, 0, 0.3, 1) infinite; }
+.person-wrap.person-slump .person { transform-origin: bottom center; animation: slump-sigh 3.4s ease-in-out infinite; }
+.person-slump .p-arm-l { transform: rotate(5deg); }
+.person-slump .p-arm-r { transform: rotate(-5deg); }
+.person-phone .p-head { transform: rotate(7deg) translateY(1px); }
+@keyframes breathe { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.045); } }
+@keyframes breathe-head { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
+@keyframes weight-shift { 0%, 100% { transform: rotate(0deg); } 30% { transform: rotate(-1.2deg); } 70% { transform: rotate(1deg); } }
+@keyframes walk-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
+@keyframes talk-lean { from { transform: rotate(-1.5deg); } to { transform: rotate(1.2deg); } }
+@keyframes cheer-jump {
+  0% { transform: translateY(0) scale(1.08, 0.92); }
+  30% { transform: translateY(-11px) scale(0.95, 1.06); }
+  55% { transform: translateY(0) scale(1.06, 0.94); }
+  75%, 100% { transform: translateY(0) scale(1); }
+}
+@keyframes slump-sigh { 0%, 100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(1.5px) scaleY(0.975); } }
+@media (prefers-reduced-motion: reduce) {
+  .person, .p-torso, .p-head, .p-hair { animation: none !important; }
+}
 @keyframes stride {
   from { transform: rotate(22deg); }
   to { transform: rotate(-22deg); }
