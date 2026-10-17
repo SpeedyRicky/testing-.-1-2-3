@@ -3,9 +3,9 @@ import pcm from "./i18n/pcm.json";
 import { DECISION_SHOT, FILM, FILM_MS, allFilmLines, circleOf, filmScript, insertFor, moodOf, shotStart, whoInChoice } from "./film";
 
 describe("the after-choice film", () => {
-  it("runs at least 30 seconds, as ten shots, with the result landing after the other person's side", () => {
-    expect(FILM_MS).toBeGreaterThanOrEqual(30_000);
-    expect(FILM).toHaveLength(10);
+  it("runs at least a minute, as fourteen shots, with the result landing after the other person's side", () => {
+    expect(FILM_MS).toBeGreaterThanOrEqual(60_000);
+    expect(FILM).toHaveLength(14);
     expect(FILM.findIndex((s) => s.kind === "pov")).toBeLessThan(DECISION_SHOT);
     expect(shotStart(FILM.length)).toBe(FILM_MS);
   });

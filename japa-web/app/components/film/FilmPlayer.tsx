@@ -215,6 +215,12 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
       </>;
       title = location ?? null;
       break;
+    case "journey":
+      // A tracking shot: the camera travels with you across the set.
+      cam = [{ x: 420, y: 540, z: 1.45 }, { x: 980, y: 540, z: 1.45 }];
+      actors = <g className="walk-across"><Actor look={you} pose="walk" x={420} y={FLOOR} /></g>;
+      slug = t("On the way");
+      break;
     case "think":
       cam = mediumOn(600, 1, 1.7, 1.9);
       actors = <>
@@ -236,6 +242,17 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
       cam = closeOn(640, 1, 2.5, 2.75);
       actors = <Actor look={you} pose="talk" face="neutral" talking x={640} y={FLOOR} />;
       sub = { who: name, text: `“${line}”` };
+      break;
+    case "hear":
+      // Their side, wide: they're in their own place when your choice reaches them.
+      set = theirs;
+      cam = [{ x: 860, y: 520, z: 1.12 }, { x: 940, y: 500, z: 1.3 }];
+      actors = <>
+        <Actor look={them} pose={script.circle === "family" ? "phone" : "listen"} face="worried" talking x={980} y={FLOOR} flip />
+        {together ? <g className="soft"><Actor look={you} pose="talk" x={430} y={FLOOR + 260} scale={1.45} /></g> : null}
+      </>;
+      sub = { who: speaker, text: t(script.hear) };
+      slug = `${t("Their side")} · ${speaker}`;
       break;
     case "pov":
       set = theirs;
@@ -263,6 +280,11 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
         cam = closeOn(640, 1, 2.6, 2.9);
         actors = <Actor look={you} pose={resultPose} face={resultFace} x={640} y={FLOOR} />;
       }
+      break;
+    case "reply":
+      cam = closeOn(640, 1, 2.45, 2.65);
+      actors = <Actor look={you} pose="talk" face={up ? "smile" : down ? "sad" : "neutral"} talking x={640} y={FLOOR} />;
+      sub = { who: name, text: t(script.reply) };
       break;
     case "consequence":
       cam = [{ x: 700, y: 500, z: 1.6 }, { x: 800, y: 520, z: 1.08 }];
@@ -293,6 +315,13 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
         sub = { text: t(script.ripple.line) };
         slug = t("Meanwhile");
       }
+      break;
+    case "night":
+      set = "bedroom";
+      cam = mediumOn(820, 1, 1.35, 1.55);
+      actors = <Actor look={you} pose="phone" face={up ? "smile" : down ? "sad" : "neutral"} x={820} y={FLOOR} />;
+      sub = { text: t(script.night) };
+      slug = t("Later that night");
       break;
     case "close":
       cam = closeOn(640, 1, 2.2, 2.45);

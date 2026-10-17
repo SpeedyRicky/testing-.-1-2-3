@@ -1,17 +1,21 @@
-// The after-choice film: ten shots, about 36 seconds, cut like a short film, with a cut to the other person's
+// The after-choice film: fourteen shots, just over a minute, cut like a short film, with the other person's
 // side of the moment. Pure (no React, no timers): which shots play, how long each lasts, and what is said.
 import type { Delta, Tone } from "./cinematic";
 
 export type ShotKind =
   | "establish" // wide: the place, with its name as a title
+  | "journey" // tracking shot: you on the way there
   | "think" // medium on you, weighing it up
   | "insert" // close on the thing at stake: the wallet, the documents, the clock, the phone
   | "say" // close-up: you say what you'll do
-  | "pov" // their side: their own place, and what they think of it
+  | "hear" // their side: in their own place, they hear you out
+  | "pov" // their side: what they make of it
   | "react" // close on their face as the result lands
   | "verdict" // the paper gets stamped, or your face takes it in
+  | "reply" // close-up: what you say back
   | "consequence" // pull back: what it cost and what it bought
   | "ripple" // meanwhile: the family group chat, or your roommate
+  | "night" // later that night: you, alone, thinking it over
   | "close"; // back on you, then black
 
 export interface Shot {
@@ -20,16 +24,20 @@ export interface Shot {
 }
 
 export const FILM: Shot[] = [
-  { kind: "establish", ms: 3500 },
-  { kind: "think", ms: 3500 },
-  { kind: "insert", ms: 3000 },
-  { kind: "say", ms: 4000 },
-  { kind: "pov", ms: 4500 },
-  { kind: "react", ms: 3000 },
-  { kind: "verdict", ms: 3000 },
-  { kind: "consequence", ms: 4500 },
-  { kind: "ripple", ms: 4500 },
-  { kind: "close", ms: 3000 },
+  { kind: "establish", ms: 4500 },
+  { kind: "journey", ms: 4500 },
+  { kind: "think", ms: 4500 },
+  { kind: "insert", ms: 4000 },
+  { kind: "say", ms: 5000 },
+  { kind: "hear", ms: 4500 },
+  { kind: "pov", ms: 5000 },
+  { kind: "react", ms: 4000 },
+  { kind: "verdict", ms: 4000 },
+  { kind: "reply", ms: 4500 },
+  { kind: "consequence", ms: 5500 },
+  { kind: "ripple", ms: 5500 },
+  { kind: "night", ms: 4500 },
+  { kind: "close", ms: 4000 },
 ];
 export const FILM_MS = FILM.reduce((n, s) => n + s.ms, 0);
 /** The result (sound, stamp, numbers) lands on the reaction shot. */
@@ -113,6 +121,31 @@ export const POV_LINES: Record<Circle, Record<Mood, string[]>> = {
   },
 };
 
+/** Their first words as your choice reaches them, before they've made up their mind. */
+export const HEAR_LINES: Record<Circle, string> = {
+  family: "Hello? Hello? The network is bad… okay, I can hear you now.",
+  friend: "Wait, wait. Say that again?",
+  official: "Go on. I'm listening.",
+  boss: "You have two minutes. Go.",
+  hustler: "My friend, sit down, sit down. Talk to me.",
+  faith: "Speak, my child. The Lord is listening.",
+  stranger: "Hmm? Me?",
+};
+
+/** What you say back once you know how it went. */
+export const REPLY_LINES: Record<Mood, string[]> = {
+  up: ["Thank you. I won't let you down.", "I've been praying for this day."],
+  down: ["I understand. I'll come back stronger.", "Okay. It's not over until it's over."],
+  even: ["Okay. I'll wait and see.", "Fine. One step at a time."],
+};
+
+/** Later that night, alone. */
+export const NIGHT_LINES: Record<Mood, string[]> = {
+  up: ["Later that night, you can't sleep. For once, it's because of good news.", "Later that night, you check the portal three times. Just to be sure."],
+  down: ["Later that night, NEPA takes light. You lie there, doing the maths again.", "Later that night, you scroll the japa groups. Everyone else seems to be landing."],
+  even: ["Later that night, the generator hums. Tomorrow is another day.", "Later that night, you write tomorrow's to-do list. It's long."],
+};
+
 /** Your own thought before the result is known. */
 export const THINK_LINES = [
   "Think it through. One wrong move costs months.",
@@ -174,7 +207,7 @@ export const SPEAKER_DEFAULT: Record<Circle, string> = {
   hustler: "The agent", faith: "The pastor", stranger: "A stranger",
 };
 /** Small captions on the film. */
-export const SLUGS = ["Their side", "Meanwhile", "You", "The family group chat", "Your roommate", "Mummy", "Daddy",
+export const SLUGS = ["Their side", "Meanwhile", "On the way", "Later that night", "You", "The family group chat", "Your roommate", "Mummy", "Daddy",
   "Approved", "Refused", "Noted", "Decision", ...Object.values(INSERT_CAPTION)];
 
 function pick<T>(list: T[], seed: number): T {
@@ -185,7 +218,10 @@ export interface FilmScript {
   circle: Circle;
   mood: Mood;
   think: string;
+  hear: string;
   pov: string;
+  reply: string;
+  night: string;
   insert: InsertKind;
   insertCaption: string;
   /** "stamp": the paper gets stamped (officials, bosses, agents). "face": your face takes it in. */
@@ -205,7 +241,10 @@ export function filmScript(tone: Tone, reactor: string, seed: number, deltas: Pi
     circle,
     mood,
     think: pick(THINK_LINES, seed),
+    hear: HEAR_LINES[circle],
     pov: pick(POV_LINES[circle][mood], seed + 1),
+    reply: pick(REPLY_LINES[mood], seed + 3),
+    night: pick(NIGHT_LINES[mood], seed + 4),
     insert,
     insertCaption: INSERT_CAPTION[insert],
     verdict: circle === "official" || circle === "boss" || circle === "hustler" ? "stamp" : "face",
@@ -221,6 +260,9 @@ export function filmScript(tone: Tone, reactor: string, seed: number, deltas: Pi
 export function allFilmLines(): string[] {
   return [
     ...THINK_LINES,
+    ...Object.values(HEAR_LINES),
+    ...Object.values(REPLY_LINES).flat(),
+    ...Object.values(NIGHT_LINES).flat(),
     ...Object.values(POV_LINES).flatMap((m) => Object.values(m).flat()),
     ...Object.values(ROOMMATE_LINES).flat(),
     ...Object.values(CHAT).flat(2).map((m) => m.text),

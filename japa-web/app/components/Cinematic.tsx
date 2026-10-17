@@ -142,17 +142,24 @@ function FilmView({ req, index, reactor, script, seed, onSkip, onNext }: {
   const shot = FILM[index];
   const speaker = t(captionFor(req.stage, reactor) ?? SPEAKER_DEFAULT[script.circle]);
   return (
-    <div className="cine-backdrop film-backdrop" role="dialog" aria-modal="true" aria-label="Choice film" onClick={onNext}>
+    // A stray tap does nothing: the film only moves on from its own buttons (or Enter / Escape).
+    <div className="cine-backdrop film-backdrop" role="dialog" aria-modal="true" aria-label="Choice film">
       <div className={`film-card ${index === 0 ? "first" : ""}`}>
         {/* key: every shot is a cut, so the camera move and the animations start again. */}
         <FilmShot key={index} kind={shot.kind} ms={shot.ms} spec={req.spec} stage={req.stage} location={req.location} script={script}
           speaker={speaker} particles={<Particles tone={req.spec.tone} money={req.spec.money} seed={seed} />} />
         <div className="film-controls">
-          <span>Tap for the next shot</span>
-          <button type="button" onClick={(e) => { e.stopPropagation(); onSkip(); }}
-            className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2.5 py-1 font-semibold text-zinc-300 hover:text-white">
-            <FastForward className="h-3 w-3" /> Skip film
-          </button>
+          <span>{index + 1} / {FILM.length}</span>
+          <span className="flex items-center gap-2">
+            <button type="button" onClick={onNext}
+              className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2.5 py-1 font-semibold text-zinc-300 hover:text-white">
+              Next shot ›
+            </button>
+            <button type="button" onClick={onSkip}
+              className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2.5 py-1 font-semibold text-zinc-300 hover:text-white">
+              <FastForward className="h-3 w-3" /> Skip film
+            </button>
+          </span>
         </div>
         {/* One segment per shot, like a story reel. */}
         <div className="cine-reel" aria-hidden>
