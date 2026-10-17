@@ -10,7 +10,11 @@ import { SceneStage } from "./Stage2D";
 import { STAGES } from "./stages";
 
 export type Speed = "full" | "quick";
-const DURATION: Record<Speed, number> = { full: 3000, quick: 1300 };
+const DURATION: Record<Speed, number> = { full: 5200, quick: 1300 };
+/** Share of the cutscene spent on the say beat; the react beat (the cut to the other person) gets the rest. */
+const SAY_SHARE = 0.42;
+/** The opening wide shot with the place name, before the camera cuts to you. Full speed only. */
+const establishing = (ms: number) => (ms >= 3000 ? Math.round(ms * 0.17) : 0);
 const STORAGE_KEY = "japa.cinematic.speed";
 
 export interface CinematicRequest {
@@ -118,9 +122,14 @@ function CinematicView({ req, beat, ms, seed, onSkip }: {
   const reactor = req.reactor ?? reactorFor(req.stage);
   const reacting = beat === "react";
   const line = spec.line.length > 150 ? `${spec.line.slice(0, 147)}…` : spec.line;
+  const est = establishing(ms);
+  // The words land between the cut to you and the cut to them.
+  const wordsFrom = est / 1000 + 0.35;
+  const wordsSpan = Math.max(0.3, (ms * SAY_SHARE - est - 500) / 1000);
   return (
     <div className="cine-backdrop" role="dialog" aria-modal="true" aria-label="Choice animation" onClick={onSkip}>
-      <div className={`cine-card tone-${tone} ${reacting ? "react" : ""}`} style={{ ["--cine-ms" as string]: `${ms}ms` }}>
+      <div className={`cine-card tone-${tone} ${reacting ? "react" : ""} ${est ? "shots" : "quick"}`}
+        style={{ ["--cine-ms" as string]: `${ms}ms`, ["--cine-est" as string]: `${est}ms`, ["--cine-say" as string]: `${Math.round(ms * SAY_SHARE)}ms` }}>
         <div className="cine-stage">
           {/* The camera: the set and the actors move together, so a push-in or a cut frames both. */}
           <div className="cine-camera">
@@ -135,6 +144,7 @@ function CinematicView({ req, beat, ms, seed, onSkip }: {
           </div>
           <div className="cine-grain" aria-hidden />
           <div className="cine-bars" aria-hidden />
+          {est > 0 && req.location && !reacting ? <div className="cine-title" aria-hidden>{req.location}</div> : null}
           {req.transit && TRANSIT_LABEL[req.transit] ? (
             <span className="cine-transit">{TRANSIT_LABEL[req.transit]} · {req.location}</span>
           ) : null}
@@ -142,7 +152,7 @@ function CinematicView({ req, beat, ms, seed, onSkip }: {
             {`“${line}”`.split(" ").map((w, i, all) => (
               // Spread the words over the "say" beat.
               <Fragment key={i}>
-                <span className="word" style={{ ["--delay" as string]: `${0.3 + (i / all.length) * ms * 0.0003}s` }}>{w}</span>{" "}
+                <span className="word" style={{ ["--delay" as string]: `${wordsFrom + (i / all.length) * wordsSpan}s` }}>{w}</span>{" "}
               </Fragment>
             ))}
           </div>
@@ -219,7 +229,7 @@ export function CinematicProvider({ children }: { children: React.ReactNode }) {
       const tone = req.spec.tone;
       sound.play(tone === "triumph" || tone === "good" ? "good" : tone === "danger" ? "danger" : tone === "bad" ? "bad" : "stamp");
       if (req.spec.money) timers.current.push(window.setTimeout(() => sound.play(req.spec.money === "gain" ? "coin" : "cashOut"), 350));
-    }, Math.round(ms * 0.38)));
+    }, Math.round(ms * SAY_SHARE)));
     timers.current.push(window.setTimeout(finish, ms));
   }, [speed, finish, sound]);
 

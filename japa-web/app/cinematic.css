@@ -1,7 +1,10 @@
-/* After-every-choice cutscene, shot like film: letterbox bars, a slow camera push on the speaker, a cut to
-   the other person on the react beat, film grain, and a dip to black at the end. Three beats: say (actor
-   speaks), react (stamp, particles, reactions), results (stat chips). Durations come from --cine-ms so
-   "Quick" mode scales them. All film easing; no bounce on the camera. */
+/* After-every-choice cutscene, shot like a short film. At full speed it plays as three shots:
+   1. Establishing: a wide shot drifting across the set, with the place name as a title.
+   2. Close-up on you while you speak; the other person is out of focus behind you.
+   3. Cut to the other person's reaction (focus pulls to them), then a slow pull-back to a two-shot for the
+      results, and a dip to black.
+   "Quick" mode skips the establishing shot. Timings come from --cine-ms (whole cutscene), --cine-est
+   (establishing shot) and --cine-say (say beat). Film easing throughout; no bounce on the camera. */
 
 .cine-backdrop {
   position: fixed;
@@ -52,18 +55,72 @@
   from { transform: scale(1.02) translateX(3%); }
   to { transform: scale(1.14) translateX(0); }
 }
-/* React beat: cut to the other person, then a slow push on their reaction. */
+/* Full speed, shots 1 and 2: wide drift, then a hard cut (two keyframes 0.1% apart) to a close-up on you. */
+.shots .cine-camera {
+  transform-origin: 24% 72%;
+  animation: cine-establish var(--cine-say, 2200ms) linear both;
+}
+@keyframes cine-establish {
+  0% { transform: scale(1.01) translateX(4%); animation-timing-function: cubic-bezier(0.33, 0, 0.67, 1); }
+  40% { transform: scale(1.03) translateX(-1%); }
+  40.1% { transform: scale(1.2) translateX(0); animation-timing-function: cubic-bezier(0.25, 0, 0.3, 1); }
+  100% { transform: scale(1.3) translateX(0); }
+}
+/* React beat: cut to the other person, push in on their face, then pull back to a two-shot. */
 .react .cine-camera {
   transform-origin: 82% 70%;
-  animation: cine-cut calc(var(--cine-ms, 3000ms) * 0.62) cubic-bezier(0.2, 0, 0.1, 1) both;
+  animation: cine-cut calc(var(--cine-ms, 3000ms) * 0.58) cubic-bezier(0.2, 0, 0.1, 1) both;
 }
 @keyframes cine-cut {
   from { transform: scale(1.16); }
   to { transform: scale(1.26); }
 }
+.shots.react .cine-camera { animation: cine-cut-pull calc(var(--cine-ms, 3000ms) * 0.58) linear both; }
+@keyframes cine-cut-pull {
+  0% { transform: scale(1.18); animation-timing-function: cubic-bezier(0.2, 0, 0.1, 1); }
+  50% { transform: scale(1.3); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  100% { transform: scale(1.02); }
+}
+
+/* Rack focus: whoever isn't talking is soft. */
+.cine-actor { transition: filter 0.45s ease; }
+.shots:not(.react) .cine-actor.enter-right { filter: blur(2.5px) brightness(0.75); }
+.react .cine-actor.enter-left { filter: blur(2.5px) brightness(0.75); }
+.shots.react .cine-actor.enter-left { animation: cine-refocus calc(var(--cine-ms, 3000ms) * 0.58) linear both; }
+@keyframes cine-refocus { 0%, 55% { filter: blur(2.5px) brightness(0.75); } 85%, 100% { filter: none; } }
+
+/* The place name over the establishing shot. */
+.cine-title {
+  position: absolute;
+  inset: 0;
+  z-index: 19;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12%;
+  color: #fff;
+  font-family: var(--font-source-serif, Georgia, serif);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 0 2px 18px rgb(0 0 0 / 0.8);
+  pointer-events: none;
+  animation: cine-title var(--cine-est, 900ms) ease-in-out both;
+}
+@media (min-width: 640px) { .cine-title { font-size: 30px; } }
+@keyframes cine-title {
+  0% { opacity: 0; letter-spacing: 0.5em; }
+  30%, 75% { opacity: 1; }
+  100% { opacity: 0; letter-spacing: 0.3em; }
+}
 /* Over the shoulder: you're half out of frame on the cut, so your name tag steps out. */
 .cine-actor .person-name { transition: opacity 0.2s ease; }
 .react .cine-actor.enter-left .person-name { opacity: 0; }
+/* In the close-up your tag would sit off the top of the frame, so it steps out on the cut to you. */
+.shots .cine-actor.enter-left .person-name { animation: cine-tag-out 0.15s var(--cine-est, 0ms) ease forwards; }
+@keyframes cine-tag-out { to { opacity: 0; } }
 .cine-scene {
   position: absolute;
   inset: 0;
@@ -91,6 +148,7 @@
   background: #000;
   animation: cine-bar 0.7s cubic-bezier(0.65, 0, 0.35, 1) both;
 }
+.shots .cine-bars::before, .shots .cine-bars::after { height: 11%; animation-duration: 1s; }
 .cine-bars::before { top: 0; transform-origin: top; }
 .cine-bars::after { bottom: 0; transform-origin: bottom; }
 @keyframes cine-bar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
@@ -135,6 +193,8 @@
 .cine-actor .person-wrap { bottom: 2%; }
 .cine-actor.enter-left .person-wrap { animation: cine-enter-left 0.8s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .cine-actor.enter-right .person-wrap { animation: cine-enter-right 0.8s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.shots .cine-actor.enter-left .person-wrap { animation-duration: 1.2s; }
+.shots .cine-actor.enter-right .person-wrap { animation-duration: 1.2s; }
 @keyframes cine-enter-left { from { translate: -90px 0; opacity: 0; } to { translate: 0 0; opacity: 1; } }
 @keyframes cine-enter-right { from { translate: 90px 0; opacity: 0; } to { translate: 0 0; opacity: 1; } }
 
@@ -153,7 +213,7 @@
   font-weight: 700;
   line-height: 1.45;
   box-shadow: 0 10px 30px rgb(0 0 0 / 0.45);
-  animation: cine-bubble 0.45s 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: cine-bubble 0.45s calc(var(--cine-est, 0ms) + 0.25s) cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @media (min-width: 640px) { .cine-bubble { font-size: 15px; left: 30%; } }
 .cine-bubble::after {
@@ -297,7 +357,7 @@
   font-size: 13px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  animation: cine-chip 0.45s var(--delay) cubic-bezier(0.2, 1.5, 0.3, 1) both;
+  animation: cine-chip 0.45s var(--delay) cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .cine-chip.up { background: rgb(34 197 94 / 0.15); color: #86efac; border: 1px solid rgb(34 197 94 / 0.35); }
 .cine-chip.down { background: rgb(244 63 94 / 0.15); color: #fda4af; border: 1px solid rgb(244 63 94 / 0.35); }
@@ -330,6 +390,7 @@
 @keyframes cine-slug { from { opacity: 0; letter-spacing: 0.4em; } to { opacity: 0.9; letter-spacing: 0.22em; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .cine-scene, .cine-stage, .cine-camera, .cine-grain, .cine-p, .cine-flash { animation: none !important; }
+  .cine-scene, .cine-stage, .cine-camera, .cine-grain, .cine-p, .cine-flash, .cine-actor { animation: none !important; }
+  .cine-actor { filter: none !important; }
   .cine-bubble .word { opacity: 1; transform: none; animation: none; }
 }
