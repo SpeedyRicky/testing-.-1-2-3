@@ -152,7 +152,7 @@ function FilmView({ req, index, reactor, script, seed, onSkip, onNext }: {
     <div className="cine-backdrop film-backdrop" role="dialog" aria-modal="true" aria-label="Choice film">
       <div className={`film-card ${index === 0 ? "first" : ""}`}>
         {/* key: every shot is a cut, so the camera move and the animations start again. */}
-        <FilmShot key={index} kind={shot.kind} ms={shot.ms} spec={req.spec} stage={req.stage} location={req.location} script={script}
+        <FilmShot key={index} kind={shot.kind} ms={shot.ms} v={shot.v} spec={req.spec} stage={req.stage} location={req.location} script={script}
           speaker={speaker} particles={<Particles tone={req.spec.tone} money={req.spec.money} seed={seed} />} />
         <div className="film-controls">
           <span>{index + 1} / {plan.length}</span>

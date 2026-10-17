@@ -18,7 +18,7 @@ describe("the after-choice film", () => {
     expect(circleOf("someone-new")).toBe("stranger");
     expect(moodOf("triumph")).toBe("up");
     expect(moodOf("danger")).toBe("down");
-    const s = filmScript("bad", "officer", 3);
+    const s = filmScript("bad", "officer", 3, [], undefined, "Tell the officer the truth");
     expect(s.circle).toBe("official");
     expect(s.mood).toBe("down");
     expect(s.ripple.kind).toBe("chat");
@@ -64,8 +64,29 @@ describe("the after-choice film", () => {
     expect(momentKind("Spend your first paycheque on proper winter work gear")).toBe("paycheque");
     expect(momentKind("Buy the best phone plan in the mall so you can call home properly")).toBe("shopping");
     expect(momentKind("Call {relTitle} in {relCity} about the visa story")).toBe("call");
-    expect(momentKind("Leave the call. Go to the annex and start a real paper trail")).toBeNull();
+    expect(momentKind("Leave the call. Go to the annex and start a real paper trail")).not.toBe("call");
     expect(momentFor("Get your SIN", "", "up")?.lines.join(" ")).not.toMatch(/\d{3} \d{3} \d{3}/); // never a full number
+  });
+
+  it("every choice in the game is a big moment, and almost none fall back to the plain decision notebook", async () => {
+    const { DB } = await import("./engine");
+    let total = 0, plain = 0;
+    for (const [id, scene] of Object.entries(DB.scenes)) {
+      for (const c of scene.choices ?? []) {
+        total++;
+        const m = momentFor(c.text, id, "up");
+        expect(m.style, c.text).toBeTruthy();
+        if (m.kind === "decide") plain++;
+      }
+    }
+    expect(total).toBeGreaterThan(400);
+    expect(plain / total).toBeLessThan(0.02);
+    expect(momentKind("Catch another {bus} to the job hunt")).toBe("travel");
+    expect(momentKind("Take a warehouse survival job, nights, and keep applying by day")).toBe("work");
+    expect(momentKind("Saskatchewan: in-demand jobs list and lower rent", "PN_START")).toBe("choose");
+    expect(momentKind("Sleep. Your body has filed a formal complaint")).toBe("rest");
+    expect(momentKind("'An approved LMIA? Give me the LMIA number and the employer's legal name so I can verify it.'")).toBe("verify");
+    expect(momentKind("It really happened: gunmen attacked your community and you know their names, and they know yours")).toBe("talk");
   });
 
   it("shows the thing at stake: money, papers or time", () => {

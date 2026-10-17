@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import type { Avatar } from "@/game/profile";
 
 export type ActorPose = "idle" | "talk" | "walk" | "cheer" | "slump" | "phone" | "listen" | "point" | "sit" | "hold" | "raise" | "reach";
-export type ActorFace = "neutral" | "smile" | "grin" | "worried" | "sad" | "shock" | "angry" | "reading";
+export type ActorFace = "neutral" | "smile" | "grin" | "worried" | "sad" | "shock" | "angry" | "reading" | "sleep";
 
 export interface Look {
   skin: string;
@@ -76,6 +76,14 @@ function Headwear({ look }: { look: Look }) {
 }
 
 function Eyes({ face, ink }: { face: ActorFace; ink: string }) {
+  if (face === "sleep") {
+    return (
+      <g stroke={ink} strokeWidth="6" fill="none" strokeLinecap="round">
+        <path d="M-32 -410 Q-21 -400 -10 -410" />
+        <path d="M10 -410 Q21 -400 32 -410" />
+      </g>
+    );
+  }
   if (face === "grin") {
     return (
       <g stroke={ink} strokeWidth="6" fill="none" strokeLinecap="round">
@@ -108,6 +116,7 @@ function Brows({ face, color }: { face: ActorFace; color: string }) {
     shock: ["M-34 -446 Q-21 -454 -8 -446", "M8 -446 Q21 -454 34 -446"],
     angry: ["M-34 -442 Q-21 -436 -8 -432", "M8 -432 Q21 -436 34 -442"],
     reading: ["M-34 -432 Q-21 -436 -8 -432", "M8 -432 Q21 -436 34 -432"],
+    sleep: ["M-34 -430 Q-21 -432 -8 -430", "M8 -430 Q21 -432 34 -430"],
   };
   return (
     <g stroke={color} strokeWidth="6" fill="none" strokeLinecap="round">

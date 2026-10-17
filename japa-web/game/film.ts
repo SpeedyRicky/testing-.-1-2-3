@@ -26,11 +26,24 @@ export type ShotKind =
   | "plane" // wheels down at Pearson
   | "dial" // the phone ringing out
   | "split" // split screen: you and them, both on the phone
+  | "desk" // you at your desk, working on it, the clock racing
+  | "listen" // they listen, and write on their notepad
+  | "notes" // their notepad, close up: the verdict in their handwriting
+  | "work" // on shift (three angles: v 0, 1, 2)
+  | "clock" // the hours going by
+  | "ride" // in the danfo, keke or streetcar window
+  | "arrive" // stepping off, walking in
+  | "sleep" // asleep, while the days go
+  | "calendar" // the calendar pages flipping
+  | "board" // your pick, pinned on the board
+  | "crowd" // everybody's here: the owambe, the church hall
   | "close"; // back on you, then black
 
 export interface Shot {
   kind: ShotKind;
   ms: number;
+  /** Which angle, when the same kind of shot plays more than once. */
+  v?: number;
 }
 
 export const FILM: Shot[] = [
@@ -60,7 +73,7 @@ export const planMs = (plan: Shot[]) => plan.reduce((n, s) => n + s.ms, 0);
 
 /** The running order for one choice: the ordinary film, or one built around a big moment. */
 export function filmPlan(moment: Moment | null): Shot[] {
-  const S = (kind: ShotKind, ms: number): Shot => ({ kind, ms });
+  const S = (kind: ShotKind, ms: number, v?: number): Shot => (v === undefined ? { kind, ms } : { kind, ms, v });
   if (!moment) return FILM;
   const head = FILM.slice(0, 3); // establish, journey, think
   const tail = FILM.slice(FILM.findIndex((s) => s.kind === "pov")); // their side, the result, the aftermath
@@ -70,6 +83,13 @@ export function filmPlan(moment: Moment | null): Shot[] {
     screen: [S("say", 4500), S("screen", 6000), S("look", 5500), ...show, S("hear", 4500)],
     landing: [S("plane", 5500), S("say", 4500), S("handover", 5500), S("item", 5000), S("look", 5500), ...show, S("hear", 4500)],
     call: [S("say", 4500), S("dial", 4500), S("split", 6000)], // the split screen is how they hear it
+    desk: [S("say", 5000), S("desk", 5500), S("item", 5000), S("look", 5500), ...show, S("hear", 4500)],
+    talk: [S("say", 5000), S("listen", 5000), S("notes", 4500), S("hear", 4500)],
+    work: [S("work", 4000, 0), S("work", 3500, 1), S("work", 3500, 2), S("clock", 4000), S("look", 4500), S("hear", 4500)],
+    ride: [S("ride", 6000), S("arrive", 4500), S("say", 4500), S("hear", 4500)],
+    rest: [S("sleep", 5500), S("calendar", 4500), S("look", 5000), S("hear", 4500)],
+    board: [S("say", 4500), S("board", 5500), S("look", 5000), ...show, S("hear", 4500)],
+    crowd: [S("crowd", 6000), S("say", 5000), S("look", 4500), S("hear", 4500)],
   };
   return [...head, ...middle[moment.style], ...tail];
 }
@@ -263,6 +283,9 @@ export interface FilmScript {
   close: string;
 }
 
+/** Moments that already put a document, a screen or a pinned card on screen. */
+const PAPER_SHOWN: ReadonlySet<Moment["style"]> = new Set(["handover", "screen", "landing", "desk", "board"]);
+
 /** Everything said and shown in this film. The seed keeps it stable while it plays and varies it between choices. */
 export function filmScript(tone: Tone, reactor: string, seed: number, deltas: Pick<Delta, "key">[] = [], caption?: string,
   choiceText = "", sceneId = ""): FilmScript {
@@ -282,8 +305,8 @@ export function filmScript(tone: Tone, reactor: string, seed: number, deltas: Pi
     night: pick(NIGHT_LINES[mood], seed + 4),
     insert,
     insertCaption: INSERT_CAPTION[insert],
-    // A big moment already showed the paper; the verdict is then your face.
-    verdict: !moment && (circle === "official" || circle === "boss" || circle === "hustler") ? "stamp" : "face",
+    // Officials, bosses and agents stamp their decision, unless the moment already showed the paper.
+    verdict: (circle === "official" || circle === "boss" || circle === "hustler") && !PAPER_SHOWN.has(moment.style) ? "stamp" : "face",
     stamp: mood === "up" ? "Approved" : mood === "down" ? "Refused" : "Noted",
     ripple: circle === "family"
       ? { kind: "roommate", line: pick(ROOMMATE_LINES[mood], seed + 2) }

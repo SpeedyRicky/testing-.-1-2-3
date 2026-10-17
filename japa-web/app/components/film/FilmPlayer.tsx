@@ -9,7 +9,8 @@ import type { StageKind } from "@/game/types";
 import { relativeAvatar, type PersonWho } from "../Person";
 import { usePlayer } from "../Player";
 import { Actor, type ActorFace, type ActorPose, type Look } from "./Actor";
-import { DialInsert, ItemInsert, PropSvg, ScreenInsert } from "./Props";
+import { NOTES } from "@/game/moments";
+import { BoardInsert, DialInsert, ItemInsert, NotesInsert, PropSvg, ScreenInsert } from "./Props";
 import { setLayers, type SetKind } from "./Sets";
 
 // --- Casting ---------------------------------------------------------------------------------------------------
@@ -168,6 +169,38 @@ function StampInsert({ word, tone }: { word: string; tone: CinematicSpec["tone"]
   );
 }
 
+/** A danfo (or a streetcar in Canada) with you in the window. */
+function BusSvg({ look, canada }: { look: Look; canada: boolean }) {
+  const body = canada ? "#dc2626" : "#facc15";
+  return (
+    <g transform="translate(0 470)">
+      <rect x="-20" y="0" width="520" height="290" rx="34" fill={body} />
+      <rect x="10" y="30" width="460" height="120" rx="10" fill="#1f2937" />
+      {/* you, seen through the window */}
+      <g transform="translate(170 300)"><Actor look={look} pose="idle" face="neutral" x={0} y={0} scale={0.62} /></g>
+      <rect x="-20" y="150" width="520" height="140" rx="20" fill={body} />
+      <rect x="-20" y="180" width="520" height="16" fill="#111" />
+      {[150, 310].map((x) => <rect key={x} x={x} y="30" width="10" height="120" fill={body} />)}
+      <g fill="#111"><circle cx="80" cy="290" r="44" /><circle cx="400" cy="290" r="44" /></g>
+      <g fill="#6b7280"><circle cx="80" cy="290" r="18" /><circle cx="400" cy="290" r="18" /></g>
+    </g>
+  );
+}
+
+/** A car with you at the wheel. */
+function CarSvg({ look }: { look: Look }) {
+  return (
+    <g transform="translate(560 560)">
+      <path d="M0 120 L40 40 Q60 10 110 10 L300 10 Q340 10 370 40 L430 120 Z" fill="#1f2937" />
+      <path d="M70 110 L95 45 L190 45 L190 110 Z" fill="#93c5fd" />
+      <g transform="translate(140 230)"><Actor look={look} pose="idle" face="neutral" x={0} y={0} scale={0.42} /></g>
+      <rect x="-20" y="110" width="480" height="110" rx="26" fill="#334155" />
+      <rect x="380" y="140" width="40" height="18" rx="6" fill="#fde68a" />
+      <g fill="#111"><circle cx="80" cy="220" r="40" /><circle cx="360" cy="220" r="40" /></g>
+    </g>
+  );
+}
+
 /** A plane coming in to land, drawn side-on. */
 function PlaneSvg() {
   return (
@@ -220,9 +253,11 @@ export interface ShotProps {
   /** The other person's name on screen (from the set, or "The officer", "Sister Ada"...). */
   speaker: string;
   particles: ReactNode;
+  /** Which angle, when the same kind of shot plays more than once. */
+  v?: number;
 }
 
-export function FilmShot({ kind, ms, spec, stage, location, script, speaker, particles }: ShotProps) {
+export function FilmShot({ kind, ms, spec, stage, location, script, speaker, particles, v = 0 }: ShotProps) {
   const { t, profile } = usePlayer();
   const tone = spec.tone;
   const you = profile?.avatar ? toLook(profile.avatar) : toLook(DEFAULT_AVATAR);
@@ -237,6 +272,10 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
   const resultPose: ActorPose = up ? "cheer" : down ? "slump" : "idle";
   const name = profile?.username ?? t("You");
   const line = spec.line.length > 140 ? `${spec.line.slice(0, 137)}…` : spec.line;
+  const money = spec.deltas.find((d) => d.key === "walletNgn" || d.key === "walletCad");
+  const amount = money ? fmt(money) : "";
+  const m = script.moment;
+  const here: SetKind = m?.set ?? mine; // where the moment happens
 
   let set: SetKind = mine;
   let cam: [Cam, Cam] = [{ x: 800, y: 450, z: 1 }, { x: 800, y: 450, z: 1 }];
@@ -367,29 +406,29 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
     // --- Big moments (game/moments.ts) ---
     case "handover": {
       // Across the counter: the officer slides the letter over (or you hand the agent your cash).
-      const m = script.moment!;
-      set = m.set;
+      const mo = script.moment!;
+      set = here;
       cam = [{ x: 800, y: 520, z: 1.4 }, { x: 800, y: 500, z: 1.6 }];
-      const giver = CAST[m.giver ?? "official"];
-      const toThem = m.prop === "cash";
+      const giver = CAST[mo.giver ?? "official"];
+      const toThem = !!mo.toThem;
       actors = <>
         <Actor look={giver} pose="reach" face={toThem ? "grin" : "smile"} x={1100} y={FLOOR} flip />
         <Actor look={you} pose="reach" face={toThem ? "worried" : "smile"} x={500} y={FLOOR} />
-        <g className={`pass-prop ${toThem ? "to-them" : "to-you"}`}><PropSvg kind={m.prop} /></g>
+        <g className={`pass-prop ${toThem ? "to-them" : "to-you"}`}><PropSvg kind={mo.prop} /></g>
       </>;
-      slug = t(m.caption);
+      slug = t(mo.caption);
       break;
     }
     case "item":
       blurSet = true;
-      set = script.moment!.set;
+      set = here;
       cam = [{ x: 800, y: 450, z: 1.3 }, { x: 800, y: 450, z: 1.38 }];
-      overlay = <ItemInsert moment={script.moment!} mood={script.mood} />;
+      overlay = <ItemInsert moment={script.moment!} mood={script.mood} choice={line} amount={amount} />;
       break;
     case "look": {
       // You, reading it; halfway through, your face changes.
       const m = script.moment!;
-      set = m.style === "screen" ? "bedroom" : m.set === "office" || m.set === "agent-office" ? m.set : mine;
+      set = here;
       cam = [{ x: 640, y: FLOOR - 250, z: 1.65 }, { x: 640, y: FLOOR - 262, z: 1.8 }];
       const after: ActorFace = up ? "grin" : down ? (tone === "danger" ? "shock" : "sad") : "worried";
       actors = <>
@@ -401,7 +440,7 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
     }
     case "showoff": {
       const m = script.moment!;
-      set = m.style === "screen" ? "bedroom" : mine;
+      set = m.style === "handover" || m.style === "landing" ? mine : here;
       cam = mediumOn(640, 1, 1.35, 1.5);
       actors = <Actor look={you} pose="raise" face="grin" x={640} y={FLOOR} prop={<PropSvg kind={m.prop} />} />;
       overlay = <div className="camera-flash" />;
@@ -410,9 +449,9 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
     }
     case "screen":
       blurSet = true;
-      set = "bedroom";
+      set = here;
       cam = [{ x: 800, y: 450, z: 1.25 }, { x: 800, y: 450, z: 1.35 }];
-      overlay = <ScreenInsert moment={script.moment!} mood={script.mood} />;
+      overlay = <ScreenInsert moment={script.moment!} mood={script.mood} choice={line} amount={amount} />;
       slug = t(script.moment!.caption);
       break;
     case "plane":
@@ -427,6 +466,97 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
       cam = [{ x: 800, y: 450, z: 1.25 }, { x: 800, y: 450, z: 1.3 }];
       overlay = <DialInsert name={speaker} />;
       break;
+    case "desk": {
+      // At it: you with the notebook, the laptop or the papers, and the clock racing in the corner.
+      const mo = script.moment!;
+      set = here;
+      cam = [{ x: 640, y: FLOOR - 270, z: 1.5 }, { x: 640, y: FLOOR - 280, z: 1.7 }];
+      actors = <Actor look={you} pose="hold" face="reading" x={640} y={FLOOR} prop={<PropSvg kind={mo.prop} />} />;
+      overlay = <div className="mini-clock"><i /><i /></div>;
+      slug = t(mo.caption);
+      break;
+    }
+    case "listen":
+      // Their side: they listen and write on their notepad.
+      set = theirs;
+      cam = mediumOn(980, 1, 1.5, 1.7);
+      actors = <>
+        <Actor look={them} pose="hold" face="reading" x={980} y={FLOOR} flip prop={<PropSvg kind="notepad" />} />
+        {together ? <g className="soft"><Actor look={you} pose="talk" talking x={430} y={FLOOR + 260} scale={1.45} /></g> : null}
+      </>;
+      slug = `${t("Their side")} · ${speaker}`;
+      break;
+    case "notes":
+      blurSet = true;
+      set = theirs;
+      cam = [{ x: 800, y: 450, z: 1.3 }, { x: 800, y: 450, z: 1.36 }];
+      overlay = <NotesInsert who={speaker} note={t(NOTES[script.circle]?.[script.mood] ?? "")} />;
+      break;
+    case "work": {
+      set = here;
+      const driving = here === "toronto-street";
+      if (driving) {
+        cam = v === 1 ? closeOn(800, 0.8, 2.2, 2.4) : [{ x: 700, y: 560, z: 1.3 }, { x: 900, y: 560, z: 1.3 }];
+        actors = <g className={v === 1 ? "" : "drive-across"}><CarSvg look={you} /></g>;
+      } else {
+        // Three angles of one shift: wide, close on the box, close on your face.
+        cam = v === 0 ? [{ x: 700, y: 520, z: 1.2 }, { x: 760, y: 520, z: 1.3 }] : v === 1 ? [{ x: 640, y: FLOOR - 220, z: 2.2 }, { x: 640, y: FLOOR - 230, z: 2.4 }] : closeOn(640, 1, 2.3, 2.5);
+        actors = <g className={v === 0 ? "walk-across short" : ""}><Actor look={you} pose="hold" face={v === 2 ? "worried" : "neutral"}
+          x={v === 0 ? 420 : 640} y={FLOOR} prop={<PropSvg kind={here === "cafe" ? "receipt" : "box"} />} /></g>;
+      }
+      if (v === 2) overlay = <div className="sweat"><i /><i /></div>;
+      slug = v === 0 ? t(script.moment!.caption) : null;
+      break;
+    }
+    case "clock":
+    case "calendar":
+      blurSet = true;
+      cam = [{ x: 800, y: 450, z: 1.25 }, { x: 800, y: 450, z: 1.3 }];
+      overlay = <ClockInsert deltas={spec.deltas} />;
+      slug = kind === "calendar" ? t("Days pass") : null;
+      break;
+    case "ride": {
+      // In the danfo (or keke, or the streetcar in Canada), crossing town with your face in the window.
+      set = mine;
+      cam = [{ x: 500, y: 560, z: 1.25 }, { x: 1100, y: 560, z: 1.25 }];
+      actors = <g className="ride-across"><BusSvg look={you} canada={mine === "toronto-street"} /></g>;
+      slug = t(script.moment!.caption);
+      break;
+    }
+    case "arrive":
+      set = mine;
+      cam = [{ x: 700, y: 540, z: 1.35 }, { x: 760, y: 530, z: 1.45 }];
+      actors = <g className="walk-in"><Actor look={you} pose="walk" x={640} y={FLOOR} /></g>;
+      slug = location ?? null;
+      break;
+    case "sleep":
+      set = "bedroom";
+      cam = [{ x: 560, y: 560, z: 1.45 }, { x: 540, y: 560, z: 1.55 }];
+      actors = <>
+        {/* Lying down: rotated so your head is on the pillow, at the left end of the bed. */}
+        <g transform="translate(560 545) rotate(-90)"><Actor look={you} pose="idle" face="sleep" x={0} y={0} scale={0.9} /></g>
+        <text className="zzz" x="200" y="420" fontSize="64" fontWeight="900" fill="#e0e7ff">Z z z</text>
+      </>;
+      break;
+    case "board":
+      blurSet = true;
+      set = here;
+      cam = [{ x: 800, y: 450, z: 1.25 }, { x: 800, y: 450, z: 1.32 }];
+      overlay = <BoardInsert choice={line} caption={t(script.moment!.title)} />;
+      slug = t(script.moment!.caption);
+      break;
+    case "crowd": {
+      set = here;
+      cam = [{ x: 820, y: 520, z: 1.12 }, { x: 760, y: 520, z: 1.3 }];
+      const guests: Look[] = [CAST.family, CAST.friend, CAST.stranger, CAST.faith, { ...CAST.friend, outfitColor: "#db2777", hair: "braids" }];
+      actors = <>
+        {guests.map((g, i) => <Actor key={i} look={g} pose={up || i % 2 ? "cheer" : "idle"} face={down ? "neutral" : "grin"} x={180 + i * 300} y={FLOOR - (i % 2) * 20} scale={0.85} flip={i > 2} />)}
+        <Actor look={you} pose={down ? "idle" : "cheer"} face={down ? "sad" : "grin"} x={800} y={FLOOR + 30} />
+      </>;
+      overlay = up ? particles : null;
+      slug = t(script.moment!.caption);
+      break;
+    }
     case "split":
       return <SplitCall ms={ms} you={you} them={them} mine={mine} theirs={theirs} speaker={speaker} line={t(script.hear)} up={up} down={down} />;
     case "close":
