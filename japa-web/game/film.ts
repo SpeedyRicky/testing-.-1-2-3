@@ -26,6 +26,7 @@ export type ShotKind =
   | "plane" // wheels down at Pearson
   | "dial" // the phone ringing out
   | "split" // split screen: you and them, both on the phone
+  | "act" // close on your hands: opening the envelope, typing, counting the notes
   | "desk" // you at your desk, working on it, the clock racing
   | "listen" // they listen, and write on their notepad
   | "notes" // their notepad, close up: the verdict in their handwriting
@@ -79,15 +80,15 @@ export function filmPlan(moment: Moment | null): Shot[] {
   const tail = FILM.slice(FILM.findIndex((s) => s.kind === "pov")); // their side, the result, the aftermath
   const show = moment.showoff ? [S("showoff", 4500)] : [];
   const middle: Record<Moment["style"], Shot[]> = {
-    handover: [S("say", 5000), S("handover", 5500), S("item", 5000), S("look", 5500), ...show, S("hear", 4500)],
-    screen: [S("say", 4500), S("screen", 6000), S("look", 5500), ...show, S("hear", 4500)],
-    landing: [S("plane", 5500), S("say", 4500), S("handover", 5500), S("item", 5000), S("look", 5500), ...show, S("hear", 4500)],
+    handover: [S("say", 5000), S("handover", 5500), S("act", 4500), S("item", 5000), S("look", 6000), ...show, S("hear", 4500)],
+    screen: [S("say", 4500), S("act", 4500), S("screen", 6000), S("look", 6000), ...show, S("hear", 4500)],
+    landing: [S("plane", 5500), S("say", 4500), S("handover", 5500), S("act", 4500), S("item", 5000), S("look", 6000), ...show, S("hear", 4500)],
     call: [S("say", 4500), S("dial", 4500), S("split", 6000)], // the split screen is how they hear it
-    desk: [S("say", 5000), S("desk", 5500), S("item", 5000), S("look", 5500), ...show, S("hear", 4500)],
+    desk: [S("say", 5000), S("desk", 5500), S("act", 4500), S("item", 5000), S("look", 6000), ...show, S("hear", 4500)],
     talk: [S("say", 5000), S("listen", 5000), S("notes", 4500), S("hear", 4500)],
     work: [S("work", 4000, 0), S("work", 3500, 1), S("work", 3500, 2), S("clock", 4000), S("look", 4500), S("hear", 4500)],
     ride: [S("ride", 6000), S("arrive", 4500), S("say", 4500), S("hear", 4500)],
-    rest: [S("sleep", 5500), S("calendar", 4500), S("look", 5000), S("hear", 4500)],
+    rest: [S("sleep", 5500), S("calendar", 4500), S("look", 5500), S("hear", 4500)],
     board: [S("say", 4500), S("board", 5500), S("look", 5000), ...show, S("hear", 4500)],
     crowd: [S("crowd", 6000), S("say", 5000), S("look", 4500), S("hear", 4500)],
   };

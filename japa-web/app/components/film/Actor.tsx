@@ -4,6 +4,20 @@ import type { ReactNode } from "react";
 import type { Avatar } from "@/game/profile";
 
 export type ActorPose = "idle" | "talk" | "walk" | "cheer" | "slump" | "phone" | "listen" | "point" | "sit" | "hold" | "raise" | "reach";
+/**
+ * Something the actor is doing, on top of the pose: reading (eyes running along the lines), typing, tapping a phone,
+ * counting notes, writing, opening an envelope, lifting a box, glancing over their shoulder, or a reaction:
+ * a fist pump, hands on the head, a shrug, a nod, wiping the forehead, a yawn, a wave.
+ */
+export type ActorAction =
+  | "read" | "type" | "tap" | "count" | "write" | "open" | "lift" | "glance" | "jingle"
+  | "fistpump" | "headhands" | "shrug" | "nod" | "wipe" | "yawn" | "wave" | "selfie";
+
+/** Reactions that move the arms away from the pose. */
+const ACTION_ARMS: Partial<Record<ActorAction, [number, number]>> = {
+  fistpump: [10, -150], headhands: [158, -158], shrug: [50, -50], wipe: [8, -165], yawn: [150, -150], wave: [8, -150], selfie: [-30, -150],
+};
+
 export type ActorFace = "neutral" | "smile" | "grin" | "worried" | "sad" | "shock" | "angry" | "reading" | "sleep";
 
 export interface Look {
@@ -98,8 +112,10 @@ function Eyes({ face, ink }: { face: ActorFace; ink: string }) {
       {[-21, 21].map((x) => (
         <g key={x}>
           <ellipse cx={x} cy="-412" rx={r} ry={r + 2} fill="#fff" />
-          <circle cx={x + 1} cy={face === "reading" ? -404 : face === "sad" ? -408 : -411} r={face === "shock" ? 5 : 6.5} fill={ink} />
-          <circle cx={x + 4} cy={face === "reading" ? -407 : -415} r="2" fill="#fff" />
+          <g className="pupils">
+            <circle cx={x + 1} cy={face === "reading" ? -404 : face === "sad" ? -408 : -411} r={face === "shock" ? 5 : 6.5} fill={ink} />
+            <circle cx={x + 4} cy={face === "reading" ? -407 : -415} r="2" fill="#fff" />
+          </g>
         </g>
       ))}
     </g>
@@ -181,22 +197,24 @@ function Arm({ side, angle, sleeve, skin, className }: { side: -1 | 1; angle: nu
   );
 }
 
-export function Actor({ look, pose = "idle", face = "neutral", talking = false, x = 0, y = 0, scale = 1, flip = false, className = "", prop }: {
+export function Actor({ look, pose = "idle", face = "neutral", talking = false, x = 0, y = 0, scale = 1, flip = false, className = "", prop, action }: {
   look: Look; pose?: ActorPose; face?: ActorFace; talking?: boolean; x?: number; y?: number; scale?: number; flip?: boolean; className?: string;
   /** Something in their hands (with the hold, raise or reach pose). */
   prop?: ReactNode;
+  /** What they're doing on top of the pose (see ActorAction). */
+  action?: ActorAction;
 }) {
-  const propAt = PROP_AT[pose];
+  const propAt = action && ACTION_ARMS[action] ? undefined : PROP_AT[pose];
   const wide = look.body === "plus" ? 1.22 : look.body === "slim" ? 0.88 : 1;
   const top = look.outfitColor;
   const pants = look.pants ?? (look.outfit === "tee-jeans" ? "#28427a" : look.outfit === "hoodie" ? "#1f2937" : "#2b2f3a");
   const robe = look.outfit === "agbada" || look.outfit === "senator" || look.outfit === "cassock";
   const dress = look.outfit === "ankara-dress" || look.outfit === "buba-iro";
   const sleeve = top;
-  const [la, ra] = ARMS[pose];
+  const [la, ra] = (action && ACTION_ARMS[action]) ?? ARMS[pose];
   const brow = look.hair === "bald" ? INK : look.hairColor;
   return (
-    <g transform={`translate(${x} ${y}) scale(${flip ? -scale : scale} ${scale})`} className={`actor pose-${pose} ${className}`}>
+    <g transform={`translate(${x} ${y}) scale(${flip ? -scale : scale} ${scale})`} className={`actor pose-${pose} ${action ? `act-${action}` : ""} ${className}`}>
       <g className="actor-body">
         {/* shadow */}
         <ellipse cx="0" cy="4" rx={78 * wide} ry="12" fill="#000" opacity="0.25" />

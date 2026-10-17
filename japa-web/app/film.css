@@ -339,3 +339,95 @@
 .ins-screen .f-laptop.as-phone { width: min(40%, 250px); }
 .ins-screen .as-phone .f-laptop-screen { aspect-ratio: 9 / 16; border-radius: 30px; border-width: 12px; }
 @media (prefers-reduced-motion: reduce) { .ride-across, .drive-across, .zzz, .sweat i, .mini-clock i { animation: none !important; } }
+
+/* --- Characters doing things (Actor `action`) ------------------------------------------------------------------ */
+.actor .arm-l, .actor .arm-r { transform-box: fill-box; transform-origin: 50% 0; }
+.actor .actor-head { transform-box: fill-box; transform-origin: 50% 100%; }
+.pupils { transform-box: fill-box; transform-origin: center; }
+/* Reading: eyes run along each line and drop to the next; the head dips a little with every line. */
+.act-read .pupils { animation: film-scan 1.3s steps(5, end) infinite; }
+@keyframes film-scan { 0% { transform: translate(-6px, 0); } 85% { transform: translate(6px, 0); } 100% { transform: translate(-6px, 2px); } }
+.act-read .actor-head { animation: film-dip 1.3s ease-in-out infinite; }
+@keyframes film-dip { 0%, 100% { transform: rotate(0deg) translateY(0); } 50% { transform: rotate(-1.5deg) translateY(2px); } }
+/* Typing and tapping */
+.act-type .arm-l { animation: film-keys 0.22s ease-in-out infinite alternate; }
+.act-type .arm-r { animation: film-keys 0.22s 0.11s ease-in-out infinite alternate; }
+@keyframes film-keys { from { transform: rotate(-4deg); } to { transform: rotate(5deg); } }
+.act-type .pupils, .act-tap .pupils { animation: film-scan 2s steps(8, end) infinite; }
+.act-tap .arm-r { animation: film-tap 0.4s ease-in-out infinite; }
+@keyframes film-tap { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-7deg); } }
+/* Counting notes, writing, opening, jingling keys */
+.act-count .arm-r { animation: film-flick 0.6s ease-in-out infinite; }
+@keyframes film-flick { 0%, 60%, 100% { transform: rotate(0deg); } 30% { transform: rotate(-16deg); } }
+.act-write .arm-r { animation: film-writing 0.5s ease-in-out infinite; }
+@keyframes film-writing { 0% { transform: rotate(0deg); } 33% { transform: rotate(-5deg); } 66% { transform: rotate(3deg); } 100% { transform: rotate(0deg); } }
+.act-write .actor-head { animation: film-dip 2.4s ease-in-out infinite; }
+.act-open .arm-r { animation: film-tear 1.4s 0.2s ease-in-out both; }
+@keyframes film-tear { 0% { transform: rotate(0deg); } 40% { transform: rotate(-26deg); } 70%, 100% { transform: rotate(-6deg); } }
+.act-open .pupils { animation: film-look-down 0.4s ease-out both; }
+@keyframes film-look-down { to { transform: translateY(5px); } }
+.act-jingle .arm-r { animation: film-jingle 0.3s ease-in-out infinite alternate; }
+@keyframes film-jingle { from { transform: rotate(-3deg); } to { transform: rotate(6deg); } }
+/* Lifting a box: down, up, carry */
+.act-lift .actor-body { animation: film-lift 1.6s ease-in-out infinite; }
+@keyframes film-lift { 0%, 100% { transform: translateY(0) scaleY(1); } 35% { transform: translateY(14px) scaleY(0.95); } 60% { transform: translateY(-6px) scaleY(1.02); } }
+/* Glancing over your shoulder */
+.act-glance .actor-head { animation: film-glance 1.8s ease-in-out infinite; }
+@keyframes film-glance { 0%, 100% { transform: translateX(0) rotate(0deg); } 25% { transform: translateX(-8px) rotate(-5deg); } 60% { transform: translateX(8px) rotate(5deg); } }
+.act-glance .pupils { animation: film-eyes-lr 1.8s ease-in-out infinite; }
+@keyframes film-eyes-lr { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 60% { transform: translateX(6px); } }
+/* Reactions */
+.act-fistpump .arm-r { animation: film-pump 0.36s ease-in-out infinite alternate; }
+@keyframes film-pump { from { transform: rotate(0deg); } to { transform: rotate(-22deg); } }
+.act-fistpump .actor-body { animation: film-jump 0.72s cubic-bezier(0.3, 0, 0.3, 1) infinite; }
+.act-headhands .actor-head { animation: film-shake 0.9s ease-in-out infinite; }
+@keyframes film-shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
+.act-headhands .actor-body { animation: film-sigh 2.4s ease-in-out infinite; }
+.act-shrug .arm-l { animation: film-shrug-l 1.4s ease-in-out infinite; }
+.act-shrug .arm-r { animation: film-shrug-r 1.4s ease-in-out infinite; }
+@keyframes film-shrug-l { 0%, 100% { transform: rotate(0deg); } 40% { transform: rotate(14deg); } }
+@keyframes film-shrug-r { 0%, 100% { transform: rotate(0deg); } 40% { transform: rotate(-14deg); } }
+.act-shrug .actor-head { animation: film-tilt 1.4s ease-in-out infinite; }
+@keyframes film-tilt { 0%, 100% { transform: rotate(0deg); } 40% { transform: rotate(6deg); } }
+.act-nod .actor-head { animation: film-nod-yes 0.6s ease-in-out 3.2s 3 alternate; }
+@keyframes film-nod-yes { from { transform: rotate(0deg); } to { transform: rotate(7deg) translateY(4px); } }
+.act-wipe .arm-r { animation: film-wipe 1.2s ease-in-out infinite; }
+@keyframes film-wipe { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-40deg); } }
+.act-yawn .arm-l, .act-yawn .arm-r { animation: film-stretch 1.6s ease-in-out infinite alternate; }
+@keyframes film-stretch { from { transform: rotate(0deg); } to { transform: rotate(10deg); } }
+.act-yawn .actor-body { animation: film-breathe 1.6s ease-in-out infinite alternate; }
+.act-wave .arm-r { animation: film-wave 0.35s ease-in-out infinite alternate; }
+
+/* --- Props doing things (PropSvg `live`) ------------------------------------------------------------------------- */
+.env-flap { transform-box: fill-box; transform-origin: 50% 0; animation: film-flap 0.5s 0.4s ease-in both; }
+@keyframes film-flap { to { transform: scaleY(-1); } }
+.env-letter { animation: film-letter-out 1.6s 0.9s cubic-bezier(0.3, 0, 0.3, 1) both; }
+@keyframes film-letter-out { from { transform: translateY(40px) scale(0.9, 0.4); } 60% { transform: translateY(-80px) scale(0.9, 0.4); } to { transform: translateY(-96px) scale(1); } }
+.env-body { animation: film-env-drop 0.6s 2.4s ease-in both; }
+@keyframes film-env-drop { to { transform: translateY(120px); opacity: 0; } }
+.pp-cover { transform-box: fill-box; transform-origin: 0% 50%; animation: film-cover 0.9s 0.6s ease-in-out both; }
+@keyframes film-cover { to { transform: scaleX(-1); } }
+.type-line { transform-box: fill-box; transform-origin: 0 50%; animation: film-typed 0.7s calc(0.3s + var(--i) * 0.65s) steps(10, end) both; }
+@keyframes film-typed { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.scroll { animation: film-scroll 2.4s linear infinite; }
+@keyframes film-scroll { from { transform: translateY(0); } to { transform: translateY(-56px); } }
+.flick-note { animation: film-flick-note 0.7s calc(0.4s + var(--i) * 0.75s) ease-in both; }
+@keyframes film-flick-note { from { transform: none; opacity: 1; } to { transform: translate(90px, -40px) rotate(28deg); opacity: 0; } }
+.ink-line { transform-box: fill-box; transform-origin: 0 50%; animation: film-typed 0.9s calc(0.3s + var(--i) * 0.9s) linear both; }
+.pen { animation: film-pen 0.9s 0.3s linear infinite; }
+@keyframes film-pen { 0% { transform: translate(-36px, -26px); } 100% { transform: translate(40px, -26px); } }
+.swing { transform-box: fill-box; transform-origin: 30% 20%; animation: film-jingle 0.3s ease-in-out infinite alternate; }
+
+/* --- Background life ---------------------------------------------------------------------------------------------- */
+.extra-walk { animation: film-pass var(--d, 10s) var(--delay, 0s) linear infinite; }
+.extra-walk.rtl { animation-name: film-pass-rtl; }
+@keyframes film-pass { from { transform: translateX(-200px); } to { transform: translateX(1800px); } }
+@keyframes film-pass-rtl { from { transform: translateX(1800px); } to { transform: translateX(-200px); } }
+.extras .actor { opacity: 0.9; }
+.extra-ride { animation: film-pass var(--d, 7s) -2s linear infinite; }
+.extra-ride.rtl { animation-name: film-pass-rtl; }
+
+@media (prefers-reduced-motion: reduce) {
+  .actor .arm-l, .actor .arm-r, .actor .actor-head, .pupils, .env-flap, .env-letter, .env-body, .pp-cover, .type-line, .scroll,
+  .flick-note, .ink-line, .pen, .swing, .extra-walk, .extra-ride { animation: none !important; }
+}

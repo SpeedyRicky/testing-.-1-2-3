@@ -8,7 +8,7 @@ import type { FilmScript, ShotKind } from "@/game/film";
 import type { StageKind } from "@/game/types";
 import { relativeAvatar, type PersonWho } from "../Person";
 import { usePlayer } from "../Player";
-import { Actor, type ActorFace, type ActorPose, type Look } from "./Actor";
+import { Actor, type ActorAction, type ActorFace, type ActorPose, type Look } from "./Actor";
 import { NOTES } from "@/game/moments";
 import { BoardInsert, DialInsert, ItemInsert, NotesInsert, PropSvg, ScreenInsert } from "./Props";
 import { setLayers, type SetKind } from "./Sets";
@@ -56,6 +56,14 @@ export function theirSet(circle: FilmScript["circle"], stage: StageKind): SetKin
     default: return yourSet(stage);
   }
 }
+
+/** What your hands do with each prop. */
+const HANDS: Record<string, ActorAction> = {
+  letter: "open", envelope: "open", passport: "open", laptop: "type", phone: "tap", cash: "count", notebook: "write", notepad: "write",
+  keys: "jingle", box: "lift", document: "glance", receipt: "read", payslip: "read", bag: "read",
+};
+/** How you take the news once you've read it. */
+const REACTION: Record<"up" | "down" | "even", ActorAction> = { up: "fistpump", down: "headhands", even: "shrug" };
 
 // --- Camera ----------------------------------------------------------------------------------------------------
 
@@ -197,6 +205,48 @@ function CarSvg({ look }: { look: Look }) {
       <rect x="-20" y="110" width="480" height="110" rx="26" fill="#334155" />
       <rect x="380" y="140" width="40" height="18" rx="6" fill="#fde68a" />
       <g fill="#111"><circle cx="80" cy="220" r="40" /><circle cx="360" cy="220" r="40" /></g>
+    </g>
+  );
+}
+
+const PASSERS: Look[] = [
+  { skin: "#7c3a12", hair: "low-cut", hairColor: "#111", outfit: "tee-jeans", outfitColor: "#0ea5e9" },
+  { skin: "#a16207", hair: "braids", hairColor: "#1c1917", outfit: "ankara-dress", outfitColor: "#db2777", headwear: "headwrap", headwearColor: "#f59e0b" },
+  { skin: "#5b3410", hair: "low-cut", hairColor: "#111", outfit: "senator", outfitColor: "#e2e8f0", headwear: "fila", headwearColor: "#7c2d12" },
+  { skin: "#e5b48f", hair: "low-cut", hairColor: "#57534e", outfit: "hoodie", outfitColor: "#475569", headwear: "beanie", headwearColor: "#dc2626" },
+];
+
+const INDOORS: ReadonlySet<SetKind> = new Set(["office", "airport", "warehouse", "cafe", "church"]);
+
+/** Life in the background: people walking past, an okada or a car going by. */
+function Extras({ set }: { set: SetKind }) {
+  const street = set === "lagos-street" || set === "toronto-street";
+  const indoors = INDOORS.has(set);
+  if (!street && !indoors) return null;
+  const canada = set === "toronto-street" || set === "airport";
+  const walkers = street ? [0, 1, 2] : [0, 1];
+  return (
+    <g className="extras" aria-hidden>
+      {walkers.map((i) => (
+        <g key={i} className={`extra-walk ${i % 2 ? "rtl" : ""}`} style={{ ["--d" as string]: `${9 + i * 3}s`, ["--delay" as string]: `${-i * 4}s` }}>
+          <Actor look={PASSERS[(i + (canada ? 2 : 0)) % PASSERS.length]} pose="walk" x={0} y={indoors ? 600 : 770} scale={indoors ? 0.5 : 0.55} flip={i % 2 === 1} />
+        </g>
+      ))}
+      {set === "lagos-street" ? <g className="extra-ride" style={{ ["--d" as string]: "7s" }}><OkadaSvg /></g> : null}
+      {set === "toronto-street" ? <g className="extra-ride rtl" style={{ ["--d" as string]: "8s" }}><g transform="translate(0 -40) scale(0.6)"><CarSvg look={PASSERS[3]} /></g></g> : null}
+    </g>
+  );
+}
+
+/** An okada with a rider and a passenger. */
+function OkadaSvg() {
+  return (
+    <g transform="translate(0 700)">
+      <circle cx="0" cy="80" r="30" fill="#111" /><circle cx="150" cy="80" r="30" fill="#111" />
+      <path d="M0 80 L60 40 L130 40 L150 80" stroke="#b91c1c" strokeWidth="14" fill="none" />
+      <rect x="40" y="26" width="80" height="16" rx="8" fill="#111" />
+      <g transform="translate(70 40)"><Actor look={PASSERS[0]} pose="idle" x={0} y={0} scale={0.36} /></g>
+      <g transform="translate(110 40)"><Actor look={PASSERS[1]} pose="idle" x={0} y={0} scale={0.34} /></g>
     </g>
   );
 }
@@ -413,7 +463,7 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
       const toThem = !!mo.toThem;
       actors = <>
         <Actor look={giver} pose="reach" face={toThem ? "grin" : "smile"} x={1100} y={FLOOR} flip />
-        <Actor look={you} pose="reach" face={toThem ? "worried" : "smile"} x={500} y={FLOOR} />
+        <Actor look={you} pose="reach" face={toThem ? "worried" : "smile"} action={mo.kind === "shady" || toThem ? "glance" : "nod"} x={500} y={FLOOR} />
         <g className={`pass-prop ${toThem ? "to-them" : "to-you"}`}><PropSvg kind={mo.prop} /></g>
       </>;
       slug = t(mo.caption);
@@ -431,9 +481,19 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
       set = here;
       cam = [{ x: 640, y: FLOOR - 250, z: 1.65 }, { x: 640, y: FLOOR - 262, z: 1.8 }];
       const after: ActorFace = up ? "grin" : down ? (tone === "danger" ? "shock" : "sad") : "worried";
+      // First you read it (eyes running along the lines); then you take it in: a fist pump, hands on your head, or a shrug.
+      // After days of rest, you wake up instead: a long yawn and a stretch, then the phone.
+      if (m.style === "rest") {
+        actors = <>
+          <g className="phase-a"><Actor look={you} pose="idle" face="sleep" action="yawn" x={640} y={FLOOR} /></g>
+          <g className="phase-b"><Actor look={you} pose="hold" face="reading" action="tap" x={640} y={FLOOR} prop={<PropSvg kind="phone" live />} /></g>
+        </>;
+        sub = { who: name, text: t(m.look) };
+        break;
+      }
       actors = <>
-        <g className="phase-a"><Actor look={you} pose="hold" face="reading" x={640} y={FLOOR} prop={<PropSvg kind={m.prop} />} /></g>
-        <g className="phase-b"><Actor look={you} pose={down ? "slump" : "hold"} face={after} x={640} y={FLOOR} prop={down ? undefined : <PropSvg kind={m.prop} />} /></g>
+        <g className="phase-a"><Actor look={you} pose="hold" face="reading" action="read" x={640} y={FLOOR} prop={<PropSvg kind={m.prop} />} /></g>
+        <g className="phase-b"><Actor look={you} pose="idle" face={after} action={REACTION[script.mood]} x={640} y={FLOOR} /></g>
       </>;
       sub = { who: name, text: t(m.look) };
       break;
@@ -466,12 +526,20 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
       cam = [{ x: 800, y: 450, z: 1.25 }, { x: 800, y: 450, z: 1.3 }];
       overlay = <DialInsert name={speaker} />;
       break;
+    case "act": {
+      // Close on your hands: tearing the envelope open, opening the passport, typing, counting the notes.
+      const mo = script.moment!;
+      set = mo.style === "handover" || mo.style === "landing" ? mine : here;
+      cam = [{ x: 640, y: FLOOR - 250, z: 2.7 }, { x: 640, y: FLOOR - 240, z: 3.1 }];
+      actors = <Actor look={you} pose="hold" face="reading" action={HANDS[mo.prop]} x={640} y={FLOOR} prop={<PropSvg kind={mo.prop} live />} />;
+      break;
+    }
     case "desk": {
       // At it: you with the notebook, the laptop or the papers, and the clock racing in the corner.
       const mo = script.moment!;
       set = here;
       cam = [{ x: 640, y: FLOOR - 270, z: 1.5 }, { x: 640, y: FLOOR - 280, z: 1.7 }];
-      actors = <Actor look={you} pose="hold" face="reading" x={640} y={FLOOR} prop={<PropSvg kind={mo.prop} />} />;
+      actors = <Actor look={you} pose="hold" face="reading" action={HANDS[mo.prop]} x={640} y={FLOOR} prop={<PropSvg kind={mo.prop} live />} />;
       overlay = <div className="mini-clock"><i /><i /></div>;
       slug = t(mo.caption);
       break;
@@ -502,7 +570,7 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
         // Three angles of one shift: wide, close on the box, close on your face.
         cam = v === 0 ? [{ x: 700, y: 520, z: 1.2 }, { x: 760, y: 520, z: 1.3 }] : v === 1 ? [{ x: 640, y: FLOOR - 220, z: 2.2 }, { x: 640, y: FLOOR - 230, z: 2.4 }] : closeOn(640, 1, 2.3, 2.5);
         actors = <g className={v === 0 ? "walk-across short" : ""}><Actor look={you} pose="hold" face={v === 2 ? "worried" : "neutral"}
-          x={v === 0 ? 420 : 640} y={FLOOR} prop={<PropSvg kind={here === "cafe" ? "receipt" : "box"} />} /></g>;
+          action={v === 2 ? "wipe" : "lift"} x={v === 0 ? 420 : 640} y={FLOOR} prop={v === 2 ? undefined : <PropSvg kind={here === "cafe" ? "receipt" : "box"} />} /></g>;
       }
       if (v === 2) overlay = <div className="sweat"><i /><i /></div>;
       slug = v === 0 ? t(script.moment!.caption) : null;
@@ -574,7 +642,10 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
         <g className="film-cam" style={{ ["--c0" as string]: camT(cam[0]), ["--c1" as string]: camT(cam[1]) }}>
           <g className={blurSet ? "film-set blurred" : "film-set"}>
             <g className="px-far" style={{ ["--p" as string]: `${pan * 0.35}px` }}>{layers.far}</g>
+            {/* Indoors, people pass behind the counter; outdoors, along the street in front of the shops. */}
+            {kind !== "act" && INDOORS.has(set) ? <Extras set={set} /> : null}
             <g className="px-mid">{layers.mid}</g>
+            {kind !== "act" && !INDOORS.has(set) ? <Extras set={set} /> : null}
             {layers.near ? <g className="px-near" style={{ ["--p" as string]: `${-pan * 0.25}px` }}>{layers.near}</g> : null}
           </g>
           {actors}
