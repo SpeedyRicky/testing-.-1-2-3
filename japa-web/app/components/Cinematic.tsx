@@ -122,14 +122,19 @@ function CinematicView({ req, beat, ms, seed, onSkip }: {
     <div className="cine-backdrop" role="dialog" aria-modal="true" aria-label="Choice animation" onClick={onSkip}>
       <div className={`cine-card tone-${tone} ${reacting ? "react" : ""}`} style={{ ["--cine-ms" as string]: `${ms}ms` }}>
         <div className="cine-stage">
-          <div className="cine-scene"><SceneStage stage={req.stage} mood={reacting ? (tone === "bad" || tone === "danger" ? "fail" : tone === "neutral" ? "calm" : "win") : "calm"} /></div>
-          <div className="cine-flash" />
-          <div className="cine-actor enter-left">
-            <Person who="you" x={20} scale={2.1} pose={reacting ? ACTOR_POSE[tone] : "talk"} face={reacting && tone === "danger" ? "shock" : undefined} caption="You" wear={req.stage.match(/toronto|pearson|campus|graduation/) ? ["scarf"] : []} />
+          {/* The camera: the set and the actors move together, so a push-in or a cut frames both. */}
+          <div className="cine-camera">
+            <div className="cine-scene"><SceneStage stage={req.stage} mood={reacting ? (tone === "bad" || tone === "danger" ? "fail" : tone === "neutral" ? "calm" : "win") : "calm"} /></div>
+            <div className="cine-flash" />
+            <div className="cine-actor enter-left">
+              <Person who="you" x={20} scale={2.1} pose={reacting ? ACTOR_POSE[tone] : "talk"} face={reacting && tone === "danger" ? "shock" : undefined} caption="You" wear={req.stage.match(/toronto|pearson|campus|graduation/) ? ["scarf"] : []} />
+            </div>
+            <div className="cine-actor enter-right">
+              <Person who={reactor} x={80} scale={1.8} flip pose={reacting ? REACTOR_POSE[tone] : "idle"} face={reacting ? (tone === "good" || tone === "triumph" ? "grin" : tone === "neutral" ? undefined : "shock") : undefined} />
+            </div>
           </div>
-          <div className="cine-actor enter-right">
-            <Person who={reactor} x={80} scale={1.8} flip pose={reacting ? REACTOR_POSE[tone] : "idle"} face={reacting ? (tone === "good" || tone === "triumph" ? "grin" : tone === "neutral" ? undefined : "shock") : undefined} />
-          </div>
+          <div className="cine-grain" aria-hidden />
+          <div className="cine-bars" aria-hidden />
           {req.transit && TRANSIT_LABEL[req.transit] ? (
             <span className="cine-transit">{TRANSIT_LABEL[req.transit]} · {req.location}</span>
           ) : null}
@@ -164,6 +169,7 @@ function CinematicView({ req, beat, ms, seed, onSkip }: {
           </button>
         </div>
         <div className="cine-progress" />
+        <div className="cine-fadeout" aria-hidden />
       </div>
     </div>
   );

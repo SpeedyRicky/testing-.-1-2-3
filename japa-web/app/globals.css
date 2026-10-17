@@ -101,13 +101,13 @@ body {
 @keyframes scene-in {
   0% {
     opacity: 0;
-    transform: translateY(28px) scale(0.96) rotate(-0.6deg);
-    filter: blur(8px);
+    transform: translateY(14px) scale(0.985);
+    filter: blur(6px) brightness(0.4);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1) rotate(0);
-    filter: blur(0);
+    transform: translateY(0) scale(1);
+    filter: blur(0) brightness(1);
   }
 }
 
@@ -233,7 +233,7 @@ body {
 }
 
 .animate-scene-in {
-  animation: scene-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: scene-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-option-in {
