@@ -146,7 +146,7 @@ function FilmView({ req, index, reactor, script, seed, onSkip, onNext }: {
   const { t } = usePlayer();
   const plan = script.plan;
   const shot = plan[index];
-  const speaker = t(captionFor(req.stage, reactor) ?? SPEAKER_DEFAULT[script.circle]);
+  const speaker = t(script.moment?.giverName ?? captionFor(req.stage, reactor) ?? SPEAKER_DEFAULT[script.circle]);
   return (
     // A stray tap does nothing: the film only moves on from its own buttons (or Enter / Escape).
     <div className="cine-backdrop film-backdrop" role="dialog" aria-modal="true" aria-label="Choice film">

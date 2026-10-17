@@ -1,7 +1,7 @@
 "use client";
 // Plays one shot of the after-choice film: a drawn set, actors, a camera move, subtitles and inserts.
 // The shot list and the words come from game/film.ts; this file only decides how each shot looks.
-import { Fragment, type ReactNode } from "react";
+import { Fragment, useSyncExternalStore, type ReactNode } from "react";
 import type { CinematicSpec, Delta } from "@/game/cinematic";
 import { DEFAULT_AVATAR, familyFor, type Avatar } from "@/game/profile";
 import type { FilmScript, ShotKind } from "@/game/film";
@@ -66,6 +66,16 @@ const HANDS: Record<string, ActorAction> = {
 const REACTION: Record<"up" | "down" | "even", ActorAction> = { up: "fistpump", down: "headhands", even: "shrug" };
 
 // --- Camera ----------------------------------------------------------------------------------------------------
+
+/** True on a phone held upright: the frame is narrow, so two-person shots stand closer and the camera pulls back. */
+const NARROW = "(max-width: 640px)";
+function useNarrow(): boolean {
+  return useSyncExternalStore(
+    (cb) => { const m = window.matchMedia(NARROW); m.addEventListener("change", cb); return () => m.removeEventListener("change", cb); },
+    () => window.matchMedia(NARROW).matches,
+    () => false,
+  );
+}
 
 interface Cam { x: number; y: number; z: number }
 const camT = (c: Cam) => `translate(${800 - c.x * c.z}px, ${450 - c.y * c.z}px) scale(${c.z})`;
@@ -309,6 +319,7 @@ export interface ShotProps {
 
 export function FilmShot({ kind, ms, spec, stage, location, script, speaker, particles, v = 0 }: ShotProps) {
   const { t, profile } = usePlayer();
+  const narrow = useNarrow();
   const tone = spec.tone;
   const you = profile?.avatar ? toLook(profile.avatar) : toLook(DEFAULT_AVATAR);
   const them = script.circle === "family" ? toLook(relativeAvatar(familyFor(profile))) : CAST[script.circle];
@@ -338,10 +349,10 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
 
   switch (kind) {
     case "establish":
-      cam = [{ x: 900, y: 540, z: 1.25 }, { x: 760, y: 520, z: 1.08 }];
+      cam = narrow ? [{ x: 860, y: 540, z: 1.1 }, { x: 820, y: 520, z: 0.95 }] : [{ x: 900, y: 540, z: 1.25 }, { x: 760, y: 520, z: 1.08 }];
       actors = <>
-        <g className="walk-in"><Actor look={you} pose="walk" x={560} y={FLOOR} /></g>
-        {together ? <Actor look={them} pose="idle" x={1120} y={FLOOR} scale={0.95} flip /> : null}
+        <g className="walk-in"><Actor look={you} pose="walk" x={narrow ? 660 : 560} y={FLOOR} /></g>
+        {together ? <Actor look={them} pose="idle" x={narrow ? 1000 : 1120} y={FLOOR} scale={0.95} flip /> : null}
       </>;
       title = location ?? null;
       break;
@@ -417,10 +428,10 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
       sub = { who: name, text: t(script.reply) };
       break;
     case "consequence":
-      cam = [{ x: 700, y: 500, z: 1.6 }, { x: 800, y: 520, z: 1.08 }];
+      cam = narrow ? [{ x: 760, y: 500, z: 1.4 }, { x: 820, y: 520, z: 0.95 }] : [{ x: 700, y: 500, z: 1.6 }, { x: 800, y: 520, z: 1.08 }];
       actors = <>
-        <Actor look={you} pose={resultPose} face={resultFace} x={620} y={FLOOR} />
-        {together ? <Actor look={them} pose={up ? "idle" : "listen"} face={theirFace} x={1100} y={FLOOR} scale={0.95} flip /> : null}
+        <Actor look={you} pose={resultPose} face={resultFace} x={narrow ? 680 : 620} y={FLOOR} />
+        {together ? <Actor look={them} pose={up ? "idle" : "listen"} face={theirFace} x={narrow ? 1000 : 1100} y={FLOOR} scale={0.95} flip /> : null}
       </>;
       overlay = (
         <div className="stat-thirds">
@@ -458,13 +469,17 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
       // Across the counter: the officer slides the letter over (or you hand the agent your cash).
       const mo = script.moment!;
       set = here;
-      cam = [{ x: 800, y: 520, z: 1.4 }, { x: 800, y: 500, z: 1.6 }];
+      // On a phone the two of you stand closer and the camera pulls back, so both faces stay in the frame.
+      const [mx, gx] = narrow ? [560, 1040] : [500, 1100];
+      cam = narrow ? [{ x: 800, y: 500, z: 1.0 }, { x: 800, y: 490, z: 1.1 }] : [{ x: 800, y: 520, z: 1.4 }, { x: 800, y: 500, z: 1.6 }];
       const giver = CAST[mo.giver ?? "official"];
       const toThem = !!mo.toThem;
+      const [yourHand, theirHand] = [mx + 204, gx - 204];
       actors = <>
-        <Actor look={giver} pose="reach" face={toThem ? "grin" : "smile"} x={1100} y={FLOOR} flip />
-        <Actor look={you} pose="reach" face={toThem ? "worried" : "smile"} action={mo.kind === "shady" || toThem ? "glance" : "nod"} x={500} y={FLOOR} />
-        <g className={`pass-prop ${toThem ? "to-them" : "to-you"}`}><PropSvg kind={mo.prop} /></g>
+        <Actor look={giver} pose="reach" face={toThem ? "grin" : "smile"} x={gx} y={FLOOR} flip />
+        <Actor look={you} pose="reach" face={toThem ? "worried" : "smile"} action={mo.kind === "shady" || toThem ? "glance" : "nod"} x={mx} y={FLOOR} />
+        <g className={`pass-prop ${toThem ? "to-them" : "to-you"}`}
+          style={{ ["--you" as string]: `${yourHand}px`, ["--them" as string]: `${theirHand}px` }}><PropSvg kind={mo.prop} /></g>
       </>;
       slug = t(mo.caption);
       break;

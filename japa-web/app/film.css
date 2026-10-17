@@ -229,13 +229,14 @@
 /* Handover: the item crosses the counter from their hand to yours (or your cash to them). */
 .pass-prop { animation: film-pass-you var(--ms, 5500ms) cubic-bezier(0.45, 0, 0.25, 1) both; }
 .pass-prop.to-them { animation-name: film-pass-them; }
+/* --them and --you are the two hands' x positions, set per shot (they stand closer on a phone). */
 @keyframes film-pass-you {
-  0%, 30% { transform: translate(896px, 507px) rotate(-6deg); }
-  70%, 100% { transform: translate(704px, 507px) rotate(4deg); }
+  0%, 30% { transform: translate(var(--them, 896px), 507px) rotate(-6deg); }
+  70%, 100% { transform: translate(var(--you, 704px), 507px) rotate(4deg); }
 }
 @keyframes film-pass-them {
-  0%, 30% { transform: translate(704px, 507px) rotate(4deg); }
-  70%, 100% { transform: translate(896px, 507px) rotate(-6deg); }
+  0%, 30% { transform: translate(var(--you, 704px), 507px) rotate(4deg); }
+  70%, 100% { transform: translate(var(--them, 896px), 507px) rotate(-6deg); }
 }
 /* Reading it, then the reaction: two takes of the same frame, swapped halfway. */
 .phase-a { animation: film-phase-a var(--ms, 5500ms) steps(1, end) both; }

@@ -39,6 +39,8 @@ export interface Moment {
   /** True when the item goes from you to them (your cash to the agent, your keys to the buyer). */
   toThem?: boolean;
   caption: string;
+  /** What to call the person behind the counter or desk, when the moment knows (the Service Canada officer). */
+  giverName?: string;
   /** The item, close up: its heading and what's written on it. "{choice}" is the choice itself; "{amount}" the money. */
   title: string;
   lines: string[];
@@ -112,7 +114,7 @@ export function momentFor(text: string, sceneId: string, mood: Mood): Moment {
   const base = { kind, toThem: false };
   switch (kind) {
     case "sin":
-      return { ...base, style: "handover", prop: "letter", giver: "official", set: "office", caption: "Service Canada",
+      return { ...base, giverName: "Service Canada officer", style: "handover", prop: "letter", giver: "official", set: "office", caption: "Service Canada",
         title: "Social Insurance Number", lines: ["Name: {name}", "SIN: *** *** 274", "Keep this number private. You need it to work and to get paid."],
         look: "Nine digits. Now Canada knows I'm here to work.", showoff: "Snapping it for the family group chat. Number covered, of course." };
     case "ita":
@@ -122,36 +124,36 @@ export function momentFor(text: string, sceneId: string, mood: Mood): Moment {
     case "portal":
       return { ...base, style: "screen", prop: "laptop", giver: null, set: "bedroom", caption: "The portal", ...PORTAL[mood] };
     case "passport":
-      return { ...base, style: "handover", prop: "passport", giver: "official", set: "office", caption: "Visa application centre",
+      return { ...base, giverName: "Visa centre officer", style: "handover", prop: "passport", giver: "official", set: "office", caption: "Visa application centre",
         title: "Your passport is back", lines: ["A visa counterfoil is inside.", "Check every letter of your name."],
         look: "Every letter matches. It's real.", showoff: "Holding it like a trophy." };
     case "landing":
-      return { ...base, style: "landing", prop: "passport", giver: "official", set: "office", caption: "Toronto Pearson",
+      return { ...base, giverName: "CBSA officer", style: "landing", prop: "passport", giver: "official", set: "office", caption: "Toronto Pearson",
         title: "Admitted", lines: ["Port of entry stamp", "Welcome to Canada."],
         look: good ? "Welcome to Canada. Those words hit different." : "Secondary inspection. My heart is pounding.",
         showoff: good ? "First selfie in the cold." : null };
     case "agent-cash":
-      return { ...base, toThem: true, style: "handover", prop: "cash", giver: "hustler", set: "agent-office", caption: "The agent's office",
+      return { ...base, giverName: "The agent", toThem: true, style: "handover", prop: "cash", giver: "hustler", set: "agent-office", caption: "The agent's office",
         title: "Cash payment", lines: ["No receipt.", "No name.", "No refund."],
         look: "He didn't even count it in front of me…", showoff: null };
     case "shady":
-      return { ...base, style: "handover", prop: "document", giver: "hustler", set: "agent-office", caption: "A quiet corner",
+      return { ...base, giverName: "The 'connect'", style: "handover", prop: "document", giver: "hustler", set: "agent-office", caption: "A quiet corner",
         title: "Too good to be true", lines: ["No name you can check.", "No receipt.", "Everything about this is a red flag."],
         look: "Something about this doesn't feel right…", showoff: null };
     case "transcript":
-      return { ...base, style: "handover", prop: "envelope", giver: "official", set: "office", caption: "The registry",
+      return { ...base, giverName: "Registry officer", style: "handover", prop: "envelope", giver: "official", set: "office", caption: "The registry",
         title: "Official transcript", lines: ["Sealed and stamped by the registry.", "Do not open."],
         look: "Three months, four trips, one envelope.", showoff: good ? "Guarding it with my life." : null };
     case "offer":
-      return { ...base, style: "handover", prop: "letter", giver: "boss", set: "boardroom", caption: "The offer",
+      return { ...base, giverName: "The employer", style: "handover", prop: "letter", giver: "boss", set: "boardroom", caption: "The offer",
         title: "Offer of employment", lines: ["Start date: Monday.", "Please sign and return."],
         look: "A real offer. With my real name on it.", showoff: good ? "Framing this one." : null };
     case "paycheque":
-      return { ...base, style: "handover", prop: "payslip", giver: "boss", set: "warehouse", caption: "Payday",
+      return { ...base, giverName: "Your supervisor", style: "handover", prop: "payslip", giver: "boss", set: "warehouse", caption: "Payday",
         title: "Pay stub", lines: ["Gross pay", "Deductions: CPP, EI, income tax", "Net pay"],
         look: "So this is what the deductions look like.", showoff: "First Canadian money. Half is going home." };
     case "payment":
-      return { ...base, style: "handover", prop: "receipt", giver: "official", set: "office", caption: "The cashier",
+      return { ...base, giverName: "The cashier", style: "handover", prop: "receipt", giver: "official", set: "office", caption: "The cashier",
         title: "Payment received", lines: ["{amount}", "Keep this receipt.", "Fees are non-refundable."],
         look: "Money gone. Receipt in hand. Let's go.", showoff: good ? "Filing this receipt with everything else." : null };
     case "shopping": {
@@ -170,17 +172,17 @@ export function momentFor(text: string, sceneId: string, mood: Mood): Moment {
         look: by(mood, "I did it. I actually did it.", "One band. One band!", "Okay. It's on the calendar now."),
         showoff: good ? "Sending the score to everyone who doubted me." : null };
     case "customs":
-      return { ...base, style: "handover", prop: "document", giver: "official", set: "airport", caption: "Customs",
+      return { ...base, giverName: "Customs officer", style: "handover", prop: "document", giver: "official", set: "airport", caption: "Customs",
         title: "Declaration card", lines: ["Food, plants, animals?", "Currency over CAD 10,000?", "{choice}"],
         look: by(mood, "Declared. Nothing to hide, nothing to fear.", "That look on the officer's face…", "Next counter, please."),
         showoff: null };
     case "housing":
-      return { ...base, style: "handover", prop: "keys", giver: "stranger", set: "toronto-street", caption: "Your new place",
+      return { ...base, giverName: "The landlord", style: "handover", prop: "keys", giver: "stranger", set: "toronto-street", caption: "Your new place",
         title: "Room agreement", lines: ["{choice}", by(mood, "Keys handed over. Lease signed.", "No lease. No receipt. Hmm.", "We'll see how it goes.")],
         look: by(mood, "Four walls and a lock. Mine.", "Three people, one bathroom. It's a start.", "It's a roof. For now."),
         showoff: good ? "First video tour for the family." : null };
     case "sell":
-      return { ...base, toThem: true, style: "handover", prop: "keys", giver: "stranger", set: "lagos-street", caption: "The sale",
+      return { ...base, giverName: "The buyer", toThem: true, style: "handover", prop: "keys", giver: "stranger", set: "lagos-street", caption: "The sale",
         title: "Bank alert", lines: ["{amount}", by(mood, "Credit confirmed in your bank app.", "The 'alert' was fake. No money arrived.", "Pending…")],
         look: by(mood, "The money is real. I checked twice.", "No credit. No car. No buyer.", "Pending. Why is it pending?"), showoff: null };
     case "transfer":
@@ -199,7 +201,7 @@ export function momentFor(text: string, sceneId: string, mood: Mood): Moment {
         look: by(mood, "Good. It's real.", "Glad I checked before I paid.", "Better ten minutes now than ten months later."),
         showoff: good ? "Warning the family group chat, with the link." : null };
     case "resign":
-      return { ...base, toThem: true, style: "handover", prop: "letter", giver: "boss", set: "boardroom", caption: "The boss's office",
+      return { ...base, giverName: "Your boss", toThem: true, style: "handover", prop: "letter", giver: "boss", set: "boardroom", caption: "The boss's office",
         title: "Letter", lines: ["{choice}", "Signed, {name}"],
         look: by(mood, "In writing. Signed. Done properly.", "He didn't even look up.", "He'll think about it, he says."), showoff: null };
     case "write":
@@ -267,7 +269,7 @@ export function allMomentLines(): string[] {
   for (const probe of PROBES) {
     for (const mood of ["up", "down", "even"] as Mood[]) {
       const m = momentFor(probe, "", mood);
-      [m.caption, m.title, ...m.lines, m.look, m.showoff].forEach((l) => l && !/^\{(choice|amount)\}$/.test(l) && texts.add(l));
+      [m.caption, m.giverName, m.title, ...m.lines, m.look, m.showoff].forEach((l) => l && !/^\{(choice|amount)\}$/.test(l) && texts.add(l));
     }
   }
   for (const n of Object.values(NOTES)) Object.values(n).forEach((l) => texts.add(l));
