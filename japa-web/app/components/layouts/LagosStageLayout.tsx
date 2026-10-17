@@ -260,7 +260,8 @@ export function LagosStageLayout({ run, dispatch }: LayoutProps) {
     setHold(from);
     const dest = DB.scenes[next.currentSceneId];
     const mode = dest?.transitIn ?? "none";
-    play({ spec, stage: DB.scenes[from]?.stage ?? "room-night", location: t(DB.scenes[from]?.location, run) }, () => {
+    play({ spec, stage: DB.scenes[from]?.stage ?? "room-night", location: t(DB.scenes[from]?.location, run),
+      choiceText: choice?.text, sceneId: from }, () => {
       if (mode === "none" || !dest) { setHold(null); return; }
       setTravel({ mode, destination: t(dest.location, next) });
       timer.current = window.setTimeout(() => { setHold(null); setTravel(null); }, TRAVEL_MS[mode]);

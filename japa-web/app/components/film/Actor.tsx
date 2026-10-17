@@ -1,9 +1,10 @@
 // A film character drawn in SVG, so it stays sharp from a wide shot down to a close-up on the face.
 // Standing with the feet at (0, 0) and the top of the head near y = -470; the camera does the framing.
+import type { ReactNode } from "react";
 import type { Avatar } from "@/game/profile";
 
-export type ActorPose = "idle" | "talk" | "walk" | "cheer" | "slump" | "phone" | "listen" | "point" | "sit";
-export type ActorFace = "neutral" | "smile" | "grin" | "worried" | "sad" | "shock" | "angry";
+export type ActorPose = "idle" | "talk" | "walk" | "cheer" | "slump" | "phone" | "listen" | "point" | "sit" | "hold" | "raise" | "reach";
+export type ActorFace = "neutral" | "smile" | "grin" | "worried" | "sad" | "shock" | "angry" | "reading";
 
 export interface Look {
   skin: string;
@@ -89,8 +90,8 @@ function Eyes({ face, ink }: { face: ActorFace; ink: string }) {
       {[-21, 21].map((x) => (
         <g key={x}>
           <ellipse cx={x} cy="-412" rx={r} ry={r + 2} fill="#fff" />
-          <circle cx={x + 1} cy={face === "sad" ? -408 : -411} r={face === "shock" ? 5 : 6.5} fill={ink} />
-          <circle cx={x + 4} cy="-415" r="2" fill="#fff" />
+          <circle cx={x + 1} cy={face === "reading" ? -404 : face === "sad" ? -408 : -411} r={face === "shock" ? 5 : 6.5} fill={ink} />
+          <circle cx={x + 4} cy={face === "reading" ? -407 : -415} r="2" fill="#fff" />
         </g>
       ))}
     </g>
@@ -106,6 +107,7 @@ function Brows({ face, color }: { face: ActorFace; color: string }) {
     sad: ["M-34 -430 Q-21 -434 -8 -442", "M8 -442 Q21 -434 34 -430"],
     shock: ["M-34 -446 Q-21 -454 -8 -446", "M8 -446 Q21 -454 34 -446"],
     angry: ["M-34 -442 Q-21 -436 -8 -432", "M8 -432 Q21 -436 34 -442"],
+    reading: ["M-34 -432 Q-21 -436 -8 -432", "M8 -432 Q21 -436 34 -432"],
   };
   return (
     <g stroke={color} strokeWidth="6" fill="none" strokeLinecap="round">
@@ -151,8 +153,11 @@ function Mouth({ face, talking }: { face: ActorFace; talking: boolean }) {
 /** Arm angles (degrees, 0 = hanging down) for the left and right arm. */
 const ARMS: Record<ActorPose, [number, number]> = {
   idle: [8, -8], talk: [10, -60], walk: [18, -18], cheer: [160, -160], slump: [3, -3], phone: [8, -150],
-  listen: [10, -10], point: [8, -95], sit: [30, -30],
+  listen: [10, -10], point: [8, -95], sit: [30, -30], hold: [-28, 28], raise: [8, -165], reach: [8, -80],
 };
+
+/** Where the prop sits for the poses that carry one: both hands in front, held up high, or held out. */
+const PROP_AT: Partial<Record<ActorPose, [number, number]>> = { hold: [0, -212], raise: [100, -470], reach: [204, -293] };
 
 function Arm({ side, angle, sleeve, skin, className }: { side: -1 | 1; angle: number; sleeve: string; skin: string; className?: string }) {
   return (
@@ -167,9 +172,12 @@ function Arm({ side, angle, sleeve, skin, className }: { side: -1 | 1; angle: nu
   );
 }
 
-export function Actor({ look, pose = "idle", face = "neutral", talking = false, x = 0, y = 0, scale = 1, flip = false, className = "" }: {
+export function Actor({ look, pose = "idle", face = "neutral", talking = false, x = 0, y = 0, scale = 1, flip = false, className = "", prop }: {
   look: Look; pose?: ActorPose; face?: ActorFace; talking?: boolean; x?: number; y?: number; scale?: number; flip?: boolean; className?: string;
+  /** Something in their hands (with the hold, raise or reach pose). */
+  prop?: ReactNode;
 }) {
+  const propAt = PROP_AT[pose];
   const wide = look.body === "plus" ? 1.22 : look.body === "slim" ? 0.88 : 1;
   const top = look.outfitColor;
   const pants = look.pants ?? (look.outfit === "tee-jeans" ? "#28427a" : look.outfit === "hoodie" ? "#1f2937" : "#2b2f3a");
@@ -224,6 +232,12 @@ export function Actor({ look, pose = "idle", face = "neutral", talking = false, 
         <Arm side={-1} angle={la} sleeve={sleeve} skin={look.skin} className="arm-l" />
         <Arm side={1} angle={ra} sleeve={sleeve} skin={look.skin} className="arm-r" />
         {pose === "phone" ? <rect x="44" y="-470" width="26" height="46" rx="6" fill="#111827" stroke="#94a3b8" strokeWidth="3" /> : null}
+        {prop && propAt ? (
+          <g transform={`translate(${propAt[0]} ${propAt[1]})`}>
+            {prop}
+            {pose === "hold" ? <g fill={look.skin}><circle cx="-50" cy="12" r="17" /><circle cx="50" cy="12" r="17" /></g> : null}
+          </g>
+        ) : null}
         {/* head */}
         <g className="actor-head">
           <rect x="-16" y="-356" width="32" height="26" fill={look.skin} />

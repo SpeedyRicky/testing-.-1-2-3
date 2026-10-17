@@ -1,6 +1,7 @@
 // The after-choice film: fourteen shots, just over a minute, cut like a short film, with the other person's
 // side of the moment. Pure (no React, no timers): which shots play, how long each lasts, and what is said.
 import type { Delta, Tone } from "./cinematic";
+import { allMomentLines, momentFor, type Moment } from "./moments";
 
 export type ShotKind =
   | "establish" // wide: the place, with its name as a title
@@ -16,6 +17,15 @@ export type ShotKind =
   | "consequence" // pull back: what it cost and what it bought
   | "ripple" // meanwhile: the family group chat, or your roommate
   | "night" // later that night: you, alone, thinking it over
+  // Big moments (game/moments.ts) add their own shots:
+  | "handover" // across the counter: the officer slides your SIN letter over, the agent takes your cash
+  | "item" // the thing itself, close up: the letter, the passport, the pay stub
+  | "look" // you, reading it; then your face changes
+  | "showoff" // holding it up (only when it went well)
+  | "screen" // the portal or your inbox loading, then the answer
+  | "plane" // wheels down at Pearson
+  | "dial" // the phone ringing out
+  | "split" // split screen: you and them, both on the phone
   | "close"; // back on you, then black
 
 export interface Shot {
@@ -43,8 +53,25 @@ export const FILM_MS = FILM.reduce((n, s) => n + s.ms, 0);
 /** The result (sound, stamp, numbers) lands on the reaction shot. */
 export const DECISION_SHOT = FILM.findIndex((s) => s.kind === "react");
 
-export function shotStart(i: number): number {
-  return FILM.slice(0, i).reduce((n, s) => n + s.ms, 0);
+export function shotStart(i: number, plan: Shot[] = FILM): number {
+  return plan.slice(0, i).reduce((n, s) => n + s.ms, 0);
+}
+export const planMs = (plan: Shot[]) => plan.reduce((n, s) => n + s.ms, 0);
+
+/** The running order for one choice: the ordinary film, or one built around a big moment. */
+export function filmPlan(moment: Moment | null): Shot[] {
+  const S = (kind: ShotKind, ms: number): Shot => ({ kind, ms });
+  if (!moment) return FILM;
+  const head = FILM.slice(0, 3); // establish, journey, think
+  const tail = FILM.slice(FILM.findIndex((s) => s.kind === "pov")); // their side, the result, the aftermath
+  const show = moment.showoff ? [S("showoff", 4500)] : [];
+  const middle: Record<Moment["style"], Shot[]> = {
+    handover: [S("say", 5000), S("handover", 5500), S("item", 5000), S("look", 5500), ...show, S("hear", 4500)],
+    screen: [S("say", 4500), S("screen", 6000), S("look", 5500), ...show, S("hear", 4500)],
+    landing: [S("plane", 5500), S("say", 4500), S("handover", 5500), S("item", 5000), S("look", 5500), ...show, S("hear", 4500)],
+    call: [S("say", 4500), S("dial", 4500), S("split", 6000)], // the split screen is how they hear it
+  };
+  return [...head, ...middle[moment.style], ...tail];
 }
 
 /** Whose circle the other person belongs to: decides where their side is and how they see your choice. */
@@ -207,7 +234,7 @@ export const SPEAKER_DEFAULT: Record<Circle, string> = {
   hustler: "The agent", faith: "The pastor", stranger: "A stranger",
 };
 /** Small captions on the film. */
-export const SLUGS = ["Their side", "Meanwhile", "On the way", "Later that night", "You", "The family group chat", "Your roommate", "Mummy", "Daddy",
+export const SLUGS = ["Their side", "Meanwhile", "On the way", "Later that night", "Wheels down.", "Loading…", "Calling…", "No receipt.", "You", "The family group chat", "Your roommate", "Mummy", "Daddy",
   "Approved", "Refused", "Noted", "Decision", ...Object.values(INSERT_CAPTION)];
 
 function pick<T>(list: T[], seed: number): T {
@@ -215,6 +242,10 @@ function pick<T>(list: T[], seed: number): T {
 }
 
 export interface FilmScript {
+  /** The shots for this film, in order. */
+  plan: Shot[];
+  /** The big moment this choice is, if any. */
+  moment: Moment | null;
   circle: Circle;
   mood: Mood;
   think: string;
@@ -233,11 +264,15 @@ export interface FilmScript {
 }
 
 /** Everything said and shown in this film. The seed keeps it stable while it plays and varies it between choices. */
-export function filmScript(tone: Tone, reactor: string, seed: number, deltas: Pick<Delta, "key">[] = [], caption?: string): FilmScript {
+export function filmScript(tone: Tone, reactor: string, seed: number, deltas: Pick<Delta, "key">[] = [], caption?: string,
+  choiceText = "", sceneId = ""): FilmScript {
   const circle = circleOf(reactor, caption);
   const mood = moodOf(tone);
   const insert = insertFor(deltas);
+  const moment = momentFor(choiceText, sceneId, mood);
   return {
+    plan: filmPlan(moment),
+    moment,
     circle,
     mood,
     think: pick(THINK_LINES, seed),
@@ -247,7 +282,8 @@ export function filmScript(tone: Tone, reactor: string, seed: number, deltas: Pi
     night: pick(NIGHT_LINES[mood], seed + 4),
     insert,
     insertCaption: INSERT_CAPTION[insert],
-    verdict: circle === "official" || circle === "boss" || circle === "hustler" ? "stamp" : "face",
+    // A big moment already showed the paper; the verdict is then your face.
+    verdict: !moment && (circle === "official" || circle === "boss" || circle === "hustler") ? "stamp" : "face",
     stamp: mood === "up" ? "Approved" : mood === "down" ? "Refused" : "Noted",
     ripple: circle === "family"
       ? { kind: "roommate", line: pick(ROOMMATE_LINES[mood], seed + 2) }
@@ -269,5 +305,6 @@ export function allFilmLines(): string[] {
     ...Object.values(CLOSE_LINES),
     ...Object.values(SPEAKER_DEFAULT),
     ...SLUGS,
+    ...allMomentLines(),
   ];
 }

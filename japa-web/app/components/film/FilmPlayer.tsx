@@ -9,6 +9,7 @@ import type { StageKind } from "@/game/types";
 import { relativeAvatar, type PersonWho } from "../Person";
 import { usePlayer } from "../Player";
 import { Actor, type ActorFace, type ActorPose, type Look } from "./Actor";
+import { DialInsert, ItemInsert, PropSvg, ScreenInsert } from "./Props";
 import { setLayers, type SetKind } from "./Sets";
 
 // --- Casting ---------------------------------------------------------------------------------------------------
@@ -163,6 +164,46 @@ function StampInsert({ word, tone }: { word: string; tone: CinematicSpec["tone"]
         {Array.from({ length: 7 }, (_, j) => <i key={j} style={{ width: `${55 + (j * 17) % 40}%` }} />)}
         <span className={`stamp tone-${tone}`}>{word}</span>
       </div>
+    </div>
+  );
+}
+
+/** A plane coming in to land, drawn side-on. */
+function PlaneSvg() {
+  return (
+    <g>
+      <rect x="-240" y="-34" width="480" height="68" rx="34" fill="#f8fafc" />
+      <path d="M-40 -10 L80 -150 L130 -150 L60 -10 Z M-40 20 L80 150 L130 150 L60 20 Z" fill="#e2e8f0" />
+      <path d="M-220 -20 L-280 -120 L-230 -120 L-170 -20 Z" fill="#dc2626" />
+      {[-140, -100, -60, -20, 20, 60, 100, 140].map((x) => <rect key={x} x={x} y="-14" width="22" height="14" rx="4" fill="#1e3a8a" />)}
+      <path d="M200 -30 Q250 -20 240 10 L200 10 Z" fill="#1e3a8a" />
+      <g fill="#111"><circle cx="-60" cy="44" r="14" /><circle cx="120" cy="44" r="14" /></g>
+    </g>
+  );
+}
+
+/** Split screen: you and them, both on the phone, each in your own place. */
+function SplitCall({ ms, you, them, mine, theirs, speaker, line, up, down }: {
+  ms: number; you: Look; them: Look; mine: SetKind; theirs: SetKind; speaker: string; line: string; up: boolean; down: boolean;
+}) {
+  const half = (set: SetKind, look: Look, talking: boolean) => {
+    const layers = setLayers(set);
+    return (
+      <svg className="film-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden>
+        <g className="film-cam" style={{ ["--c0" as string]: camT({ x: 800, y: 470, z: 1.5 }), ["--c1" as string]: camT({ x: 800, y: 460, z: 1.62 }) }}>
+          <g className="film-set">{layers.far}{layers.mid}{layers.near}</g>
+          <Actor look={look} pose="phone" face={talking ? "neutral" : up ? "smile" : down ? "worried" : "neutral"} talking={talking} x={800} y={FLOOR} />
+        </g>
+      </svg>
+    );
+  };
+  return (
+    <div className="film-frame shot-split" style={{ ["--ms" as string]: `${ms}ms` }}>
+      <div className="split-half left">{half(mine, you, false)}</div>
+      <div className="split-half right">{half(theirs, them, true)}</div>
+      <p className="film-sub"><b>{speaker}</b><Words text={line} from={0.5} span={1.8} /></p>
+      <div className="film-bars" />
+      <div className="film-grain" />
     </div>
   );
 }
@@ -323,6 +364,71 @@ export function FilmShot({ kind, ms, spec, stage, location, script, speaker, par
       sub = { text: t(script.night) };
       slug = t("Later that night");
       break;
+    // --- Big moments (game/moments.ts) ---
+    case "handover": {
+      // Across the counter: the officer slides the letter over (or you hand the agent your cash).
+      const m = script.moment!;
+      set = m.set;
+      cam = [{ x: 800, y: 520, z: 1.4 }, { x: 800, y: 500, z: 1.6 }];
+      const giver = CAST[m.giver ?? "official"];
+      const toThem = m.prop === "cash";
+      actors = <>
+        <Actor look={giver} pose="reach" face={toThem ? "grin" : "smile"} x={1100} y={FLOOR} flip />
+        <Actor look={you} pose="reach" face={toThem ? "worried" : "smile"} x={500} y={FLOOR} />
+        <g className={`pass-prop ${toThem ? "to-them" : "to-you"}`}><PropSvg kind={m.prop} /></g>
+      </>;
+      slug = t(m.caption);
+      break;
+    }
+    case "item":
+      blurSet = true;
+      set = script.moment!.set;
+      cam = [{ x: 800, y: 450, z: 1.3 }, { x: 800, y: 450, z: 1.38 }];
+      overlay = <ItemInsert moment={script.moment!} mood={script.mood} />;
+      break;
+    case "look": {
+      // You, reading it; halfway through, your face changes.
+      const m = script.moment!;
+      set = m.style === "screen" ? "bedroom" : m.set === "office" || m.set === "agent-office" ? m.set : mine;
+      cam = [{ x: 640, y: FLOOR - 250, z: 1.65 }, { x: 640, y: FLOOR - 262, z: 1.8 }];
+      const after: ActorFace = up ? "grin" : down ? (tone === "danger" ? "shock" : "sad") : "worried";
+      actors = <>
+        <g className="phase-a"><Actor look={you} pose="hold" face="reading" x={640} y={FLOOR} prop={<PropSvg kind={m.prop} />} /></g>
+        <g className="phase-b"><Actor look={you} pose={down ? "slump" : "hold"} face={after} x={640} y={FLOOR} prop={down ? undefined : <PropSvg kind={m.prop} />} /></g>
+      </>;
+      sub = { who: name, text: t(m.look) };
+      break;
+    }
+    case "showoff": {
+      const m = script.moment!;
+      set = m.style === "screen" ? "bedroom" : mine;
+      cam = mediumOn(640, 1, 1.35, 1.5);
+      actors = <Actor look={you} pose="raise" face="grin" x={640} y={FLOOR} prop={<PropSvg kind={m.prop} />} />;
+      overlay = <div className="camera-flash" />;
+      sub = { text: t(m.showoff ?? "") };
+      break;
+    }
+    case "screen":
+      blurSet = true;
+      set = "bedroom";
+      cam = [{ x: 800, y: 450, z: 1.25 }, { x: 800, y: 450, z: 1.35 }];
+      overlay = <ScreenInsert moment={script.moment!} mood={script.mood} />;
+      slug = t(script.moment!.caption);
+      break;
+    case "plane":
+      set = "airport";
+      cam = [{ x: 800, y: 380, z: 1.15 }, { x: 860, y: 420, z: 1.25 }];
+      actors = <g className="landing-plane"><PlaneSvg /></g>;
+      slug = t(script.moment!.caption);
+      sub = { text: t("Wheels down.") };
+      break;
+    case "dial":
+      blurSet = true;
+      cam = [{ x: 800, y: 450, z: 1.25 }, { x: 800, y: 450, z: 1.3 }];
+      overlay = <DialInsert name={speaker} />;
+      break;
+    case "split":
+      return <SplitCall ms={ms} you={you} them={them} mine={mine} theirs={theirs} speaker={speaker} line={t(script.hear)} up={up} down={down} />;
     case "close":
       cam = closeOn(640, 1, 2.2, 2.45);
       actors = <Actor look={you} pose={resultPose} face={resultFace} x={640} y={FLOOR} />;

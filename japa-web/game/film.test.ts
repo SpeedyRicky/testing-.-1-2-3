@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import pcm from "./i18n/pcm.json";
-import { DECISION_SHOT, FILM, FILM_MS, allFilmLines, circleOf, filmScript, insertFor, moodOf, shotStart, whoInChoice } from "./film";
+import { DECISION_SHOT, FILM, FILM_MS, allFilmLines, circleOf, filmScript, insertFor, moodOf, planMs, shotStart, whoInChoice } from "./film";
+import { momentFor, momentKind } from "./moments";
 
 describe("the after-choice film", () => {
   it("runs at least a minute, as fourteen shots, with the result landing after the other person's side", () => {
@@ -37,6 +38,34 @@ describe("the after-choice film", () => {
     expect(whoInChoice("Tell your oga you need Friday off")).toBe("kovacs");
     expect(whoInChoice("Answer the officer's question honestly")).toBe("officer");
     expect(whoInChoice("Sleep. Waka the street when dusk is cheaper.")).toBeNull();
+  });
+
+  it("big moments get their own scenes: getting your SIN shows the handover, the letter and you reading it", () => {
+    const sin = filmScript("good", "officer", 1, [], undefined, "Get your SIN at the airport Service Canada desk, then open a newcomer bank account", "FY_LANDING");
+    expect(sin.moment?.kind).toBe("sin");
+    const kinds = sin.plan.map((s) => s.kind);
+    expect(kinds).toEqual(expect.arrayContaining(["handover", "item", "look", "showoff"]));
+    expect(kinds.indexOf("handover")).toBeLessThan(kinds.indexOf("item"));
+    expect(kinds.indexOf("item")).toBeLessThan(kinds.indexOf("look"));
+    expect(planMs(sin.plan)).toBeGreaterThan(FILM_MS);
+    expect(sin.verdict).toBe("face"); // the letter was already on screen
+    // The portal shows the answer on a screen; a refusal has no showing off.
+    const refused = filmScript("bad", "relative", 1, [], undefined, "Open the portal. Call {relName} either way.", "LAGOS_OUTCOME");
+    expect(refused.moment?.kind).toBe("portal");
+    expect(refused.moment?.title).toMatch(/Refused/);
+    expect(refused.plan.map((s) => s.kind)).not.toContain("showoff");
+  });
+
+  it("knows the big moments from the choice's words", () => {
+    expect(momentKind("Pay his 'facilitation' fee so your file 'moves faster'")).toBe("agent-cash");
+    expect(momentKind("Book the appointment: CAD 185 in visa and biometrics fees.")).toBe("payment");
+    expect(momentKind("Start the application", "EE_ITA_CEC")).toBe("ita");
+    expect(momentKind("Start packing")).toBe("passport");
+    expect(momentKind("Spend your first paycheque on proper winter work gear")).toBe("paycheque");
+    expect(momentKind("Buy the best phone plan in the mall so you can call home properly")).toBe("shopping");
+    expect(momentKind("Call {relTitle} in {relCity} about the visa story")).toBe("call");
+    expect(momentKind("Leave the call. Go to the annex and start a real paper trail")).toBeNull();
+    expect(momentFor("Get your SIN", "", "up")?.lines.join(" ")).not.toMatch(/\d{3} \d{3} \d{3}/); // never a full number
   });
 
   it("shows the thing at stake: money, papers or time", () => {

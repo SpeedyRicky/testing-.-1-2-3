@@ -3,7 +3,8 @@
 import { Fragment, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { FastForward } from "lucide-react";
 import type { CinematicSpec, Delta, Tone } from "@/game/cinematic";
-import { DECISION_SHOT, FILM, FILM_MS, SPEAKER_DEFAULT, filmScript, whoInChoice, type FilmScript } from "@/game/film";
+import { FILM_MS, SPEAKER_DEFAULT, filmScript, moodOf, whoInChoice, type FilmScript } from "@/game/film";
+import { GIVER_WHO, momentFor } from "@/game/moments";
 import type { StageKind, Transit } from "@/game/types";
 import { FilmShot } from "./film/FilmPlayer";
 import { Person, type PersonPose, type PersonWho } from "./Person";
@@ -27,6 +28,10 @@ export interface CinematicRequest {
   reactor?: PersonWho;
   transit?: Transit;
   location?: string;
+  /** The choice's own words in English, before translation and names (for the film's big moments). */
+  choiceText?: string;
+  /** The scene the choice was made in. */
+  sceneId?: string;
 }
 
 interface Ctx {
@@ -139,7 +144,8 @@ function FilmView({ req, index, reactor, script, seed, onSkip, onNext }: {
   req: CinematicRequest; index: number; reactor: PersonWho; script: FilmScript; seed: number; onSkip: () => void; onNext: () => void;
 }) {
   const { t } = usePlayer();
-  const shot = FILM[index];
+  const plan = script.plan;
+  const shot = plan[index];
   const speaker = t(captionFor(req.stage, reactor) ?? SPEAKER_DEFAULT[script.circle]);
   return (
     // A stray tap does nothing: the film only moves on from its own buttons (or Enter / Escape).
@@ -149,7 +155,7 @@ function FilmView({ req, index, reactor, script, seed, onSkip, onNext }: {
         <FilmShot key={index} kind={shot.kind} ms={shot.ms} spec={req.spec} stage={req.stage} location={req.location} script={script}
           speaker={speaker} particles={<Particles tone={req.spec.tone} money={req.spec.money} seed={seed} />} />
         <div className="film-controls">
-          <span>{index + 1} / {FILM.length}</span>
+          <span>{index + 1} / {plan.length}</span>
           <span className="flex items-center gap-2">
             <button type="button" onClick={onNext}
               className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2.5 py-1 font-semibold text-zinc-300 hover:text-white">
@@ -163,7 +169,7 @@ function FilmView({ req, index, reactor, script, seed, onSkip, onNext }: {
         </div>
         {/* One segment per shot, like a story reel. */}
         <div className="cine-reel" aria-hidden>
-          {FILM.map((s, i) => (
+          {plan.map((s, i) => (
             <span key={i} className={i < index ? "done" : i === index ? "now" : ""}>
               {i === index ? <i key={`r${index}`} style={{ animationDuration: `${s.ms}ms` }} /> : null}
             </span>
@@ -285,15 +291,21 @@ export function CinematicProvider({ children }: { children: React.ReactNode }) {
     const req = reqRef.current;
     if (!req) return;
     clearTimers();
-    if (i >= FILM.length) { finish(); return; }
+    const plan = script0.current?.plan ?? [];
+    if (i >= plan.length) { finish(); return; }
     shotRef.current = i;
     setShot(i);
-    if (i >= DECISION_SHOT) react(req);
-    const kind = FILM[i].kind;
+    if (i >= plan.findIndex((s) => s.kind === "react")) react(req);
+    const kind = plan[i].kind;
     if (kind === "ripple" || (kind === "insert" && script0.current?.insert === "phone")) sound.play("phone");
     if (kind === "verdict" && script0.current?.verdict === "stamp") sound.play("stamp");
     if (kind === "establish") sound.play("wind");
-    timers.current.push(window.setTimeout(() => run(i + 1), FILM[i].ms));
+    if (kind === "dial") sound.play("phone");
+    if (kind === "plane") sound.play("plane");
+    if (kind === "handover") timers.current.push(window.setTimeout(() => sound.play(req.spec.money === "loss" ? "cashOut" : "click"), 2600));
+    if (kind === "screen") timers.current.push(window.setTimeout(() => sound.play(script0.current?.mood === "down" ? "bad" : "good"), 3400));
+    if (kind === "showoff") sound.play("good");
+    timers.current.push(window.setTimeout(() => run(i + 1), plan[i].ms));
   }, [finish, react, sound]);
 
   const next = useCallback(() => runShot(shotRef.current + 1), [runShot]);
@@ -305,8 +317,13 @@ export function CinematicProvider({ children }: { children: React.ReactNode }) {
     seq.current += 1;
     reacted.current = false;
     reqRef.current = req;
-    const reactor = req.reactor ?? (whoInChoice(req.spec.line, relName) as PersonWho | null) ?? reactorFor(req.stage);
-    const script = filmScript(req.spec.tone, reactor, seq.current, req.spec.deltas, captionFor(req.stage, reactor));
+    // The English choice text (before translation) tells the film who is involved and which big moment this is.
+    const text = req.choiceText ?? req.spec.line;
+    const moment = momentFor(text, req.sceneId ?? "", moodOf(req.spec.tone));
+    const reactor = req.reactor
+      ?? ((moment?.giver ? GIVER_WHO[moment.giver] : whoInChoice(text, relName)) as PersonWho | null)
+      ?? reactorFor(req.stage);
+    const script = filmScript(req.spec.tone, reactor, seq.current, req.spec.deltas, captionFor(req.stage, reactor), text, req.sceneId);
     script0.current = script;
     setBeat("say");
     if (speed === "full") {
